@@ -1,7 +1,8 @@
-import { ComponentExample } from "@/components/component-example";
+import { RouterProvider } from "react-router";
+import { router } from "./components/router/router";
 
 export function App() {
-return <ComponentExample />;
+  return <RouterProvider router={router} />;
 }
 
 export default App;

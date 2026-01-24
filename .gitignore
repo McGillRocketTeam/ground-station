@@ -10,7 +10,8 @@ yarn-error.log*
 .npmrc
 
 dist
-src/packages/package-a/src/version.js
+
+docker/assets/
 
 # Runtime data
 pids

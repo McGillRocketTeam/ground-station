@@ -11,6 +11,10 @@
     "./schema": {
       "types": "./src/schema.ts",
       "default": "./dist/schema.js"
+    },
+    "./http": {
+      "types": "./src/http/index.ts",
+      "default": "./dist/http/index.js"
     }
   },
   "devDependencies": {

@@ -4,11 +4,11 @@ import {
   NodeHttpClient,
   NodeRuntime,
 } from "@effect/platform-node";
-import { Effect, Layer, Ref, Schedule, Schema } from "effect";
+import { Config, Effect, Layer, Ref, Schedule, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
 import * as dgram from "node:dgram";
-import { NamedObjectId, ParameterInfo, Value } from "@mrt/yamcs-effect/";
-import { YamcsApi } from "@mrt/yamcs-effect/src/http";
+import { NamedObjectId, ParameterInfo, Value } from "@mrt/yamcs-effect/schema";
+import { YamcsApi } from "@mrt/yamcs-effect/http";
 
 const ParameterValue = Schema.Struct({
   id: NamedObjectId,
@@ -87,7 +87,7 @@ const generateBatch = (
   const result: ParameterValue[] = [];
 
   for (let i = 0; i < parameters.length; i++) {
-    const param = parameters[i];
+    const param = parameters[i]!;
     const engValue = randomValueForType(param.type, seed + i);
     if (engValue) {
       result.push({
@@ -157,9 +157,10 @@ const simulator = Effect.gen(function* () {
   const yamcsHttp = yield* HttpApiClient.make(YamcsApi, {
     baseUrl: "http://localhost:8090",
   });
+  const instance = yield* Config.string("YAMCS_INSTANCE");
 
   const { parameters } = yield* yamcsHttp.mdb.listParameters({
-    path: { instance: "ground_station" },
+    path: { instance },
     urlParams: {},
   });
 

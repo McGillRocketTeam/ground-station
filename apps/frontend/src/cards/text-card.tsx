@@ -1,7 +1,9 @@
-import { makeCard } from "@/lib/make-card";
+import { makeCard } from "@/lib/cards";
+import { Schema } from "effect";
 
-makeCard({
+export const TextCard = makeCard({
   id: "text-card",
   name: "Text Card",
-  component: <div>Hello World</div>,
+  schema: Schema.Struct({ text: Schema.String }),
+  component: (props) => <div>{props.text}</div>,
 });

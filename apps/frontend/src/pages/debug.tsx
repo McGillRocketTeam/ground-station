@@ -9,52 +9,64 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { cardListAtom } from "@/lib/atom/card-registry";
+import {
+  CardArray,
+  CardComponentMap,
+  CardSchemaMap,
+  type CardId,
+} from "@/lib/cards";
 import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
+import { useState } from "react";
 
-const currentSelectedCardAtom = Atom.make("text");
+const selectedCardAtom = Atom.make<CardId | undefined>(undefined);
 
 export function DebugPage() {
-  const currentlySelectedCard = useAtomValue(currentSelectedCardAtom);
-  const cards = useAtomValue(cardListAtom);
+  const selectedCardId = useAtomValue(selectedCardAtom);
+  const selectedCardSchema = selectedCardId
+    ? CardSchemaMap[selectedCardId]
+    : undefined;
+  const selectedCard = selectedCardId
+    ? CardComponentMap[selectedCardId]
+    : undefined;
+
   return (
-    <div className="h-screen flex flex-col">
+    <div className="grid h-screen grid-cols-[4fr_minmax(300px,1fr)] grid-rows-[auto_1fr]">
       <DebugToolbar />
 
-      <div className="p-4 grow grid place-items-center">
-        {currentlySelectedCard}
+      <div className="p-4 grid place-items-center">
+        {selectedCard ? (
+          <div>{selectedCard({ text: "Hello World" })}</div>
+        ) : (
+          <div className="text-muted-foreground">No Card Selected</div>
+        )}
       </div>
 
-      <div>{JSON.stringify(cards)}</div>
+      <aside className="border-l">{/* form from schema */}</aside>
     </div>
   );
 }
 
 export function DebugToolbar() {
-  const [currentlySelected, setCurrentlySelected] = useAtom(
-    currentSelectedCardAtom,
-  );
+  const [currentlySelected, setCurrentlySelected] = useAtom(selectedCardAtom);
+  const [open, setOpen] = useState(false);
   return (
-    <Menubar className="border-0 border-b">
-      <MenubarMenu>
+    <Menubar className="border-0 border-b col-span-full">
+      <MenubarMenu open={open} onOpenChange={setOpen}>
         <MenubarTrigger>Cards</MenubarTrigger>
         <MenubarContent>
           <MenubarRadioGroup
             value={currentlySelected}
-            onValueChange={setCurrentlySelected}
+            onValueChange={(value) => {
+              setOpen(false);
+              setCurrentlySelected(value);
+            }}
           >
-            <MenubarRadioItem value="andy">Andy</MenubarRadioItem>
-            <MenubarRadioItem value="benoit">Benoit</MenubarRadioItem>
-            <MenubarRadioItem value="Luis">Luis</MenubarRadioItem>
+            {CardArray.map((card) => (
+              <MenubarRadioItem key={card.id} value={card.id}>
+                {card.name}
+              </MenubarRadioItem>
+            ))}
           </MenubarRadioGroup>
-          <MenubarSeparator />
-          <MenubarGroup>
-            <MenubarItem inset>Edit...</MenubarItem>
-          </MenubarGroup>
-          <MenubarSeparator />
-          <MenubarGroup>
-            <MenubarItem inset>Add Profile...</MenubarItem>
-          </MenubarGroup>
         </MenubarContent>
       </MenubarMenu>
     </Menubar>

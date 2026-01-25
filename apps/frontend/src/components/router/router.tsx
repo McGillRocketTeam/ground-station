@@ -1,6 +1,6 @@
-import { createBrowserRouter, Outlet } from "react-router";
+import { createBrowserRouter } from "react-router";
 import { RootErrorBoundary } from "./error-boundary";
-import { DebugPage } from "../pages/debug";
+import { DebugPage } from "@/pages/debug";
 
 export const router = createBrowserRouter([
   {

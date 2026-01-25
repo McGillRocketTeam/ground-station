@@ -4,14 +4,19 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "dev": "tsx watch src/index.ts"
   },
   "devDependencies": {
     "@types/node": "latest",
     "tsx": "^4.21.0"
   },
   "peerDependencies": {
-    "typescript": "^5",
-    "effect": "^3.19"
+    "effect": "^3.19",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.94.2",
+    "@effect/platform-node": "^0.104.1",
+    "@mrt/yamcs-effect": "workspace:*"
   }
 }

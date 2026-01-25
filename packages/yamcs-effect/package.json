@@ -4,14 +4,24 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "exports": {
+    "./schema": {
+      "types": "./src/schema.ts",
+      "default": "./dist/schema.js"
+    }
   },
   "devDependencies": {
     "@types/node": "latest",
     "tsx": "^4.21.0"
   },
   "peerDependencies": {
-    "typescript": "^5",
-    "effect": "^3.19"
+    "effect": "^3.19",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.94.2"
   }
 }

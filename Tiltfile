@@ -5,6 +5,13 @@ local_resource(
 		links='http://localhost:5173'
 )
 
+local_resource(
+    'simulator',
+    serve_cmd="pnpm --filter @mrt/simulator dev",
+		labels=['mrt'],
+		links='http://localhost:5173'
+)
+
 docker_compose(
 		"./docker/docker-compose.yml"
 )

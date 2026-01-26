@@ -1,12 +1,10 @@
+import { Form } from "@/components/form";
 import {
   Menubar,
   MenubarContent,
-  MenubarGroup,
-  MenubarItem,
   MenubarMenu,
   MenubarRadioGroup,
   MenubarRadioItem,
-  MenubarSeparator,
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import {
@@ -18,30 +16,37 @@ import {
 import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
 import { useState } from "react";
 
-const selectedCardAtom = Atom.make<CardId | undefined>(undefined);
+const selectedCardAtom = Atom.make<CardId>("text-card");
+const selectedSchemaAtom = Atom.map(
+  selectedCardAtom,
+  (id) => CardSchemaMap[id],
+);
+const selectedComponentAtom = Atom.map(
+  selectedCardAtom,
+  (id) => CardComponentMap[id],
+);
 
 export function DebugPage() {
-  const selectedCardId = useAtomValue(selectedCardAtom);
-  const selectedCardSchema = selectedCardId
-    ? CardSchemaMap[selectedCardId]
-    : undefined;
-  const selectedCard = selectedCardId
-    ? CardComponentMap[selectedCardId]
-    : undefined;
+  const selectedSchema = useAtomValue(selectedSchemaAtom);
+  const selectedComponent = useAtomValue(selectedComponentAtom);
 
   return (
     <div className="grid h-screen grid-cols-[4fr_minmax(300px,1fr)] grid-rows-[auto_1fr]">
       <DebugToolbar />
 
       <div className="p-4 grid place-items-center">
-        {selectedCard ? (
-          <div>{selectedCard({ text: "Hello World" })}</div>
+        {selectedComponent ? (
+          <div>
+            {selectedComponent({ parameter: "Hello World", command: "test" })}
+          </div>
         ) : (
           <div className="text-muted-foreground">No Card Selected</div>
         )}
       </div>
 
-      <aside className="border-l">{/* form from schema */}</aside>
+      <aside className="border-l p-2">
+        {selectedSchema && <Form schemaAtom={selectedSchemaAtom} />}
+      </aside>
     </div>
   );
 }

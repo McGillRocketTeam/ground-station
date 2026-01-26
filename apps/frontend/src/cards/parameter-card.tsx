@@ -2,17 +2,13 @@ import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 import { makeCard } from "@/lib/cards";
 import { Schema } from "effect";
 
-export const TextCard = makeCard({
-  id: "text-card",
-  name: "Text Card",
+export const ParameterCard = makeCard({
+  id: "parameter-card",
+  name: "Parameter Card",
   schema: Schema.Struct({
     parameter: Schema.String.annotations({
-      [FormTitleAnnotationId]: "Parameter Title",
+      [FormTitleAnnotationId]: "Parameter Card Field",
       [FormTypeAnnotationId]: "parameter",
-    }),
-    command: Schema.String.annotations({
-      [FormTitleAnnotationId]: "Command Title",
-      [FormTypeAnnotationId]: "command",
     }),
   }),
   component: (props) => <div>{props.parameter}</div>,

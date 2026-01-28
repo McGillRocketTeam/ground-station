@@ -37,3 +37,7 @@
   },
   "peerDependencies": {
     "effect": "^3.19",
+    "@effect/platform": "^0.94",
+    "typescript": "^5"
+  }
+}

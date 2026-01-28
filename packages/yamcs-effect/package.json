@@ -1,24 +1,34 @@
 {
   "name": "@mrt/yamcs-effect",
-  "module": "src/index.ts",
-  "type": "module",
   "private": true,
+  "type": "module",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc"
   },
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
     "./schema": {
-      "types": "./src/schema.ts",
-      "default": "./dist/schema.js"
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js",
+      "require": "./dist/schema.js"
     },
     "./http": {
-      "types": "./src/http/index.ts",
-      "default": "./dist/http/index.js"
+      "types": "./dist/http/index.d.ts",
+      "import": "./dist/http/index.js",
+      "require": "./dist/http/index.js"
     },
     "./websocket": {
-      "types": "./src/websocket/index.ts",
-      "default": "./dist/websocket/index.js"
+      "types": "./dist/websocket/index.d.ts",
+      "import": "./dist/websocket/index.js",
+      "require": "./dist/websocket/index.js"
     }
   },
   "devDependencies": {
@@ -27,7 +37,3 @@
   },
   "peerDependencies": {
     "effect": "^3.19",
-    "@effect/platform": "^0.94",
-    "typescript": "^5"
-  }
-}

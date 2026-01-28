@@ -1,11 +1,12 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
     "outDir": "dist",
     "rootDir": "src",
-    "declaration": true,
-    "noEmit": false
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "Node"
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"]
 }

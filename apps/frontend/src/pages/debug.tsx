@@ -16,7 +16,7 @@ import {
 import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
 import { useState } from "react";
 
-const selectedCardAtom = Atom.make<CardId>("text-card");
+const selectedCardAtom = Atom.make<CardId>("parameter-table");
 const selectedSchemaAtom = Atom.map(
   selectedCardAtom,
   (id) => CardSchemaMap[id],
@@ -36,9 +36,7 @@ export function DebugPage() {
 
       <div className="p-4 grid place-items-center">
         {selectedComponent ? (
-          <div>
-            {selectedComponent({ parameter: "Hello World", command: "test" })}
-          </div>
+          <div>{selectedComponent({ parameter: "/a/b", command: "asdf" })}</div>
         ) : (
           <div className="text-muted-foreground">No Card Selected</div>
         )}

@@ -2,6 +2,7 @@ import { Schema } from "effect";
 import type { ReactNode } from "react";
 import { TextCard } from "@/cards/text-card";
 import { ParameterCard } from "@/cards/parameter-card";
+import { ParameterTable } from "@/cards/parameter-table";
 
 export interface CardDefinition<
   Id extends string,
@@ -21,28 +22,22 @@ export function makeCard<
 }
 
 // Source of truth - add all cards here
-export const CardArray = [TextCard, ParameterCard] as const;
+export const CardArray = [TextCard, ParameterCard, ParameterTable] as const;
 
 type Cards = (typeof CardArray)[number];
 export type CardId = Cards["id"];
 type GetCard<Id extends CardId> = Extract<Cards, { id: Id }>;
 
-type CardSchemaMapType = {
+export const CardSchemaMap = Object.fromEntries(
+  CardArray.map((c) => [c.id, c.schema]),
+) as {
   [K in CardId]: GetCard<K>["schema"];
 };
 
-type CardComponentMapType = {
+export const CardComponentMap = Object.fromEntries(
+  CardArray.map((c) => [c.id, c.component]),
+) as {
   [K in CardId]: GetCard<K>["component"];
-};
-
-export const CardSchemaMap: CardSchemaMapType = {
-  "text-card": TextCard.schema,
-  "parameter-card": ParameterCard.schema,
-};
-
-export const CardComponentMap: CardComponentMapType = {
-  "text-card": TextCard.component,
-  "parameter-card": ParameterCard.component,
 };
 
 // Get schema type for a specific card

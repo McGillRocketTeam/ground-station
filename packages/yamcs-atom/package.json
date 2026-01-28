@@ -4,13 +4,24 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "dev": "tsc --watch",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/node": "latest",
     "tsx": "^4.21.0"
   },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "peerDependencies": {
+    "@mrt/yamcs-effect": "workspace:*",
+    "@effect/platform": "^0.94",
+    "effect": "^3.19",
+    "@effect-atom/atom-react": "^0.4",
     "typescript": "^5"
   }
 }

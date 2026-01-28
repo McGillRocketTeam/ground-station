@@ -23,6 +23,12 @@ importers:
       '@fontsource-variable/roboto':
         specifier: ^5.2.9
         version: 5.2.9
+      '@mrt/yamcs-atom':
+        specifier: workspace:*
+        version: link:../../packages/yamcs-atom
+      '@mrt/yamcs-effect':
+        specifier: workspace:*
+        version: link:../../packages/yamcs-effect
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.18(vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))
@@ -127,6 +133,18 @@ importers:
 
   packages/yamcs-atom:
     dependencies:
+      '@effect-atom/atom-react':
+        specifier: ^0.4
+        version: 0.4.6(@effect/experimental@0.58.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15))(@effect/platform@0.94.2(effect@3.19.15))(@effect/rpc@0.73.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15))(effect@3.19.15)(react@19.2.3)(scheduler@0.27.0)
+      '@effect/platform':
+        specifier: ^0.94
+        version: 0.94.2(effect@3.19.15)
+      '@mrt/yamcs-effect':
+        specifier: workspace:*
+        version: link:../yamcs-effect
+      effect:
+        specifier: ^3.19
+        version: 3.19.15
       typescript:
         specifier: ^5
         version: 5.9.3
@@ -141,7 +159,7 @@ importers:
   packages/yamcs-effect:
     dependencies:
       '@effect/platform':
-        specifier: ^0.94.2
+        specifier: ^0.94
         version: 0.94.2(effect@3.19.15)
       effect:
         specifier: ^3.19

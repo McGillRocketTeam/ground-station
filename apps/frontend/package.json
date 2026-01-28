@@ -9,11 +9,11 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
-    "scripts": {
-      "prepare": "effect-language-service patch"
-    }
+    "prepare": "effect-language-service patch"
   },
   "dependencies": {
+    "@mrt/yamcs-atom": "workspace:*",
+    "@mrt/yamcs-effect": "workspace:*",
     "@base-ui/react": "^1.1.0",
     "@effect-atom/atom-react": "^0.4.6",
     "@fontsource-variable/roboto": "^5.2.9",

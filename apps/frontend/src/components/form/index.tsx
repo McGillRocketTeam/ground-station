@@ -4,7 +4,7 @@ import { Atom, useAtomValue } from "@effect-atom/atom-react";
 import { Option } from "effect";
 import type { CardId, CardSchemaMap } from "@/lib/cards";
 
-const formDataAtom = Atom.make<Record<string, unknown>>({});
+export const formDataAtom = Atom.make<Record<string, unknown>>({});
 
 // Create a family of atoms for each field
 const formFieldAtom = Atom.family((fieldKey: string) =>

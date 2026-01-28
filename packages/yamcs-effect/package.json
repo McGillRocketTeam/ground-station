@@ -15,6 +15,10 @@
     "./http": {
       "types": "./src/http/index.ts",
       "default": "./dist/http/index.js"
+    },
+    "./websocket": {
+      "types": "./src/websocket/index.ts",
+      "default": "./dist/websocket/index.js"
     }
   },
   "devDependencies": {
@@ -23,9 +27,7 @@
   },
   "peerDependencies": {
     "effect": "^3.19",
+    "@effect/platform": "^0.94",
     "typescript": "^5"
-  },
-  "dependencies": {
-    "@effect/platform": "^0.94.2"
   }
 }

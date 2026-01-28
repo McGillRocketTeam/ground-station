@@ -1,6 +1,30 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import type { Value } from "@mrt/yamcs-effect/schema";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
+}
+
+type DisplayNumber = { kind: "number"; value: number };
+type DisplayString = { kind: "string"; value: string };
+type DisplayNone = { kind: "none" };
+
+type Display = DisplayNumber | DisplayString | DisplayNone;
+
+export function displayValue(value: typeof Value.Type): Display {
+  switch (value.type) {
+    case "FLOAT":
+    case "DOUBLE":
+    case "SINT32":
+    case "UINT32":
+    case "SINT64":
+    case "UINT64":
+      return { kind: "number", value: value.value };
+    case "ENUMERATED":
+    case "AGGREGATE":
+      return { kind: "none" };
+    default:
+      return { kind: "string", value: value.value.toString() };
+  }
 }

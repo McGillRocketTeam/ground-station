@@ -1,0 +1,31 @@
+name: Backend Maven Compile
+
+on:
+  push:
+    paths:
+      - "apps/backend/**"
+  pull_request:
+    paths:
+      - "apps/backend/**"
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Compile backend
+        run: mvn compile

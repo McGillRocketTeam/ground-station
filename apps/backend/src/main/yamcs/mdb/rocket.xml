@@ -1,0 +1,1004 @@
+<?xml version="1.0"?>
+<!--
+This file was generated with Yamcs PyMDB.
+See https://github.com/yamcs/pymdb
+-->
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
+	name="FlightComputer">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<FloatParameterType name="acceleration_x" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="twosComplement"
+					byteOrder="leastSignificantByteFirst">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>100</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+			<FloatParameterType name="acceleration_y" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="twosComplement"
+					byteOrder="leastSignificantByteFirst">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>100</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+			<FloatParameterType name="acceleration_z" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="twosComplement"
+					byteOrder="leastSignificantByteFirst">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>100</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+			<FloatParameterType name="altimeter_altitude" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="altitude_from_sea_level" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<IntegerParameterType name="angle_pitch" signed="true" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</IntegerParameterType>
+			<IntegerParameterType name="angle_roll" signed="true" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</IntegerParameterType>
+			<IntegerParameterType name="angle_yaw" signed="true" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</IntegerParameterType>
+			<FloatParameterType name="apogee_from_ground" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="atm_pressure" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="atm_temp" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="barometer_altitude" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<StringParameterType name="call_sign">
+				<StringDataEncoding encoding="US-ASCII">
+					<SizeInBits>
+						<Fixed>
+							<FixedValue>48</FixedValue>
+						</Fixed>
+						<TerminationChar>00</TerminationChar>
+					</SizeInBits>
+				</StringDataEncoding>
+			</StringParameterType>
+			<FloatParameterType name="cc_pressure" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">psi</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="fc_rssi" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>-100</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+			<FloatParameterType name="fc_snr" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>4</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+			<BooleanParameterType name="fdov_armed_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="fdov_armed_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="fdov_continuity_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="fdov_energizedCurrent_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="fdov_energizedGate_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="fdov_energized_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<IntegerParameterType name="flags" signed="false" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</IntegerParameterType>
+			<IntegerParameterType name="flags_post_pad" signed="false" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="24" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</IntegerParameterType>
+			<IntegerParameterType name="flags_pre_pad" signed="false" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="4" encoding="unsigned" />
+			</IntegerParameterType>
+			<BooleanParameterType name="flight_atomic_flag" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<EnumeratedParameterType name="flight_stage">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="99" label="Pre-Pad, error in initialization" />
+					<Enumeration value="0" label="Pad, filling and readying for launch" />
+					<Enumeration value="1" label="Ascent, climbing at high velocity" />
+					<Enumeration value="2" label="Pre-Apogee, checking for ejection" />
+					<Enumeration value="3" label="Drogue descent" />
+					<Enumeration value="4" label="Main descent" />
+					<Enumeration value="5" label="Landed" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<FloatParameterType name="gps_altitude" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="gps_latitude" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="gps_longitude" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="gps_time_last_update" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<BooleanParameterType name="mov_armed_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="mov_armed_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="mov_continuity_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="mov_energizedCurrent_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="mov_energizedGate_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="mov_energized_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="mov_hall_state" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<IntegerParameterType name="padding" signed="false" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</IntegerParameterType>
+			<BooleanParameterType name="pilot_armed_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="pilot_armed_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="pilot_continuity_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="pilot_energizedCurrent_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="pilot_energizedGate_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="pilot_energized_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="prop_atomic_flag" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="prop_energized_electric" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="radio_atomic_flag" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="ring_armed_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="ring_armed_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="ring_continuity_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="ring_energizedCurrent_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="ring_energizedGate_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="ring_energized_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<IntegerParameterType name="seq" signed="false" sizeInBits="32">
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</IntegerParameterType>
+			<BooleanParameterType name="states_atomic_flag" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<FloatParameterType name="tank_pressure" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">psi</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="tank_temp" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">°C</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<BooleanParameterType name="vent_armed_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="vent_armed_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="vent_continuity_HW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="vent_energizedCurrent_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="vent_energizedGate_HW" zeroStringValue="False"
+				oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<BooleanParameterType name="vent_energized_SW" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<FloatParameterType name="vent_temp" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">°C</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>10</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+			<FloatParameterType name="vertical_speed" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter name="acceleration_x" parameterTypeRef="acceleration_x"
+				shortDescription="Acceleration x">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="acceleration_y" parameterTypeRef="acceleration_y"
+				shortDescription="Acceleration y">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="acceleration_z" parameterTypeRef="acceleration_z"
+				shortDescription="Acceleration z">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="altimeter_altitude" parameterTypeRef="altimeter_altitude"
+				shortDescription="Altitude from ground">
+				<LongDescription>Calculated on FC</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="altitude_from_sea_level" parameterTypeRef="altitude_from_sea_level"
+				shortDescription="Altitude from sea level">
+				<LongDescription>Calculated on FC</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="angle_pitch" parameterTypeRef="angle_pitch" shortDescription="Angular pitch">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="angle_roll" parameterTypeRef="angle_roll" shortDescription="Angular roll">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="angle_yaw" parameterTypeRef="angle_yaw" shortDescription="Angular yaw">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="apogee_from_ground" parameterTypeRef="apogee_from_ground"
+				shortDescription="Apogee from ground (max it's hit)">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="atm_pressure" parameterTypeRef="atm_pressure"
+				shortDescription="Atmospheric pressure">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="atm_temp" parameterTypeRef="atm_temp"
+				shortDescription="Atmospheric temperature">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="barometer_altitude" parameterTypeRef="barometer_altitude"
+				shortDescription="Altitude calculated from the barometric pressure">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="call_sign" parameterTypeRef="call_sign"
+				shortDescription="call sign for radio transmission">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="cc_pressure" parameterTypeRef="cc_pressure"
+				shortDescription="Combustion Chamber Pressure">
+				<LongDescription>Calculated from sensor voltage.</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fc_rssi" parameterTypeRef="fc_rssi"
+				shortDescription="Relative Signal Strength Indicator of FC radio">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fc_snr" parameterTypeRef="fc_snr"
+				shortDescription="Signal to noise ratio of the FC radio">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fdov_armed_HW" parameterTypeRef="fdov_armed_HW"
+				shortDescription="FDOV: Electrical ARM">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fdov_armed_SW" parameterTypeRef="fdov_armed_SW"
+				shortDescription="FDOV: Logical ARM">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fdov_continuity_HW" parameterTypeRef="fdov_continuity_HW"
+				shortDescription="FDOV: Electrical Continuity">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fdov_energizedCurrent_HW" parameterTypeRef="fdov_energizedCurrent_HW"
+				shortDescription="FDOV: Electrical Energized Current">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fdov_energizedGate_HW" parameterTypeRef="fdov_energizedGate_HW"
+				shortDescription="FDOV: Electrical Energized Gate">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="fdov_energized_SW" parameterTypeRef="fdov_energized_SW"
+				shortDescription="FDOV: Logical Energized">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="flags" parameterTypeRef="flags" shortDescription="Packet Flags">
+				<LongDescription>A.S.T.R.A. Packet Flags</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="flags_post_pad" parameterTypeRef="flags_post_pad"
+				shortDescription="Flag Padding">
+				<LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="flags_pre_pad" parameterTypeRef="flags_pre_pad"
+				shortDescription="Flag Padding">
+				<LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="flight_atomic_flag" parameterTypeRef="flight_atomic_flag">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="flight_stage" parameterTypeRef="flight_stage" shortDescription="Flight Stage">
+				<LongDescription>The current stage the FC believes it is in.</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="gps_altitude" parameterTypeRef="gps_altitude" shortDescription="GPS altitude">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="gps_latitude" parameterTypeRef="gps_latitude" shortDescription="GPS latitude">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="gps_longitude" parameterTypeRef="gps_longitude"
+				shortDescription="GPS longitude">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update"
+				shortDescription="GPS time from last update">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="mov_armed_HW" parameterTypeRef="mov_armed_HW"
+				shortDescription="MOV: Electrical Armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="mov_armed_SW" parameterTypeRef="mov_armed_SW"
+				shortDescription="MOV: Logical Armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="mov_continuity_HW" parameterTypeRef="mov_continuity_HW"
+				shortDescription="MOV: Electrical Continuity">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="mov_energizedCurrent_HW" parameterTypeRef="mov_energizedCurrent_HW"
+				shortDescription="MOV: Electrical Energized Current">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="mov_energizedGate_HW" parameterTypeRef="mov_energizedGate_HW"
+				shortDescription="MOV: Electrical Energized Gate">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="mov_energized_SW" parameterTypeRef="mov_energized_SW"
+				shortDescription="MOV: Logical Energized">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="mov_hall_state" parameterTypeRef="mov_hall_state"
+				shortDescription="MOV Hall State">
+				<LongDescription>Calculated from sensor voltage.</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="padding" parameterTypeRef="padding" shortDescription="Padding">
+				<LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="pilot_armed_HW" parameterTypeRef="pilot_armed_HW"
+				shortDescription="Pilot: electrical armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="pilot_armed_SW" parameterTypeRef="pilot_armed_SW"
+				shortDescription="Pilot: logical armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="pilot_continuity_HW" parameterTypeRef="pilot_continuity_HW"
+				shortDescription="Pilot: electrical continuity">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="pilot_energizedCurrent_HW" parameterTypeRef="pilot_energizedCurrent_HW"
+				shortDescription="Pilot: electrical energized current">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="pilot_energizedGate_HW" parameterTypeRef="pilot_energizedGate_HW"
+				shortDescription="Pilot: electrical energized gate">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="pilot_energized_SW" parameterTypeRef="pilot_energized_SW"
+				shortDescription="Pilot: logical energized">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="prop_atomic_flag" parameterTypeRef="prop_atomic_flag">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="prop_energized_electric" parameterTypeRef="prop_energized_electric"
+				shortDescription="Electrical energized propulsion boards">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="radio_atomic_flag" parameterTypeRef="radio_atomic_flag">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="ring_armed_HW" parameterTypeRef="ring_armed_HW"
+				shortDescription="3 ring: electrical armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="ring_armed_SW" parameterTypeRef="ring_armed_SW"
+				shortDescription="3 ring: logical armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="ring_continuity_HW" parameterTypeRef="ring_continuity_HW"
+				shortDescription="3 Ring: electrical continuity">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="ring_energizedCurrent_HW" parameterTypeRef="ring_energizedCurrent_HW"
+				shortDescription="3 ring: electrical energized current">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="ring_energizedGate_HW" parameterTypeRef="ring_energizedGate_HW"
+				shortDescription="3 ring: electrical energized gate">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="ring_energized_SW" parameterTypeRef="ring_energized_SW"
+				shortDescription="3 ring: logical energized">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="seq" parameterTypeRef="seq" shortDescription="Sequence Number">
+				<LongDescription>A.S.T.R.A. Packet Identifider</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="states_atomic_flag" parameterTypeRef="states_atomic_flag">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="tank_pressure" parameterTypeRef="tank_pressure"
+				shortDescription="Tank Bottom Pressure (prop top)">
+				<LongDescription>Calculated from sensor voltage.</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="tank_temp" parameterTypeRef="tank_temp"
+				shortDescription="Tank Temperature (prop bottom)">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vent_armed_HW" parameterTypeRef="vent_armed_HW"
+				shortDescription="Vent: electrical armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vent_armed_SW" parameterTypeRef="vent_armed_SW"
+				shortDescription="Vent: logical armed">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vent_continuity_HW" parameterTypeRef="vent_continuity_HW"
+				shortDescription="Vent: electrical continuity">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vent_energizedCurrent_HW" parameterTypeRef="vent_energizedCurrent_HW"
+				shortDescription="Vent: electrical energized current">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vent_energizedGate_HW" parameterTypeRef="vent_energizedGate_HW"
+				shortDescription="Vent: electrical energized gate">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vent_energized_SW" parameterTypeRef="vent_energized_SW"
+				shortDescription="Vent: logical energized">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vent_temp" parameterTypeRef="vent_temp"
+				shortDescription="Vent Valve Temperature">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="vertical_speed" parameterTypeRef="vertical_speed"
+				shortDescription="Vertical speed (descent rate)">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="FCFrame" abstract="false">
+				<EntryList>
+					<ContainerRefEntry containerRef="header">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="states_atomic">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="states_atomic_flag" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="prop_atomic">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="prop_atomic_flag" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="flight_atomic">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="flight_atomic_flag" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="radio_atomic">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="radio_atomic_flag" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="flight_atomic" abstract="false">
+				<EntryList>
+					<ParameterRefEntry parameterRef="flight_stage">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="altimeter_altitude">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="altitude_from_sea_level">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="apogee_from_ground">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="atm_pressure">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="barometer_altitude">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="atm_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="gps_latitude">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="gps_longitude">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="gps_altitude">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="gps_time_last_update">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vertical_speed">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="acceleration_x">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="acceleration_y">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="acceleration_z">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="angle_yaw">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="angle_pitch">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="angle_roll">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fc_rssi">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fc_snr">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="header" abstract="false">
+				<EntryList>
+					<ParameterRefEntry parameterRef="seq">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="flags">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="padding">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="flags_pre_pad">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="radio_atomic_flag">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="flight_atomic_flag">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="prop_atomic_flag">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="states_atomic_flag">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="flags_post_pad">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="prop_atomic" abstract="false">
+				<EntryList>
+					<ParameterRefEntry parameterRef="cc_pressure">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tank_pressure">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tank_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vent_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="radio_atomic" abstract="false">
+				<EntryList>
+					<ParameterRefEntry parameterRef="call_sign">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="states_atomic" abstract="false">
+				<EntryList>
+					<ParameterRefEntry parameterRef="mov_hall_state">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>7</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fdov_armed_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>6</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fdov_armed_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>5</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fdov_energized_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>4</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fdov_energizedGate_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>3</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fdov_energizedCurrent_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>2</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="fdov_continuity_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>1</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="mov_armed_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="mov_armed_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>15</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="mov_energized_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>14</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="mov_energizedGate_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>13</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="mov_energizedCurrent_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>12</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="mov_continuity_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>11</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pilot_armed_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>10</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pilot_armed_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>9</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pilot_energized_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>8</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pilot_energizedGate_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>23</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pilot_energizedCurrent_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>22</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pilot_continuity_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>21</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ring_armed_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>20</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ring_armed_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>19</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ring_energized_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>18</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ring_energizedGate_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>17</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ring_energizedCurrent_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>16</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ring_continuity_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>31</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="prop_energized_electric">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>30</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vent_armed_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>29</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vent_armed_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>28</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vent_energized_SW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>27</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vent_energizedGate_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>26</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vent_energizedCurrent_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>25</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="vent_continuity_HW">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>24</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData />
+</SpaceSystem>

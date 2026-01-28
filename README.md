@@ -12,6 +12,10 @@ This monorepo contains the frontend applications and shared packages for the McG
 
 ### Applications (`apps/`)
 
+#### **`@mrt/backend`** - YAMCS Data Server
+
+This is the main server which handles receiving, processing and sending telemetry. It's the middle man between data sources and the frontend ui. It runs through the [YAMCS](https://yamcs.org/) framework.
+
 #### **`@mrt/frontend`** - Main Ground Station UI
 
 The application that users use to view live telemetry and issue commands. Comes with a configurable card ui and more.
@@ -44,6 +48,7 @@ Generate random data for development of the frontend. Without the simulator, we 
 
 - **Node.js** 22+
 - **pnpm** 10.26.1+
+- **Maven** 3.9+
 - **Docker** & **Docker Compose**
 - **Tilt** (for development orchestration)
 

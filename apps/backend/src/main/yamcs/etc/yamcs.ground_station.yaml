@@ -42,6 +42,12 @@ dataLinks:
        timestampOffset: -1 #no timestmap in the packet
        seqCountOffset: 0
 
+  - name: simulator
+    class: org.yamcs.tctm.UdpParameterDataLink
+    stream: pp_realtime
+    port: 11016
+    json: true
+
 mdb:
   - type: xtce
     args:

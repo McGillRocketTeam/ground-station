@@ -7,8 +7,8 @@ import {
 import { Config, Effect, Layer, Ref, Schedule, Schema } from "effect";
 import type { ParseError } from "effect/ParseResult";
 import * as dgram from "node:dgram";
-import { NamedObjectId, ParameterInfo, Value } from "@mrt/yamcs-effect/schema";
-import { YamcsApi } from "@mrt/yamcs-effect/http";
+import { NamedObjectId, ParameterInfo, Value } from "@mrt/yamcs-effect";
+import { YamcsApi } from "@mrt/yamcs-effect";
 
 const ParameterValue = Schema.Struct({
   id: NamedObjectId,

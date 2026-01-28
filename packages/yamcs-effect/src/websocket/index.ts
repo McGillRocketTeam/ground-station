@@ -1,3 +1,3 @@
-export * from "./client";
-export * from "./client-messages";
-export * from "./server-messages";
+export * from "./client.js";
+export * from "./client-messages.js";
+export * from "./server-messages.js";

@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { NamedObjectId } from "../schema";
+import { NamedObjectId } from "../schema.js";
 
 /*     Built-in Client Messages     */
 export const Cancel = Schema.Struct({

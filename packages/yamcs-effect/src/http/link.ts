@@ -5,7 +5,7 @@ import {
   HttpApiSchema,
 } from "@effect/platform";
 import { Schema } from "effect";
-import { CommandId, LinkInfo, QualifiedName } from "../schema";
+import { CommandId, LinkInfo, QualifiedName } from "../schema.js";
 
 const instanceParam = HttpApiSchema.param("instance", Schema.String);
 const linkParam = HttpApiSchema.param("link", QualifiedName);

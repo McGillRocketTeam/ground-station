@@ -1,11 +1,11 @@
 import { Chunk, Effect, Schema, Stream, StreamEmit } from "effect";
-import { Cancel, type SubscriptionRequest } from "./client-messages";
+import { Cancel, type SubscriptionRequest } from "./client-messages.js";
 import {
   Events,
   Reply,
   Messages as ServerMessages,
   SubscriptionId,
-} from "./server-messages";
+} from "./server-messages.js";
 
 export class WebSocketClient extends Effect.Service<WebSocketClient>()(
   "WebSocketClient",

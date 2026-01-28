@@ -2,16 +2,9 @@
   "name": "@mrt/yamcs-atom",
   "private": true,
   "type": "module",
-  "module": "dist/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
-    }
-  },
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },

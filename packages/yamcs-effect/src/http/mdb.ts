@@ -5,7 +5,7 @@ import {
   HttpApiSchema,
 } from "@effect/platform";
 import { Schema } from "effect";
-import * as yamcs from "../schema";
+import * as yamcs from "../schema.js";
 
 const instanceParam = HttpApiSchema.param("instance", Schema.String);
 const nameParam = HttpApiSchema.param("name", yamcs.QualifiedName);

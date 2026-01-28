@@ -2,34 +2,11 @@
   "name": "@mrt/yamcs-effect",
   "private": true,
   "type": "module",
-  "module": "dist/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
-    },
-    "./schema": {
-      "types": "./dist/schema.d.ts",
-      "import": "./dist/schema.js",
-      "require": "./dist/schema.js"
-    },
-    "./http": {
-      "types": "./dist/http/index.d.ts",
-      "import": "./dist/http/index.js",
-      "require": "./dist/http/index.js"
-    },
-    "./websocket": {
-      "types": "./dist/websocket/index.d.ts",
-      "import": "./dist/websocket/index.js",
-      "require": "./dist/websocket/index.js"
-    }
+    "build": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "@types/node": "latest",

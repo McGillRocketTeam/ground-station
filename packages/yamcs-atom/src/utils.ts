@@ -1,4 +1,4 @@
-import type { StreamingCommandHisotryEntry } from "@mrt/yamcs-effect/schema";
+import type { StreamingCommandHisotryEntry } from "@mrt/yamcs-effect";
 
 export function mergeCommandEntries(
   current: typeof StreamingCommandHisotryEntry.Type,

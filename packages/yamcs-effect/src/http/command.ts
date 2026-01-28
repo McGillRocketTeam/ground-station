@@ -11,7 +11,7 @@ import {
   IssueCommandRequest,
   IssueCommandResponse,
   QualifiedName,
-} from "../schema";
+} from "../schema.js";
 
 const processorParam = HttpApiSchema.param("processor", Schema.String);
 const instanceParam = HttpApiSchema.param("instance", Schema.String);

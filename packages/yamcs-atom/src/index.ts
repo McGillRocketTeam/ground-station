@@ -1,4 +1,4 @@
-import { Atom, AtomHttpApi } from "@effect-atom/atom-react";
+import { Atom, AtomHttpApi, Result } from "@effect-atom/atom-react";
 import { Effect, Schema, Chunk, Stream, Schedule } from "effect";
 import {
   SubscribeCommandsRequest,
@@ -7,24 +7,26 @@ import {
   SubscribeTimeRequest,
   SubscriptionRequest,
   WebSocketClient,
-} from "@mrt/yamcs-effect/websocket";
+} from "@mrt/yamcs-effect";
 import type {
   StreamingCommandHisotryEntry,
   QualifiedName,
-} from "@mrt/yamcs-effect/schema";
+} from "@mrt/yamcs-effect";
 import {
   TimeEvent,
   LinkEvent,
   CommandHistoryEvent,
   ParameterEvent,
-} from "@mrt/yamcs-effect/websocket";
-import { mergeCommandEntries } from "./utils";
+} from "@mrt/yamcs-effect";
+import { mergeCommandEntries } from "./utils.js";
 import {
   FetchHttpClient,
   HttpClient,
   HttpClientRequest,
 } from "@effect/platform";
-import { YamcsApi } from "@mrt/yamcs-effect/http";
+import { YamcsApi } from "@mrt/yamcs-effect";
+import type { ParseError } from "effect/ParseResult";
+import type { UnknownException } from "effect/Cause";
 
 export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
   "@mrt/yamcs-atom/YamcsAtomClient",
@@ -53,7 +55,14 @@ const INSTANCE = "ground_station";
 
 const yamcsRuntime = Atom.runtime(WebSocketClient.Default);
 
-export const timeSubscriptionAtom = yamcsRuntime.atom(
+export const timeSubscriptionAtom: Atom.Atom<
+  Result.Result<
+    {
+      readonly value: Date;
+    },
+    UnknownException | ParseError
+  >
+> = yamcsRuntime.atom(
   Stream.unwrap(
     Effect.gen(function* () {
       const ws = yield* WebSocketClient;
@@ -74,7 +83,12 @@ export const timeSubscriptionAtom = yamcsRuntime.atom(
   ),
 );
 
-export const linksSubscriptionAtom = yamcsRuntime.atom(
+export const linksSubscriptionAtom: Atom.Atom<
+  Result.Result<
+    (typeof LinkEvent.Type)["data"]["links"],
+    UnknownException | ParseError
+  >
+> = yamcsRuntime.atom(
   Stream.unwrap(
     Effect.gen(function* () {
       const ws = yield* WebSocketClient;
@@ -92,7 +106,12 @@ export const linksSubscriptionAtom = yamcsRuntime.atom(
   ),
 );
 
-export const commandsSubscriptionAtom = yamcsRuntime.atom(
+export const commandsSubscriptionAtom: Atom.Atom<
+  Result.Result<
+    Array<(typeof CommandHistoryEvent.Type)["data"]>,
+    UnknownException | ParseError
+  >
+> = yamcsRuntime.atom(
   Stream.unwrap(
     Effect.gen(function* () {
       const ws = yield* WebSocketClient;
@@ -133,7 +152,9 @@ export const commandsSubscriptionAtom = yamcsRuntime.atom(
   ),
 );
 
-export const parameterSubscriptionAtom = Atom.family(
+export const parameterSubscriptionAtom: (
+  arg: string,
+) => Atom.Atom<Result.Result<any, UnknownException | ParseError>> = Atom.family(
   (qualifiedName: QualifiedName) =>
     yamcsRuntime.atom(
       Stream.unwrap(

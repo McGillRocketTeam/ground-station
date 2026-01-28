@@ -1,4 +1,4 @@
-import type { Value } from "@mrt/yamcs-effect/schema";
+import type { Value } from "@mrt/yamcs-effect";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

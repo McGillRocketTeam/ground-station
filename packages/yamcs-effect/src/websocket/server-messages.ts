@@ -4,7 +4,7 @@ import {
   NamedObjectId,
   StreamingCommandHisotryEntry,
   Value,
-} from "../schema";
+} from "../schema.js";
 
 export const SubscriptionId = Schema.NonNegativeInt.pipe(
   Schema.brand("SubscriptionId"),

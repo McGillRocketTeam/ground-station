@@ -8,12 +8,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
+  "dependencies": {
+    "@mrt/yamcs-effect": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "latest",
     "tsx": "^4.21.0"
   },
   "peerDependencies": {
-    "@mrt/yamcs-effect": "workspace:*",
     "@effect/platform": "^0.94",
     "effect": "^3.19",
     "@effect-atom/atom-react": "^0.4",

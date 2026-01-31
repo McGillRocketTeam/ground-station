@@ -11,7 +11,7 @@ export function DashboardPage() {
         onReady={(event) => {
           event.api.addPanel({
             title: "My Card Title",
-            component: "text-card",
+            component: "parameter-table",
             id: crypto.randomUUID(),
           });
         }}

@@ -1,9 +1,8 @@
 import { makeCard } from "@/lib/cards";
-import { useAtomSuspense } from "@effect-atom/atom-react";
+import { Result, useAtomValue } from "@effect-atom/atom-react";
 import { Schema } from "effect";
 import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
-import { Suspense } from "react";
-import { displayValue } from "@/lib/utils";
+import "./parameter-table.css";
 
 const parameters = [
   "/FlightComputer/acceleration_x",
@@ -17,34 +16,63 @@ export const ParameterTable = makeCard({
   schema: Schema.Struct({}),
   component: () => {
     return (
-      <div>
-        Parameter Table
-        <div className="grid">
-          {parameters.map((parameter) => (
-            <Suspense key={parameter} fallback={<div>loading...</div>}>
-              <ParameterValue parameter={parameter} />
-            </Suspense>
-          ))}
-        </div>
+      <div className="grid grid-cols-[2rem_3fr_1fr_auto] gap-px font-mono">
+        <TableHeader />
+        {parameters.map((parameter) => (
+          <TableRow key={parameter} parameter={parameter} />
+        ))}
       </div>
     );
   },
 });
 
-function ParameterValue({ parameter }: { parameter: string }) {
-  const subscription = useAtomSuspense(
-    parameterSubscriptionAtom(parameter),
-  ).value;
-
-  const value = displayValue(subscription.engValue);
-
+function TableHeader() {
   return (
-    <div>
-      {value.kind === "number"
-        ? value.value.toFixed(2)
-        : value.kind === "string"
-          ? value.value
-          : "Unknown"}
+    <div className="text-white-text grid col-span-full grid-cols-subgrid uppercase text-sm">
+      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1"></div>
+      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1">
+        Parameter
+      </div>
+      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1">
+        Value
+      </div>
+      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1">
+        Unit
+      </div>
     </div>
   );
+}
+
+function TableRow({ parameter }: { parameter: string }) {
+  return (
+    <div className="grid col-span-full grid-cols-subgrid *:bg-background hover:*:bg-selection-background *:px-1">
+      <div />
+      <div className="text-ellipsis line-clamp-1 uppercase">{parameter}</div>
+      <Value name={parameter} />
+    </div>
+  );
+}
+
+function Value({ name }: { name: string }) {
+  const test = useAtomValue(parameterSubscriptionAtom(name));
+
+  return Result.match(test, {
+    onInitial: () => (
+      <>
+        <div>--</div>
+        <div></div>
+      </>
+    ),
+    onFailure: () => <div>Failure</div>,
+    onSuccess: ({ value }) => (
+      <>
+        <div>
+          {"value" in value.engValue
+            ? value.engValue.value.toLocaleString()
+            : "Unknown Value Type"}
+        </div>
+        <div>{value.numericId}</div>
+      </>
+    ),
+  });
 }

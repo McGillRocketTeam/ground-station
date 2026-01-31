@@ -15,7 +15,7 @@ const CardSchema = Schema.Struct({
 
 export const MqttDebugCard = makeCard({
   id: "mqtt-debug-card",
-  name: "MqttDebugCard",
+  name: "MQTT Debug Card",
   schema: CardSchema,
   component: MqttDebugComponent,
 });

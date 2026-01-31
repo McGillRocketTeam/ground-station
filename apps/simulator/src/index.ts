@@ -5,7 +5,6 @@ import {
   NodeRuntime,
 } from "@effect/platform-node";
 import { Config, Effect, Layer, Ref, Schedule, Schema } from "effect";
-import type { ParseError } from "effect/ParseResult";
 import * as dgram from "node:dgram";
 import { NamedObjectId, ParameterInfo, Value } from "@mrt/yamcs-effect";
 import { YamcsApi } from "@mrt/yamcs-effect";
@@ -109,16 +108,13 @@ const chunk = <T>(arr: readonly T[], size: number): T[][] => {
   return result;
 };
 
-// Format date as ISO string with Z suffix (matching Python's behavior)
-const formatGenerationTime = (date: Date): string => date.toISOString();
-
 // Send parameter values via UDP
 const sendUdp = (
   values: ParameterValue[],
   host: string,
   port: number,
   chunkSize = 50,
-): Effect.Effect<void, Error | ParseError> =>
+) =>
   Effect.acquireUseRelease(
     Effect.sync(() => dgram.createSocket("udp4")),
     (socket) =>
@@ -175,12 +171,15 @@ const simulator = Effect.gen(function* () {
     yield* Effect.log(`Sent ${batch.length} values at seed ${seed}`);
   }).pipe(Effect.repeat(Schedule.spaced("1 seconds")));
 }).pipe(
-  Effect.catchTag("RequestError", () =>
+  Effect.tapErrorTag("RequestError", () =>
     Effect.logError(
       "Unable to request data from YAMCS. Are you running the backend on port 8090?",
     ),
   ),
-  Effect.catchAll((err) => Effect.logError(`Error: ${err}`)),
+  Effect.tapError((err) =>
+    Effect.logError(`Error: ${err}`).pipe(Effect.zipRight(Effect.fail(""))),
+  ),
+  Effect.retry(Schedule.spaced("10 seconds")),
 );
 
 const simulatorLayer = Layer.mergeAll(NodeContext.layer, NodeHttpClient.layer);

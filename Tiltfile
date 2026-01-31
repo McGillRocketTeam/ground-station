@@ -13,6 +13,7 @@ local_resource(
 		labels=['mrt'],
 		links='http://localhost:8090',
 		deps=['./apps/backend/src/main/java'],
+		resource_deps=['xtce-generator'],
 		readiness_probe=probe(
 			period_secs=3,
 			http_get=http_get_action(port=8090, path="/api")
@@ -27,6 +28,27 @@ local_resource(
 		links='http://localhost:5173',
 		resource_deps=['backend', 'yamcs-effect']
 )
+
+local_resource(
+    'xtce-generator',
+    cmd="""
+    set -e
+
+    cd ./apps/xtce-generator
+
+    if [ ! -d venv ]; then
+        python3 -m venv venv
+    fi
+
+    ./venv/bin/pip install -r requirements.txt
+    ./venv/bin/python converter.py --output "../backend/src/main/yamcs/mdb/rocket.xml"
+    """,
+    deps=[
+        "requirements.txt",
+        "converter.py",
+    ]
+)
+
 
 local_resource(
     'yamcs-effect',

@@ -10,7 +10,12 @@ export function DashboardPage() {
       <DockviewReact
         onReady={(event) => {
           event.api.addPanel({
-            title: "My Card Title",
+            title: "Parameter Table",
+            component: "parameter-table",
+            id: crypto.randomUUID(),
+          });
+          event.api.addPanel({
+            title: "Command History",
             component: "parameter-table",
             id: crypto.randomUUID(),
           });

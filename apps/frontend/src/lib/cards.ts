@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { TextCard } from "@/cards/text-card";
 import { ParameterCard } from "@/cards/parameter-card";
 import { ParameterTable } from "@/cards/parameter-table";
+import type { IDockviewPanelProps } from "dockview-react";
 
 export interface CardDefinition<
   Id extends string,
@@ -11,7 +12,9 @@ export interface CardDefinition<
   id: Id;
   name: string;
   schema: Schema.Struct<T>;
-  component: (props: Schema.Schema.Type<Schema.Struct<T>>) => ReactNode;
+  component: (
+    props: IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>,
+  ) => ReactNode;
 }
 
 export function makeCard<

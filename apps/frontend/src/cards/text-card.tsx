@@ -15,5 +15,5 @@ export const TextCard = makeCard({
       [FormTypeAnnotationId]: "command",
     }),
   }),
-  component: (props) => <div>{props.parameter}</div>,
+  component: (props) => <div>Hello Text Card</div>,
 });

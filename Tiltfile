@@ -1,3 +1,7 @@
+config.define_bool('simulator')
+cfg = config.parse()
+simulator_enabled = cfg.get('simulator', True)
+
 local_resource(
     'frontend',
     serve_cmd="pnpm turbo dev --filter @mrt/frontend",
@@ -20,17 +24,19 @@ local_resource(
 		)
 )
 
-local_resource(
-    'simulator',
-    serve_cmd="pnpm --filter @mrt/simulator dev",
-		serve_env={'YAMCS_INSTANCE': 'ground_station'},
-		labels=['mrt'],
-		links='http://localhost:5173',
-		resource_deps=['backend', 'yamcs-effect']
-)
+if simulator_enabled:
+	local_resource(
+			'simulator',
+			serve_cmd="pnpm --filter @mrt/simulator dev",
+			serve_env={'YAMCS_INSTANCE': 'ground_station'},
+			labels=['mrt'],
+			links='http://localhost:5173',
+			resource_deps=['backend', 'yamcs-effect']
+	)
 
 local_resource(
     'xtce-generator',
+		labels=['infrastructure'],
     cmd="""
     set -e
 

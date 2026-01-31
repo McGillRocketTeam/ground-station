@@ -31,7 +31,9 @@ def _fetch_sheet_data(sheet_id: str, gid: str, col_buffer: int = 0) -> list[list
     return data
 
 
-def load_sheet_rows(sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: int = 0) -> list[dict[str, Any]]:
+def load_sheet_rows(
+    sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: int = 0
+) -> list[dict[str, Any]]:
     """
     Load a Google Sheet (as CSV) into a list of rows (dicts).
 
@@ -44,7 +46,7 @@ def load_sheet_rows(sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: in
         raise ValueError("Expected at least two header rows")
 
     headers = data[row_buffer]
-    rows = [dict(zip(headers, row)) for row in data[row_buffer + 1:]]
+    rows = [dict(zip(headers, row)) for row in data[row_buffer + 1 :]]
     print(f"Loaded {len(rows)} data rows.")
     return rows
 
@@ -101,11 +103,13 @@ def extract_number(s: str) -> int | None:
     match = re.search(r"\d+", s)
     return int(match.group()) if match else None
 
+
 def set_param_calibrator(row: dict[str, Any]):
     cal = row["Calibration Function f(x)"]
     if cal:
         return Y.calibrators.MathOperation(expression=cal)
     return None
+
 
 def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
     gui_type = str(row["GUI Type"])
@@ -168,7 +172,7 @@ def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
                     short_description=ui_name,
                     long_description=description,
                     units=units,
-                    encoding=Y.FloatEncoding(bits=size),
+                    encoding=Y.FloatEncoding(bits=size, little_endian=True),
                     calibrator=calibrator,
                 )
                 return param
@@ -178,7 +182,7 @@ def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
                     if "u" in encoded_type
                     else Y.IntegerEncodingScheme.TWOS_COMPLEMENT
                 )
-                param = Y.IntegerParameter(
+                param = Y.FloatParameter(
                     system=system,
                     name=variable_name,
                     short_description=ui_name,
@@ -209,7 +213,9 @@ def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
                 short_description=ui_name,
                 long_description=description,
                 units=units,
-                encoding=Y.IntegerEncoding(bits=size, scheme=scheme),
+                encoding=Y.IntegerEncoding(
+                    bits=size, scheme=scheme, little_endian=True
+                ),
                 calibrator=calibrator,
             )
             return param
@@ -572,8 +578,9 @@ def main() -> None:
     commands_gid = "1631122107"
 
     print("Creating Commands...")
-    command_data = load_sheet_rows(command_sheet_id, commands_gid, col_buffer=1, row_buffer=4)
-
+    command_data = load_sheet_rows(
+        command_sheet_id, commands_gid, col_buffer=1, row_buffer=4
+    )
 
     for cmd in command_data:
         if cmd["Variable Name"]:

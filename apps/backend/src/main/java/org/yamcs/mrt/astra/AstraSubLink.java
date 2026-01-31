@@ -3,6 +3,7 @@ package org.yamcs.mrt.astra;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -11,9 +12,15 @@ import org.yamcs.tctm.AbstractTcTmParamLink;
 public abstract class AstraSubLink extends AbstractTcTmParamLink {
 	private Status status = Status.UNAVAIL;
 	private String detailedStatus = "";
+	MqttAsyncClient client;
+
+	public AstraSubLink(MqttAsyncClient client) {
+		this.client = client;
+	}
 
 	@Override
-	public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
+	public void init(String yamcsInstance, String linkName, YConfiguration config)
+			throws ConfigurationException {
 		Map<String, Object> cfgMap = config.getRoot();
 		Map<String, Object> args = new HashMap<>();
 

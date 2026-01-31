@@ -17,7 +17,7 @@ local_resource(
 		labels=['mrt'],
 		links='http://localhost:8090',
 		deps=['./apps/backend/src/main/java'],
-		resource_deps=['xtce-generator'],
+		resource_deps=[],
 		readiness_probe=probe(
 			period_secs=3,
 			http_get=http_get_action(port=8090, path="/api")

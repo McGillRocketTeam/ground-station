@@ -41,7 +41,7 @@ public class MqttUtils {
 	static MqttConnectOptions getConnectionOptions(YConfiguration config) {
 		MqttConnectOptions connOpts = new MqttConnectOptions();
 
-		connOpts.setAutomaticReconnect(config.getBoolean("autoReconnect"));
+		connOpts.setAutomaticReconnect(true);
 		List<String> brokers = config.getList("brokers");
 		connOpts.setServerURIs(brokers.toArray(new String[0]));
 		if (config.containsKey("username")) {

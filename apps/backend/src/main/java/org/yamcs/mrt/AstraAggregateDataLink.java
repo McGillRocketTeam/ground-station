@@ -36,7 +36,6 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 
 	// Gson parser for JSON validation
 	// private static final Gson gson = new Gson();
-
 	@Override
 	public void init(String instance, String name, YConfiguration config)
 			throws ConfigurationException {
@@ -81,6 +80,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			client.subscribe("#", 0).waitForCompletion();
 
 			detailedStatus = "Connected to MQTT broker, listening for devices";
+
 			eventProducer.sendInfo(detailedStatus);
 			notifyStarted();
 
@@ -207,7 +207,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 
 			// Implement more types of links here!
 			AstraSubLink link = switch (deviceType) {
-				case "radio" -> new RadiosLink();
+				case "radio" -> new RadiosLink(client);
 				default -> throw new IllegalArgumentException("Unknown device type: " + deviceType);
 			};
 

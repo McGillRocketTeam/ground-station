@@ -86,8 +86,7 @@ See https://github.com/yamcs/pymdb
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
-              <ThisParameterOperand/>
-              <ValueOperand>2</ValueOperand>
+              <Operator>2)</Operator>
               <Operator>+</Operator>
               <ValueOperand>400</ValueOperand>
               <Operator>/</Operator>

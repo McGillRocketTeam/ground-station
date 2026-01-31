@@ -7,4 +7,4 @@ shellingham==1.5.4
 typer==0.19.2
 typing_extensions==4.15.0
 requests==2.32.5
-yamcs-pymdb @ git+https://github.com/McGillRocketTeam/pymdb.git@CommandLevel-override-test
+yamcs-pymdb @ git+https://github.com/McGillRocketTeam/pymdb.git@master

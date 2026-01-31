@@ -359,6 +359,9 @@ def set_command_arguments(command: Y.Command, arguments: str):
 
 
 def set_command_significance(significance: str):
+    """
+    Sets command significance to respective XTCE significance level
+    """
     match significance.lower():
         case "watch":
             return Y.CommandSignificance.WATCH

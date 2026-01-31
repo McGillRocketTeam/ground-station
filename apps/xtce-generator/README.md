@@ -1,1 +1,1 @@
-# @mrt-simulator
+# @mrt-xtce-generator

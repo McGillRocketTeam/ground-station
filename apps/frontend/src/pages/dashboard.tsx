@@ -11,8 +11,14 @@ export function DashboardPage() {
         onReady={(event) => {
           event.api.addPanel({
             title: "My Card Title",
-            component: "text-card",
+            component: "map-card",
             id: crypto.randomUUID(),
+            params: {
+              long: -74.006,
+              lat: 45,
+              trackerLong: -74.006,
+              trackerLat: 40.7128,
+            }
           });
         }}
         theme={themeAbyssSpaced}

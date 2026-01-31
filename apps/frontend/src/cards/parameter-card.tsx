@@ -11,5 +11,5 @@ export const ParameterCard = makeCard({
       [FormTypeAnnotationId]: "parameter",
     }),
   }),
-  component: (props) => <div>{props.parameter}</div>,
+  component: (props) => <div>props</div>,
 });

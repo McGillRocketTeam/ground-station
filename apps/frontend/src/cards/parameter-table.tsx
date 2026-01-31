@@ -2,13 +2,20 @@ import { makeCard } from "@/lib/cards";
 import { Result, useAtomValue } from "@effect-atom/atom-react";
 import { Schema } from "effect";
 import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
-import "./parameter-table.css";
+import { useState, type ReactNode } from "react";
 
-const parameters = [
-  "/FlightComputer/acceleration_x",
-  "/FlightComputer/acceleration_y",
-  "/FlightComputer/call_sign",
-];
+const CardEntries = {
+  "FLIGHT COMPUTER": [
+    "/FlightComputer/acceleration_x",
+    "/FlightComputer/acceleration_y",
+    "/FlightComputer/call_sign",
+  ],
+  "LAUNCH PAD": [
+    "/FlightComputer/acceleration_x",
+    "/FlightComputer/acceleration_y",
+    "/FlightComputer/call_sign",
+  ],
+};
 
 export const ParameterTable = makeCard({
   id: "parameter-table",
@@ -16,10 +23,14 @@ export const ParameterTable = makeCard({
   schema: Schema.Struct({}),
   component: () => {
     return (
-      <div className="grid grid-cols-[2rem_3fr_1fr_auto] gap-px font-mono">
+      <div className="grid grid-cols-[1.5rem_3fr_1fr_auto] gap-px font-mono">
         <TableHeader />
-        {parameters.map((parameter) => (
-          <TableRow key={parameter} parameter={parameter} />
+        {Object.entries(CardEntries).map(([title, parameters]) => (
+          <TableGroup key={title} name={title}>
+            {parameters.map((parameter) => (
+              <TableRow key={parameter} parameter={parameter} />
+            ))}
+          </TableGroup>
         ))}
       </div>
     );
@@ -43,11 +54,36 @@ function TableHeader() {
   );
 }
 
+function TableGroup({ children, name }: { children: ReactNode; name: string }) {
+  const [collapse, setCollapse] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setCollapse((prev) => !prev)}
+        className="text-left col-span-full text-white-text bg-background-secondary hover:bg-background-secondary-highlight border-t border-t-background-secondary-highlight px-1"
+      >
+        <span
+          data-collapsed={collapse}
+          className="inline-block data-[collapsed=true]:-rotate-90"
+        >
+          ▼
+        </span>{" "}
+        {name}
+      </button>
+      {!collapse && (
+        <div className="grid col-span-full grid-cols-subgrid text-orange-text bg-border gap-px">
+          {children}
+        </div>
+      )}
+    </>
+  );
+}
+
 function TableRow({ parameter }: { parameter: string }) {
   return (
     <div className="grid col-span-full grid-cols-subgrid *:bg-background hover:*:bg-selection-background *:px-1">
       <div />
-      <div className="text-ellipsis line-clamp-1 uppercase">{parameter}</div>
+      <div className="text-ellipsis line-clamp-1">{parameter}</div>
       <Value name={parameter} />
     </div>
   );
@@ -59,14 +95,14 @@ function Value({ name }: { name: string }) {
   return Result.match(test, {
     onInitial: () => (
       <>
-        <div>--</div>
+        <div className="text-right text-muted">Awaiting Value</div>
         <div></div>
       </>
     ),
     onFailure: () => <div>Failure</div>,
     onSuccess: ({ value }) => (
       <>
-        <div>
+        <div className="text-right">
           {"value" in value.engValue
             ? value.engValue.value.toLocaleString()
             : "Unknown Value Type"}

@@ -1,9 +1,9 @@
 local_resource(
     'frontend',
-    serve_cmd="pnpm --filter @mrt/frontend dev",
+    serve_cmd="pnpm turbo dev --filter @mrt/frontend",
 		labels=['mrt'],
 		links='http://localhost:5173',
-		resource_deps=['backend']
+		resource_deps=['backend', 'yamcs-effect', 'yamcs-atom']
 )
 
 
@@ -25,7 +25,21 @@ local_resource(
 		serve_env={'YAMCS_INSTANCE': 'ground_station'},
 		labels=['mrt'],
 		links='http://localhost:5173',
+		resource_deps=['backend', 'yamcs-effect']
+)
+
+local_resource(
+    'yamcs-effect',
+    serve_cmd="pnpm turbo dev --filter @mrt/yamcs-effect",
+		labels=['packages'],
 		resource_deps=['backend']
+)
+
+local_resource(
+    'yamcs-atom',
+    serve_cmd="pnpm turbo dev --filter @mrt/yamcs-atom",
+		labels=['packages'],
+		resource_deps=['backend', 'yamcs-effect']
 )
 
 docker_compose(

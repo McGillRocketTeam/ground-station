@@ -95,7 +95,7 @@ function Value({ name }: { name: string }) {
   return Result.match(test, {
     onInitial: () => (
       <>
-        <div className="text-right text-muted">Awaiting Value</div>
+        <div className="text-right text-muted-foreground">Awaiting Value</div>
         <div></div>
       </>
     ),

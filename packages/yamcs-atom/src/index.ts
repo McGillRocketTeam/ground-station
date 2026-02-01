@@ -27,6 +27,8 @@ import {
 import { YamcsApi } from "@mrt/yamcs-effect";
 import type { ParseError } from "effect/ParseResult";
 import type { UnknownException } from "effect/Cause";
+import { NotFound } from "@effect/platform/HttpApiError";
+import { RequestError, ResponseError } from "@effect/platform/HttpClientError";
 
 export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
   "@mrt/yamcs-atom/YamcsAtomClient",
@@ -109,19 +111,35 @@ export const linksSubscriptionAtom: Atom.Atom<
 export const commandsSubscriptionAtom: Atom.Atom<
   Result.Result<
     Array<(typeof CommandHistoryEvent.Type)["data"]>,
-    UnknownException | ParseError
+    UnknownException | ParseError | NotFound | RequestError | ResponseError
   >
-> = yamcsRuntime.atom(
+> = yamcsRuntime.atom((get) =>
   Stream.unwrap(
     Effect.gen(function* () {
       const ws = yield* WebSocketClient;
 
-      const { call, stream } = yield* ws.subscribe(
+      const subscription = ws.subscribe(
         SubscribeCommandsRequest.make({
           instance: INSTANCE,
           processor: "realtime",
         }),
       );
+
+      const queryPriorCommands = get.result(
+        YamcsAtomClient.query("command", "listCommands", {
+          path: { instance: INSTANCE },
+        }),
+      );
+
+      const [{ call, stream }, { commands: priorCommands }] = yield* Effect.all(
+        [subscription, queryPriorCommands],
+        {
+          concurrency: "unbounded",
+        },
+      );
+
+      const initial: Map<string, typeof StreamingCommandHisotryEntry.Type> =
+        new Map(priorCommands.map((c) => [c.id, c]));
 
       const dataStream = stream.pipe(
         Stream.mapEffect((m) => Schema.decodeUnknown(CommandHistoryEvent)(m)),
@@ -130,23 +148,25 @@ export const commandsSubscriptionAtom: Atom.Atom<
       );
 
       return dataStream.pipe(
-        Stream.scanEffect(
-          new Map<string, typeof StreamingCommandHisotryEntry.Type>(),
-          (state, commandEntry) =>
-            Effect.sync(() => {
-              const id = commandEntry.id;
-              const current = state.get(id);
+        Stream.scanEffect(initial, (state, commandEntry) =>
+          Effect.sync(() => {
+            const id = commandEntry.id;
+            const current = state.get(id);
 
-              if (current) {
-                state.set(id, mergeCommandEntries(current, commandEntry));
-              } else {
-                state.set(id, commandEntry);
-              }
+            if (current) {
+              state.set(id, mergeCommandEntries(current, commandEntry));
+            } else {
+              state.set(id, commandEntry);
+            }
 
-              return state;
-            }),
+            return state;
+          }),
         ),
-        Stream.map((m) => Array.from(m.values())),
+        Stream.map((m) =>
+          Array.from(m.values()).sort(
+            (a, b) => b.generationTime.getTime() - a.generationTime.getTime(),
+          ),
+        ),
       );
     }),
   ),

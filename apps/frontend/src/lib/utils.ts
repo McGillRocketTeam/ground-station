@@ -12,6 +12,25 @@ type DisplayNone = { kind: "none" };
 
 type Display = DisplayNumber | DisplayString | DisplayNone;
 
+export function stringifyValue(value: typeof Value.Type) {
+  switch (value.type) {
+    case "FLOAT":
+    case "DOUBLE":
+    case "SINT32":
+    case "UINT32":
+    case "SINT64":
+    case "UINT64":
+    case "STRING":
+    case "BOOLEAN":
+    case "TIMESTAMP":
+      return value.value.toLocaleString();
+    case "ENUMERATED":
+    case "AGGREGATE":
+    default:
+      return "Unknown Type";
+  }
+}
+
 export function displayValue(value: typeof Value.Type): Display {
   switch (value.type) {
     case "FLOAT":

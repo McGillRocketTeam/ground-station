@@ -329,7 +329,7 @@ export const CommandHistoryEntry = Schema.Struct({
   commandId: CommandIdObject,
   attr: Schema.Array(CommandHistoryAttribute),
   generationTime: Schema.DateFromString,
-  assignments: Schema.Array(CommandAssignment),
+  assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
 export const StreamingCommandHisotryEntry = Schema.Struct({

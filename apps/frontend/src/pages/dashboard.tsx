@@ -16,7 +16,7 @@ export function DashboardPage() {
           });
           event.api.addPanel({
             title: "Command History",
-            component: "parameter-table",
+            component: "command-history",
             id: crypto.randomUUID(),
           });
         }}

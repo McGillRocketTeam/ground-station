@@ -1,6 +1,7 @@
 import { Schema } from "effect";
 import type { ReactNode } from "react";
 import { TextCard } from "@/cards/text-card";
+import { MapCard } from "@/cards/map-card";
 import { ParameterCard } from "@/cards/parameter-card";
 import { ParameterTable } from "@/cards/parameter-table";
 import type { IDockviewPanelProps } from "dockview-react";
@@ -25,7 +26,7 @@ export function makeCard<
 }
 
 // Source of truth - add all cards here
-export const CardArray = [TextCard, ParameterCard, ParameterTable] as const;
+export const CardArray = [TextCard, ParameterCard, ParameterTable, MapCard] as const;
 
 type Cards = (typeof CardArray)[number];
 export type CardId = Cards["id"];

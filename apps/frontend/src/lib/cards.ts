@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { TextCard } from "@/cards/text-card";
 import { ParameterTable } from "@/cards/parameter-table";
 import type { IDockviewPanelProps } from "dockview-react";
-import { CommandHistoryCard } from "@/cards/command-history-card";
+import { CommandHistoryCard } from "@/cards/command-history";
 
 export interface CardDefinition<
   Id extends string,

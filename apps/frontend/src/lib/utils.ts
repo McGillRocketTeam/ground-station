@@ -12,7 +12,8 @@ type DisplayNone = { kind: "none" };
 
 type Display = DisplayNumber | DisplayString | DisplayNone;
 
-export function stringifyValue(value: typeof Value.Type) {
+export function stringifyValue(value?: typeof Value.Type, fallback?: string) {
+  if (!value) return fallback ?? "Unknown";
   switch (value.type) {
     case "FLOAT":
     case "DOUBLE":
@@ -27,7 +28,7 @@ export function stringifyValue(value: typeof Value.Type) {
     case "ENUMERATED":
     case "AGGREGATE":
     default:
-      return "Unknown Type";
+      return fallback ?? "Unknown";
   }
 }
 

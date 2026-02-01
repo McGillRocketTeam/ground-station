@@ -6,7 +6,7 @@ See https://github.com/yamcs/pymdb
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="FlightComputer">
   <TelemetryMetaData>
     <ParameterTypeSet>
-      <IntegerParameterType name="acceleration_x" signed="true" sizeInBits="32">
+      <FloatParameterType name="acceleration_x" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -16,8 +16,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="acceleration_y" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="acceleration_y" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -27,8 +27,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="acceleration_z" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="acceleration_z" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -38,33 +38,33 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <FloatParameterType name="altimeter_altitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="altitude_from_sea_level" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <IntegerParameterType name="angle_pitch" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="angle_roll" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="angle_yaw" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <FloatParameterType name="apogee_from_ground" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="atm_pressure" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="atm_temp" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="barometer_altitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <StringParameterType name="call_sign">
         <StringDataEncoding encoding="US-ASCII">
@@ -76,13 +76,13 @@ See https://github.com/yamcs/pymdb
           </SizeInBits>
         </StringDataEncoding>
       </StringParameterType>
-      <IntegerParameterType name="cc_pressure" signed="true" sizeInBits="32">
+      <FloatParameterType name="cc_pressure" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="fc_rssi" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="fc_rssi" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -94,8 +94,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="fc_snr" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="fc_snr" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -105,7 +105,7 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <BooleanParameterType name="fdov_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -149,16 +149,16 @@ See https://github.com/yamcs/pymdb
         </EnumerationList>
       </EnumeratedParameterType>
       <FloatParameterType name="gps_altitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="gps_latitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="gps_longitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="gps_time_last_update" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <BooleanParameterType name="mov_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
@@ -235,18 +235,18 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="states_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <IntegerParameterType name="tank_pressure" signed="true" sizeInBits="32">
+      <FloatParameterType name="tank_pressure" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="tank_temp" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="tank_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">°C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
+      </FloatParameterType>
       <BooleanParameterType name="vent_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -265,7 +265,7 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="vent_energized_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <IntegerParameterType name="vent_temp" signed="true" sizeInBits="32">
+      <FloatParameterType name="vent_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">°C</Unit>
         </UnitSet>
@@ -278,9 +278,9 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <FloatParameterType name="vertical_speed" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
     </ParameterTypeSet>
     <ParameterSet>

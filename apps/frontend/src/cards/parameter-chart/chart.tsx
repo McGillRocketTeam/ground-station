@@ -1,10 +1,10 @@
 import { Atom, useAtomValue } from "@effect-atom/atom-react";
 import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
 import Dygraph from "dygraphs";
-import { useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { Option } from "effect";
 
-const chartDataAtom = Atom.make<any[]>((get) => {
+const chartDataAtom = Atom.make<[Date, number][]>((get) => {
   // Subscribe to realtime updates
   get.subscribe(
     parameterSubscriptionAtom("/FlightComputer/acceleration_x"),
@@ -28,6 +28,8 @@ const chartDataAtom = Atom.make<any[]>((get) => {
 // where the series is in order and the first column is
 // the x-axis
 export function ParameterChart() {
+  const parentRef = useRef<HTMLDivElement>(null);
+
   const chartRef = useRef<Dygraph>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -42,8 +44,27 @@ export function ParameterChart() {
     }
   });
 
+  useLayoutEffect(() => {
+    if (!parentRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      // We can get the new dimensions from the entry's contentRect
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        chartRef?.current?.resize(width, height);
+      }
+    });
+
+    observer.observe(parentRef.current);
+
+    // Cleanup function to disconnect the observer when the component unmounts
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <div>
+    <div ref={parentRef} className="absolute inset-0 grid">
       <div ref={containerRef} />
     </div>
   );

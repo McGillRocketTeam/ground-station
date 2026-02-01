@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/roboto";
+@import "@fontsource-variable/jetbrains-mono";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -75,7 +76,9 @@
 }
 
 @theme inline {
-  --font-sans: "Roboto", sans-serif;
+  --font-sans: "Roboto Variable", sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
+  --default-mono-font-family: "JetBrains Mono Variable", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -114,12 +117,34 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-orange-text: #ffa022;
+  --color-white-text: #ffffff;
+
+  --color-border: #282828;
+  --color-border-active: #646464;
+
+  --color-background-secondary: #363636;
+  --color-background-secondary-highlight: #464646;
+
+  --color-selection-background: #113c66;
+  --color-error: #a1112c;
+  --color-error-foreground: var(--color-white-text);
+}
+
+.font-mono {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: slashed-zero;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply font-sans bg-background text-foreground;
   }
@@ -127,4 +152,3 @@
     @apply font-sans;
   }
 }
-

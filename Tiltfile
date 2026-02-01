@@ -4,7 +4,11 @@ simulator_enabled = cfg.get('simulator', True)
 
 local_resource(
     'frontend',
-    serve_cmd="pnpm turbo dev --filter @mrt/frontend",
+    serve_cmd="YAMCS_URL=http://localhost:8090 pnpm --filter @mrt/frontend dev",
+		serve_env={
+			'YAMCS_INSTANCE': 'ground_station',
+			'YAMCS_URL': 'http://localhost:8090',
+		},
 		labels=['mrt'],
 		links='http://localhost:5173',
 		resource_deps=['backend', 'yamcs-effect', 'yamcs-atom']

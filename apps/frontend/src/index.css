@@ -58,6 +58,9 @@
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
+
+  --color-border-active: #646464;
+
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.809 0.105 251.813);
@@ -120,9 +123,6 @@
 
   --color-orange-text: #ffa022;
   --color-white-text: #ffffff;
-
-  --color-border: #282828;
-  --color-border-active: #646464;
 
   --color-background-secondary: #363636;
   --color-background-secondary-highlight: #464646;

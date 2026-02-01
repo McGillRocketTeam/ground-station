@@ -54,7 +54,7 @@ export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
   },
 ) {}
 
-const yamcsRuntime = Atom.runtime(WebSocketClient.Default);
+export const yamcsRuntime = Atom.runtime(WebSocketClient.Default);
 
 export const timeSubscriptionAtom: Atom.Atom<
   Result.Result<

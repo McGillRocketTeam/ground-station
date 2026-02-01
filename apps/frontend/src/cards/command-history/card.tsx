@@ -29,7 +29,9 @@ export function CommandHistoryTable() {
       <div
         className={cn(
           "grid relative grid-cols-[1.5rem_auto_1fr_1.5rem_1.5rem_1.5rem] gap-px",
-          commandHistory._tag === "Initial" && "min-h-full",
+          (commandHistory._tag === "Initial" ||
+            commandHistory._tag === "Failure") &&
+            "min-h-full",
         )}
       >
         <Header />
@@ -41,7 +43,8 @@ export function CommandHistoryTable() {
             </div>
           ))
           .onError((error) => (
-            <pre className="col-span-full h-full text-center text-destructive">
+            <pre className="col-span-full text-error text-center min-h-full uppercase">
+              {JSON.stringify(import.meta.env, null, 2)}
               {error.toString()}
             </pre>
           ))

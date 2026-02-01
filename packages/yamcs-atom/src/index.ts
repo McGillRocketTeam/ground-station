@@ -1,5 +1,5 @@
 import { Atom, AtomHttpApi, Result } from "@effect-atom/atom-react";
-import { Effect, Schema, Chunk, Stream, Schedule } from "effect";
+import { Effect, Schema, Chunk, Stream, Schedule, Config } from "effect";
 import {
   SubscribeCommandsRequest,
   SubscribeLinksRequest,
@@ -29,6 +29,7 @@ import type { ParseError } from "effect/ParseResult";
 import type { UnknownException } from "effect/Cause";
 import { NotFound } from "@effect/platform/HttpApiError";
 import { RequestError, ResponseError } from "@effect/platform/HttpClientError";
+import { ConfigError } from "effect/ConfigError";
 
 export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
   "@mrt/yamcs-atom/YamcsAtomClient",
@@ -53,8 +54,6 @@ export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
   },
 ) {}
 
-const INSTANCE = "ground_station";
-
 const yamcsRuntime = Atom.runtime(WebSocketClient.Default);
 
 export const timeSubscriptionAtom: Atom.Atom<
@@ -62,16 +61,17 @@ export const timeSubscriptionAtom: Atom.Atom<
     {
       readonly value: Date;
     },
-    UnknownException | ParseError
+    UnknownException | ParseError | ConfigError
   >
 > = yamcsRuntime.atom(
   Stream.unwrap(
     Effect.gen(function* () {
+      const instance = yield* Config.string("YAMCS_INSTANCE");
       const ws = yield* WebSocketClient;
 
       const { call, stream } = yield* ws.subscribe(
         SubscribeTimeRequest.make({
-          instance: INSTANCE,
+          instance,
           processor: "realtime",
         }),
       );
@@ -88,15 +88,16 @@ export const timeSubscriptionAtom: Atom.Atom<
 export const linksSubscriptionAtom: Atom.Atom<
   Result.Result<
     (typeof LinkEvent.Type)["data"]["links"],
-    UnknownException | ParseError
+    UnknownException | ParseError | ConfigError
   >
 > = yamcsRuntime.atom(
   Stream.unwrap(
     Effect.gen(function* () {
+      const instance = yield* Config.string("YAMCS_INSTANCE");
       const ws = yield* WebSocketClient;
 
       const { call, stream } = yield* ws.subscribe(
-        SubscribeLinksRequest.make({ instance: INSTANCE }),
+        SubscribeLinksRequest.make({ instance }),
       );
 
       return stream.pipe(
@@ -111,23 +112,29 @@ export const linksSubscriptionAtom: Atom.Atom<
 export const commandsSubscriptionAtom: Atom.Atom<
   Result.Result<
     Array<(typeof CommandHistoryEvent.Type)["data"]>,
-    UnknownException | ParseError | NotFound | RequestError | ResponseError
+    | UnknownException
+    | ParseError
+    | NotFound
+    | RequestError
+    | ResponseError
+    | ConfigError
   >
 > = yamcsRuntime.atom((get) =>
   Stream.unwrap(
     Effect.gen(function* () {
+      const instance = yield* Config.string("YAMCS_INSTANCE");
       const ws = yield* WebSocketClient;
 
       const subscription = ws.subscribe(
         SubscribeCommandsRequest.make({
-          instance: INSTANCE,
+          instance,
           processor: "realtime",
         }),
       );
 
       const queryPriorCommands = get.result(
         YamcsAtomClient.query("command", "listCommands", {
-          path: { instance: INSTANCE },
+          path: { instance },
         }),
       );
 
@@ -174,52 +181,52 @@ export const commandsSubscriptionAtom: Atom.Atom<
 
 export const parameterSubscriptionAtom: (
   arg: string,
-) => Atom.Atom<Result.Result<any, UnknownException | ParseError>> = Atom.family(
-  (qualifiedName: QualifiedName) =>
-    yamcsRuntime.atom(
-      Stream.unwrap(
-        Effect.gen(function* () {
-          const ws = yield* WebSocketClient;
+) => Atom.Atom<
+  Result.Result<any, UnknownException | ParseError | ConfigError>
+> = Atom.family((qualifiedName: QualifiedName) =>
+  yamcsRuntime.atom(
+    Stream.unwrap(
+      Effect.gen(function* () {
+        const instance = yield* Config.string("YAMCS_INSTANCE");
+        const ws = yield* WebSocketClient;
 
-          const { call, stream } = yield* ws.subscribe(
-            SubscribeParameterRequest.make({
-              instance: INSTANCE,
-              processor: "realtime",
-              id: [{ name: qualifiedName }],
-            }),
-          );
+        const { call, stream } = yield* ws.subscribe(
+          SubscribeParameterRequest.make({
+            instance,
+            processor: "realtime",
+            id: [{ name: qualifiedName }],
+          }),
+        );
 
-          const eventStream = stream.pipe(
-            Stream.mapEffect((m) =>
-              Schema.decodeUnknown(ParameterEvent)(m.data),
+        const eventStream = stream.pipe(
+          Stream.mapEffect((m) => Schema.decodeUnknown(ParameterEvent)(m.data)),
+        );
+
+        // Store the mapping
+        const mapping = Chunk.toReadonlyArray(
+          yield* eventStream.pipe(
+            Stream.filter((e) => "mapping" in e),
+            Stream.take(1),
+            Stream.runCollect,
+          ),
+        )[0]!.mapping;
+
+        return eventStream.pipe(
+          Stream.filter((e) => "values" in e),
+          Stream.map(({ values }) =>
+            Object.fromEntries(
+              values.map((v) => {
+                const key = mapping[v.numericId]?.name;
+                return [key, v];
+              }),
             ),
-          );
-
-          // Store the mapping
-          const mapping = Chunk.toReadonlyArray(
-            yield* eventStream.pipe(
-              Stream.filter((e) => "mapping" in e),
-              Stream.take(1),
-              Stream.runCollect,
-            ),
-          )[0]!.mapping;
-
-          return eventStream.pipe(
-            Stream.filter((e) => "values" in e),
-            Stream.map(({ values }) =>
-              Object.fromEntries(
-                values.map((v) => {
-                  const key = mapping[v.numericId]?.name;
-                  return [key, v];
-                }),
-              ),
-            ),
-            Stream.map((a) => a[qualifiedName]),
-            Stream.ensuring(ws.unsubscribe(call)),
-          );
-        }),
-      ),
+          ),
+          Stream.map((a) => a[qualifiedName]),
+          Stream.ensuring(ws.unsubscribe(call)),
+        );
+      }),
     ),
+  ),
 );
 
 export const websocketAtom = Atom.family(

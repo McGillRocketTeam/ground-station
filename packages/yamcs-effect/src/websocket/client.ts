@@ -1,4 +1,4 @@
-import { Chunk, Effect, Schema, Stream, StreamEmit } from "effect";
+import { Chunk, Config, Effect, Schema, Stream, StreamEmit } from "effect";
 import { Cancel, type SubscriptionRequest } from "./client-messages.js";
 import {
   Events,
@@ -8,18 +8,20 @@ import {
 } from "./server-messages.js";
 
 export class WebSocketClient extends Effect.Service<WebSocketClient>()(
-  "WebSocketClient",
+  "@mrt/yamcs-effect/WebSocketClient",
   {
     accessors: true,
     dependencies: [],
     scoped: Effect.gen(function* () {
+      const yamcsUrl = yield* Config.url("YAMCS_URL");
+      yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
       let id = SubscriptionId.make(1);
 
       // Socket will be automatically closed when the scope ends.
       const ws = yield* Effect.acquireRelease(
         Effect.gen(function* () {
           return yield* Effect.try(
-            () => new WebSocket("ws://localhost:8090/api/websocket"),
+            () => new WebSocket(`${yamcsUrl}api/websocket`),
           );
         }),
         (ws) =>

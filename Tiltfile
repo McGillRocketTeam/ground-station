@@ -1,3 +1,7 @@
+config.define_bool('simulator')
+cfg = config.parse()
+simulator_enabled = cfg.get('simulator', True)
+
 local_resource(
     'frontend',
     serve_cmd="YAMCS_URL=http://localhost:8090 pnpm --filter @mrt/frontend dev",
@@ -17,24 +21,26 @@ local_resource(
 		labels=['mrt'],
 		links='http://localhost:8090',
 		deps=['./apps/backend/src/main/java'],
-		resource_deps=['xtce-generator'],
+		resource_deps=[],
 		readiness_probe=probe(
 			period_secs=3,
 			http_get=http_get_action(port=8090, path="/api")
 		)
 )
 
-local_resource(
-    'simulator',
-    serve_cmd="pnpm --filter @mrt/simulator dev",
-		serve_env={'YAMCS_INSTANCE': 'ground_station'},
-		labels=['mrt'],
-		links='http://localhost:5173',
-		resource_deps=['backend', 'yamcs-effect']
-)
+if simulator_enabled:
+	local_resource(
+			'simulator',
+			serve_cmd="pnpm --filter @mrt/simulator dev",
+			serve_env={'YAMCS_INSTANCE': 'ground_station'},
+			labels=['mrt'],
+			links='http://localhost:5173',
+			resource_deps=['backend', 'yamcs-effect']
+	)
 
 local_resource(
     'xtce-generator',
+		labels=['infrastructure'],
     cmd="""
     set -e
 

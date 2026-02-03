@@ -99,16 +99,45 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 				return;
 
 			String deviceName = parts[0]; // e.g., radio-pad-a
-			String subTopic = parts[1]; // metadata or telemetry
+			String subTopic = parts[1]; // metadata or telemetry or ack
 
 			if ("metadata".equalsIgnoreCase(subTopic)) {
 				handleMetadata(deviceName, message);
 			} else if ("telemetry".equalsIgnoreCase(subTopic)) {
 				handleTelemetry(deviceName, message);
+			} else if ("ack".equalsIgnoreCase(subTopic)) {
+				handleAck(deviceName, message);
 			}
 		} catch (Exception e) {
 			eventProducer.sendWarning(
 					"Error handling message on topic " + topic + ": " + e.getMessage());
+		}
+	}
+
+	private void handleAck(String deviceName, MqttMessage message) {
+		byte[] payload = message.getPayload();
+		log.info(message.toString());
+
+		try {
+			String jsonString = new String(payload, StandardCharsets.UTF_8);
+
+			AckDto ack = new Gson().fromJson(jsonString, AckDto.class);
+			if (ack == null) {
+				throw new IllegalArgumentException("ACK payload is null");
+			}
+
+			ack.validate();
+
+			AstraSubLink link = subLinksMap.get(deviceName);
+			if (link == null) {
+				throw new IllegalStateException("No sublink for device " + deviceName);
+			}
+
+			link.handleAck(ack.cmd_id, ack.status);
+
+		} catch (Exception e) {
+			eventProducer.sendWarning(
+					"Error parsing ack JSON for " + deviceName + ": " + e.getMessage());
 		}
 	}
 
@@ -254,5 +283,19 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 	@Override
 	public String getDetailedStatus() {
 		return detailedStatus;
+	}
+
+	private static final class AckDto {
+		Number cmd_id;
+		String status;
+
+		void validate() {
+			if (cmd_id == null) {
+				throw new IllegalArgumentException("Missing required field: cmd_id");
+			}
+			if (status == null) {
+				throw new IllegalArgumentException("Missing required field: status");
+			}
+		}
 	}
 }

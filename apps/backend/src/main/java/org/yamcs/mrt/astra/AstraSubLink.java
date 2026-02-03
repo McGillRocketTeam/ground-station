@@ -56,7 +56,9 @@ public abstract class AstraSubLink extends AbstractTcTmParamLink {
 		this.status = status;
 	}
 
-	public abstract void handleMqttMessage(MqttMessage message);;
+	public abstract void handleMqttMessage(MqttMessage message);
+
+	public abstract void handleAck(Number cmdId, String status);
 
 	@Override
 	protected Status connectionStatus() {

@@ -5,6 +5,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
@@ -38,6 +39,13 @@ public class RadiosLink extends AstraSubLink {
 
 		try {
 			client.publish("radio-controlstation-a/commands", msg);
+
+			this.commandHistoryPublisher.publishAck(
+					preparedCommand.getCommandId(),
+					"Sent",
+					this.timeService.getMissionTime(),
+					AckStatus.OK);
+
 		} catch (MqttException e) {
 			eventProducer.sendDistress(e.getLocalizedMessage());
 			e.printStackTrace();
@@ -45,6 +53,12 @@ public class RadiosLink extends AstraSubLink {
 		}
 
 		return true;
+	}
+
+	@Override
+	public void handleAck(Number cmdId, String status) {
+		System.out.println("GOT ACK FOR cmdId: " + cmdId + " status: " + status);
+		// commandHistoryPublisher.publishAck(cmdId, key, time, state, message,
 	}
 
 	@Override

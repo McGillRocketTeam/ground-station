@@ -36,7 +36,6 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 
 	// Gson parser for JSON validation
 	// private static final Gson gson = new Gson();
-
 	@Override
 	public void init(String instance, String name, YConfiguration config)
 			throws ConfigurationException {
@@ -81,6 +80,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			client.subscribe("#", 0).waitForCompletion();
 
 			detailedStatus = "Connected to MQTT broker, listening for devices";
+
 			eventProducer.sendInfo(detailedStatus);
 			notifyStarted();
 
@@ -99,12 +99,14 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 				return;
 
 			String deviceName = parts[0]; // e.g., radio-pad-a
-			String subTopic = parts[1]; // metadata or telemetry
+			String subTopic = parts[1]; // metadata or telemetry or ack
 
 			if ("metadata".equalsIgnoreCase(subTopic)) {
 				handleMetadata(deviceName, message);
 			} else if ("telemetry".equalsIgnoreCase(subTopic)) {
 				handleTelemetry(deviceName, message);
+			} else if ("acks".equalsIgnoreCase(subTopic)) {
+				handleAck(deviceName, message);
 			}
 		} catch (Exception e) {
 			eventProducer.sendWarning(
@@ -112,9 +114,35 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 		}
 	}
 
-	private void handleMetadata(String deviceName, MqttMessage message) {
+	private void handleAck(String deviceName, MqttMessage message) {
 		byte[] payload = message.getPayload();
 		log.info(message.toString());
+
+		try {
+			String jsonString = new String(payload, StandardCharsets.UTF_8);
+
+			AckDto ack = new Gson().fromJson(jsonString, AckDto.class);
+			if (ack == null) {
+				throw new IllegalArgumentException("ACK payload is null");
+			}
+
+			ack.validate();
+
+			AstraSubLink link = subLinksMap.get(deviceName);
+			if (link == null) {
+				throw new IllegalStateException("No sublink for device " + deviceName);
+			}
+
+			link.handleAck(ack.cmd_id, ack.status);
+
+		} catch (Exception e) {
+			eventProducer.sendDistress(
+					"Error parsing ack JSON for " + deviceName + ": " + e.getMessage());
+		}
+	}
+
+	private void handleMetadata(String deviceName, MqttMessage message) {
+		byte[] payload = message.getPayload();
 		if (payload == null || payload.length == 0) {
 			// Retained empty payload means device gone (Last Will)
 			removeDevice(deviceName);
@@ -207,7 +235,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 
 			// Implement more types of links here!
 			AstraSubLink link = switch (deviceType) {
-				case "radio" -> new RadiosLink();
+				case "radio" -> new RadiosLink(client);
 				default -> throw new IllegalArgumentException("Unknown device type: " + deviceType);
 			};
 
@@ -254,5 +282,19 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 	@Override
 	public String getDetailedStatus() {
 		return detailedStatus;
+	}
+
+	private static final class AckDto {
+		Number cmd_id;
+		String status;
+
+		void validate() {
+			if (cmd_id == null) {
+				throw new IllegalArgumentException("Missing required field: cmd_id");
+			}
+			if (status == null) {
+				throw new IllegalArgumentException("Missing required field: status");
+			}
+		}
 	}
 }

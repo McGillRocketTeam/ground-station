@@ -19,6 +19,11 @@ export function DashboardPage() {
             component: "command-history",
             id: crypto.randomUUID(),
           });
+          event.api.addPanel({
+            title: "Parameter Chart",
+            component: "parameter-chart",
+            id: crypto.randomUUID(),
+          });
         }}
         theme={themeAbyssSpaced}
         components={CardComponentMap}

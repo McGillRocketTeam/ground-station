@@ -419,3 +419,15 @@ export const LinkInfo = Schema.Struct({
   actions: Schema.optional(Schema.Array(ActionInfo)),
   parameters: Schema.optional(Schema.Array(QualifiedName)),
 });
+
+export const ParameterSample = Schema.Struct({
+  time: Schema.DateFromString,
+  avg: Schema.Number,
+  min: Schema.Number,
+  max: Schema.Number,
+  n: Schema.Number,
+  minTime: Schema.DateFromString,
+  maxTime: Schema.DateFromString,
+  firstTime: Schema.DateFromString,
+  lastTime: Schema.DateFromString,
+});

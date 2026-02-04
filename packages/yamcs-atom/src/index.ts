@@ -11,6 +11,7 @@ import {
 import type {
   StreamingCommandHisotryEntry,
   QualifiedName,
+  ParameterValue,
 } from "@mrt/yamcs-effect";
 import {
   TimeEvent,
@@ -54,7 +55,7 @@ export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
   },
 ) {}
 
-const yamcsRuntime = Atom.runtime(WebSocketClient.Default);
+export const yamcsRuntime = Atom.runtime(WebSocketClient.Default);
 
 export const timeSubscriptionAtom: Atom.Atom<
   Result.Result<
@@ -182,7 +183,10 @@ export const commandsSubscriptionAtom: Atom.Atom<
 export const parameterSubscriptionAtom: (
   arg: string,
 ) => Atom.Atom<
-  Result.Result<any, UnknownException | ParseError | ConfigError>
+  Result.Result<
+    typeof ParameterValue.Type,
+    UnknownException | ParseError | ConfigError
+  >
 > = Atom.family((qualifiedName: QualifiedName) =>
   yamcsRuntime.atom(
     Stream.unwrap(

@@ -3,6 +3,7 @@ import {
   DataGridHead,
   DataGridHeader,
   DataGridRow,
+  DataGridSearch,
 } from "@/components/ui/data-grid";
 import { cn, stringifyValue } from "@/lib/utils";
 import {
@@ -61,7 +62,7 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
   const commandSearchText = useAtomValue(commandSearchAtom);
 
   return (
-    <DataGridBody>
+    <DataGridBody className="text-sm">
       {commands
         .filter((cmd) =>
           cmd.commandName.toLowerCase().includes(commandSearchText),
@@ -171,26 +172,14 @@ const commandSearchAtom = Atom.make("");
 
 function SearchInput() {
   const [commandSearchText, setCommandSearchText] = useAtom(commandSearchAtom);
-  return (
-    <>
-      <DataGridHead className="col-span-4 relative font-sans">
-        <input
-          value={commandSearchText}
-          onChange={(e) => setCommandSearchText(e.target.value.toLowerCase())}
-          placeholder="Search command history..."
-          className="absolute inset-y-0 inset-x-2 placeholder:text-muted-foreground/30 focus:outline-none focus:ring-0"
-        />
 
-        {commandSearchText.length > 0 && (
-          <button
-            onClick={() => setCommandSearchText("")}
-            className="size-5 p-1 text-muted-foreground cursor-pointer z-10 absolute inset-y-0 right-0.5"
-          >
-            <X className="size-3" />
-          </button>
-        )}
-      </DataGridHead>
-    </>
+  return (
+    <DataGridSearch
+      placeholder="Search command history..."
+      className="col-span-4 relative font-sans"
+      value={commandSearchText}
+      onChange={setCommandSearchText}
+    />
   );
 }
 

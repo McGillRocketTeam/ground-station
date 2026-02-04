@@ -4,6 +4,7 @@ import {
   NamedObjectId,
   StreamingCommandHisotryEntry,
   Value,
+  Event,
 } from "../schema.js";
 
 export const SubscriptionId = Schema.NonNegativeInt.pipe(
@@ -97,6 +98,13 @@ export const ParameterEvent = Schema.Union(
   ParmeterInfoEvent,
   PrameterDataEvent,
 );
+
+export const EventsEvent = Schema.Struct({
+  type: Schema.Literal("events"),
+  call: SubscriptionId,
+  seq: Schema.NonNegativeInt,
+  data: Event,
+});
 
 export const Events = Schema.Union(Update);
 

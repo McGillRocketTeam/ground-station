@@ -1,7 +1,9 @@
 import { Atom, AtomHttpApi, Result } from "@effect-atom/atom-react";
 import { Effect, Schema, Chunk, Stream, Schedule, Config } from "effect";
 import {
+  EventsEvent,
   SubscribeCommandsRequest,
+  SubscribeEventsRequest,
   SubscribeLinksRequest,
   SubscribeParameterRequest,
   SubscribeTimeRequest,
@@ -29,7 +31,11 @@ import { YamcsApi } from "@mrt/yamcs-effect";
 import type { ParseError } from "effect/ParseResult";
 import type { UnknownException } from "effect/Cause";
 import { NotFound } from "@effect/platform/HttpApiError";
-import { RequestError, ResponseError } from "@effect/platform/HttpClientError";
+import {
+  HttpClientError,
+  RequestError,
+  ResponseError,
+} from "@effect/platform/HttpClientError";
 import { ConfigError } from "effect/ConfigError";
 
 export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
@@ -230,6 +236,43 @@ export const parameterSubscriptionAtom: (
         );
       }),
     ),
+  ),
+);
+
+export const eventsSubscriptionAtom: Atom.Atom<
+  Result.Result<
+    Array<(typeof EventsEvent.Type)["data"]>,
+    NotFound | HttpClientError | UnknownException | ConfigError | ParseError
+  >
+> = yamcsRuntime.atom((get) =>
+  Stream.unwrap(
+    Effect.gen(function* () {
+      const instance = yield* Config.string("YAMCS_INSTANCE");
+      const ws = yield* WebSocketClient;
+
+      const { events } = yield* get.result(
+        YamcsAtomClient.query("event", "listEvents", { path: { instance } }),
+      );
+
+      const priorEvents = events.slice().reverse();
+
+      const { call, stream } = yield* ws.subscribe(
+        SubscribeEventsRequest.make({ instance }),
+      );
+
+      return stream.pipe(
+        // decode websocket messages
+        Stream.mapEffect((m) => Schema.decodeUnknown(EventsEvent)(m)),
+
+        // accumulate events
+        Stream.scan(priorEvents, (allEvents, event) => [
+          ...allEvents,
+          event.data,
+        ]),
+
+        Stream.ensuring(ws.unsubscribe(call)),
+      );
+    }),
   ),
 );
 

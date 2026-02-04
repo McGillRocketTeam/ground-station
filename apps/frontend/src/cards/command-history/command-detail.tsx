@@ -1,13 +1,13 @@
 import { Fragment, type ReactNode } from "react";
 import {
   collectAcks,
-  extractAcknowledgement,
   extractAttribute,
   type Ack,
   type CommandHistoryEntry,
 } from "./utils";
 import { cn, stringifyValue } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { BrailleSpinner } from "./braile-spinner";
 
 export function CommandDetail({ command }: { command: CommandHistoryEntry }) {
   return (
@@ -101,7 +101,12 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
           <Label>Radios Acknowledgements</Label>
           <div className="grid gap-x-2 grid-cols-[auto_1fr]">
             {acks.radio.map((ack) => (
-              <AckRow key={ack.name} ack={ack} command={command} />
+              <AckRow
+                friendlyName={ack.name === "Radio_RX" ? "Receive" : "Transmit"}
+                key={ack.name}
+                ack={ack}
+                command={command}
+              />
             ))}
           </div>
         </div>
@@ -173,10 +178,11 @@ function AckRow({
         className={cn(
           ack.status === "OK" && "text-success",
           ack.status === "NOK" && "bg-error text-error-foreground",
+          ack.status === "PENDING" && "w-[2ch] text-center",
           ack.status === "??" && "text-muted-foreground",
         )}
       >
-        {ack.status}
+        {ack.status === "PENDING" ? <BrailleSpinner /> : ack.status}
       </div>
       <div>
         {friendlyName

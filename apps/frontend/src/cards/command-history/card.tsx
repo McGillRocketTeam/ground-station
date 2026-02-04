@@ -5,7 +5,6 @@ import {
   DataGridRow,
 } from "@/components/ui/data-grid";
 import { cn, stringifyValue } from "@/lib/utils";
-import { Popover as PopoverPrimitive } from "@base-ui/react";
 import {
   Popover,
   PopoverContent,
@@ -20,15 +19,14 @@ import {
   type CommandHistoryEntry,
 } from "./utils";
 import { CommandDetail } from "./command-detail";
-import { Search, X } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Check, RefreshCw, Search, X } from "lucide-react";
 
 export function CommandHistoryTable() {
   const commandHistory = useAtomValue(commandsSubscriptionAtom);
 
   return (
-    <>
-      <ScrollArea>
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <div
           className={cn(
             "grid relative grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(5,1.5rem)_auto] gap-px rounded-none",
@@ -54,8 +52,8 @@ export function CommandHistoryTable() {
             .onSuccess((commands) => <Body commands={commands} />)
             .render()}
         </div>
-      </ScrollArea>
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -69,18 +67,26 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
           cmd.commandName.toLowerCase().includes(commandSearchText),
         )
         .map((command) => (
-          <Popover>
+          <Popover key={command.id}>
             <PopoverTrigger
               payload={command}
-              key={command.id}
               nativeButton={false}
               render={
-                <DataGridRow className="data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
-                  <div />
+                <DataGridRow className="group data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
+                  <div className="relative px-0">
+                    <button
+                      onClick={() => console.log("click")}
+                      className="inset-0 z-10 absolute group-hover:opacity-100 opacity-0 cursor-pointer grid place-items-center"
+                    >
+                      <RefreshCw className="size-3" />
+                    </button>
+                  </div>
                   <div className="text-right">
                     {formatCommandDate(command.generationTime)}
                   </div>
-                  <div>{command.commandName}</div>
+                  <div className="text-ellipsis line-clamp-1">
+                    {command.commandName}
+                  </div>
                   <div className="text-center">
                     {stringifyValue(
                       extractAttribute(command, "Command_Id"),
@@ -155,8 +161,8 @@ function AckCell({
         ack.status !== "??" && ack.status !== "OK" && "text-error",
       )}
     >
-      {ack.status === "OK" && "✓"}
-      {ack.status !== "OK" && ack.status !== "??" && "✗"}
+      {ack.status === "OK" && <Check className="size-3.5" />}
+      {ack.status !== "OK" && ack.status !== "??" && <X className="size-4" />}
     </div>
   );
 }
@@ -190,7 +196,7 @@ function SearchInput() {
 
 function Header() {
   return (
-    <DataGridHeader>
+    <DataGridHeader className="sticky top-0 z-20 bg-background">
       <DataGridHead className="grid place-items-center">
         <Search className="size-3 text-muted-foreground" />
       </DataGridHead>

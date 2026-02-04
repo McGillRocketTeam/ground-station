@@ -57,7 +57,8 @@ export function CommandHistoryTable() {
                   key={command.id}
                   nativeButton={false}
                   render={
-                    <DataGridRow className="data-popup-open:*:bg-selection-background">
+                    <DataGridRow className="data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
+
                       <div />
                       <div className="text-right">
                         {formatCommandDate(command.generationTime)}

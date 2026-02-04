@@ -34,9 +34,14 @@ export const SubscribeParameterRequest = Schema.TaggedStruct("parameters", {
   id: Schema.Array(NamedObjectId),
 });
 
+export const SubscribeEventsRequest = Schema.TaggedStruct("events", {
+  instance: Schema.String,
+});
+
 export const SubscriptionRequest = Schema.Union(
   SubscribeTimeRequest,
   SubscribeLinksRequest,
   SubscribeCommandsRequest,
   SubscribeParameterRequest,
+  SubscribeEventsRequest,
 );

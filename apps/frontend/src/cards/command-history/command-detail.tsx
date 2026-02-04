@@ -1,11 +1,13 @@
 import { Fragment, type ReactNode } from "react";
 import {
-  extractAcknowledgement,
+  collectAcks,
   extractAttribute,
+  type Ack,
   type CommandHistoryEntry,
 } from "./utils";
 import { cn, stringifyValue } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { BrailleSpinner } from "./braile-spinner";
 
 export function CommandDetail({ command }: { command: CommandHistoryEntry }) {
   return (
@@ -21,6 +23,8 @@ function Label({ children }: { children: ReactNode }) {
 }
 
 function DetailTable({ command }: { command: CommandHistoryEntry }) {
+  const acks = collectAcks(command);
+
   return (
     <div className="grid font-mono gap-2">
       <div className="space-y-0.5">
@@ -65,53 +69,142 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
           {`${stringifyValue(extractAttribute(command, "username"))} @${command.origin}`}
         </div>
       </div>
-      <div className="space-y-0.5">
-        <Label>Queue</Label>
-        <div>{stringifyValue(extractAttribute(command, "queue"))}</div>
+      <div className="grid grid-cols-3">
+        <div className="space-y-0.5">
+          <Label>Queue</Label>
+          <div>{stringifyValue(extractAttribute(command, "queue"))}</div>
+        </div>
+        <div className="space-y-0.5">
+          <Label>ID</Label>
+          <div>{stringifyValue(extractAttribute(command, "Command_Id"))}</div>
+        </div>
+        <div className="space-y-0.5">
+          <Label>Seq. Number</Label>
+          <div>
+            {stringifyValue(extractAttribute(command, "Sequence_Count"))}
+          </div>
+        </div>
       </div>
       <Separator />
-      <div className="space-y-0.5">
-        <Label>Acknowledgements</Label>
-        <div className="grid gap-x-2 grid-cols-[auto_1fr]">
-          <AckRow command={command} name="Queued" />
-          <AckRow command={command} name="Released" />
-          <AckRow command={command} name="Sent" />
+      {acks.groundStation.length > 0 && (
+        <div className="space-y-0.5">
+          <Label>G.S.C. Acknowledgements</Label>
+          <div className="grid gap-x-2 grid-cols-[auto_1fr]">
+            {acks.groundStation.map((ack) => (
+              <AckRow key={ack.name} ack={ack} command={command} />
+            ))}
+          </div>
         </div>
+      )}
+      {acks.radio.length > 0 && (
+        <div className="space-y-0.5">
+          <Label>Radios Acknowledgements</Label>
+          <div className="grid gap-x-2 grid-cols-[auto_1fr]">
+            {acks.radio.map((ack) => (
+              <AckRow
+                friendlyName={ack.name === "Radio_RX" ? "Receive" : "Transmit"}
+                key={ack.name}
+                ack={ack}
+                command={command}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {acks.flightComputer.length > 0 && (
+        <div className="space-y-0.5">
+          <Label>FC Acknowledgements</Label>
+          <div className="grid gap-x-2 grid-cols-[auto_1fr]">
+            {acks.flightComputer.map((ack) => (
+              <FCAckRow key={ack.name} ack={ack} command={command} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FCAckRow({
+  ack,
+  command,
+}: {
+  ack: Ack;
+  command: CommandHistoryEntry;
+}) {
+  if (ack.status === "??") return;
+
+  return (
+    <div className="flex flex-row items-center">
+      <div
+        className={cn(
+          ack.status === "OK" && "text-success",
+          ack.status === "NOK" && "bg-error text-error-foreground",
+          ack.status === "??" && "text-muted-foreground",
+        )}
+      >
+        {ack.status === "OK" && "SUCCESS"}
+        {ack.status === "NOK" && "FAILURE"}
+      </div>
+      <div>
+        {ack.time && (
+          <span className="text-xs text-muted-foreground ml-2">
+            +
+            {Math.abs(
+              command.generationTime.getMilliseconds() -
+                ack.time.getMilliseconds(),
+            )}
+            ms
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
 function AckRow({
+  ack,
   command,
-  name,
+  friendlyName,
 }: {
+  ack: Ack;
   command: CommandHistoryEntry;
-  name: string;
+  friendlyName?: string;
 }) {
-  const ack = extractAcknowledgement(command, name);
+  if (ack.status === "??") return;
   return (
     <>
       <div
         className={cn(
-          ack.status === "OK" && "text-green-600 dark:text-green-500",
+          ack.status === "OK" && "text-success",
+          ack.status === "NOK" && "bg-error text-error-foreground",
+          ack.status === "PENDING" && "w-[2ch] text-center",
           ack.status === "??" && "text-muted-foreground",
         )}
       >
-        {ack.status}
+        {ack.status === "PENDING" ? <BrailleSpinner /> : ack.status}
       </div>
       <div>
-        {name.toLocaleUpperCase()}
+        {friendlyName
+          ? friendlyName.toLocaleUpperCase()
+          : ack.name.toLocaleUpperCase()}
 
         {ack.time && (
           <span className="text-xs text-muted-foreground ml-2">
             +
-            {ack.time.getMilliseconds() -
-              command.generationTime.getMilliseconds()}
+            {Math.abs(
+              command.generationTime.getMilliseconds() -
+                ack.time.getMilliseconds(),
+            )}
             ms
           </span>
         )}
       </div>
+      {ack.message && (
+        <div className="col-span-full max-w-80 font-sans border-l-2 border-error break-all pl-2 py-1">
+          {ack.message}
+        </div>
+      )}
     </>
   );
 }

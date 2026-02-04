@@ -30,5 +30,7 @@ export function formatCommandDate(d: Date) {
     second: "2-digit",
   });
 
-  return (isToday ? "Today" : d.toLocaleDateString()) + ", " + time;
+  return isToday
+    ? d.toLocaleTimeString()
+    : d.toLocaleDateString() + ", " + time;
 }

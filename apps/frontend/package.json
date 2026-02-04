@@ -19,6 +19,7 @@
     "@mrt/yamcs-atom": "workspace:*",
     "@mrt/yamcs-effect": "workspace:*",
     "@tailwindcss/vite": "^4.1.17",
+    "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dockview-react": "^4.13.1",

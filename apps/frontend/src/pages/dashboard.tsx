@@ -24,6 +24,16 @@ export function DashboardPage() {
             component: "parameter-chart",
             id: crypto.randomUUID(),
           });
+          event.api.addPanel({
+            title: "Links",
+            component: "links",
+            id: crypto.randomUUID(),
+          });
+          event.api.addPanel({
+            title: "Events",
+            component: "events",
+            id: crypto.randomUUID(),
+          });
         }}
         theme={themeAbyssSpaced}
         components={CardComponentMap}

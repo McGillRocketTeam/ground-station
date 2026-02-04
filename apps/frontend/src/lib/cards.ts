@@ -5,6 +5,8 @@ import { ParameterTable } from "@/cards/parameter-table";
 import type { IDockviewPanelProps } from "dockview-react";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { ParameterChartCard } from "@/cards/parameter-chart";
+import { LinksCard } from "@/cards/links";
+import { EventsCard } from "@/cards/events";
 
 export interface CardDefinition<
   Id extends string,
@@ -31,6 +33,8 @@ export const CardArray: CardDefinition<string, any>[] = [
   ParameterTable,
   CommandHistoryCard,
   ParameterChartCard,
+  LinksCard,
+  EventsCard,
 ] as const;
 
 type Cards = (typeof CardArray)[number];

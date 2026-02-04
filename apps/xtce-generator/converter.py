@@ -464,9 +464,9 @@ def make_header(system: Y.System, atomic_names: list[str]):
     num_empty_atomic_flags = 32 - len(atomic_params)
     pad = Y.IntegerParameter(
         system=system,
-        name="padding",
-        short_description="Padding",
-        long_description="A.S.T.R.A. Packet Padding",
+        name="command_ack_id",
+        short_description="Command ACK ID",
+        long_description="Command ID if ACK flags is present",
         signed=False,
         encoding=Y.IntegerEncoding(bits=8, little_endian=True),
     )

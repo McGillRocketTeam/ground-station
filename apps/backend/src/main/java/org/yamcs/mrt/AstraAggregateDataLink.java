@@ -105,7 +105,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 				handleMetadata(deviceName, message);
 			} else if ("telemetry".equalsIgnoreCase(subTopic)) {
 				handleTelemetry(deviceName, message);
-			} else if ("ack".equalsIgnoreCase(subTopic)) {
+			} else if ("acks".equalsIgnoreCase(subTopic)) {
 				handleAck(deviceName, message);
 			}
 		} catch (Exception e) {
@@ -136,14 +136,13 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			link.handleAck(ack.cmd_id, ack.status);
 
 		} catch (Exception e) {
-			eventProducer.sendWarning(
+			eventProducer.sendDistress(
 					"Error parsing ack JSON for " + deviceName + ": " + e.getMessage());
 		}
 	}
 
 	private void handleMetadata(String deviceName, MqttMessage message) {
 		byte[] payload = message.getPayload();
-		log.info(message.toString());
 		if (payload == null || payload.length == 0) {
 			// Retained empty payload means device gone (Last Will)
 			removeDevice(deviceName);

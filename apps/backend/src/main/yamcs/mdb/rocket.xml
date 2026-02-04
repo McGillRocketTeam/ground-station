@@ -82,6 +82,9 @@ See https://github.com/yamcs/pymdb
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
+      <IntegerParameterType name="command_ack_id" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
       <FloatParameterType name="fc_rssi" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -181,9 +184,6 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="mov_hall_state" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <IntegerParameterType name="padding" signed="false" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
-      </IntegerParameterType>
       <BooleanParameterType name="pilot_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -329,6 +329,10 @@ See https://github.com/yamcs/pymdb
         <LongDescription>Calculated from sensor voltage.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="command_ack_id" parameterTypeRef="command_ack_id" shortDescription="Command ACK ID">
+        <LongDescription>Command ID if ACK flags is present</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
       <Parameter name="fc_rssi" parameterTypeRef="fc_rssi" shortDescription="Relative Signal Strength Indicator of FC radio">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
@@ -404,10 +408,6 @@ See https://github.com/yamcs/pymdb
       </Parameter>
       <Parameter name="mov_hall_state" parameterTypeRef="mov_hall_state" shortDescription="MOV Hall State">
         <LongDescription>Calculated from sensor voltage.</LongDescription>
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="padding" parameterTypeRef="padding" shortDescription="Padding">
-        <LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="pilot_armed_HW" parameterTypeRef="pilot_armed_HW" shortDescription="Pilot: electrical armed">
@@ -676,7 +676,7 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="padding">
+          <ParameterRefEntry parameterRef="command_ack_id">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>

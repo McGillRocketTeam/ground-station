@@ -1,6 +1,6 @@
 import { makeCard } from "@/lib/cards";
 import { Result, useAtomValue } from "@effect-atom/atom-react";
-import { Schema } from "effect";
+import { Cause, Schema } from "effect";
 import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
 import { useState, type ReactNode } from "react";
 
@@ -96,10 +96,13 @@ function Value({ name }: { name: string }) {
     onInitial: () => (
       <>
         <div className="text-right text-muted-foreground">Awaiting Value</div>
-        <div></div>
       </>
     ),
-    onFailure: () => <div>Failure</div>,
+    onFailure: ({ cause }) => (
+      <pre className="col-span-full text-error text-center min-h-full uppercase">
+        {Cause.pretty(cause)}
+      </pre>
+    ),
     onSuccess: ({ value }) => (
       <>
         <div className="text-right">

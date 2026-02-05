@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/data-grid";
 import { Fragment } from "react/jsx-runtime";
 import { cn } from "@/lib/utils";
-import { formatCommandDate } from "../parameter-chart/utils";
 import { memo, useState } from "react";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 
@@ -38,7 +37,10 @@ const HeaderButton = memo(function HeaderButton({
   return (
     <DataGridHead className={className}>
       <button
-        className="w-full h-full flex flex-row items-center justify-start gap-1 uppercase cursor-pointer"
+        className={cn(
+          "w-full h-full flex flex-row items-center gap-1 uppercase cursor-pointer",
+          className,
+        )}
         onClick={onToggleSort}
       >
         {children}
@@ -66,17 +68,9 @@ const columns: ColumnDef<Event>[] = [
         Severity
       </HeaderButton>
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="text-right col-span-2">{row.original.severity}</div>
-      );
-    },
   },
   {
     accessorKey: "source",
-    cell: ({ row }) => {
-      return <div className="text-center">{row.original.source}</div>;
-    },
     header: ({ column }) => (
       <HeaderButton
         isSorted={column.getIsSorted()}
@@ -89,16 +83,14 @@ const columns: ColumnDef<Event>[] = [
     ),
   },
   {
+    accessorKey: "message",
+    header: () => <DataGridHead>MESSAGE</DataGridHead>,
+  },
+  {
     accessorKey: "generationTime",
-    cell: ({ row }) => {
-      return (
-        <div className="text-left">
-          {formatCommandDate(row.original.generationTime)}
-        </div>
-      );
-    },
     header: ({ column }) => (
       <HeaderButton
+        className="justify-end"
         isSorted={column.getIsSorted()}
         onToggleSort={() =>
           column.toggleSorting(column.getIsSorted() === "asc")
@@ -107,15 +99,6 @@ const columns: ColumnDef<Event>[] = [
         Generation Time
       </HeaderButton>
     ),
-  },
-  {
-    accessorKey: "message",
-    header: () => <DataGridHead>MESSAGE</DataGridHead>,
-    cell: ({ row }) => {
-      return (
-        <div className="text-ellipsis line-clamp-2">{row.original.message}</div>
-      );
-    },
   },
 ];
 
@@ -143,8 +126,8 @@ const EventRow = memo(function EventRow({
     >
       <div className="text-right col-span-2">{severity}</div>
       <div className="text-center">{source}</div>
-      <div className="text-left">{formatCommandDate(generationTime)}</div>
       <div className="text-ellipsis line-clamp-2">{message}</div>
+      <div className="text-right">{generationTime.toLocaleString()}</div>
     </DataGridRow>
   );
 });
@@ -170,7 +153,7 @@ export function EventsTable({ events }: { events: Array<Event> }) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-[1.5rem_auto_auto_auto_1fr] gap-px">
+        <div className="grid grid-cols-[1.5rem_auto_auto_1fr_auto] gap-px">
           <DataGridHeader className="sticky top-0 z-10 bg-background">
             <DataGridHead className="grid place-items-center">
               <Search className="size-3 text-muted-foreground" />

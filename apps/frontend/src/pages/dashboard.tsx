@@ -25,17 +25,17 @@ export function DashboardPage() {
             id: crypto.randomUUID(),
           });
           event.api.addPanel({
-            title: "Links",
-            component: "links",
-            id: crypto.randomUUID(),
-          });
-          event.api.addPanel({
             title: "Events",
             component: "events",
             id: crypto.randomUUID(),
           });
+          event.api.addPanel({
+            title: "Links",
+            component: "links",
+            id: crypto.randomUUID(),
+          });
         }}
-        theme={themeAbyssSpaced}
+        theme={{ ...themeAbyssSpaced, gap: 5 }}
         components={CardComponentMap}
         leftHeaderActionsComponent={DashboardPlus}
         // defaultTabComponent={DashboardTab}

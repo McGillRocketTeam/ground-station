@@ -21,6 +21,7 @@ import {
 } from "./utils";
 import { CommandDetail } from "./command-detail";
 import { Check, RefreshCw, Search, X } from "lucide-react";
+import { BrailleSpinner } from "./braile-spinner";
 
 export function CommandHistoryTable() {
   const commandHistory = useAtomValue(commandsSubscriptionAtom);
@@ -46,7 +47,6 @@ export function CommandHistoryTable() {
             ))
             .onError((error) => (
               <pre className="col-span-full text-error text-center min-h-full uppercase">
-                {JSON.stringify(import.meta.env, null, 2)}
                 {error.toString()}
               </pre>
             ))
@@ -85,7 +85,7 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
                   <div className="text-right">
                     {formatCommandDate(command.generationTime)}
                   </div>
-                  <div className="text-ellipsis line-clamp-1">
+                  <div className="overflow-x-scroll no-scrollbar line-clamp-1">
                     {command.commandName}
                   </div>
                   <div className="text-center">
@@ -158,12 +158,19 @@ function AckCell({
       className={cn(
         "grid place-items-center",
         ack.status === "OK" && "text-success",
-        ack.status === "??" && "text-muted-foreground",
-        ack.status !== "??" && ack.status !== "OK" && "text-error",
+        ack.status === "??" ||
+          (ack.status === "PENDING" && "text-muted-foreground"),
+        ack.status !== "??" &&
+          ack.status !== "PENDING" &&
+          ack.status !== "OK" &&
+          "text-error",
       )}
     >
       {ack.status === "OK" && <Check className="size-3.5" />}
-      {ack.status !== "OK" && ack.status !== "??" && <X className="size-4" />}
+      {ack.status === "PENDING" && <BrailleSpinner />}
+      {ack.status !== "OK" &&
+        ack.status !== "??" &&
+        ack.status !== "PENDING" && <X className="size-4" />}
     </div>
   );
 }

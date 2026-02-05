@@ -2,7 +2,7 @@ import { makeCard } from "@/lib/cards";
 import { Result, useAtomValue } from "@effect-atom/atom-react";
 import { eventsSubscriptionAtom } from "@mrt/yamcs-atom";
 import type { EventsEvent } from "@mrt/yamcs-effect";
-import { Schema } from "effect";
+import { Cause, Schema } from "effect";
 import { EventsTable } from "./events-table";
 
 export type Event = (typeof EventsEvent.Type)["data"];
@@ -20,7 +20,11 @@ export const EventsCard = makeCard({
           Awaiting Events
         </div>
       ))
-      .onFailure(() => <div>Failure</div>)
+      .onFailure((cause) => (
+        <pre className="col-span-full text-error text-center min-h-full uppercase">
+          {Cause.pretty(cause)}
+        </pre>
+      ))
       .onSuccess((events) => <EventsTable events={events} />)
       .render();
   },

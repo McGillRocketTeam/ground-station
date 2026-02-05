@@ -862,7 +862,7 @@
 
 .dv-tabs-container {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
   height: 100%;
   overflow: auto;
   scrollbar-width: thin;

@@ -16,7 +16,6 @@ import { commandsSubscriptionAtom } from "@mrt/yamcs-atom";
 import {
   extractAcknowledgement,
   extractAttribute,
-  formatCommandDate,
   type CommandHistoryEntry,
 } from "./utils";
 import { CommandDetail } from "./command-detail";
@@ -74,15 +73,7 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
               nativeButton={false}
               render={
                 <DataGridRow className="group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
-                  <div className="relative px-0">
-                    <button
-                      onClick={() => console.log("click")}
-                      className="inset-0 z-10 absolute group-hover:opacity-100 opacity-0 cursor-pointer grid place-items-center"
-                    >
-                      <RefreshCw className="size-3" />
-                    </button>
-                  </div>
-                  <div className="text-right">
+                  <div className="col-span-2 text-right">
                     {formatDate(command.generationTime)}
                   </div>
                   <div className="overflow-x-scroll no-scrollbar line-clamp-1">
@@ -200,8 +191,7 @@ function Header() {
       <DataGridHead className="col-span-3 text-center">G.S.C.</DataGridHead>
       <DataGridHead className="col-span-2 text-center">RADIO</DataGridHead>
       <DataGridHead className="text-center">FC</DataGridHead>
-      <DataGridHead className="col-span-1" />
-      <DataGridHead>Timestamp</DataGridHead>
+      <DataGridHead className="col-span-2">Timestamp</DataGridHead>
       <DataGridHead>Command</DataGridHead>
       <DataGridHead className="text-center">ID</DataGridHead>
       <DataGridHead className="text-center">SEQ</DataGridHead>

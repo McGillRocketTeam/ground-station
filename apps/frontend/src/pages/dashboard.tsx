@@ -7,6 +7,7 @@ import { useAtomSuspense } from "@effect-atom/atom-react";
 import { timeSubscriptionAtom } from "@mrt/yamcs-atom";
 import { Suspense } from "react";
 import { formatDate } from "@/lib/utils";
+import { DashboardTab } from "@/components/dashboard/dashboard-tab";
 
 function MissionTime() {
   return (
@@ -72,7 +73,7 @@ export function DashboardPage() {
           theme={{ ...themeAbyssSpaced, gap: 5 }}
           components={CardComponentMap}
           leftHeaderActionsComponent={DashboardPlus}
-          // defaultTabComponent={DashboardTab}
+          defaultTabComponent={DashboardTab}
         />
       </div>
     </div>

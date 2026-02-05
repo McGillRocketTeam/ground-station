@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
-import { colorByStatus, type Link } from "./utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAtomSet } from "@effect-atom/atom-react";
 import { YamcsAtomClient } from "@mrt/yamcs-atom";
+import type { ReactNode } from "react";
+import { colorByStatus, type Link } from "./utils";
 
 function Label({ children }: { children: ReactNode }) {
   return <div className="font-sans text-xs font-semibold">{children}</div>;
@@ -26,7 +26,7 @@ export function LinkDetail({ link }: { link: Link }) {
   };
 
   return (
-    <div className="grid font-mono text-sm gap-2">
+    <div className="grid gap-2 font-mono text-sm">
       <div className="space-y-0.5">
         <Label>Link Name</Label>
         <div>{link.name}</div>

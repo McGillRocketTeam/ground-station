@@ -7,7 +7,7 @@ export const ParameterChartCard = makeCard({
   name: "Parameter Chart Card",
   schema: Schema.Struct({}),
   component: () => (
-    <div className="relative grid w-full h-full">
+    <div className="relative grid h-full w-full">
       <ParameterChart />
     </div>
   ),

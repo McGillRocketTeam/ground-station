@@ -16,12 +16,12 @@ export const EventsCard = makeCard({
 
     return Result.builder(result)
       .onInitial(() => (
-        <div className="grid w-full min-h-full place-items-center text-muted-foreground uppercase animate-pulse font-mono">
+        <div className="text-muted-foreground grid min-h-full w-full animate-pulse place-items-center font-mono uppercase">
           Awaiting Events
         </div>
       ))
       .onFailure((cause) => (
-        <pre className="col-span-full text-error text-center min-h-full uppercase">
+        <pre className="text-error col-span-full min-h-full text-center uppercase">
           {Cause.pretty(cause)}
         </pre>
       ))

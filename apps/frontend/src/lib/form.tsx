@@ -2,8 +2,7 @@ import { CommandField } from "@/components/form/command";
 import { ParameterField } from "@/components/form/parameter";
 import { StringField } from "@/components/form/string";
 import type { Atom } from "@effect-atom/atom-react";
-import { SchemaAST, Schema } from "effect";
-import { Option } from "effect";
+import { Option, Schema, SchemaAST } from "effect";
 import type { JSX } from "react";
 
 export const FormTypeAnnotationId = Symbol.for("mrt/form/type");

@@ -1,27 +1,25 @@
 import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type Column,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type Row,
-  type SortingState,
-} from "@tanstack/react-table";
-import type { Event } from ".";
-import {
   DataGridBody,
   DataGridHead,
   DataGridHeader,
   DataGridRow,
   DataGridSearch,
 } from "@/components/ui/data-grid";
-import { Fragment } from "react/jsx-runtime";
 import { cn } from "@/lib/utils";
-import { memo, useState } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+} from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
+import { memo, useState } from "react";
+import { Fragment } from "react/jsx-runtime";
+import type { Event } from ".";
 
 const HeaderButton = memo(function HeaderButton({
   children,
@@ -38,7 +36,7 @@ const HeaderButton = memo(function HeaderButton({
     <DataGridHead className={className}>
       <button
         className={cn(
-          "w-full h-full flex flex-row items-center gap-1 uppercase cursor-pointer",
+          "flex h-full w-full cursor-pointer flex-row items-center gap-1 uppercase",
           className,
         )}
         onClick={onToggleSort}
@@ -124,9 +122,9 @@ const EventRow = memo(function EventRow({
       )}
       data-state={isSelected && "selected"}
     >
-      <div className="text-right col-span-2">{severity}</div>
+      <div className="col-span-2 text-right">{severity}</div>
       <div className="text-center">{source}</div>
-      <div className="text-ellipsis line-clamp-2">{message}</div>
+      <div className="line-clamp-2 text-ellipsis">{message}</div>
       <div className="text-right">{generationTime.toLocaleString()}</div>
     </DataGridRow>
   );
@@ -151,12 +149,12 @@ export function EventsTable({ events }: { events: Array<Event> }) {
   });
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-[1.5rem_auto_auto_1fr_auto] gap-px">
-          <DataGridHeader className="sticky top-0 z-10 bg-background">
+          <DataGridHeader className="bg-background sticky top-0 z-10">
             <DataGridHead className="grid place-items-center">
-              <Search className="size-3 text-muted-foreground" />
+              <Search className="text-muted-foreground size-3" />
             </DataGridHead>
 
             <DataGridSearch
@@ -200,7 +198,7 @@ export function EventsTable({ events }: { events: Array<Event> }) {
                 ))
             ) : (
               <DataGridRow>
-                <div className="h-24 grid place-items-center col-span-full">
+                <div className="col-span-full grid h-24 place-items-center">
                   No results.
                 </div>
               </DataGridRow>

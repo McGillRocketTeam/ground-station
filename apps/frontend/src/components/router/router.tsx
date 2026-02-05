@@ -1,7 +1,7 @@
+import { DashboardPage } from "@/pages/dashboard";
+import { DebugPage } from "@/pages/debug";
 import { createBrowserRouter } from "react-router";
 import { RootErrorBoundary } from "./error-boundary";
-import { DebugPage } from "@/pages/debug";
-import { DashboardPage } from "@/pages/dashboard";
 
 export const router = createBrowserRouter([
   {

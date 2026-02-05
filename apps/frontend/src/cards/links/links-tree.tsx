@@ -1,32 +1,32 @@
 import {
-  buildLinkTree,
-  colorByStatus,
-  type Link,
-  type LinkNode,
-} from "./utils";
-import { Fragment } from "react/jsx-runtime";
-import {
   DataGridBody,
   DataGridHead,
   DataGridHeader,
   DataGridRow,
 } from "@/components/ui/data-grid";
-import { Ellipsis } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Popover as PopoverPrimitive } from "@base-ui/react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Popover as PopoverPrimitive } from "@base-ui/react";
+import { Ellipsis } from "lucide-react";
+import { Fragment } from "react/jsx-runtime";
 import { LinkDetail } from "./link-detail";
+import {
+  buildLinkTree,
+  colorByStatus,
+  type Link,
+  type LinkNode,
+} from "./utils";
 
 const linksPopover = PopoverPrimitive.createHandle<Link>();
 export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
   const linkTree = buildLinkTree(links);
 
   return (
-    <div className="grid gap-x-px grid-cols-[1.5rem_auto_1fr_auto_auto_1.5rem]">
+    <div className="grid grid-cols-[1.5rem_auto_1fr_auto_auto_1.5rem] gap-x-px">
       <DataGridHeader>
         <DataGridHead />
         <DataGridHead>LINK NAME</DataGridHead>
@@ -103,7 +103,7 @@ function LinkRow({
             {depth > 0 && (
               <span
                 className={cn(
-                  "absolute left-0 top-0 w-px bg-current",
+                  "absolute top-0 left-0 w-px bg-current",
                   isLast ? "h-1/2" : "h-full",
                 )}
                 style={{ left: depth * 16 - 8 }}
@@ -113,14 +113,7 @@ function LinkRow({
             {/* Horizontal elbow */}
             {depth > 0 && (
               <span
-                className="
-						absolute
-						top-1/2
-						-translate-y-1/2
-						h-px
-						w-4
-						bg-current
-						"
+                className="absolute top-1/2 h-px w-4 -translate-y-1/2 bg-current"
                 style={{
                   left: depth * 16 - 8,
                   transform: "translateY(-50%)",
@@ -129,14 +122,14 @@ function LinkRow({
             )}
 
             <span
-              className="break-all text-ellipsis line-clamp-2"
+              className="line-clamp-2 break-all text-ellipsis"
               style={{ paddingLeft: depth * 26 }}
             >
               {link.parentName ? link.name.split("/")[1] : link.name}
             </span>
           </div>
 
-          <div className="text-ellipsis line-clamp-1">
+          <div className="line-clamp-1 text-ellipsis">
             {!link.detailedStatus?.startsWith(link.status) &&
               link.status + ", "}
             {link.detailedStatus}
@@ -146,7 +139,7 @@ function LinkRow({
 
           <div className="text-right">{link.dataOutCount.toLocaleString()}</div>
 
-          <button className="grid place-items-center text-muted-foreground cursor-pointer">
+          <button className="text-muted-foreground grid cursor-pointer place-items-center">
             <Ellipsis className="size-3" />
           </button>
         </DataGridRow>

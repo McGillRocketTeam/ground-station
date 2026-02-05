@@ -1,3 +1,4 @@
+import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
 import { LinksCard } from "@/cards/links";
@@ -35,6 +36,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   ParameterChartCard,
   LinksCard,
   EventsCard,
+  CommandButtonCard,
 ] as const;
 
 type Cards = (typeof CardArray)[number];

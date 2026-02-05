@@ -1,0 +1,144 @@
+{
+  "grid": {
+    "root": {
+      "type": "branch",
+      "data": [
+        {
+          "type": "branch",
+          "data": [
+            {
+              "type": "leaf",
+              "data": {
+                "views": [
+                  "e2d28333-0996-44af-95da-0cb0ee41aa67",
+                  "37ffa26b-fe8a-4405-89ff-2b1f320d679d"
+                ],
+                "activeView": "37ffa26b-fe8a-4405-89ff-2b1f320d679d",
+                "id": "4"
+              },
+              "size": 618.5
+            },
+            {
+              "type": "leaf",
+              "data": {
+                "views": [
+                  "a16411c5-c103-42bb-bcba-01929a1047cf",
+                  "5cba827e-5e4c-4074-b9a1-eaf68f992394"
+                ],
+                "activeView": "5cba827e-5e4c-4074-b9a1-eaf68f992394",
+                "id": "3"
+              },
+              "size": 211.5
+            }
+          ],
+          "size": 662.5
+        },
+        {
+          "type": "branch",
+          "data": [
+            {
+              "type": "leaf",
+              "data": {
+                "views": [
+                  "3d87eac1-a399-4ca4-b3fd-95e23026f523",
+                  "9ca26f21-83fa-4ea4-8011-2db02b719ed2",
+                  "e2c6b61a-b8ff-47d5-88a4-ae1e44bc9f7a",
+                  "75cf72b9-fb33-4525-8676-786f58b2ba33"
+                ],
+                "activeView": "9ca26f21-83fa-4ea4-8011-2db02b719ed2",
+                "id": "1"
+              },
+              "size": 158.66666666666666
+            },
+            {
+              "type": "leaf",
+              "data": {
+                "views": ["9dda96f7-18ed-40c3-bfa1-c5ab6a7a1808"],
+                "activeView": "9dda96f7-18ed-40c3-bfa1-c5ab6a7a1808",
+                "id": "2"
+              },
+              "size": 324.6666666666667
+            },
+            {
+              "type": "leaf",
+              "data": {
+                "views": ["99d5c313-4c49-410d-978a-04f6a1b4ab7c"],
+                "activeView": "99d5c313-4c49-410d-978a-04f6a1b4ab7c",
+                "id": "6"
+              },
+              "size": 341.6666666666667
+            }
+          ],
+          "size": 834.5
+        }
+      ],
+      "size": 835
+    },
+    "width": 1502,
+    "height": 835,
+    "orientation": "HORIZONTAL"
+  },
+  "panels": {
+    "e2d28333-0996-44af-95da-0cb0ee41aa67": {
+      "id": "e2d28333-0996-44af-95da-0cb0ee41aa67",
+      "contentComponent": "command-button",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Command Buttons"
+    },
+    "37ffa26b-fe8a-4405-89ff-2b1f320d679d": {
+      "id": "37ffa26b-fe8a-4405-89ff-2b1f320d679d",
+      "contentComponent": "parameter-table",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Parameter Table"
+    },
+    "a16411c5-c103-42bb-bcba-01929a1047cf": {
+      "id": "a16411c5-c103-42bb-bcba-01929a1047cf",
+      "contentComponent": "parameter-chart",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Parameter Chart"
+    },
+    "5cba827e-5e4c-4074-b9a1-eaf68f992394": {
+      "id": "5cba827e-5e4c-4074-b9a1-eaf68f992394",
+      "contentComponent": "parameter-chart",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Parameter Chart"
+    },
+    "3d87eac1-a399-4ca4-b3fd-95e23026f523": {
+      "id": "3d87eac1-a399-4ca4-b3fd-95e23026f523",
+      "contentComponent": "events",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Events"
+    },
+    "9ca26f21-83fa-4ea4-8011-2db02b719ed2": {
+      "id": "9ca26f21-83fa-4ea4-8011-2db02b719ed2",
+      "contentComponent": "links",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Links"
+    },
+    "e2c6b61a-b8ff-47d5-88a4-ae1e44bc9f7a": {
+      "id": "e2c6b61a-b8ff-47d5-88a4-ae1e44bc9f7a",
+      "contentComponent": "command-history",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Command History"
+    },
+    "75cf72b9-fb33-4525-8676-786f58b2ba33": {
+      "id": "75cf72b9-fb33-4525-8676-786f58b2ba33",
+      "contentComponent": "links",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Links"
+    },
+    "9dda96f7-18ed-40c3-bfa1-c5ab6a7a1808": {
+      "id": "9dda96f7-18ed-40c3-bfa1-c5ab6a7a1808",
+      "contentComponent": "events",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Events"
+    },
+    "99d5c313-4c49-410d-978a-04f6a1b4ab7c": {
+      "id": "99d5c313-4c49-410d-978a-04f6a1b4ab7c",
+      "contentComponent": "command-history",
+      "tabComponent": "props.defaultTabComponent",
+      "title": "Command History"
+    }
+  },
+  "activeGroup": "4"
+}

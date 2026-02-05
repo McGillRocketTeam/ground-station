@@ -98,6 +98,11 @@ export function DashboardPage() {
         component: "links",
         id: crypto.randomUUID(),
       });
+      event.api.addPanel({
+        title: "Command Buttons",
+        component: "command-button",
+        id: crypto.randomUUID(),
+      });
     }
   };
 

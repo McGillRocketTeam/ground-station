@@ -29,7 +29,7 @@ const CardEntries = {
   ],
   "RADIO ATOMIC": ["/FlightComputer/call_sign"],
   "PROPULSION ATOMIC": [
-    "/FlightComputer/	cc_pressure",
+    "/FlightComputer/cc_pressure",
     "/FlightComputer/tank_pressure",
     "/FlightComputer/tank_temp",
     "/FlightComputer/vent_temp",
@@ -42,15 +42,17 @@ export const ParameterTable = makeCard({
   schema: Schema.Struct({}),
   component: () => {
     return (
-      <div className="grid grid-cols-[1.5rem_3fr_1fr_auto] gap-px font-mono">
-        <TableHeader />
-        {Object.entries(CardEntries).map(([title, parameters]) => (
-          <TableGroup key={title} name={title}>
-            {parameters.map((parameter) => (
-              <TableRow key={parameter} parameter={parameter} />
-            ))}
-          </TableGroup>
-        ))}
+      <div className="h-full overflow-auto">
+        <div className="grid grid-cols-[1.5rem_3fr_1fr_auto] gap-px font-mono">
+          <TableHeader />
+          {Object.entries(CardEntries).map(([title, parameters]) => (
+            <TableGroup key={title} name={title}>
+              {parameters.map((parameter) => (
+                <TableRow key={parameter} parameter={parameter} />
+              ))}
+            </TableGroup>
+          ))}
+        </div>
       </div>
     );
   },
@@ -58,8 +60,8 @@ export const ParameterTable = makeCard({
 
 function TableHeader() {
   return (
-    <div className="text-white-text col-span-full grid grid-cols-subgrid text-sm uppercase">
-      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1"></div>
+    <div className="text-white-text sticky top-0 z-10 col-span-full grid grid-cols-subgrid text-sm uppercase">
+      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1" />
       <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
         Parameter
       </div>
@@ -75,6 +77,7 @@ function TableHeader() {
 
 function TableGroup({ children, name }: { children: ReactNode; name: string }) {
   const [collapse, setCollapse] = useState(false);
+
   return (
     <>
       <button
@@ -83,12 +86,13 @@ function TableGroup({ children, name }: { children: ReactNode; name: string }) {
       >
         <span
           data-collapsed={collapse}
-          className="mr-1 inline-block w-6 text-center data-[collapsed=true]:-rotate-90"
+          className="mr-1 inline-block w-6 text-center transition-transform data-[collapsed=true]:-rotate-90"
         >
           ▼
         </span>
         {name}
       </button>
+
       {!collapse && (
         <div className="text-orange-text bg-border col-span-full grid grid-cols-subgrid gap-px">
           {children}
@@ -109,12 +113,13 @@ function TableRow({ parameter }: { parameter: string }) {
 }
 
 function Value({ name }: { name: string }) {
-  const test = useAtomValue(parameterSubscriptionAtom(name));
+  const result = useAtomValue(parameterSubscriptionAtom(name));
 
-  return Result.match(test, {
+  return Result.match(result, {
     onInitial: () => (
       <>
         <div className="text-muted-foreground text-right">Awaiting Value</div>
+        <div />
       </>
     ),
     onFailure: ({ cause }) => (

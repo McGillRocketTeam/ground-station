@@ -30,7 +30,7 @@ export function DataGridBody({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "grid col-span-full grid-cols-subgrid text-orange-text bg-border gap-px",
+        "grid col-span-full grid-cols-subgrid text-orange-text bg-border gap-px text-sm",
         className,
       )}
       {...props}

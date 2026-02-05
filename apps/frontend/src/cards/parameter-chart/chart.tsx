@@ -111,7 +111,11 @@ const chartDataWithSubscriptionAtom: Atom.Writable<
     return [] as BandDataPoint[];
   },
   (ctx, update: BandDataPoint | BandDataPoint[]) => {
-    if (Array.isArray(update) && update.length > 0 && Array.isArray(update[0])) {
+    if (
+      Array.isArray(update) &&
+      update.length > 0 &&
+      Array.isArray(update[0])
+    ) {
       ctx.setSelf(update as BandDataPoint[]);
     } else {
       const currentData = ctx.get(chartDataWithSubscriptionAtom);
@@ -260,7 +264,10 @@ export function ParameterChart() {
       }
 
       const currentMode = modeRef.current;
-      const newPoint: BandDataPoint = [timestamp, [numericValue, numericValue, numericValue]];
+      const newPoint: BandDataPoint = [
+        timestamp,
+        [numericValue, numericValue, numericValue],
+      ];
 
       if (currentMode.type === "duration") {
         // Filter points outside the sliding window (creates scrolling effect)
@@ -325,6 +332,7 @@ export function ParameterChart() {
         customBars: true, // Enable high/low bands using [min, avg, max] format
         zoomCallback: handleZoom,
         interactionModel,
+        strokeWidth: 2,
       });
     } else if (data.length > 0) {
       chartRef.current!.updateOptions({ file: data });
@@ -365,8 +373,7 @@ export function ParameterChart() {
   }, []);
 
   return (
-    <div ref={parentRef} className="absolute inset-4 grid">
-      <ModeControls />
+    <div ref={parentRef} className="absolute inset-0 bottom-2 grid">
       <div ref={containerRef} />
     </div>
   );

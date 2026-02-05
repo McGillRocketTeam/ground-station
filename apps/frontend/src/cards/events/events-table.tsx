@@ -115,7 +115,7 @@ const EventRow = memo(function EventRow({
     <DataGridRow
       className={cn(
         "group text-sm",
-        severity === "INFO" && "text-muted",
+        severity === "INFO" && "text-muted-foreground/50",
         severity === "WARNING" &&
           "*:bg-[color-mix(in_oklab,var(--color-orange-text)_8%,var(--background))]",
         (severity === "DISTRESS" || severity === "SEVERE") &&

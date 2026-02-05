@@ -1,5 +1,13 @@
 import type { LinkInfo } from "@mrt/yamcs-effect";
 
+export function colorByStatus(linkStatus: string) {
+  return linkStatus === "OK"
+    ? "text-success"
+    : linkStatus === "DISABLED"
+      ? "text-muted-foreground"
+      : "text-error";
+}
+
 export type Link = typeof LinkInfo.Type;
 export type LinkNode = Link & {
   children: LinkNode[];

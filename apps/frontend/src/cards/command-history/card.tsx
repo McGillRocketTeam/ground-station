@@ -5,7 +5,7 @@ import {
   DataGridRow,
   DataGridSearch,
 } from "@/components/ui/data-grid";
-import { cn, stringifyValue } from "@/lib/utils";
+import { cn, formatDate, stringifyValue } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
@@ -73,7 +73,7 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
               payload={command}
               nativeButton={false}
               render={
-                <DataGridRow className="group data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
+                <DataGridRow className="group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
                   <div className="relative px-0">
                     <button
                       onClick={() => console.log("click")}
@@ -83,7 +83,7 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
                     </button>
                   </div>
                   <div className="text-right">
-                    {formatCommandDate(command.generationTime)}
+                    {formatDate(command.generationTime)}
                   </div>
                   <div className="overflow-x-scroll no-scrollbar line-clamp-1">
                     {command.commandName}

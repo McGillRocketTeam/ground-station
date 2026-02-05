@@ -60,14 +60,14 @@ function TableGroup({ children, name }: { children: ReactNode; name: string }) {
     <>
       <button
         onClick={() => setCollapse((prev) => !prev)}
-        className="text-left col-span-full text-white-text bg-background-secondary hover:bg-background-secondary-highlight border-t border-t-background-secondary-highlight px-1"
+        className="text-left col-span-full text-white-text bg-background-secondary hover:bg-background-secondary-highlight border-t border-t-background-secondary-highlight"
       >
         <span
           data-collapsed={collapse}
-          className="inline-block data-[collapsed=true]:-rotate-90"
+          className="inline-block text-center data-[collapsed=true]:-rotate-90 w-6 mr-1"
         >
           ▼
-        </span>{" "}
+        </span>
         {name}
       </button>
       {!collapse && (
@@ -81,7 +81,7 @@ function TableGroup({ children, name }: { children: ReactNode; name: string }) {
 
 function TableRow({ parameter }: { parameter: string }) {
   return (
-    <div className="grid col-span-full grid-cols-subgrid *:bg-background hover:*:bg-selection-background *:px-1">
+    <div className="grid col-span-full grid-cols-subgrid text-sm *:bg-background hover:*:bg-selection-background *:px-1">
       <div />
       <div className="text-ellipsis line-clamp-1">{parameter}</div>
       <Value name={parameter} />

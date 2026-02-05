@@ -105,7 +105,6 @@
   --dv-paneview-header-border-color: rgb(51, 51, 51);
   --dv-active-sash-color: var(--dv-color-abyss-accent);
   --dv-floating-box-shadow: 8px 8px 8px 0px rgba(0, 0, 0, 0.5);
-  padding: 5px;
   background-color: var(--dv-color-abyss-dark);
 }
 

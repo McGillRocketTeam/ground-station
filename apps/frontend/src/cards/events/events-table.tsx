@@ -117,10 +117,10 @@ const EventRow = memo(function EventRow({
         "group text-sm",
         severity === "INFO" && "text-muted-foreground/50",
         severity === "WARNING" &&
-          "*:bg-[color-mix(in_oklab,var(--color-orange-text)_8%,var(--background))]",
+          "text-orange-text *:bg-[color-mix(in_oklab,var(--color-orange-text)_8%,var(--background))]",
         (severity === "DISTRESS" || severity === "SEVERE") &&
-          "text-error-foreground *:bg-error",
-        "hover:text-white",
+          "dark:text-error-foreground text-error dark:*:bg-error *:bg-[color-mix(in_oklab,var(--color-error)_15%,var(--background))]",
+        "hover:text-white-text",
       )}
       data-state={isSelected && "selected"}
     >

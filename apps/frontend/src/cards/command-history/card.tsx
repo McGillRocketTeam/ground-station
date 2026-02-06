@@ -5,32 +5,32 @@ import {
   DataGridRow,
   DataGridSearch,
 } from "@/components/ui/data-grid";
-import { cn, stringifyValue } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn, formatDate, stringifyValue } from "@/lib/utils";
 import { Atom, Result, useAtom, useAtomValue } from "@effect-atom/atom-react";
 import { commandsSubscriptionAtom } from "@mrt/yamcs-atom";
+import { Check, Search, X } from "lucide-react";
+import { BrailleSpinner } from "./braile-spinner";
+import { CommandDetail } from "./command-detail";
 import {
   extractAcknowledgement,
   extractAttribute,
-  formatCommandDate,
   type CommandHistoryEntry,
 } from "./utils";
-import { CommandDetail } from "./command-detail";
-import { Check, RefreshCw, Search, X } from "lucide-react";
 
 export function CommandHistoryTable() {
   const commandHistory = useAtomValue(commandsSubscriptionAtom);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       <div className="flex-1 overflow-auto">
         <div
           className={cn(
-            "grid relative grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(5,1.5rem)_auto] gap-px rounded-none",
+            "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(5,1.5rem)_auto] gap-px rounded-none",
             (commandHistory._tag === "Initial" ||
               commandHistory._tag === "Failure") &&
               "min-h-full",
@@ -40,13 +40,12 @@ export function CommandHistoryTable() {
 
           {Result.builder(commandHistory)
             .onInitial(() => (
-              <div className="col-span-full text-center min-h-full text-muted-foreground animate-pulse font-mono uppercase">
+              <div className="text-muted-foreground col-span-full min-h-full animate-pulse text-center font-mono uppercase">
                 Loading Command History
               </div>
             ))
             .onError((error) => (
-              <pre className="col-span-full text-error text-center min-h-full uppercase">
-                {JSON.stringify(import.meta.env, null, 2)}
+              <pre className="text-error col-span-full min-h-full text-center uppercase">
                 {error.toString()}
               </pre>
             ))
@@ -73,19 +72,11 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
               payload={command}
               nativeButton={false}
               render={
-                <DataGridRow className="group data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
-                  <div className="relative px-0">
-                    <button
-                      onClick={() => console.log("click")}
-                      className="inset-0 z-10 absolute group-hover:opacity-100 opacity-0 cursor-pointer grid place-items-center"
-                    >
-                      <RefreshCw className="size-3" />
-                    </button>
+                <DataGridRow className="group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
+                  <div className="col-span-2 text-right">
+                    {formatDate(command.generationTime)}
                   </div>
-                  <div className="text-right">
-                    {formatCommandDate(command.generationTime)}
-                  </div>
-                  <div className="text-ellipsis line-clamp-1">
+                  <div className="no-scrollbar line-clamp-1 overflow-x-scroll">
                     {command.commandName}
                   </div>
                   <div className="text-center">
@@ -131,7 +122,7 @@ function FCAckCell({
   return (
     <div
       className={cn(
-        "text-sm grid place-items-center",
+        "grid place-items-center text-sm",
         ack.status === "OK" && "text-success",
         ack.status === "??" && "text-muted-foreground",
         ack.status !== "??" &&
@@ -158,12 +149,19 @@ function AckCell({
       className={cn(
         "grid place-items-center",
         ack.status === "OK" && "text-success",
-        ack.status === "??" && "text-muted-foreground",
-        ack.status !== "??" && ack.status !== "OK" && "text-error",
+        ack.status === "??" ||
+          (ack.status === "PENDING" && "text-muted-foreground"),
+        ack.status !== "??" &&
+          ack.status !== "PENDING" &&
+          ack.status !== "OK" &&
+          "text-error",
       )}
     >
       {ack.status === "OK" && <Check className="size-3.5" />}
-      {ack.status !== "OK" && ack.status !== "??" && <X className="size-4" />}
+      {ack.status === "PENDING" && <BrailleSpinner />}
+      {ack.status !== "OK" &&
+        ack.status !== "??" &&
+        ack.status !== "PENDING" && <X className="size-4" />}
     </div>
   );
 }
@@ -176,7 +174,7 @@ function SearchInput() {
   return (
     <DataGridSearch
       placeholder="Search command history..."
-      className="col-span-4 relative font-sans"
+      className="relative col-span-4 font-sans"
       value={commandSearchText}
       onChange={setCommandSearchText}
     />
@@ -185,16 +183,15 @@ function SearchInput() {
 
 function Header() {
   return (
-    <DataGridHeader className="sticky top-0 z-20 bg-background">
+    <DataGridHeader className="bg-background sticky top-0 z-20">
       <DataGridHead className="grid place-items-center">
-        <Search className="size-3 text-muted-foreground" />
+        <Search className="text-muted-foreground size-3" />
       </DataGridHead>
       <SearchInput />
       <DataGridHead className="col-span-3 text-center">G.S.C.</DataGridHead>
       <DataGridHead className="col-span-2 text-center">RADIO</DataGridHead>
       <DataGridHead className="text-center">FC</DataGridHead>
-      <DataGridHead className="col-span-1" />
-      <DataGridHead>Timestamp</DataGridHead>
+      <DataGridHead className="col-span-2">Timestamp</DataGridHead>
       <DataGridHead>Command</DataGridHead>
       <DataGridHead className="text-center">ID</DataGridHead>
       <DataGridHead className="text-center">SEQ</DataGridHead>

@@ -1,8 +1,8 @@
-import { FormField, formType, formTitle } from "@/lib/form";
 import { Button } from "@/components/ui/button";
+import type { CardId, CardSchemaMap } from "@/lib/cards";
+import { FormField, formTitle, formType } from "@/lib/form";
 import { Atom, useAtomValue } from "@effect-atom/atom-react";
 import { Option } from "effect";
-import type { CardId, CardSchemaMap } from "@/lib/cards";
 
 export const formDataAtom = Atom.make<Record<string, unknown>>({});
 

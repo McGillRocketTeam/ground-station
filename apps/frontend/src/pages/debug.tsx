@@ -34,7 +34,7 @@ export function DebugPage() {
     <div className="grid h-screen grid-cols-[4fr_minmax(300px,1fr)] grid-rows-[auto_1fr]">
       <DebugToolbar />
 
-      <div className="p-4 grid place-items-center">
+      <div className="grid place-items-center p-4">
         {selectedComponent ? (
           <div>{selectedComponent({ parameter: "/a/b", command: "asdf" })}</div>
         ) : (
@@ -53,7 +53,7 @@ export function DebugToolbar() {
   const [currentlySelected, setCurrentlySelected] = useAtom(selectedCardAtom);
   const [open, setOpen] = useState(false);
   return (
-    <Menubar className="border-0 border-b col-span-full">
+    <Menubar className="col-span-full border-0 border-b">
       <MenubarMenu open={open} onOpenChange={setOpen}>
         <MenubarTrigger>Cards</MenubarTrigger>
         <MenubarContent>

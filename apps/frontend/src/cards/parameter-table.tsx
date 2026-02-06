@@ -1,19 +1,38 @@
 import { makeCard } from "@/lib/cards";
 import { Result, useAtomValue } from "@effect-atom/atom-react";
-import { Schema } from "effect";
 import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
+import { Cause, Schema } from "effect";
 import { useState, type ReactNode } from "react";
 
 const CardEntries = {
-  "FLIGHT COMPUTER": [
+  "FLIGHT ATOMIC": [
+    "/FlightComputer/flight_stage",
+    "/FlightComputer/altimeter_altitude",
+    "/FlightComputer/altitude_from_sea_level",
+    "/FlightComputer/apogee_from_ground",
+    "/FlightComputer/atm_pressure",
+    "/FlightComputer/barometer_altitude",
+    "/FlightComputer/atm_temp",
+    "/FlightComputer/gps_latitude",
+    "/FlightComputer/gps_longitude",
+    "/FlightComputer/gps_altitude",
+    "/FlightComputer/gps_time_last_update",
+    "/FlightComputer/vertical_speed",
     "/FlightComputer/acceleration_x",
     "/FlightComputer/acceleration_y",
-    "/FlightComputer/call_sign",
+    "/FlightComputer/acceleration_z",
+    "/FlightComputer/angle_yaw",
+    "/FlightComputer/angle_pitch",
+    "/FlightComputer/angle_roll",
+    "/FlightComputer/fc_rssi",
+    "/FlightComputer/fc_snr",
   ],
-  "LAUNCH PAD": [
-    "/FlightComputer/acceleration_x",
-    "/FlightComputer/acceleration_y",
-    "/FlightComputer/call_sign",
+  "RADIO ATOMIC": ["/FlightComputer/call_sign"],
+  "PROPULSION ATOMIC": [
+    "/FlightComputer/cc_pressure",
+    "/FlightComputer/tank_pressure",
+    "/FlightComputer/tank_temp",
+    "/FlightComputer/vent_temp",
   ],
 };
 
@@ -23,15 +42,17 @@ export const ParameterTable = makeCard({
   schema: Schema.Struct({}),
   component: () => {
     return (
-      <div className="grid grid-cols-[1.5rem_3fr_1fr_auto] gap-px font-mono">
-        <TableHeader />
-        {Object.entries(CardEntries).map(([title, parameters]) => (
-          <TableGroup key={title} name={title}>
-            {parameters.map((parameter) => (
-              <TableRow key={parameter} parameter={parameter} />
-            ))}
-          </TableGroup>
-        ))}
+      <div className="h-full overflow-auto">
+        <div className="grid grid-cols-[1.5rem_3fr_1fr_auto] gap-px font-mono">
+          <TableHeader />
+          {Object.entries(CardEntries).map(([title, parameters]) => (
+            <TableGroup key={title} name={title}>
+              {parameters.map((parameter) => (
+                <TableRow key={parameter} parameter={parameter} />
+              ))}
+            </TableGroup>
+          ))}
+        </div>
       </div>
     );
   },
@@ -39,15 +60,15 @@ export const ParameterTable = makeCard({
 
 function TableHeader() {
   return (
-    <div className="text-white-text grid col-span-full grid-cols-subgrid uppercase text-sm">
-      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1"></div>
-      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1">
+    <div className="text-white-text sticky top-0 z-10 col-span-full grid grid-cols-subgrid text-sm uppercase">
+      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1" />
+      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
         Parameter
       </div>
-      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1">
+      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
         Value
       </div>
-      <div className="bg-background-secondary border-t border-t-background-secondary-highlight px-1">
+      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
         Unit
       </div>
     </div>
@@ -56,22 +77,24 @@ function TableHeader() {
 
 function TableGroup({ children, name }: { children: ReactNode; name: string }) {
   const [collapse, setCollapse] = useState(false);
+
   return (
     <>
       <button
         onClick={() => setCollapse((prev) => !prev)}
-        className="text-left col-span-full text-white-text bg-background-secondary hover:bg-background-secondary-highlight border-t border-t-background-secondary-highlight px-1"
+        className="text-white-text bg-background-secondary hover:bg-background-secondary-highlight border-t-background-secondary-highlight col-span-full border-t text-left text-sm"
       >
         <span
           data-collapsed={collapse}
-          className="inline-block data-[collapsed=true]:-rotate-90"
+          className="mr-1 inline-block w-6 text-center transition-transform data-[collapsed=true]:-rotate-90"
         >
           ▼
-        </span>{" "}
+        </span>
         {name}
       </button>
+
       {!collapse && (
-        <div className="grid col-span-full grid-cols-subgrid text-orange-text bg-border gap-px">
+        <div className="text-orange-text bg-border col-span-full grid grid-cols-subgrid gap-px">
           {children}
         </div>
       )}
@@ -81,25 +104,29 @@ function TableGroup({ children, name }: { children: ReactNode; name: string }) {
 
 function TableRow({ parameter }: { parameter: string }) {
   return (
-    <div className="grid col-span-full grid-cols-subgrid *:bg-background hover:*:bg-selection-background *:px-1">
+    <div className="*:bg-background hover:*:bg-selection-background col-span-full grid grid-cols-subgrid text-sm *:px-1">
       <div />
-      <div className="text-ellipsis line-clamp-1">{parameter}</div>
+      <div className="line-clamp-1 text-ellipsis">{parameter}</div>
       <Value name={parameter} />
     </div>
   );
 }
 
 function Value({ name }: { name: string }) {
-  const test = useAtomValue(parameterSubscriptionAtom(name));
+  const result = useAtomValue(parameterSubscriptionAtom(name));
 
-  return Result.match(test, {
+  return Result.match(result, {
     onInitial: () => (
       <>
-        <div className="text-right text-muted-foreground">Awaiting Value</div>
-        <div></div>
+        <div className="text-muted-foreground text-right">Awaiting Value</div>
+        <div />
       </>
     ),
-    onFailure: () => <div>Failure</div>,
+    onFailure: ({ cause }) => (
+      <pre className="text-error col-span-full min-h-full text-center uppercase">
+        {Cause.pretty(cause)}
+      </pre>
+    ),
     onSuccess: ({ value }) => (
       <>
         <div className="text-right">

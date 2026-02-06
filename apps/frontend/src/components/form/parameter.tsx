@@ -1,4 +1,3 @@
-import type { FormFieldRenderer } from "@/lib/form";
 import {
   Combobox,
   ComboboxContent,
@@ -8,6 +7,7 @@ import {
   ComboboxList,
 } from "@/components/ui/combobox";
 import { Field, FieldLabel } from "@/components/ui/field";
+import type { FormFieldRenderer } from "@/lib/form";
 import { useAtom } from "@effect-atom/atom-react";
 
 const frameworks = [

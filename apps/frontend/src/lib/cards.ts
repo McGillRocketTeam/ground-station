@@ -1,12 +1,13 @@
+import { CommandButtonCard } from "@/cards/command-button";
+import { CommandHistoryCard } from "@/cards/command-history";
+import { EventsCard } from "@/cards/events";
+import { LinksCard } from "@/cards/links";
+import { ParameterChartCard } from "@/cards/parameter-chart";
+import { ParameterTable } from "@/cards/parameter-table";
+import { TextCard } from "@/cards/text-card";
+import type { IDockviewPanelProps } from "dockview-react";
 import { Schema } from "effect";
 import type { ReactNode } from "react";
-import { TextCard } from "@/cards/text-card";
-import { ParameterTable } from "@/cards/parameter-table";
-import type { IDockviewPanelProps } from "dockview-react";
-import { CommandHistoryCard } from "@/cards/command-history";
-import { ParameterChartCard } from "@/cards/parameter-chart";
-import { LinksCard } from "@/cards/links";
-import { EventsCard } from "@/cards/events";
 
 export interface CardDefinition<
   Id extends string,
@@ -35,6 +36,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   ParameterChartCard,
   LinksCard,
   EventsCard,
+  CommandButtonCard,
 ] as const;
 
 type Cards = (typeof CardArray)[number];

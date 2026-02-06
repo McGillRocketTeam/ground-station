@@ -1,21 +1,21 @@
 import {
   Atom,
-  useAtomValue,
-  useAtomSubscribe,
-  useAtomSet,
   useAtom,
   useAtomRefresh,
+  useAtomSet,
+  useAtomSubscribe,
+  useAtomValue,
 } from "@effect-atom/atom-react";
 import { parameterSubscriptionAtom, YamcsAtomClient } from "@mrt/yamcs-atom";
 import Dygraph from "dygraphs";
+import { Effect } from "effect";
 import {
-  useLayoutEffect,
-  useRef,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
 } from "react";
-import { Effect } from "effect";
 
 const isDurationMode = (mode: ChartMode): mode is DurationMode =>
   mode.type === "duration";
@@ -111,7 +111,11 @@ const chartDataWithSubscriptionAtom: Atom.Writable<
     return [] as BandDataPoint[];
   },
   (ctx, update: BandDataPoint | BandDataPoint[]) => {
-    if (Array.isArray(update) && update.length > 0 && Array.isArray(update[0])) {
+    if (
+      Array.isArray(update) &&
+      update.length > 0 &&
+      Array.isArray(update[0])
+    ) {
       ctx.setSelf(update as BandDataPoint[]);
     } else {
       const currentData = ctx.get(chartDataWithSubscriptionAtom);
@@ -134,13 +138,13 @@ function ModeControls() {
   const fixedMode = !isDuration ? (mode as FixedWindowMode) : null;
 
   return (
-    <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded border border-border text-xs">
-      <div className="flex gap-2 mb-2">
+    <div className="bg-background/80 border-border absolute top-2 left-2 z-10 rounded border p-2 text-xs backdrop-blur-sm">
+      <div className="mb-2 flex gap-2">
         <button
           onClick={() =>
             setMode({ type: "duration", durationMs: durationMinutes * 60000 })
           }
-          className={`px-2 py-1 rounded ${
+          className={`rounded px-2 py-1 ${
             isDuration
               ? "bg-primary text-primary-foreground"
               : "bg-secondary hover:bg-secondary/80"
@@ -156,7 +160,7 @@ function ModeControls() {
               end: new Date(),
             })
           }
-          className={`px-2 py-1 rounded ${
+          className={`rounded px-2 py-1 ${
             !isDuration
               ? "bg-primary text-primary-foreground"
               : "bg-secondary hover:bg-secondary/80"
@@ -176,7 +180,7 @@ function ModeControls() {
               const mins = parseInt(e.target.value) || 1;
               setMode({ type: "duration", durationMs: mins * 60000 });
             }}
-            className="w-16 px-1 py-0.5 bg-background border border-border rounded"
+            className="bg-background border-border w-16 rounded border px-1 py-0.5"
             min="1"
           />
           <span>min</span>
@@ -192,7 +196,7 @@ function ModeControls() {
                 const start = new Date(e.target.value);
                 setMode({ type: "fixed", start, end: fixedMode.end });
               }}
-              className="px-1 py-0.5 bg-background border border-border rounded"
+              className="bg-background border-border rounded border px-1 py-0.5"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -204,7 +208,7 @@ function ModeControls() {
                 const end = new Date(e.target.value);
                 setMode({ type: "fixed", start: fixedMode.start, end });
               }}
-              className="px-1 py-0.5 bg-background border border-border rounded"
+              className="bg-background border-border rounded border px-1 py-0.5"
             />
           </div>
         </div>
@@ -260,7 +264,10 @@ export function ParameterChart() {
       }
 
       const currentMode = modeRef.current;
-      const newPoint: BandDataPoint = [timestamp, [numericValue, numericValue, numericValue]];
+      const newPoint: BandDataPoint = [
+        timestamp,
+        [numericValue, numericValue, numericValue],
+      ];
 
       if (currentMode.type === "duration") {
         // Filter points outside the sliding window (creates scrolling effect)
@@ -325,6 +332,7 @@ export function ParameterChart() {
         customBars: true, // Enable high/low bands using [min, avg, max] format
         zoomCallback: handleZoom,
         interactionModel,
+        strokeWidth: 2,
       });
     } else if (data.length > 0) {
       chartRef.current!.updateOptions({ file: data });
@@ -365,8 +373,7 @@ export function ParameterChart() {
   }, []);
 
   return (
-    <div ref={parentRef} className="absolute inset-4 grid">
-      <ModeControls />
+    <div ref={parentRef} className="absolute inset-0 bottom-2 grid">
       <div ref={containerRef} />
     </div>
   );

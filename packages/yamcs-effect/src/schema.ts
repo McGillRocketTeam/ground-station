@@ -329,7 +329,7 @@ export const CommandHistoryEntry = Schema.Struct({
   commandId: CommandIdObject,
   attr: Schema.Array(CommandHistoryAttribute),
   generationTime: Schema.DateFromString,
-  assignments: Schema.Array(CommandAssignment),
+  assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
 export const StreamingCommandHisotryEntry = Schema.Struct({
@@ -418,4 +418,34 @@ export const LinkInfo = Schema.Struct({
   parentName: Schema.optional(Schema.String),
   actions: Schema.optional(Schema.Array(ActionInfo)),
   parameters: Schema.optional(Schema.Array(QualifiedName)),
+});
+
+export const ParameterSample = Schema.Struct({
+  time: Schema.DateFromString,
+  avg: Schema.Number,
+  min: Schema.Number,
+  max: Schema.Number,
+  n: Schema.Number,
+  minTime: Schema.DateFromString,
+  maxTime: Schema.DateFromString,
+  firstTime: Schema.DateFromString,
+  lastTime: Schema.DateFromString,
+});
+
+export const EventSeverity = Schema.Literal(
+  "INFO",
+  "WATCH",
+  "WARNING",
+  "DISTRESS",
+  "CRITICAL",
+  "SEVERE",
+);
+
+export const Event = Schema.Struct({
+  source: Schema.String,
+  generationTime: Schema.DateFromString,
+  receptionTime: Schema.DateFromString,
+  seqNumber: Schema.Number,
+  message: Schema.String,
+  severity: EventSeverity,
 });

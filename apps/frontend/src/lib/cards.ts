@@ -1,9 +1,13 @@
+import { CommandButtonCard } from "@/cards/command-button";
+import { CommandHistoryCard } from "@/cards/command-history";
+import { EventsCard } from "@/cards/events";
+import { LinksCard } from "@/cards/links";
+import { ParameterChartCard } from "@/cards/parameter-chart";
+import { ParameterTable } from "@/cards/parameter-table";
+import { TextCard } from "@/cards/text-card";
+import type { IDockviewPanelProps } from "dockview-react";
 import { Schema } from "effect";
 import type { ReactNode } from "react";
-import { TextCard } from "@/cards/text-card";
-import { ParameterCard } from "@/cards/parameter-card";
-import { ParameterTable } from "@/cards/parameter-table";
-import type { IDockviewPanelProps } from "dockview-react";
 
 export interface CardDefinition<
   Id extends string,
@@ -25,7 +29,15 @@ export function makeCard<
 }
 
 // Source of truth - add all cards here
-export const CardArray = [TextCard, ParameterCard, ParameterTable] as const;
+export const CardArray: CardDefinition<string, any>[] = [
+  TextCard,
+  ParameterTable,
+  CommandHistoryCard,
+  ParameterChartCard,
+  LinksCard,
+  EventsCard,
+  CommandButtonCard,
+] as const;
 
 type Cards = (typeof CardArray)[number];
 export type CardId = Cards["id"];

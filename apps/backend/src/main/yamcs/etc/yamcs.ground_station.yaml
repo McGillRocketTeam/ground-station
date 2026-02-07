@@ -27,20 +27,13 @@ dataLinks:
     autoReconnect: true
     brokers:
        - tcp://localhost:1883 
-       # - tcp://mrt.leomindlin.com:1883 
-    # packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
-    # packetPreprocessorArgs:
-    #    timestampOffset: -1 #no timestmap in the packet
-    #    seqCountOffset: 0
     tmStream: tm_realtime
     tcStream: tc_realtime
 
   - name: LabJack
     class: org.yamcs.labjack.LabJackDataLink
-    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
-    packetPreprocessorArgs:
-       timestampOffset: -1 #no timestmap in the packet
-       seqCountOffset: 0
+    tmStream: tm_labJack
+    tcStream: tc_labJack
 
   - name: simulator
     class: org.yamcs.tctm.UdpParameterDataLink
@@ -52,6 +45,10 @@ mdb:
   - type: xtce
     args:
       file: mdb/rocket.xml
+  - type: xtce
+    spec: "LabJack"
+    args:
+      file: mdb/labjack-t7.xml
 
 # Configuration for streams created at server startup
 streamConfig:
@@ -59,11 +56,20 @@ streamConfig:
     - name: "tm_realtime"
       rootContainer: "/FlightComputer/FCFrame"
     - name: "tm_dump"
+
+    # Labjack
+    - name: "tm_labJack"
+      processor: "realtime"
+      rootContainer: "/LabJackT7/LabJackPacket"
+
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
   param: ["pp_realtime", "sys_param", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   tc:
+    - name: "tc_labJack"
+      processor: "realtime"
+      tcPatterns: ["/LabJackT7/.*"]
     - name: "tc_realtime"
       processor: "realtime"
-
+      tcPatterns: ["/FlightComputer/.*"]

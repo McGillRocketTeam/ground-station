@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/roboto";
+@import "@fontsource-variable/jetbrains-mono";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,6 +39,17 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --orange-text: var(--primary);
+  --white-text: #000000;
+
+  --background-secondary: #ebebeb;
+  --background-secondary-highlight: #dfdede;
+
+  --selection-background: #c4e2ff;
+
+  --mrt: #9f1c22;
+  --success: var(--color-green-700);
 }
 
 .dark {
@@ -57,6 +69,9 @@
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
+
+  --color-border-active: #646464;
+
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.809 0.105 251.813);
@@ -72,10 +87,23 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --orange-text: #ffa022;
+  --white-text: #ffffff;
+
+  --background-secondary: #363636;
+  --background-secondary-highlight: #464646;
+
+  --selection-background: #113c66;
+
+  --mrt: #d21e26;
+  --success: var(--color-green-500);
 }
 
 @theme inline {
-  --font-sans: "Roboto", sans-serif;
+  --font-sans: "Roboto Variable", sans-serif;
+  --font-mono: "JetBrains Mono Variable", monospace;
+  --default-mono-font-family: "JetBrains Mono Variable", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -114,17 +142,38 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-mrt: var(--mrt);
+
+  --color-orange-text: var(--orange-text);
+  --color-white-text: var(--white-text);
+
+  --color-background-secondary: var(--background-secondary);
+  --color-background-secondary-highlight: var(--background-secondary-highlight);
+
+  --color-selection-background: var(--selection-background);
+  --color-error: #a1112c;
+  --color-success: var(--success);
+  --color-error-foreground: var(--color-white);
+}
+
+.font-mono {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: slashed-zero;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply font-sans bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
   html {
     @apply font-sans;
   }
 }
-

@@ -4,7 +4,7 @@ simulator_enabled = cfg.get('simulator', True)
 
 local_resource(
     'frontend',
-    serve_cmd="YAMCS_URL=http://localhost:8090 pnpm --filter @mrt/frontend dev",
+    serve_cmd="pnpm --filter @mrt/frontend dev",
 		serve_env={
 			'YAMCS_INSTANCE': 'ground_station',
 			'YAMCS_URL': 'http://localhost:8090',
@@ -37,28 +37,6 @@ if simulator_enabled:
 			links='http://localhost:5173',
 			resource_deps=['backend', 'yamcs-effect']
 	)
-
-local_resource(
-    'xtce-generator',
-		labels=['infrastructure'],
-    cmd="""
-    set -e
-
-    cd ./apps/xtce-generator
-
-    if [ ! -d venv ]; then
-        python3 -m venv venv
-    fi
-
-    ./venv/bin/pip install -r requirements.txt
-    ./venv/bin/python converter.py --output "../backend/src/main/yamcs/mdb/rocket.xml"
-    """,
-    deps=[
-        "requirements.txt",
-        "converter.py",
-    ]
-)
-
 
 local_resource(
     'xtce-generator',

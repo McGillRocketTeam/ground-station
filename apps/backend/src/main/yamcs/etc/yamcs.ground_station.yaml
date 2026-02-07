@@ -22,13 +22,23 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: ASTRA
+  - name: ASTRA-433
     class: org.yamcs.mrt.AstraAggregateDataLink
     autoReconnect: true
     brokers:
        - tcp://localhost:1883 
-    tmStream: tm_realtime
-    tcStream: tc_realtime
+    frequency: "435.00"
+    tmStream: tm_433_realtime
+    tcStream: tc_433_realtime
+
+  - name: ASTRA-903
+    class: org.yamcs.mrt.AstraAggregateDataLink
+    autoReconnect: true
+    brokers:
+       - tcp://localhost:1883 
+    frequency: "903.00"
+    tmStream: tm_903_realtime
+    tcStream: tc_903_realtime
 
   - name: LabJack
     class: org.yamcs.labjack.LabJackDataLink
@@ -42,9 +52,18 @@ dataLinks:
     json: true
 
 mdb:
-  - type: xtce
-    args:
-      file: mdb/rocket.xml
+  - type: emptyNode
+    spec: "FC903"
+    subLoaders:
+      - type: xtce
+        args:
+          file: mdb/rocket.xml
+  - type: emptyNode
+    spec: "FC435"
+    subLoaders:
+      - type: xtce
+        args:
+          file: mdb/rocket.xml
   - type: xtce
     spec: "LabJack"
     args:
@@ -53,8 +72,12 @@ mdb:
 # Configuration for streams created at server startup
 streamConfig:
   tm:
-    - name: "tm_realtime"
-      rootContainer: "/FlightComputer/FCFrame"
+    - name: "tm_433_realtime"
+      rootContainer: "/FC903/FlightComputer/FCFrame"
+      processor: "realtime"
+    - name: "tm_903_realtime"
+      rootContainer: "/FC435/FlightComputer/FCFrame"
+      processor: "realtime"
     - name: "tm_dump"
 
     # Labjack
@@ -70,6 +93,9 @@ streamConfig:
     - name: "tc_labJack"
       processor: "realtime"
       tcPatterns: ["/LabJackT7/.*"]
-    - name: "tc_realtime"
+    - name: "tc_433_realtime"
+      processor: "realtime"
+      tcPatterns: ["/FlightComputer/.*"]
+    - name: "tc_903_realtime"
       processor: "realtime"
       tcPatterns: ["/FlightComputer/.*"]

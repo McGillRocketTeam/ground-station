@@ -4,7 +4,7 @@ simulator_enabled = cfg.get('simulator', True)
 
 local_resource(
     'frontend',
-    serve_cmd="YAMCS_URL=http://localhost:8090 pnpm --filter @mrt/frontend dev",
+    serve_cmd="pnpm --filter @mrt/frontend dev",
 		serve_env={
 			'YAMCS_INSTANCE': 'ground_station',
 			'YAMCS_URL': 'http://localhost:8090',
@@ -40,7 +40,6 @@ if simulator_enabled:
 
 local_resource(
     'xtce-generator',
-		labels=['infrastructure'],
     cmd="""
     set -e
 

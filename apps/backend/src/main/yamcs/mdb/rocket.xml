@@ -982,6 +982,26 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="launch">
           <EntryList/>
         </CommandContainer>
+        <TransmissionConstraintList>
+          <TransmissionConstraint timeOut="PT0S">
+            <BooleanExpression>
+              <Condition>
+                <ParameterInstanceRef parameterRef="mov_armed_SW" useCalibratedValue="true"/>
+                <ComparisonOperator>==</ComparisonOperator>
+                <Value>True</Value>
+              </Condition>
+            </BooleanExpression>
+          </TransmissionConstraint>
+          <TransmissionConstraint timeOut="PT0S">
+            <BooleanExpression>
+              <Condition>
+                <ParameterInstanceRef parameterRef="mov_armed_HW" useCalibratedValue="true"/>
+                <ComparisonOperator>==</ComparisonOperator>
+                <Value>True</Value>
+              </Condition>
+            </BooleanExpression>
+          </TransmissionConstraint>
+        </TransmissionConstraintList>
         <CommandSignificance significance="severe"/>
         <VerifierSet/>
       </MetaCommand>
@@ -989,6 +1009,26 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="main_ejection">
           <EntryList/>
         </CommandContainer>
+        <TransmissionConstraintList>
+          <TransmissionConstraint timeOut="PT0S">
+            <BooleanExpression>
+              <Condition>
+                <ParameterInstanceRef parameterRef="ring_armed_HW" useCalibratedValue="true"/>
+                <ComparisonOperator>==</ComparisonOperator>
+                <Value>True</Value>
+              </Condition>
+            </BooleanExpression>
+          </TransmissionConstraint>
+          <TransmissionConstraint timeOut="PT0S">
+            <BooleanExpression>
+              <Condition>
+                <ParameterInstanceRef parameterRef="ring_armed_SW" useCalibratedValue="true"/>
+                <ComparisonOperator>==</ComparisonOperator>
+                <Value>True</Value>
+              </Condition>
+            </BooleanExpression>
+          </TransmissionConstraint>
+        </TransmissionConstraintList>
         <CommandSignificance significance="none"/>
         <VerifierSet/>
       </MetaCommand>

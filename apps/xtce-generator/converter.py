@@ -357,8 +357,7 @@ def set_command_arguments(command: Y.Command, arguments: str):
             case _:
                 raise ValueError(f"Unknown argument type: {type_name}")
 
-
-def set_command_significance(significance: str):
+def get_command_significance(significance: str):
     """
     Sets command significance to respective XTCE significance level
     """
@@ -378,17 +377,30 @@ def set_command_significance(significance: str):
         case _:
             raise ValueError(f"Unhandled significance level '{significance}'")
 
+def get_command_constraints(constraints: str, params: dict[str, Any]):
+    if constraints == "":
+        return None
 
-def make_command(system: Y.System, cmd: dict[str, Any]):
+    constraint_entries = []
+    for constraint in constraints.split(","):
+        param, val = tuple(constraint.split("="))
+        constraint_entries.append(
+            Y.TransmissionConstraint(expression=Y.eq(ref=params[param.strip()], value=val.strip()), timeout=0)
+        )
+    return constraint_entries
+
+def make_command(system: Y.System, cmd: dict[str, Any], params: dict[str, Any]):
     name = cmd["Variable Name"]
     command_id = cmd["ID"]
-    significance = set_command_significance(cmd["Significance"])
+    significance = get_command_significance(cmd["Significance"])
+    constraints = get_command_constraints(cmd["Transmission Constraints"], params)
 
     command = Y.Command(
         system=system,
         name=name,
         short_description=command_id,
         significance=significance,
+        constraint=constraints,
     )
 
     set_command_arguments(command, cmd["Arguments"])
@@ -568,16 +580,15 @@ def main() -> None:
     for container_entry in atomic_containers:
         frame_container.entries.append(container_entry)
 
-    command_sheet_id = "1TR60uGHWK7cE0fT5De08KupXAn6dqf6P7QywPF3KDuU"
-    commands_gid = "1631122107"
+    command_sheet_id = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk"
+    commands_gid = "1257549045"
 
     print("Creating Commands...")
-    command_data = load_sheet_rows(command_sheet_id, commands_gid, col_buffer=1, row_buffer=4)
-
+    command_data = load_sheet_rows(command_sheet_id, commands_gid, col_buffer=0, row_buffer=1)
 
     for cmd in command_data:
         if cmd["Variable Name"]:
-            make_command(system=fc, cmd=cmd)
+            make_command(system=fc, cmd=cmd, params=param_dict)
 
     write_system(fc, output_path)
 

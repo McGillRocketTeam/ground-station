@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.paho.client.mqttv3.*;
 import org.yamcs.*;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mrt.astra.*;
 import org.yamcs.tctm.*;
@@ -30,6 +31,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 	private String name;
 	private YConfiguration config;
 	private String detailedStatus;
+	private String frequency;
 
 	private MqttAsyncClient client;
 	private MqttConnectOptions connOpts;
@@ -43,6 +45,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 		this.instance = instance;
 		this.name = name;
 		this.config = config;
+		this.frequency = config.getString("frequency");
 		this.detailedStatus = "Not started.";
 		this.connOpts = MqttUtils.getConnectionOptions(config);
 		this.client = MqttUtils.newClient(config);
@@ -51,6 +54,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 	@Override
 	public Spec getSpec() {
 		var spec = getDefaultSpec();
+		spec.addOption("frequency", OptionType.STRING).withRequired(true);
 		MqttUtils.addConnectionOptionsToSpec(spec);
 		return spec;
 	}
@@ -154,14 +158,24 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			return;
 		}
 
-		subLinksMap.computeIfAbsent(deviceName, dn -> {
-			eventProducer.sendInfo("Discovered new radio device: " + dn);
-			return createSubLinkForDevice(dn);
-		});
-
 		try {
 			String jsonString = new String(payload, StandardCharsets.UTF_8);
 			JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+
+			// Check if device frequency matches configured frequency
+			String deviceFrequency = jsonObject.has("frequency") && !jsonObject.get("frequency").isJsonNull()
+					? jsonObject.get("frequency").getAsString()
+					: null;
+
+			if (deviceFrequency == null || !deviceFrequency.equals(this.frequency)) {
+				// Frequency doesn't match, ignore this device
+				return;
+			}
+
+			subLinksMap.computeIfAbsent(deviceName, dn -> {
+				eventProducer.sendInfo("Discovered new radio device: " + dn);
+				return createSubLinkForDevice(dn);
+			});
 
 			String status = jsonObject.has("status") && !jsonObject.get("status").isJsonNull()
 					? jsonObject.get("status").getAsString()

@@ -61,6 +61,27 @@ local_resource(
 
 
 local_resource(
+    'xtce-generator',
+    cmd="""
+    set -e
+
+    cd ./apps/xtce-generator
+
+    if [ ! -d venv ]; then
+        python3 -m venv venv
+    fi
+
+    ./venv/bin/pip install -r requirements.txt
+    ./venv/bin/python converter.py --output "../backend/src/main/yamcs/mdb/rocket.xml"
+    """,
+    deps=[
+        "requirements.txt",
+        "converter.py",
+    ]
+)
+
+
+local_resource(
     'yamcs-effect',
     serve_cmd="pnpm turbo dev --filter @mrt/yamcs-effect",
 		labels=['packages'],

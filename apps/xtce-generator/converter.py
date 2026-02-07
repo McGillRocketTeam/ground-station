@@ -31,9 +31,7 @@ def _fetch_sheet_data(sheet_id: str, gid: str, col_buffer: int = 0) -> list[list
     return data
 
 
-def load_sheet_rows(
-    sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: int = 0
-) -> list[dict[str, Any]]:
+def load_sheet_rows(sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: int = 0) -> list[dict[str, Any]]:
     """
     Load a Google Sheet (as CSV) into a list of rows (dicts).
 
@@ -46,7 +44,7 @@ def load_sheet_rows(
         raise ValueError("Expected at least two header rows")
 
     headers = data[row_buffer]
-    rows = [dict(zip(headers, row)) for row in data[row_buffer + 1 :]]
+    rows = [dict(zip(headers, row)) for row in data[row_buffer + 1:]]
     print(f"Loaded {len(rows)} data rows.")
     return rows
 
@@ -103,13 +101,11 @@ def extract_number(s: str) -> int | None:
     match = re.search(r"\d+", s)
     return int(match.group()) if match else None
 
-
 def set_param_calibrator(row: dict[str, Any]):
     cal = row["Calibration Function f(x)"]
     if cal:
         return Y.calibrators.MathOperation(expression=cal)
     return None
-
 
 def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
     gui_type = str(row["GUI Type"])
@@ -172,7 +168,7 @@ def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
                     short_description=ui_name,
                     long_description=description,
                     units=units,
-                    encoding=Y.FloatEncoding(bits=size, little_endian=True),
+                    encoding=Y.FloatEncoding(bits=size),
                     calibrator=calibrator,
                 )
                 return param
@@ -182,7 +178,7 @@ def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
                     if "u" in encoded_type
                     else Y.IntegerEncodingScheme.TWOS_COMPLEMENT
                 )
-                param = Y.FloatParameter(
+                param = Y.IntegerParameter(
                     system=system,
                     name=variable_name,
                     short_description=ui_name,
@@ -213,9 +209,7 @@ def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
                 short_description=ui_name,
                 long_description=description,
                 units=units,
-                encoding=Y.IntegerEncoding(
-                    bits=size, scheme=scheme, little_endian=True
-                ),
+                encoding=Y.IntegerEncoding(bits=size, scheme=scheme),
                 calibrator=calibrator,
             )
             return param
@@ -363,8 +357,7 @@ def set_command_arguments(command: Y.Command, arguments: str):
             case _:
                 raise ValueError(f"Unknown argument type: {type_name}")
 
-
-def set_command_significance(significance: str):
+def get_command_significance(significance: str):
     """
     Sets command significance to respective XTCE significance level
     """
@@ -384,17 +377,30 @@ def set_command_significance(significance: str):
         case _:
             raise ValueError(f"Unhandled significance level '{significance}'")
 
+def get_command_constraints(constraints: str, params: dict[str, Any]):
+    if constraints == "":
+        return None
 
-def make_command(system: Y.System, cmd: dict[str, Any]):
+    constraint_entries = []
+    for constraint in constraints.split(","):
+        param, val = tuple(constraint.split("="))
+        constraint_entries.append(
+            Y.TransmissionConstraint(expression=Y.eq(ref=params[param.strip()], value=val.strip()), timeout=0)
+        )
+    return constraint_entries
+
+def make_command(system: Y.System, cmd: dict[str, Any], params: dict[str, Any]):
     name = cmd["Variable Name"]
     command_id = cmd["ID"]
-    significance = set_command_significance(cmd["Significance"])
+    significance = get_command_significance(cmd["Significance"])
+    constraints = get_command_constraints(cmd["Transmission Constraints"], params)
 
     command = Y.Command(
         system=system,
         name=name,
         short_description=command_id,
         significance=significance,
+        constraint=constraints,
     )
 
     set_command_arguments(command, cmd["Arguments"])
@@ -464,9 +470,9 @@ def make_header(system: Y.System, atomic_names: list[str]):
     num_empty_atomic_flags = 32 - len(atomic_params)
     pad = Y.IntegerParameter(
         system=system,
-        name="command_ack_id",
-        short_description="Command ACK ID",
-        long_description="Command ID if ACK flags is present",
+        name="padding",
+        short_description="Padding",
+        long_description="A.S.T.R.A. Packet Padding",
         signed=False,
         encoding=Y.IntegerEncoding(bits=8, little_endian=True),
     )
@@ -574,17 +580,15 @@ def main() -> None:
     for container_entry in atomic_containers:
         frame_container.entries.append(container_entry)
 
-    command_sheet_id = "1TR60uGHWK7cE0fT5De08KupXAn6dqf6P7QywPF3KDuU"
-    commands_gid = "1631122107"
+    command_sheet_id = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk"
+    commands_gid = "1257549045"
 
     print("Creating Commands...")
-    command_data = load_sheet_rows(
-        command_sheet_id, commands_gid, col_buffer=1, row_buffer=4
-    )
+    command_data = load_sheet_rows(command_sheet_id, commands_gid, col_buffer=0, row_buffer=1)
 
     for cmd in command_data:
         if cmd["Variable Name"]:
-            make_command(system=fc, cmd=cmd)
+            make_command(system=fc, cmd=cmd, params=param_dict)
 
     write_system(fc, output_path)
 

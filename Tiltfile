@@ -40,7 +40,17 @@ if simulator_enabled:
 
 local_resource(
     'xtce-generator',
-    cmd="""
+		labels=['infrastructure'],
+    cmd=os.name == 'nt' and '''
+    cd ./apps/xtce-generator
+
+    if (!(Test-Path venv)) {
+        python -m venv venv
+    }
+
+    .\\venv\\Scripts\\pip install -r requirements.txt
+    .\\venv\\Scripts\\python converter.py --output "../backend/src/main/yamcs/mdb/rocket.xml"
+    ''' or '''
     set -e
 
     cd ./apps/xtce-generator
@@ -51,7 +61,7 @@ local_resource(
 
     ./venv/bin/pip install -r requirements.txt
     ./venv/bin/python converter.py --output "../backend/src/main/yamcs/mdb/rocket.xml"
-    """,
+    ''',
     deps=[
         "requirements.txt",
         "converter.py",

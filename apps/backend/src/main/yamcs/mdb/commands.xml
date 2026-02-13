@@ -1,0 +1,178 @@
+<?xml version="1.0" ?>
+<!--
+This file was generated with Yamcs PyMDB.
+See https://github.com/yamcs/pymdb
+-->
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="FlightComputer">
+  <TelemetryMetaData/>
+  <CommandMetaData>
+    <ArgumentTypeSet>
+      <BooleanArgumentType name="radio_set_transmit__TX" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanArgumentType>
+      <BooleanArgumentType name="umbilical__UMB" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanArgumentType>
+    </ArgumentTypeSet>
+    <MetaCommandSet>
+      <MetaCommand name="arm_recovery" abstract="false" shortDescription="ea">
+        <CommandContainer name="arm_recovery">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="disarm_recovery" abstract="false" shortDescription="ed">
+        <CommandContainer name="disarm_recovery">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="drogue_ejection" abstract="false" shortDescription="de">
+        <CommandContainer name="drogue_ejection">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="emergency_cancel" abstract="false" shortDescription="ec">
+        <CommandContainer name="emergency_cancel">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="severe"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="emergency_stop" abstract="false" shortDescription="es">
+        <CommandContainer name="emergency_stop">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="severe"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="fdov_de-energize" abstract="false" shortDescription="fd">
+        <CommandContainer name="fdov_de-energize">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="fdov_energize" abstract="false" shortDescription="fe">
+        <CommandContainer name="fdov_energize">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="landed" abstract="false" shortDescription="ld">
+        <CommandContainer name="landed">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="launch" abstract="false" shortDescription="pl">
+        <CommandContainer name="launch">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="severe"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="main_ejection" abstract="false" shortDescription="me">
+        <CommandContainer name="main_ejection">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="mov_arming" abstract="false" shortDescription="p2">
+        <CommandContainer name="mov_arming">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="critical"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="mov_disarming" abstract="false" shortDescription="p3">
+        <CommandContainer name="mov_disarming">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="critical"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="propulsion_off" abstract="false" shortDescription="po">
+        <CommandContainer name="propulsion_off">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="watch"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="propulsion_on" abstract="false" shortDescription="pi">
+        <CommandContainer name="propulsion_on">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="watch"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="radio_set_transmit" abstract="false" shortDescription="rt">
+        <ArgumentList>
+          <Argument name="TX" argumentTypeRef="radio_set_transmit__TX"/>
+        </ArgumentList>
+        <CommandContainer name="radio_set_transmit">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="TX">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="reset_from_start" abstract="false" shortDescription="rs">
+        <CommandContainer name="reset_from_start">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="reset_prop_boards_valve_state" abstract="false" shortDescription="rp">
+        <CommandContainer name="reset_prop_boards_valve_state">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="umbilical" abstract="false" shortDescription="ul">
+        <ArgumentList>
+          <Argument name="UMB" argumentTypeRef="umbilical__UMB"/>
+        </ArgumentList>
+        <CommandContainer name="umbilical">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="UMB">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+        </CommandContainer>
+        <CommandSignificance significance="none"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="vent_valve_de-energize" abstract="false" shortDescription="vd">
+        <CommandContainer name="vent_valve_de-energize">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="critical"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="vent_valve_energize" abstract="false" shortDescription="ve">
+        <CommandContainer name="vent_valve_energize">
+          <EntryList/>
+        </CommandContainer>
+        <CommandSignificance significance="critical"/>
+        <VerifierSet/>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
+</SpaceSystem>

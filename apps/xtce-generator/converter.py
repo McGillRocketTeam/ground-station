@@ -381,13 +381,19 @@ def get_command_constraints(constraints: str, params: dict[str, Any]):
     if constraints == "":
         return None
 
+    if not params:
+        return None
+
     constraint_entries = []
     for constraint in constraints.split(","):
         param, val = tuple(constraint.split("="))
+        param_name = param.strip()
+        if param_name not in params:
+            continue
         constraint_entries.append(
-            Y.TransmissionConstraint(expression=Y.eq(ref=params[param.strip()], value=val.strip()), timeout=0)
+            Y.TransmissionConstraint(expression=Y.eq(ref=params[param_name], value=val.strip()), timeout=0)
         )
-    return constraint_entries
+    return constraint_entries if constraint_entries else None
 
 def make_command(system: Y.System, cmd: dict[str, Any], params: dict[str, Any]):
     name = cmd["Variable Name"]
@@ -534,23 +540,20 @@ def write_system(system: Y.System, output_path: str):
     print(f"✅ Wrote system definition to {output_path}")
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Generate FlightComputer Yamcs XML from Google Sheets"
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        help="Path to output XML file (default: output.xml)",
-        default="output.xml",
-    )
-    args = parser.parse_args()
+def create_commands(system: Y.System, command_data: list[dict[str, Any]], params: dict[str, Any] | None = None):
+    if params is None:
+        params = {}
+    for cmd in command_data:
+        if cmd["Variable Name"]:
+            make_command(system=system, cmd=cmd, params=params)
 
-    output_path = args.output
 
+def generate_full_system(output_path: str):
     sheet_id = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk"
     parameter_gid = "2042306306"
     atomic_gid = "2140536820"
+    command_sheet_id = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk"
+    commands_gid = "1257549045"
 
     param_data = load_sheet_rows(sheet_id, parameter_gid, col_buffer=0, row_buffer=1)
 
@@ -580,17 +583,49 @@ def main() -> None:
     for container_entry in atomic_containers:
         frame_container.entries.append(container_entry)
 
-    command_sheet_id = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk"
-    commands_gid = "1257549045"
-
     print("Creating Commands...")
     command_data = load_sheet_rows(command_sheet_id, commands_gid, col_buffer=0, row_buffer=1)
-
-    for cmd in command_data:
-        if cmd["Variable Name"]:
-            make_command(system=fc, cmd=cmd, params=param_dict)
+    create_commands(fc, command_data, param_dict)
 
     write_system(fc, output_path)
+
+
+def generate_commands_only(output_path: str):
+    sheet_id = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk"
+    commands_gid = "1257549045"
+
+    fc = Y.System("FlightComputer")
+
+    print("Creating Commands...")
+    command_data = load_sheet_rows(sheet_id, commands_gid, col_buffer=0, row_buffer=1)
+    create_commands(fc, command_data)
+
+    write_system(fc, output_path)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Generate FlightComputer Yamcs XML from Google Sheets"
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Path to output XML file (default: output.xml)",
+        default="output.xml",
+    )
+    parser.add_argument(
+        "--commands-only",
+        action="store_true",
+        help="Generate XML with only commands (no parameters)",
+    )
+    args = parser.parse_args()
+
+    output_path = args.output
+
+    if args.commands_only:
+        generate_commands_only(output_path)
+    else:
+        generate_full_system(output_path)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ services:
   - class: org.yamcs.archive.ReplayServer
   - class: org.yamcs.parameter.SystemParametersService
     args:
-      producers: ['jvm', 'fs', 'diskstats', 'rocksdb']
+      producers: ["jvm", "fs", "diskstats", "rocksdb"]
   - class: org.yamcs.ProcessorCreatorService
     args:
       name: realtime
@@ -26,19 +26,24 @@ dataLinks:
     class: org.yamcs.mrt.AstraAggregateDataLink
     autoReconnect: true
     brokers:
-       - tcp://localhost:1883 
+      - tcp://localhost:1883
     frequency: "435.00"
     tmStream: tm_433_realtime
-    tcStream: tc_433_realtime
 
   - name: ASTRA-903
     class: org.yamcs.mrt.AstraAggregateDataLink
     autoReconnect: true
     brokers:
-       - tcp://localhost:1883 
+      - tcp://localhost:1883
     frequency: "903.00"
     tmStream: tm_903_realtime
-    tcStream: tc_903_realtime
+
+  - name: ASTRA-Commands
+    class: org.yamcs.mrt.AstraCommandLink
+    autoReconnect: true
+    brokers:
+      - tcp://localhost:1883
+    tcStream: tc_realtime
 
   - name: LabJack
     class: org.yamcs.labjack.LabJackDataLink
@@ -64,6 +69,9 @@ mdb:
       - type: xtce
         args:
           file: mdb/rocket.xml
+  - type: xtce
+    args:
+      file: mdb/commands.xml
   - type: xtce
     spec: "LabJack"
     args:
@@ -93,9 +101,6 @@ streamConfig:
     - name: "tc_labJack"
       processor: "realtime"
       tcPatterns: ["/LabJackT7/.*"]
-    - name: "tc_433_realtime"
-      processor: "realtime"
-      tcPatterns: ["/FlightComputer/.*"]
-    - name: "tc_903_realtime"
+    - name: "tc_realtime"
       processor: "realtime"
       tcPatterns: ["/FlightComputer/.*"]

@@ -109,8 +109,6 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 				handleMetadata(deviceName, message);
 			} else if ("telemetry".equalsIgnoreCase(subTopic)) {
 				handleTelemetry(deviceName, message);
-			} else if ("acks".equalsIgnoreCase(subTopic)) {
-				handleAck(deviceName, message);
 			}
 		} catch (Exception e) {
 			eventProducer.sendWarning(
@@ -118,32 +116,6 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 		}
 	}
 
-	private void handleAck(String deviceName, MqttMessage message) {
-		byte[] payload = message.getPayload();
-		log.info(message.toString());
-
-		try {
-			String jsonString = new String(payload, StandardCharsets.UTF_8);
-
-			AckDto ack = new Gson().fromJson(jsonString, AckDto.class);
-			if (ack == null) {
-				throw new IllegalArgumentException("ACK payload is null");
-			}
-
-			ack.validate();
-
-			AstraSubLink link = subLinksMap.get(deviceName);
-			if (link == null) {
-				throw new IllegalStateException("No sublink for device " + deviceName);
-			}
-
-			link.handleAck(ack.cmd_id, ack.status);
-
-		} catch (Exception e) {
-			eventProducer.sendDistress(
-					"Error parsing ack JSON for " + deviceName + ": " + e.getMessage());
-		}
-	}
 
 	private void handleMetadata(String deviceName, MqttMessage message) {
 		byte[] payload = message.getPayload();

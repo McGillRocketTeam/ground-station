@@ -81,10 +81,10 @@ mdb:
 streamConfig:
   tm:
     - name: "tm_433_realtime"
-      rootContainer: "/FC903/FlightComputer/FCFrame"
+      rootContainer: "/FC435/FlightComputer/FCFrame"
       processor: "realtime"
     - name: "tm_903_realtime"
-      rootContainer: "/FC435/FlightComputer/FCFrame"
+      rootContainer: "/FC903/FlightComputer/FCFrame"
       processor: "realtime"
     - name: "tm_dump"
 
@@ -101,6 +101,7 @@ streamConfig:
     - name: "tc_labJack"
       processor: "realtime"
       tcPatterns: ["/LabJackT7/.*"]
+
     - name: "tc_realtime"
       processor: "realtime"
       tcPatterns: ["/FlightComputer/.*"]

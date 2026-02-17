@@ -3,6 +3,8 @@ package org.yamcs.mrt;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.eclipse.paho.client.mqttv3.*;
 import org.yamcs.*;
 import org.yamcs.Spec.OptionType;
@@ -116,7 +118,6 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 		}
 	}
 
-
 	private void handleMetadata(String deviceName, MqttMessage message) {
 		byte[] payload = message.getPayload();
 		if (payload == null || payload.length == 0) {
@@ -215,8 +216,13 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 
 	/** Creates and registers a new device sublink. */
 	private AstraSubLink createSubLinkForDevice(String device) {
-
 		try {
+			// TODO: Fix this random race condition when two links start at once
+			int randomMillis = ThreadLocalRandom.current().nextInt(0, 1001);
+
+			log.info("Sleeping for " + randomMillis + " ms");
+
+			Thread.sleep(randomMillis);
 			String deviceType = device.split("-")[0];
 
 			// Implement more types of links here!
@@ -240,6 +246,9 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			return null;
 		} catch (IndexOutOfBoundsException e) {
 			eventProducer.sendWarning("Invalid device name \"" + device + "\". Could not identify device type.");
+			return null;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 			return null;
 		}
 

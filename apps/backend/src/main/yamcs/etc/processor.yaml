@@ -9,6 +9,7 @@ realtime:
     - class: org.yamcs.parameter.LocalParameterManager
   config:
     subscribeAll: true
+    allowContainerlessCommands: true
     # Check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
     alarm:
       parameterCheck: true

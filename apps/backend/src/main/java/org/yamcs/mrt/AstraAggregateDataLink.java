@@ -227,7 +227,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 
 			// Implement more types of links here!
 			AstraSubLink link = switch (deviceType) {
-				case "radio" -> new RadiosLink(client);
+				case "radio" -> new RadiosLink(client, frequency);
 				default -> throw new IllegalArgumentException("Unknown device type: " + deviceType);
 			};
 

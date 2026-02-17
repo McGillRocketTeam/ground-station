@@ -19,23 +19,23 @@ import org.yamcs.cmdhistory.Attribute;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.mrt.AstraCommandLink;
 import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
 import org.yamcs.parameter.UInt32Value;
 import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.tctm.Link;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 public class RadiosLink extends AstraSubLink {
 	MqttToTmPacketConverter tmConverter;
 	private String deviceName;
+	private String deviceFrequency;
 	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-	// Command ID counter (1-255) and pending commands map
-	private final AtomicInteger commandCountCounter = new AtomicInteger(1);
-	private final ConcurrentHashMap<Integer, PreparedCommand> pendingCommands = new ConcurrentHashMap<>();
-
-	public RadiosLink(MqttAsyncClient client) {
+	public RadiosLink(MqttAsyncClient client, String frequency) {
 		super(client);
+		this.deviceFrequency = frequency;
 	}
 
 	@Override
@@ -159,7 +159,13 @@ public class RadiosLink extends AstraSubLink {
 		if (ackFlag) {
 			byte commandAckIdByte = message.getPayload()[3];
 			int commandAckId = commandAckIdByte & 0xFF;
-			// handleFCAck(commandAckId);
+
+			var links = YamcsServer.getServer().getInstance(this.getYamcsInstance()).getLinkManager().getLinks();
+			for (Link link : links) {
+				if (link instanceof AstraCommandLink) {
+					((AstraCommandLink) link).handleFCAck(commandAckId, deviceFrequency);
+				}
+			}
 		}
 
 		for (var tmPacket : tmConverter.convert(message)) {

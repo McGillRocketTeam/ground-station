@@ -257,6 +257,18 @@ public class AstraCommandLink extends AbstractTcDataLink {
 
 	}
 
+	// FIX: Its possible that if there are two radios on the same
+	// frequency (i.e. pad & cs) then the ack will be sent twice.
+	public void handleFCAck(int cmd_id, String frequency) {
+		PreparedCommand command = commandToPreparedMap.get(cmd_id);
+
+		commandHistoryPublisher.publishAck(
+				command.getCommandId(),
+				"fc_" + frequency,
+				timeService.getMissionTime(),
+				AckStatus.OK);
+	}
+
 	private void handleAck(String deviceName, MqttMessage message) {
 		byte[] payload = message.getPayload();
 
@@ -273,17 +285,19 @@ public class AstraCommandLink extends AbstractTcDataLink {
 			PreparedCommand command = commandToPreparedMap.get(ack.cmd_id);
 
 			AckStatus ackStatus;
-			if (ack.status.contains("OK")) {
-				ackStatus = AckStatus.OK;
-			} else if (ack.status.contains("NOK")) {
+			if (ack.status.endsWith("NOK")) {
 				ackStatus = AckStatus.NOK;
+			} else if (ack.status.endsWith("OK")) {
+				ackStatus = AckStatus.OK;
 			} else {
 				ackStatus = AckStatus.CANCELLED;
 			}
 
 			commandHistoryPublisher.publishAck(
 					command.getCommandId(),
-					deviceName + "",
+					// Get the substring from RX_OK -> RX since we have the
+					// status we don't want to inclue it in the ack name
+					deviceName + "_" + ack.status.substring(0, 2),
 					timeService.getMissionTime(),
 					ackStatus);
 
@@ -294,7 +308,7 @@ public class AstraCommandLink extends AbstractTcDataLink {
 	}
 
 	private static final class AckDto {
-		Number cmd_id;
+		Integer cmd_id;
 		String status;
 
 		void validate() {

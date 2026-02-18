@@ -7,9 +7,9 @@ import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.AbstractTcTmParamLink;
+import org.yamcs.tctm.AbstractTmDataLink;
 
-public abstract class AstraSubLink extends AbstractTcTmParamLink {
+public abstract class AstraSubLink extends AbstractTmDataLink {
 	private Status status = Status.UNAVAIL;
 	private String detailedStatus = "";
 	MqttAsyncClient client;
@@ -57,8 +57,6 @@ public abstract class AstraSubLink extends AbstractTcTmParamLink {
 	}
 
 	public abstract void handleMqttMessage(MqttMessage message);
-
-	public abstract void handleAck(Number cmdId, String status);
 
 	@Override
 	protected Status connectionStatus() {

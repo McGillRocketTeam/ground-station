@@ -19,23 +19,23 @@ import org.yamcs.cmdhistory.Attribute;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.mrt.AstraCommandLink;
 import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
 import org.yamcs.parameter.UInt32Value;
 import org.yamcs.protobuf.YamcsInstance;
+import org.yamcs.tctm.Link;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 public class RadiosLink extends AstraSubLink {
 	MqttToTmPacketConverter tmConverter;
 	private String deviceName;
+	private String deviceFrequency;
 	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-	// Command ID counter (1-255) and pending commands map
-	private final AtomicInteger commandCountCounter = new AtomicInteger(1);
-	private final ConcurrentHashMap<Integer, PreparedCommand> pendingCommands = new ConcurrentHashMap<>();
-
-	public RadiosLink(MqttAsyncClient client) {
+	public RadiosLink(MqttAsyncClient client, String frequency) {
 		super(client);
+		this.deviceFrequency = frequency;
 	}
 
 	@Override
@@ -49,100 +49,103 @@ public class RadiosLink extends AstraSubLink {
 		tmConverter.init(yamcsInstance, linkName, config);
 	}
 
-	@Override
-	public boolean sendCommand(PreparedCommand preparedCommand) {
-		String cmdId = preparedCommand.getMetaCommand().getShortDescription();
-
-		int seqNum = commandCountCounter.getAndIncrement();
-		if (seqNum > 255) {
-			commandCountCounter.set(1);
-			seqNum = 1;
-		}
-
-		this.commandHistoryPublisher.publish(preparedCommand.getCommandId(), "Command_Id", cmdId);
-		this.commandHistoryPublisher.publish(preparedCommand.getCommandId(), "Sequence_Count", seqNum);
-
-		pendingCommands.put(seqNum, preparedCommand);
-
-		String cmdPayload = seqNum + "," + cmdId;
-
-		MqttMessage msg = new MqttMessage(cmdPayload.getBytes());
-
-		try {
-			client.publish(this.deviceName + "/commands", msg);
-
-			long missionTime = this.timeService.getMissionTime();
-
-			this.commandHistoryPublisher.publishAck(
-					preparedCommand.getCommandId(),
-					Acknowledgment.SENT,
-					missionTime,
-					AckStatus.OK);
-
-			this.commandHistoryPublisher.publishAck(
-					preparedCommand.getCommandId(),
-					"Acknowledge_Radio_RX",
-					missionTime,
-					AckStatus.PENDING);
-
-		} catch (MqttException e) {
-			eventProducer.sendDistress(e.getLocalizedMessage());
-			e.printStackTrace();
-			return false;
-		}
-
-		return true;
-	}
-
-	@Override
-	public void handleAck(Number cmdId, String status) {
-		System.out.println("GOT ACK FOR cmdId: " + cmdId + " status: " + status);
-
-		String ackType = status.substring(0, 2);
-		long missionTime = this.timeService.getMissionTime();
-
-		PreparedCommand preparedCommand = pendingCommands.get(cmdId.intValue());
-		if (preparedCommand != null) {
-			AckStatus ackStatus;
-			if (status.contains("OK")) {
-				ackStatus = AckStatus.OK;
-			} else if (status.contains("BAD")) {
-				ackStatus = AckStatus.NOK;
-			} else {
-				ackStatus = AckStatus.CANCELLED;
-			}
-
-			this.commandHistoryPublisher.publishAck(
-					preparedCommand.getCommandId(),
-					"Acknowledge_Radio_" + ackType,
-					missionTime,
-					ackStatus);
-
-			if (ackType == "RX" && ackStatus == AckStatus.OK) {
-				this.commandHistoryPublisher.publishAck(
-						preparedCommand.getCommandId(),
-						"Acknowledge_Radio_TX",
-						missionTime,
-						AckStatus.PENDING);
-			}
-		} else {
-			System.out.println("No pending command found for cmdId: " + cmdId);
-		}
-	}
-
-	private void handleFCAck(int commandAckId) {
-		PreparedCommand command = pendingCommands.get(commandAckId);
-		if (command == null) {
-			eventProducer.sendCritical(
-					"Recieved ACK for id \"" + commandAckId + "\" but no such command was found in the ground station.");
-		}
-
-		this.commandHistoryPublisher.publishAck(
-				command.getCommandId(),
-				CommandHistoryPublisher.CommandComplete_KEY,
-				this.timeService.getMissionTime(),
-				AckStatus.OK);
-	}
+	// @Override
+	// public boolean sendCommand(PreparedCommand preparedCommand) {
+	// String cmdId = preparedCommand.getMetaCommand().getShortDescription();
+	//
+	// int seqNum = commandCountCounter.getAndIncrement();
+	// if (seqNum > 255) {
+	// commandCountCounter.set(1);
+	// seqNum = 1;
+	// }
+	//
+	// this.commandHistoryPublisher.publish(preparedCommand.getCommandId(),
+	// "Command_Id", cmdId);
+	// this.commandHistoryPublisher.publish(preparedCommand.getCommandId(),
+	// "Sequence_Count", seqNum);
+	//
+	// pendingCommands.put(seqNum, preparedCommand);
+	//
+	// String cmdPayload = seqNum + "," + cmdId;
+	//
+	// MqttMessage msg = new MqttMessage(cmdPayload.getBytes());
+	//
+	// try {
+	// client.publish(this.deviceName + "/commands", msg);
+	//
+	// long missionTime = this.timeService.getMissionTime();
+	//
+	// this.commandHistoryPublisher.publishAck(
+	// preparedCommand.getCommandId(),
+	// Acknowledgment.SENT,
+	// missionTime,
+	// AckStatus.OK);
+	//
+	// this.commandHistoryPublisher.publishAck(
+	// preparedCommand.getCommandId(),
+	// "Acknowledge_Radio_RX",
+	// missionTime,
+	// AckStatus.PENDING);
+	//
+	// } catch (MqttException e) {
+	// eventProducer.sendDistress(e.getLocalizedMessage());
+	// e.printStackTrace();
+	// return false;
+	// }
+	//
+	// return true;
+	// }
+	//
+	// @Override
+	// public void handleAck(Number cmdId, String status) {
+	// System.out.println("GOT ACK FOR cmdId: " + cmdId + " status: " + status);
+	//
+	// String ackType = status.substring(0, 2);
+	// long missionTime = this.timeService.getMissionTime();
+	//
+	// PreparedCommand preparedCommand = pendingCommands.get(cmdId.intValue());
+	// if (preparedCommand != null) {
+	// AckStatus ackStatus;
+	// if (status.contains("OK")) {
+	// ackStatus = AckStatus.OK;
+	// } else if (status.contains("BAD")) {
+	// ackStatus = AckStatus.NOK;
+	// } else {
+	// ackStatus = AckStatus.CANCELLED;
+	// }
+	//
+	// this.commandHistoryPublisher.publishAck(
+	// preparedCommand.getCommandId(),
+	// "Acknowledge_Radio_" + ackType,
+	// missionTime,
+	// ackStatus);
+	//
+	// if (ackType == "RX" && ackStatus == AckStatus.OK) {
+	// this.commandHistoryPublisher.publishAck(
+	// preparedCommand.getCommandId(),
+	// "Acknowledge_Radio_TX",
+	// missionTime,
+	// AckStatus.PENDING);
+	// }
+	// } else {
+	// System.out.println("No pending command found for cmdId: " + cmdId);
+	// }
+	// }
+	//
+	// private void handleFCAck(int commandAckId) {
+	// PreparedCommand command = pendingCommands.get(commandAckId);
+	// if (command == null) {
+	// eventProducer.sendCritical(
+	// "Recieved ACK for id \"" + commandAckId + "\" but no such command was found
+	// in the ground station.");
+	// }
+	//
+	// this.commandHistoryPublisher.publishAck(
+	// command.getCommandId(),
+	// CommandHistoryPublisher.CommandComplete_KEY,
+	// this.timeService.getMissionTime(),
+	// AckStatus.OK);
+	// }
 
 	@Override
 	public void handleMqttMessage(MqttMessage message) {
@@ -156,7 +159,13 @@ public class RadiosLink extends AstraSubLink {
 		if (ackFlag) {
 			byte commandAckIdByte = message.getPayload()[3];
 			int commandAckId = commandAckIdByte & 0xFF;
-			handleFCAck(commandAckId);
+
+			var links = YamcsServer.getServer().getInstance(this.getYamcsInstance()).getLinkManager().getLinks();
+			for (Link link : links) {
+				if (link instanceof AstraCommandLink) {
+					((AstraCommandLink) link).handleFCAck(commandAckId, deviceFrequency);
+				}
+			}
 		}
 
 		for (var tmPacket : tmConverter.convert(message)) {

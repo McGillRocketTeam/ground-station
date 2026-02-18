@@ -3,8 +3,11 @@ package org.yamcs.mrt;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.eclipse.paho.client.mqttv3.*;
 import org.yamcs.*;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mrt.astra.*;
 import org.yamcs.tctm.*;
@@ -30,6 +33,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 	private String name;
 	private YConfiguration config;
 	private String detailedStatus;
+	private String frequency;
 
 	private MqttAsyncClient client;
 	private MqttConnectOptions connOpts;
@@ -43,6 +47,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 		this.instance = instance;
 		this.name = name;
 		this.config = config;
+		this.frequency = config.getString("frequency");
 		this.detailedStatus = "Not started.";
 		this.connOpts = MqttUtils.getConnectionOptions(config);
 		this.client = MqttUtils.newClient(config);
@@ -51,6 +56,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 	@Override
 	public Spec getSpec() {
 		var spec = getDefaultSpec();
+		spec.addOption("frequency", OptionType.STRING).withRequired(true);
 		MqttUtils.addConnectionOptionsToSpec(spec);
 		return spec;
 	}
@@ -105,39 +111,10 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 				handleMetadata(deviceName, message);
 			} else if ("telemetry".equalsIgnoreCase(subTopic)) {
 				handleTelemetry(deviceName, message);
-			} else if ("acks".equalsIgnoreCase(subTopic)) {
-				handleAck(deviceName, message);
 			}
 		} catch (Exception e) {
 			eventProducer.sendWarning(
 					"Error handling message on topic " + topic + ": " + e.getMessage());
-		}
-	}
-
-	private void handleAck(String deviceName, MqttMessage message) {
-		byte[] payload = message.getPayload();
-		log.info(message.toString());
-
-		try {
-			String jsonString = new String(payload, StandardCharsets.UTF_8);
-
-			AckDto ack = new Gson().fromJson(jsonString, AckDto.class);
-			if (ack == null) {
-				throw new IllegalArgumentException("ACK payload is null");
-			}
-
-			ack.validate();
-
-			AstraSubLink link = subLinksMap.get(deviceName);
-			if (link == null) {
-				throw new IllegalStateException("No sublink for device " + deviceName);
-			}
-
-			link.handleAck(ack.cmd_id, ack.status);
-
-		} catch (Exception e) {
-			eventProducer.sendDistress(
-					"Error parsing ack JSON for " + deviceName + ": " + e.getMessage());
 		}
 	}
 
@@ -154,14 +131,24 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			return;
 		}
 
-		subLinksMap.computeIfAbsent(deviceName, dn -> {
-			eventProducer.sendInfo("Discovered new radio device: " + dn);
-			return createSubLinkForDevice(dn);
-		});
-
 		try {
 			String jsonString = new String(payload, StandardCharsets.UTF_8);
 			JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+
+			// Check if device frequency matches configured frequency
+			String deviceFrequency = jsonObject.has("frequency") && !jsonObject.get("frequency").isJsonNull()
+					? jsonObject.get("frequency").getAsString()
+					: null;
+
+			if (deviceFrequency == null || !deviceFrequency.equals(this.frequency)) {
+				// Frequency doesn't match, ignore this device
+				return;
+			}
+
+			subLinksMap.computeIfAbsent(deviceName, dn -> {
+				eventProducer.sendInfo("Discovered new radio device: " + dn);
+				return createSubLinkForDevice(dn);
+			});
 
 			String status = jsonObject.has("status") && !jsonObject.get("status").isJsonNull()
 					? jsonObject.get("status").getAsString()
@@ -229,13 +216,18 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 
 	/** Creates and registers a new device sublink. */
 	private AstraSubLink createSubLinkForDevice(String device) {
-
 		try {
+			// TODO: Fix this random race condition when two links start at once
+			int randomMillis = ThreadLocalRandom.current().nextInt(0, 1001);
+
+			log.info("Sleeping for " + randomMillis + " ms");
+
+			Thread.sleep(randomMillis);
 			String deviceType = device.split("-")[0];
 
 			// Implement more types of links here!
 			AstraSubLink link = switch (deviceType) {
-				case "radio" -> new RadiosLink(client);
+				case "radio" -> new RadiosLink(client, frequency);
 				default -> throw new IllegalArgumentException("Unknown device type: " + deviceType);
 			};
 
@@ -254,6 +246,9 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			return null;
 		} catch (IndexOutOfBoundsException e) {
 			eventProducer.sendWarning("Invalid device name \"" + device + "\". Could not identify device type.");
+			return null;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 			return null;
 		}
 

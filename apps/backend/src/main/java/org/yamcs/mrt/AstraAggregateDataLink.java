@@ -10,10 +10,11 @@ import org.yamcs.*;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mrt.astra.*;
+import org.yamcs.mrt.utils.MetadataDto;
 import org.yamcs.tctm.*;
 import com.google.common.util.concurrent.Service;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
 
 /**
  * AstraDataLink is an aggregate YAMCS link that dynamically discovers and
@@ -126,21 +127,18 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			return;
 		}
 
-		if (!isValidMetadataJson(payload)) {
-			eventProducer.sendWarning("Invalid metadata JSON from " + deviceName);
-			return;
-		}
-
 		try {
 			String jsonString = new String(payload, StandardCharsets.UTF_8);
-			JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+			MetadataDto metadata = new Gson().fromJson(jsonString, MetadataDto.class);
+			if (metadata == null) {
+				eventProducer.sendWarning("Invalid metadata JSON from " + deviceName);
+				return;
+			}
+
+			metadata.validate();
 
 			// Check if device frequency matches configured frequency
-			String deviceFrequency = jsonObject.has("frequency") && !jsonObject.get("frequency").isJsonNull()
-					? jsonObject.get("frequency").getAsString()
-					: null;
-
-			if (deviceFrequency == null || !deviceFrequency.equals(this.frequency)) {
+			if (metadata.frequency == null || !metadata.frequency.equals(this.frequency)) {
 				// Frequency doesn't match, ignore this device
 				return;
 			}
@@ -150,47 +148,21 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 				return createSubLinkForDevice(dn);
 			});
 
-			String status = jsonObject.has("status") && !jsonObject.get("status").isJsonNull()
-					? jsonObject.get("status").getAsString()
-					: "unknown";
-
-			String longStatus = jsonObject.has("long_status") && !jsonObject.get("long_status").isJsonNull()
-					? jsonObject.get("long_status").getAsString()
-					: "unknown";
-
-			// You might also want to store or propagate these values somewhere
 			AstraSubLink link = subLinksMap.get(deviceName);
 			if (link != null) {
-				link.setDetailedStatus(longStatus);
-				link.setStatus(status);
+				link.setDetailedStatus(metadata.long_status);
+				link.setStatus(metadata.status);
 			}
 
 		} catch (Exception e) {
 			eventProducer.sendWarning("Error parsing metadata JSON for " + deviceName + ": " + e.getMessage());
 		}
-
 	}
 
 	private void handleTelemetry(String deviceName, MqttMessage message) {
 		AstraSubLink link = subLinksMap.get(deviceName);
 		if (link != null) {
 			link.handleMqttMessage(message);
-		}
-	}
-
-	/** Validate the metadata JSON structure using Gson. */
-	private boolean isValidMetadataJson(byte[] payload) {
-		try {
-			String jsonString = new String(payload, StandardCharsets.UTF_8);
-			JsonElement parsed = JsonParser.parseString(jsonString);
-			if (!parsed.isJsonObject())
-				return false;
-
-			JsonObject obj = parsed.getAsJsonObject();
-
-			return obj.has("frequency") && obj.has("status") && obj.has("long_status");
-		} catch (Exception e) {
-			return false;
 		}
 	}
 
@@ -228,6 +200,7 @@ public class AstraAggregateDataLink extends AbstractLink implements AggregatedDa
 			// Implement more types of links here!
 			AstraSubLink link = switch (deviceType) {
 				case "radio" -> new RadiosLink(client, frequency);
+				case "daq" -> new ThermocoupleLink(client, frequency);
 				default -> throw new IllegalArgumentException("Unknown device type: " + deviceType);
 			};
 

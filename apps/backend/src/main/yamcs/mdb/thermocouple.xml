@@ -1,0 +1,296 @@
+<?xml version="1.0"?>
+<!--
+This file was generated with Yamcs PyMDB.
+See https://github.com/yamcs/pymdb
+-->
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
+	name="Thermocouple">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<BooleanParameterType name="boolean">
+				<IntegerDataEncoding sizeInBits="1" />
+			</BooleanParameterType>
+			<FloatParameterType name="float_32_temp_c" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" bitOrder="leastSignificantBitFirst" />
+			</FloatParameterType>
+			<IntegerParameterType name="fault" sizeInBits="8">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</IntegerParameterType>
+
+			<IntegerParameterType name="pad_2" sizeInBits="2">
+				<IntegerDataEncoding sizeInBits="2" />
+			</IntegerParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="pad_2" name="padding_2" />
+			<Parameter parameterTypeRef="boolean" name="tc0_present" />
+			<Parameter parameterTypeRef="boolean" name="tc1_present" />
+			<Parameter parameterTypeRef="boolean" name="tc2_present" />
+			<Parameter parameterTypeRef="boolean" name="tc3_present" />
+			<Parameter parameterTypeRef="boolean" name="tc4_present" />
+			<Parameter parameterTypeRef="boolean" name="tc5_present" />
+
+			<!-- tc0 parameters, change `name` here -->
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc0_temp" />
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc0_internal" />
+			<Parameter parameterTypeRef="fault" name="tc0_fault" />
+
+			<!-- tc1 parameters, change `name` here -->
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc1_temp" />
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc1_internal" />
+			<Parameter parameterTypeRef="fault" name="tc1_fault" />
+
+			<!-- tc2 parameters, change `name` here -->
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc2_temp" />
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc2_internal" />
+			<Parameter parameterTypeRef="fault" name="tc2_fault" />
+
+			<!-- tc3 parameters, change `name` here -->
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc3_temp" />
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc3_internal" />
+			<Parameter parameterTypeRef="fault" name="tc3_fault" />
+
+			<!-- tc4 parameters, change `name` here -->
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc4_temp" />
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc4_internal" />
+			<Parameter parameterTypeRef="fault" name="tc4_fault" />
+
+			<!-- tc5 parameters, change `name` here -->
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc5_temp" />
+			<Parameter parameterTypeRef="float_32_temp_c" name="tc5_internal" />
+			<Parameter parameterTypeRef="fault" name="tc5_fault" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="ThermocoupleAggregatePacket" abstract="false">
+				<EntryList>
+					<ParameterRefEntry parameterRef="padding_2">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc5_present">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc4_present">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc3_present">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc2_present">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc1_present">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc0_present">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ContainerRefEntry containerRef="tc0_data">
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="tc0_present" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="tc1_data">
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="tc1_present" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="tc2_data">
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="tc2_present" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="tc3_data">
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="tc3_present" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="tc4_data">
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="tc4_present" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+					<ContainerRefEntry containerRef="tc5_data">
+						<IncludeCondition>
+							<BooleanExpression>
+								<Condition>
+									<ParameterInstanceRef parameterRef="tc5_present" useCalibratedValue="true" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>True</Value>
+								</Condition>
+							</BooleanExpression>
+						</IncludeCondition>
+					</ContainerRefEntry>
+				</EntryList>
+			</SequenceContainer>
+
+			<SequenceContainer name="tc0_data">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc0_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc0_internal">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc0_fault">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+
+			<SequenceContainer name="tc1_data">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc1_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc1_internal">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc1_fault">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+
+			<SequenceContainer name="tc2_data">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc2_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc2_internal">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc2_fault">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+
+			<SequenceContainer name="tc3_data">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc3_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc3_internal">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc3_fault">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+
+			<SequenceContainer name="tc4_data">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc4_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc4_internal">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc4_fault">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+
+			<SequenceContainer name="tc5_data">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc5_temp">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc5_internal">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc5_fault">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+</SpaceSystem>

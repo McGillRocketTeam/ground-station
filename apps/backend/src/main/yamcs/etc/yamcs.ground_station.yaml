@@ -38,6 +38,14 @@ dataLinks:
     frequency: "903.00"
     tmStream: tm_903_realtime
 
+  - name: ASTRA-Other
+    class: org.yamcs.mrt.AstraAggregateDataLink
+    autoReconnect: true
+    brokers:
+      - tcp://localhost:1883
+    frequency: "N/A"
+    tmStream: tm_daq_realtime
+
   - name: ASTRA-Commands
     class: org.yamcs.mrt.AstraCommandLink
     autoReconnect: true
@@ -77,6 +85,9 @@ mdb:
     args:
       file: mdb/labjack-t7.xml
 
+  - type: xtce
+    args:
+      file: mdb/thermocouple.xml
 # Configuration for streams created at server startup
 streamConfig:
   tm:
@@ -85,6 +96,9 @@ streamConfig:
       processor: "realtime"
     - name: "tm_903_realtime"
       rootContainer: "/FC903/FlightComputer/FCFrame"
+      processor: "realtime"
+    - name: "tm_daq_realtime"
+      rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
       processor: "realtime"
     - name: "tm_dump"
 

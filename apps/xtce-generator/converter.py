@@ -31,7 +31,9 @@ def _fetch_sheet_data(sheet_id: str, gid: str, col_buffer: int = 0) -> list[list
     return data
 
 
-def load_sheet_rows(sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: int = 0) -> list[dict[str, Any]]:
+def load_sheet_rows(
+    sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: int = 0
+) -> list[dict[str, Any]]:
     """
     Load a Google Sheet (as CSV) into a list of rows (dicts).
 
@@ -44,7 +46,7 @@ def load_sheet_rows(sheet_id: str, gid: str, row_buffer: int = 0, col_buffer: in
         raise ValueError("Expected at least two header rows")
 
     headers = data[row_buffer]
-    rows = [dict(zip(headers, row)) for row in data[row_buffer + 1:]]
+    rows = [dict(zip(headers, row)) for row in data[row_buffer + 1 :]]
     print(f"Loaded {len(rows)} data rows.")
     return rows
 
@@ -101,11 +103,13 @@ def extract_number(s: str) -> int | None:
     match = re.search(r"\d+", s)
     return int(match.group()) if match else None
 
+
 def set_param_calibrator(row: dict[str, Any]):
     cal = row["Calibration Function f(x)"]
     if cal:
         return Y.calibrators.MathOperation(expression=cal)
     return None
+
 
 def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
     gui_type = str(row["GUI Type"])
@@ -357,6 +361,7 @@ def set_command_arguments(command: Y.Command, arguments: str):
             case _:
                 raise ValueError(f"Unknown argument type: {type_name}")
 
+
 def get_command_significance(significance: str):
     """
     Sets command significance to respective XTCE significance level
@@ -377,6 +382,7 @@ def get_command_significance(significance: str):
         case _:
             raise ValueError(f"Unhandled significance level '{significance}'")
 
+
 def get_command_constraints(constraints: str, params: dict[str, Any]):
     if constraints == "":
         return None
@@ -391,22 +397,27 @@ def get_command_constraints(constraints: str, params: dict[str, Any]):
         if param_name not in params:
             continue
         constraint_entries.append(
-            Y.TransmissionConstraint(expression=Y.eq(ref=params[param_name], value=val.strip()), timeout=0)
+            Y.TransmissionConstraint(
+                expression=Y.eq(ref=params[param_name], value=val.strip()), timeout=0
+            )
         )
     return constraint_entries if constraint_entries else None
+
 
 def make_command(system: Y.System, cmd: dict[str, Any], params: dict[str, Any]):
     name = cmd["Variable Name"]
     command_id = cmd["ID"]
+    command_name = cmd["Title"]
     significance = get_command_significance(cmd["Significance"])
-    constraints = get_command_constraints(cmd["Transmission Constraints"], params)
+    # constraints = get_command_constraints(cmd["Transmission Constraints"], params)
 
     command = Y.Command(
         system=system,
         name=name,
         short_description=command_id,
+        long_description=command_name,
         significance=significance,
-        constraint=constraints,
+        # constraint=constraints,
     )
 
     set_command_arguments(command, cmd["Arguments"])
@@ -540,7 +551,11 @@ def write_system(system: Y.System, output_path: str):
     print(f"✅ Wrote system definition to {output_path}")
 
 
-def create_commands(system: Y.System, command_data: list[dict[str, Any]], params: dict[str, Any] | None = None):
+def create_commands(
+    system: Y.System,
+    command_data: list[dict[str, Any]],
+    params: dict[str, Any] | None = None,
+):
     if params is None:
         params = {}
     for cmd in command_data:
@@ -584,7 +599,9 @@ def generate_full_system(output_path: str):
         frame_container.entries.append(container_entry)
 
     print("Creating Commands...")
-    command_data = load_sheet_rows(command_sheet_id, commands_gid, col_buffer=0, row_buffer=1)
+    command_data = load_sheet_rows(
+        command_sheet_id, commands_gid, col_buffer=0, row_buffer=1
+    )
     create_commands(fc, command_data, param_dict)
 
     write_system(fc, output_path)

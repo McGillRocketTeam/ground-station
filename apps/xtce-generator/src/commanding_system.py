@@ -66,6 +66,20 @@ class CommandingSystem(FlightSystem):
                 raise ValueError(f"Unhandled significance level '{significance}'")
 
     @staticmethod
+    def get_command_level(level: str):
+        match level.lower():
+            case "normal":
+                return Y.CommandLevel.NORMAL
+            case "vital":
+                return Y.CommandLevel.VITAL
+            case "critical":
+                return Y.CommandLevel.CRITICAL
+            case "forbidden":
+                return Y.CommandLevel.FORBIDDEN
+            case _:
+                raise ValueError(f"Unhandled command level '{level}'")
+
+    @staticmethod
     def get_command_constraints(constraints: str, params: dict[str, Any]):
         if constraints == "":
             return None
@@ -90,7 +104,8 @@ class CommandingSystem(FlightSystem):
         name = cmd["Variable Name"]
         command_id = cmd["ID"]
         command_name = cmd["Title"]
-        significance = CommandingSystem.get_command_significance(cmd["Significance"])
+        level = CommandingSystem.get_command_level(cmd["Default Significance"])
+        #significance = CommandingSystem.get_command_significance(cmd["Significance"])
         # constraints = self.get_command_constraints(cmd["Transmission Constraints"], params)
 
         command = Y.Command(
@@ -98,7 +113,8 @@ class CommandingSystem(FlightSystem):
             name=name,
             short_description=command_id,
             long_description=command_name,
-            significance=significance,
+            level=level,
+            #significance=significance,
             # constraint=constraints,
         )
 

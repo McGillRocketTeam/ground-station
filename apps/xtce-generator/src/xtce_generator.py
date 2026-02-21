@@ -27,7 +27,7 @@ def main() -> None:
 
     print("Creating Yamcs Telemetry System...")
     telemetry_sys = TelemetrySystem(
-        output_path=telemetry_output_path
+       output_path=telemetry_output_path
     )
     telemetry_sys.generate_system()
     print("Yamcs Telemetry System Created Successfully\n")

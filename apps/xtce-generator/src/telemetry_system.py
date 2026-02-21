@@ -5,18 +5,17 @@ import yamcs.pymdb as Y
 
 from flight_system import FlightSystem
 
+
 class TelemetrySystem(FlightSystem):
-
     def __init__(
-            self,
-            output_path: str,
-            sheet_id: str = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk",
-            parameter_gid: str = "2042306306",
-            atomic_gid: str = "2140536820",
-            row_buffer: int = 1,
-            col_buffer: int = 0,
-        ):
-
+        self,
+        output_path: str,
+        sheet_id: str = "1Ukaums3NfbJdVOQL7E1QMyPNoQ7gD5Zxciiz4ucRUrk",
+        parameter_gid: str = "2042306306",
+        atomic_gid: str = "2140536820",
+        row_buffer: int = 1,
+        col_buffer: int = 0,
+    ):
         self.sys = Y.System("FlightComputer")
 
         self.output_path = output_path
@@ -70,7 +69,7 @@ class TelemetrySystem(FlightSystem):
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
-                    raw_units=units_raw,
+                    # raw_units=units_raw,
                     encoding=Y.IntegerEncoding(bits=1),
                 )
                 return param
@@ -89,7 +88,7 @@ class TelemetrySystem(FlightSystem):
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
-                    raw_units=units_raw,
+                    # raw_units=units_raw,
                     encoding=Y.IntegerEncoding(bits=size, little_endian=True),
                     choices=FlightSystem.extract_enum_choices(enum_metadata),
                 )
@@ -109,7 +108,7 @@ class TelemetrySystem(FlightSystem):
                         short_description=ui_name,
                         long_description=description,
                         calibrated_units=units_cal,
-                        raw_units=units_raw,
+                        # raw_units=units_raw,
                         encoding=Y.FloatEncoding(bits=size, little_endian=True),
                         calibrator=calibrator,
                     )
@@ -126,7 +125,7 @@ class TelemetrySystem(FlightSystem):
                         short_description=ui_name,
                         long_description=description,
                         calibrated_units=units_cal,
-                        raw_units=units_raw,
+                        # raw_units=units_raw,
                         encoding=Y.IntegerEncoding(
                             bits=size, scheme=scheme, little_endian=True
                         ),
@@ -152,7 +151,7 @@ class TelemetrySystem(FlightSystem):
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
-                    raw_units=units_raw,
+                    # raw_units=units_raw,
                     encoding=Y.IntegerEncoding(bits=size, scheme=scheme),
                     calibrator=calibrator,
                 )
@@ -170,7 +169,7 @@ class TelemetrySystem(FlightSystem):
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
-                    raw_units=units_raw,
+                    # raw_units=units_raw,
                     encoding=Y.StringEncoding(bits=size * 8),
                 )
                 return param
@@ -178,11 +177,11 @@ class TelemetrySystem(FlightSystem):
         raise ValueError(f"Unhandled GUI Type '{gui_type}' in make_param().")
 
     def process_booleans_group(
-            self,
-            container: Y.Container,
-            boolean_params: list[Y.BooleanParameter],
-            start_bit_pos: int,
-            container_name: str,
+        self,
+        container: Y.Container,
+        boolean_params: list[Y.BooleanParameter],
+        start_bit_pos: int,
+        container_name: str,
     ) -> int:
         if not boolean_params:
             return start_bit_pos
@@ -229,10 +228,10 @@ class TelemetrySystem(FlightSystem):
         return current_bit_pos
 
     def make_atomic_containers(
-            self,
-            atomic_Data: dict[str, list[Any]],
-            param_dict: dict[str, Y.Parameter],
-            atomic_header_params: dict[str, Y.BooleanParameter],
+        self,
+        atomic_Data: dict[str, list[Any]],
+        param_dict: dict[str, Y.Parameter],
+        atomic_header_params: dict[str, Y.BooleanParameter],
     ):
         containers: list[Y.ContainerEntry] = []
         for name, param_list in atomic_Data.items():
@@ -266,11 +265,13 @@ class TelemetrySystem(FlightSystem):
                         )
                         boolean_buffer.clear()
 
-                    container.entries.append(Y.ParameterEntry(parameter=param, offset=0))
+                    container.entries.append(
+                        Y.ParameterEntry(parameter=param, offset=0)
+                    )
                     if (
-                            hasattr(param, "encoding")
-                            and param.encoding
-                            and hasattr(param.encoding, "bits")
+                        hasattr(param, "encoding")
+                        and param.encoding
+                        and hasattr(param.encoding, "bits")
                     ):
                         current_bit_pos += param.encoding.bits
 
@@ -279,7 +280,9 @@ class TelemetrySystem(FlightSystem):
                     self.sys, container, boolean_buffer, current_bit_pos, name
                 )
 
-            containers.append(Y.ContainerEntry(container=container, condition=condition))
+            containers.append(
+                Y.ContainerEntry(container=container, condition=condition)
+            )
 
         return containers
 
@@ -370,7 +373,9 @@ class TelemetrySystem(FlightSystem):
                 short_description="Flag Padding",
                 long_description="A.S.T.R.A. Packet Padding",
                 signed=False,
-                encoding=Y.IntegerEncoding(bits=8 - len(atomic_params), little_endian=True),
+                encoding=Y.IntegerEncoding(
+                    bits=8 - len(atomic_params), little_endian=True
+                ),
             )
             container.entries.append(Y.ParameterEntry(pre_pad, offset=0))
 
@@ -395,7 +400,9 @@ class TelemetrySystem(FlightSystem):
 
     def create_parameters(self):
         param_dict: dict[str, Y.Parameter] = {}
-        param_data = TelemetrySystem.load_sheet_rows(self.sheet_id, self.parameter_gid, self.col_buffer, self.row_buffer)
+        param_data = TelemetrySystem.load_sheet_rows(
+            self.sheet_id, self.parameter_gid, self.col_buffer, self.row_buffer
+        )
 
         for row in param_data:
             param = self.make_param(row)
@@ -431,5 +438,3 @@ class TelemetrySystem(FlightSystem):
         print(" - Creating Atomics...")
         (self.frame_container, atomics) = self.create_atomics()
         print(f"   Created {len(atomics)} Atomics")
-
-

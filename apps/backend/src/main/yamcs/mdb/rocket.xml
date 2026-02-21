@@ -173,7 +173,7 @@ See https://github.com/yamcs/pymdb
       </IntegerParameterType>
       <IntegerParameterType name="fc_temp" signed="true" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">deg C</Unit>
+          <Unit form="calibrated">°C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>

@@ -45,14 +45,6 @@ See https://github.com/yamcs/pymdb
 					</DefaultCalibrator>
 				</IntegerDataEncoding>
 			</IntegerParameterType>
-			<FloatParameterType name="altimeter_altitude" sizeInBits="32">
-				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
-			</FloatParameterType>
-			<FloatParameterType name="altitude_from_sea_level" sizeInBits="32">
-				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
-			</FloatParameterType>
 			<IntegerParameterType name="angle_pitch" signed="true" sizeInBits="32">
 				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
 					byteOrder="mostSignificantByteFirst" />
@@ -66,21 +58,59 @@ See https://github.com/yamcs/pymdb
 					byteOrder="mostSignificantByteFirst" />
 			</IntegerParameterType>
 			<FloatParameterType name="apogee_from_ground" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">ft</Unit>
+					<Unit form="raw">ft</Unit>
+				</UnitSet>
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
-			</FloatParameterType>
-			<FloatParameterType name="atm_pressure" sizeInBits="32">
-				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst" />
 			</FloatParameterType>
 			<FloatParameterType name="atm_temp" sizeInBits="32">
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst" />
 			</FloatParameterType>
-			<FloatParameterType name="barometer_altitude" sizeInBits="32">
+			<FloatParameterType name="barometer_altitude_from_pad" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">ft</Unit>
+				</UnitSet>
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst" />
 			</FloatParameterType>
+			<FloatParameterType name="barometer_altitude_from_sea_level" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">ft</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<FloatParameterType name="barometer_pressure" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">bar</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
+					byteOrder="leastSignificantByteFirst" />
+			</FloatParameterType>
+			<IntegerParameterType name="battery_current_draw" signed="true" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">mA</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="16" encoding="twosComplement"
+					byteOrder="leastSignificantByteFirst" />
+			</IntegerParameterType>
+			<IntegerParameterType name="battery_voltage" signed="true" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">V</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>10</ValueOperand>
+							<Operator>*</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</IntegerParameterType>
 			<StringParameterType name="call_sign">
 				<StringDataEncoding encoding="US-ASCII">
 					<SizeInBits>
@@ -120,20 +150,23 @@ See https://github.com/yamcs/pymdb
 				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
 			</BooleanParameterType>
 			<IntegerParameterType name="fc_rssi" signed="true" sizeInBits="32">
-				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
-					byteOrder="leastSignificantByteFirst">
+				<UnitSet>
+					<Unit form="calibrated">dBm</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned">
 					<DefaultCalibrator>
 						<MathOperationCalibrator>
 							<ThisParameterOperand />
-							<ValueOperand>2</ValueOperand>
-							<Operator>+</Operator>
-							<ValueOperand>400</ValueOperand>
+							<ValueOperand>-2</ValueOperand>
 							<Operator>/</Operator>
 						</MathOperationCalibrator>
 					</DefaultCalibrator>
 				</IntegerDataEncoding>
 			</IntegerParameterType>
 			<IntegerParameterType name="fc_snr" signed="true" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">dB</Unit>
+				</UnitSet>
 				<IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
 					<DefaultCalibrator>
 						<MathOperationCalibrator>
@@ -190,20 +223,53 @@ See https://github.com/yamcs/pymdb
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<FloatParameterType name="gps_altitude" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">m</Unit>
+				</UnitSet>
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>1000</ValueOperand>
+							<Operator>*</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</FloatDataEncoding>
 			</FloatParameterType>
 			<FloatParameterType name="gps_latitude" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>10000000</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</FloatDataEncoding>
 			</FloatParameterType>
 			<FloatParameterType name="gps_longitude" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>10000000</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</FloatDataEncoding>
 			</FloatParameterType>
 			<FloatParameterType name="gps_time_last_update" sizeInBits="32">
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst" />
 			</FloatParameterType>
 			<BooleanParameterType name="main_armed_HW" zeroStringValue="False" oneStringValue="True">
 				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
@@ -318,59 +384,66 @@ See https://github.com/yamcs/pymdb
 			</IntegerParameterType>
 			<FloatParameterType name="vertical_speed" sizeInBits="32">
 				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"
-					byteOrder="mostSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst" />
 			</FloatParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter name="acceleration_x" parameterTypeRef="acceleration_x"
-				shortDescription="Acceleration x">
+				shortDescription="Acceleration X">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="acceleration_y" parameterTypeRef="acceleration_y"
-				shortDescription="Acceleration y">
+				shortDescription="Acceleration Y">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="acceleration_z" parameterTypeRef="acceleration_z"
-				shortDescription="Acceleration z">
+				shortDescription="Acceleration Z">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="altimeter_altitude" parameterTypeRef="altimeter_altitude"
-				shortDescription="Altitude from ground">
-				<LongDescription>Calculated on FC</LongDescription>
+			<Parameter name="angle_pitch" parameterTypeRef="angle_pitch"
+				shortDescription="Angular Pitch Rate">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="altitude_from_sea_level" parameterTypeRef="altitude_from_sea_level"
-				shortDescription="Altitude from sea level">
-				<LongDescription>Calculated on FC</LongDescription>
+			<Parameter name="angle_roll" parameterTypeRef="angle_roll"
+				shortDescription="Angular Roll Rate">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="angle_pitch" parameterTypeRef="angle_pitch" shortDescription="Angular pitch">
-				<ParameterProperties dataSource="telemetered" persistence="true" />
-			</Parameter>
-			<Parameter name="angle_roll" parameterTypeRef="angle_roll" shortDescription="Angular roll">
-				<ParameterProperties dataSource="telemetered" persistence="true" />
-			</Parameter>
-			<Parameter name="angle_yaw" parameterTypeRef="angle_yaw" shortDescription="Angular yaw">
+			<Parameter name="angle_yaw" parameterTypeRef="angle_yaw" shortDescription="Angular Yaw Rate">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="apogee_from_ground" parameterTypeRef="apogee_from_ground"
-				shortDescription="Apogee from ground (max it's hit)">
-				<ParameterProperties dataSource="telemetered" persistence="true" />
-			</Parameter>
-			<Parameter name="atm_pressure" parameterTypeRef="atm_pressure"
-				shortDescription="Atmospheric pressure">
+				shortDescription="Apogee From Ground">
+				<LongDescription>Cacluated on the FC in order to determine ejection.</LongDescription>
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="atm_temp" parameterTypeRef="atm_temp"
-				shortDescription="Atmospheric temperature">
+				shortDescription="Atmospheric Temperature">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="barometer_altitude" parameterTypeRef="barometer_altitude"
-				shortDescription="Altitude calculated from the barometric pressure">
+			<Parameter name="barometer_altitude_from_pad" parameterTypeRef="barometer_altitude_from_pad"
+				shortDescription="Altitude From Pad">
+				<LongDescription>Initalized by the flight computer when it started or restarted.</LongDescription>
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="call_sign" parameterTypeRef="call_sign"
-				shortDescription="call sign for radio transmission">
+			<Parameter name="barometer_altitude_from_sea_level"
+				parameterTypeRef="barometer_altitude_from_sea_level"
+				shortDescription="Altitude From Sea Level">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="barometer_pressure" parameterTypeRef="barometer_pressure"
+				shortDescription="Barometer Pressure">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="battery_current_draw" parameterTypeRef="battery_current_draw"
+				shortDescription="Battery Current Draw">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="battery_voltage" parameterTypeRef="battery_voltage"
+				shortDescription="Battery Voltage">
+				<LongDescription>Current voltage of the FC battery</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="call_sign" parameterTypeRef="call_sign" shortDescription="Call Sign">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="cc_pressure" parameterTypeRef="cc_pressure"
@@ -402,12 +475,11 @@ See https://github.com/yamcs/pymdb
 				shortDescription="drogue: logical energized">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="fc_rssi" parameterTypeRef="fc_rssi"
-				shortDescription="Relative Signal Strength Indicator of FC radio">
+			<Parameter name="fc_rssi" parameterTypeRef="fc_rssi" shortDescription="FC RSSI">
+				<LongDescription>Relative Signal Strength Indicator of FC radio</LongDescription>
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="fc_snr" parameterTypeRef="fc_snr"
-				shortDescription="Signal to noise ratio of the FC radio">
+			<Parameter name="fc_snr" parameterTypeRef="fc_snr" shortDescription="FC SNR">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="fdov_armed_HW" parameterTypeRef="fdov_armed_HW"
@@ -455,42 +527,42 @@ See https://github.com/yamcs/pymdb
 				<LongDescription>The current stage the FC believes it is in.</LongDescription>
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="gps_altitude" parameterTypeRef="gps_altitude" shortDescription="GPS altitude">
+			<Parameter name="gps_altitude" parameterTypeRef="gps_altitude" shortDescription="GPS Altitude">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
-			<Parameter name="gps_latitude" parameterTypeRef="gps_latitude" shortDescription="GPS latitude">
+			<Parameter name="gps_latitude" parameterTypeRef="gps_latitude" shortDescription="GPS Latitude">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="gps_longitude" parameterTypeRef="gps_longitude"
-				shortDescription="GPS longitude">
+				shortDescription="GPS Longitude">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update"
-				shortDescription="GPS time from last update">
+				shortDescription="Gps Time From Last Update">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="main_armed_HW" parameterTypeRef="main_armed_HW"
-				shortDescription="3 main: electrical armed">
+				shortDescription="main: electrical armed">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="main_armed_SW" parameterTypeRef="main_armed_SW"
-				shortDescription="3 main: logical armed">
+				shortDescription="main: logical armed">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="main_continuity_HW" parameterTypeRef="main_continuity_HW"
-				shortDescription="3 main: electrical continuity">
+				shortDescription="main: electrical continuity">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="main_energizedCurrent_HW" parameterTypeRef="main_energizedCurrent_HW"
-				shortDescription="3 main: electrical energized current">
+				shortDescription="main: electrical energized current">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="main_energizedGate_HW" parameterTypeRef="main_energizedGate_HW"
-				shortDescription="3 main: electrical energized gate">
+				shortDescription="main: electrical energized gate">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="main_energized_SW" parameterTypeRef="main_energized_SW"
-				shortDescription="3 main: logical energized">
+				shortDescription="main: logical energized">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="mov_armed_HW" parameterTypeRef="mov_armed_HW"
@@ -519,7 +591,7 @@ See https://github.com/yamcs/pymdb
 			</Parameter>
 			<Parameter name="mov_hall_state" parameterTypeRef="mov_hall_state"
 				shortDescription="MOV Hall State">
-				<LongDescription>Calculated from sensor voltage.</LongDescription>
+				<LongDescription>Calculated from hall state sensor voltage.</LongDescription>
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="padding" parameterTypeRef="padding" shortDescription="Padding">
@@ -581,7 +653,7 @@ See https://github.com/yamcs/pymdb
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 			<Parameter name="vertical_speed" parameterTypeRef="vertical_speed"
-				shortDescription="Vertical speed (descent rate)">
+				shortDescription="Vertical Speed (descent rate)">
 				<ParameterProperties dataSource="telemetered" persistence="true" />
 			</Parameter>
 		</ParameterSet>
@@ -658,27 +730,22 @@ See https://github.com/yamcs/pymdb
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="altimeter_altitude">
+					<ParameterRefEntry parameterRef="barometer_altitude_from_pad">
 						<LocationInContainerInBits referenceLocation="previousEntry">
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="altitude_from_sea_level">
+					<ParameterRefEntry parameterRef="barometer_altitude_from_sea_level">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="barometer_pressure">
 						<LocationInContainerInBits referenceLocation="previousEntry">
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="apogee_from_ground">
-						<LocationInContainerInBits referenceLocation="previousEntry">
-							<FixedValue>0</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="atm_pressure">
-						<LocationInContainerInBits referenceLocation="previousEntry">
-							<FixedValue>0</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="barometer_altitude">
 						<LocationInContainerInBits referenceLocation="previousEntry">
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
@@ -749,6 +816,16 @@ See https://github.com/yamcs/pymdb
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="fc_snr">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="battery_voltage">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="battery_current_draw">
 						<LocationInContainerInBits referenceLocation="previousEntry">
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>

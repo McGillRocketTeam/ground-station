@@ -163,7 +163,7 @@ public class RadiosLink extends AstraSubLink {
 			var links = YamcsServer.getServer().getInstance(this.getYamcsInstance()).getLinkManager().getLinks();
 			for (Link link : links) {
 				if (link instanceof AstraCommandLink) {
-					((AstraCommandLink) link).handleFCAck(commandAckId, deviceFrequency);
+					((AstraCommandLink) link).handleFCAck(commandAckId, deviceFrequency, deviceName);
 				}
 			}
 		}

@@ -172,7 +172,7 @@ def make_param(system: Y.System, row: dict[str, Any]) -> Y.Parameter:
                     short_description=ui_name,
                     long_description=description,
                     units=units,
-                    encoding=Y.FloatEncoding(bits=size),
+                    encoding=Y.FloatEncoding(bits=size, little_endian=True),
                     calibrator=calibrator,
                 )
                 return param
@@ -408,7 +408,7 @@ def make_command(system: Y.System, cmd: dict[str, Any], params: dict[str, Any]):
     name = cmd["Variable Name"]
     command_id = cmd["ID"]
     command_name = cmd["Title"]
-    significance = get_command_significance(cmd["Significance"])
+    significance = get_command_significance(cmd["Default Significance"])
     # constraints = get_command_constraints(cmd["Transmission Constraints"], params)
 
     command = Y.Command(

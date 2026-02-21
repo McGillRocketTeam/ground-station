@@ -10,6 +10,7 @@ import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.CommandOption.CommandOptionType;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.Acknowledgment;
 import org.yamcs.commanding.ActiveCommand;
@@ -276,10 +277,12 @@ public class AstraCommandLink extends AbstractTcDataLink {
 			devices.remove(deviceName);
 		}
 
+		// If both FCs have ack'd then the command
+		// is complete
 		if (devices.size() == 0) {
 			commandHistoryPublisher.publishAck(
 					command.getCommandId(),
-					"CommandComplete_Status",
+					CommandHistoryPublisher.CommandComplete_KEY,
 					timeService.getMissionTime(),
 					AckStatus.OK);
 		}

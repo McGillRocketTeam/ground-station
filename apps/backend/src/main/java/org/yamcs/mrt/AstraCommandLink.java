@@ -61,7 +61,7 @@ public class AstraCommandLink extends AbstractTcDataLink {
 	// time. We store each command and the devices it was sent to.
 	private final AtomicInteger currentCommandId = new AtomicInteger(1);
 
-	private Map<Integer, ArrayList<String>> commandToDeviceMap = new HashMap<>();
+	private Map<Integer, Collection<String>> commandToDeviceMap = new HashMap<>();
 	private Map<Integer, PreparedCommand> commandToPreparedMap = new HashMap<>();
 
 	@Override
@@ -201,6 +201,8 @@ public class AstraCommandLink extends AbstractTcDataLink {
 
 		this.commandHistoryPublisher.publish(preparedCommand.getCommandId(),
 				"TX_Devices", String.join(",", devices));
+		this.commandToDeviceMap.put(seqNum, devices);
+
 		for (var device : devices) {
 			try {
 				client.publish(device + "/commands", msg, null, new IMqttActionListener() {
@@ -257,16 +259,31 @@ public class AstraCommandLink extends AbstractTcDataLink {
 
 	}
 
-	// FIX: Its possible that if there are two radios on the same
-	// frequency (i.e. pad & cs) then the ack will be sent twice.
-	public void handleFCAck(int cmd_id, String frequency) {
+	// FIX: Currently the only way we reigster the FC ack is if the same
+	// radio that sent it recieved it. Reciving FC acks should be
+	// radio agnostic, but we don't do that right now
+	public void handleFCAck(int cmd_id, String frequency, String deviceName) {
 		PreparedCommand command = commandToPreparedMap.get(cmd_id);
+		Collection<String> devices = commandToDeviceMap.get(cmd_id);
 
-		commandHistoryPublisher.publishAck(
-				command.getCommandId(),
-				"fc_" + frequency,
-				timeService.getMissionTime(),
-				AckStatus.OK);
+		if (devices.contains(deviceName)) {
+			commandHistoryPublisher.publishAck(
+					command.getCommandId(),
+					"fc_" + frequency,
+					timeService.getMissionTime(),
+					AckStatus.OK);
+
+			devices.remove(deviceName);
+		}
+
+		if (devices.size() == 0) {
+			commandHistoryPublisher.publishAck(
+					command.getCommandId(),
+					"CommandComplete_Status",
+					timeService.getMissionTime(),
+					AckStatus.OK);
+		}
+
 	}
 
 	private void handleAck(String deviceName, MqttMessage message) {

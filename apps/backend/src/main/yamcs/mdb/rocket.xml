@@ -9,12 +9,13 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="acceleration_x" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
+          <Unit form="raw">g x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
+              <ValueOperand>1000</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
@@ -23,12 +24,13 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="acceleration_y" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
+          <Unit form="raw">g x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
+              <ValueOperand>1000</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
@@ -37,45 +39,13 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="acceleration_z" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
+          <Unit form="raw">g x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
-              <Operator>/</Operator>
-            </MathOperationCalibrator>
-          </DefaultCalibrator>
-        </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="angle_pitch" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
-          <DefaultCalibrator>
-            <MathOperationCalibrator>
-              <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
-              <Operator>/</Operator>
-            </MathOperationCalibrator>
-          </DefaultCalibrator>
-        </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="angle_roll" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
-          <DefaultCalibrator>
-            <MathOperationCalibrator>
-              <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
-              <Operator>/</Operator>
-            </MathOperationCalibrator>
-          </DefaultCalibrator>
-        </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="angle_yaw" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
-          <DefaultCalibrator>
-            <MathOperationCalibrator>
-              <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
+              <ValueOperand>1000</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
@@ -87,46 +57,38 @@ See https://github.com/yamcs/pymdb
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
-      <FloatParameterType name="atm_temp" sizeInBits="32">
-        <UnitSet>
-          <Unit form="calibrated">°C</Unit>
-        </UnitSet>
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
-      </FloatParameterType>
       <FloatParameterType name="barometer_altitude_from_pad" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft</Unit>
+          <Unit form="raw">ft</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="barometer_altitude_from_sea_level" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft</Unit>
-        </UnitSet>
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
-      </FloatParameterType>
-      <FloatParameterType name="barometer_pressure" sizeInBits="32">
-        <UnitSet>
-          <Unit form="calibrated">bar</Unit>
+          <Unit form="raw">ft</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <IntegerParameterType name="battery_current_draw" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">mA</Unit>
+          <Unit form="raw">mA</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="battery_voltage" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">V</Unit>
+          <Unit form="raw">dV</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
               <ValueOperand>10</ValueOperand>
-              <Operator>*</Operator>
+              <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -144,6 +106,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="cc_pressure" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
+          <Unit form="raw">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
@@ -165,6 +128,21 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="drogue_energized_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
+      <FloatParameterType name="fc_pressure" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">bar</Unit>
+          <Unit form="raw">hPa</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </FloatDataEncoding>
+      </FloatParameterType>
       <IntegerParameterType name="fc_rssi" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">dBm</Unit>
@@ -188,6 +166,20 @@ See https://github.com/yamcs/pymdb
             <MathOperationCalibrator>
               <ThisParameterOperand/>
               <ValueOperand>4</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </IntegerParameterType>
+      <IntegerParameterType name="fc_temp" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg C</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>100</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
@@ -238,13 +230,14 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="gps_altitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">m</Unit>
+          <Unit form="raw">mm</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
               <ValueOperand>1000</ValueOperand>
-              <Operator>*</Operator>
+              <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </FloatDataEncoding>
@@ -252,6 +245,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="gps_latitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg</Unit>
+          <Unit form="raw">deg x 10^(7)</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -266,6 +260,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="gps_longitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg</Unit>
+          <Unit form="raw">deg x 10^(7)</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -278,8 +273,57 @@ See https://github.com/yamcs/pymdb
         </FloatDataEncoding>
       </FloatParameterType>
       <FloatParameterType name="gps_time_last_update" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">s</Unit>
+          <Unit form="raw">s</Unit>
+        </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
+      <IntegerParameterType name="gyro_rate_x" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg/s</Unit>
+          <Unit form="raw">deg/s x 10^(-3)</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </IntegerParameterType>
+      <IntegerParameterType name="gyro_rate_y" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg/s</Unit>
+          <Unit form="raw">deg/s x 10^(-3)</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </IntegerParameterType>
+      <IntegerParameterType name="gyro_rate_z" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg/s</Unit>
+          <Unit form="raw">deg/s x 10^(-3)</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </IntegerParameterType>
       <BooleanParameterType name="main_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -340,12 +384,14 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="tank_pressure" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
+          <Unit form="raw">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="tank_temp" signed="true" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">deg C</Unit>
+          <Unit form="raw">deg C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
@@ -369,7 +415,8 @@ See https://github.com/yamcs/pymdb
       </BooleanParameterType>
       <IntegerParameterType name="vent_temp" signed="true" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">deg C</Unit>
+          <Unit form="raw">deg C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
           <DefaultCalibrator>
@@ -384,6 +431,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="vertical_speed" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft/s</Unit>
+          <Unit form="raw">ft/s</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
@@ -398,20 +446,8 @@ See https://github.com/yamcs/pymdb
       <Parameter name="acceleration_z" parameterTypeRef="acceleration_z" shortDescription="Acceleration Z">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="angle_pitch" parameterTypeRef="angle_pitch" shortDescription="Angular Pitch Rate">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="angle_roll" parameterTypeRef="angle_roll" shortDescription="Angular Roll Rate">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="angle_yaw" parameterTypeRef="angle_yaw" shortDescription="Angular Yaw Rate">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
       <Parameter name="apogee_from_ground" parameterTypeRef="apogee_from_ground" shortDescription="Apogee From Ground">
         <LongDescription>Cacluated on the FC in order to determine ejection.</LongDescription>
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="atm_temp" parameterTypeRef="atm_temp" shortDescription="Atmospheric Temperature">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="barometer_altitude_from_pad" parameterTypeRef="barometer_altitude_from_pad" shortDescription="Altitude From Pad">
@@ -419,9 +455,6 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="barometer_altitude_from_sea_level" parameterTypeRef="barometer_altitude_from_sea_level" shortDescription="Altitude From Sea Level">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="barometer_pressure" parameterTypeRef="barometer_pressure" shortDescription="Barometer Pressure">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="battery_current_draw" parameterTypeRef="battery_current_draw" shortDescription="Battery Current Draw">
@@ -456,11 +489,19 @@ See https://github.com/yamcs/pymdb
       <Parameter name="drogue_energized_SW" parameterTypeRef="drogue_energized_SW" shortDescription="drogue: logical energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="fc_pressure" parameterTypeRef="fc_pressure" shortDescription="FC Pressure">
+        <LongDescription>Barometric pressure measured by the FC</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
       <Parameter name="fc_rssi" parameterTypeRef="fc_rssi" shortDescription="FC RSSI">
         <LongDescription>Relative Signal Strength Indicator of FC radio</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="fc_snr" parameterTypeRef="fc_snr" shortDescription="FC SNR">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fc_temp" parameterTypeRef="fc_temp" shortDescription="FC Temperature">
+        <LongDescription>Temperature measured by the FC</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="fdov_armed_HW" parameterTypeRef="fdov_armed_HW" shortDescription="FDOV: Electrical ARM">
@@ -510,6 +551,15 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update" shortDescription="Gps Time From Last Update">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gyro_rate_x" parameterTypeRef="gyro_rate_x" shortDescription="Gyroscopic Rate X">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gyro_rate_y" parameterTypeRef="gyro_rate_y" shortDescription="Gyroscopic Rate Y">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gyro_rate_z" parameterTypeRef="gyro_rate_z" shortDescription="Gyroscopic Rate Z">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="main_armed_HW" parameterTypeRef="main_armed_HW" shortDescription="main: electrical armed">
@@ -687,7 +737,7 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="barometer_pressure">
+          <ParameterRefEntry parameterRef="fc_pressure">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -697,7 +747,7 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="atm_temp">
+          <ParameterRefEntry parameterRef="fc_temp">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -742,17 +792,17 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="angle_yaw">
+          <ParameterRefEntry parameterRef="gyro_rate_x">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="angle_pitch">
+          <ParameterRefEntry parameterRef="gyro_rate_y">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="angle_roll">
+          <ParameterRefEntry parameterRef="gyro_rate_z">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>

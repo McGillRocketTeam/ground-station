@@ -12,7 +12,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="arm_recovery">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="battery_to_umbilical" abstract="false" shortDescription="uh">
@@ -20,7 +20,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="battery_to_umbilical">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="disarm_recovery" abstract="false" shortDescription="ed">
@@ -28,7 +28,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="disarm_recovery">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="drogue_ejection" abstract="false" shortDescription="eD">
@@ -36,7 +36,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="drogue_ejection">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="emergency_cancel" abstract="false" shortDescription="pc">
@@ -44,7 +44,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="emergency_cancel">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="severe"/>
+        <DefaultSignificance consequenceLevel="critical"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="emergency_stop" abstract="false" shortDescription="pe">
@@ -52,7 +52,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="emergency_stop">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="severe"/>
+        <DefaultSignificance consequenceLevel="critical"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="fdov_de-energize" abstract="false" shortDescription="p5">
@@ -60,7 +60,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="fdov_de-energize">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="fdov_energize" abstract="false" shortDescription="p4">
@@ -68,7 +68,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="fdov_energize">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="landed" abstract="false" shortDescription="ld">
@@ -76,7 +76,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="landed">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="launch" abstract="false" shortDescription="pl">
@@ -84,7 +84,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="launch">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="severe"/>
+        <DefaultSignificance consequenceLevel="critical"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="main_ejection" abstract="false" shortDescription="eM">
@@ -92,7 +92,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="main_ejection">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="mov_arming" abstract="false" shortDescription="p2">
@@ -100,7 +100,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="mov_arming">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="critical"/>
+        <DefaultSignificance consequenceLevel="vital"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="mov_disarming" abstract="false" shortDescription="p3">
@@ -108,7 +108,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="mov_disarming">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="critical"/>
+        <DefaultSignificance consequenceLevel="vital"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="propulsion_off" abstract="false" shortDescription="po">
@@ -116,7 +116,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="propulsion_off">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="watch"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="propulsion_on" abstract="false" shortDescription="pi">
@@ -124,7 +124,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="propulsion_on">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="watch"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="radio_disable_slow_tx" abstract="false" shortDescription="r+">
@@ -132,7 +132,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="radio_disable_slow_tx">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="radio_enable_slow_tx" abstract="false" shortDescription="r-">
@@ -140,7 +140,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="radio_enable_slow_tx">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="reset_av" abstract="false" shortDescription="rs">
@@ -148,7 +148,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="reset_av">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="reset_prop_boards_valve_state" abstract="false" shortDescription="pr">
@@ -156,7 +156,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="reset_prop_boards_valve_state">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="umbilical_to_battery" abstract="false" shortDescription="ul">
@@ -164,7 +164,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="umbilical_to_battery">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="none"/>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="vent_valve_de-energize" abstract="false" shortDescription="p1">
@@ -172,7 +172,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="vent_valve_de-energize">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="critical"/>
+        <DefaultSignificance consequenceLevel="vital"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="vent_valve_energize" abstract="false" shortDescription="p0">
@@ -180,7 +180,7 @@ See https://github.com/yamcs/pymdb
         <CommandContainer name="vent_valve_energize">
           <EntryList/>
         </CommandContainer>
-        <CommandSignificance significance="critical"/>
+        <DefaultSignificance consequenceLevel="vital"/>
         <VerifierSet/>
       </MetaCommand>
     </MetaCommandSet>

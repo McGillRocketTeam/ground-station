@@ -51,7 +51,8 @@ class TelemetrySystem(FlightSystem):
         variable_name = str(row["Variable Name"])
         ui_name = str(row["UI Name"])
         description = str(row["Description (optional)"])
-        units = str(row["Units"])
+        units_cal = str(row["Units"])
+        units_raw = str(row["Raw Units"])
 
         match gui_type:
             case "AbsoluteTime":
@@ -68,7 +69,8 @@ class TelemetrySystem(FlightSystem):
                     name=variable_name,
                     short_description=ui_name,
                     long_description=description,
-                    units=units,
+                    calibrated_units=units_cal,
+                    raw_units=units_raw,
                     encoding=Y.IntegerEncoding(bits=1),
                 )
                 return param
@@ -86,7 +88,8 @@ class TelemetrySystem(FlightSystem):
                     name=variable_name,
                     short_description=ui_name,
                     long_description=description,
-                    units=units,
+                    calibrated_units=units_cal,
+                    raw_units=units_raw,
                     encoding=Y.IntegerEncoding(bits=size, little_endian=True),
                     choices=FlightSystem.extract_enum_choices(enum_metadata),
                 )
@@ -105,7 +108,8 @@ class TelemetrySystem(FlightSystem):
                         name=variable_name,
                         short_description=ui_name,
                         long_description=description,
-                        units=units,
+                        calibrated_units=units_cal,
+                        raw_units=units_raw,
                         encoding=Y.FloatEncoding(bits=size, little_endian=True),
                         calibrator=calibrator,
                     )
@@ -121,7 +125,8 @@ class TelemetrySystem(FlightSystem):
                         name=variable_name,
                         short_description=ui_name,
                         long_description=description,
-                        units=units,
+                        calibrated_units=units_cal,
+                        raw_units=units_raw,
                         encoding=Y.IntegerEncoding(
                             bits=size, scheme=scheme, little_endian=True
                         ),
@@ -146,7 +151,8 @@ class TelemetrySystem(FlightSystem):
                     name=variable_name,
                     short_description=ui_name,
                     long_description=description,
-                    units=units,
+                    calibrated_units=units_cal,
+                    raw_units=units_raw,
                     encoding=Y.IntegerEncoding(bits=size, scheme=scheme),
                     calibrator=calibrator,
                 )
@@ -163,7 +169,8 @@ class TelemetrySystem(FlightSystem):
                     name=variable_name,
                     short_description=ui_name,
                     long_description=description,
-                    units=units,
+                    calibrated_units=units_cal,
+                    raw_units=units_raw,
                     encoding=Y.StringEncoding(bits=size * 8),
                 )
                 return param

@@ -9,6 +9,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="acceleration_x" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
+          <Unit form="raw">g x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -23,6 +24,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="acceleration_y" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
+          <Unit form="raw">g x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -37,6 +39,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="acceleration_z" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
+          <Unit form="raw">g x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -57,24 +60,28 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="barometer_altitude_from_pad" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft</Unit>
+          <Unit form="raw">ft</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <FloatParameterType name="barometer_altitude_from_sea_level" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft</Unit>
+          <Unit form="raw">ft</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <IntegerParameterType name="battery_current_draw" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">mA</Unit>
+          <Unit form="raw">mA</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="battery_voltage" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">V</Unit>
+          <Unit form="raw">dV</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
           <DefaultCalibrator>
@@ -99,6 +106,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="cc_pressure" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
+          <Unit form="raw">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
@@ -123,6 +131,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="fc_pressure" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">bar</Unit>
+          <Unit form="raw">hPa</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -164,7 +173,7 @@ See https://github.com/yamcs/pymdb
       </IntegerParameterType>
       <IntegerParameterType name="fc_temp" signed="true" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">deg C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -221,6 +230,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="gps_altitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">m</Unit>
+          <Unit form="raw">mm</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -235,6 +245,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="gps_latitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg</Unit>
+          <Unit form="raw">deg x 10^(7)</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -249,6 +260,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="gps_longitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg</Unit>
+          <Unit form="raw">deg x 10^(7)</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -263,12 +275,14 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="gps_time_last_update" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">s</Unit>
+          <Unit form="raw">s</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
       <IntegerParameterType name="gyro_rate_x" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg/s</Unit>
+          <Unit form="raw">deg/s x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -283,6 +297,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="gyro_rate_y" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg/s</Unit>
+          <Unit form="raw">deg/s x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -297,6 +312,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="gyro_rate_z" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg/s</Unit>
+          <Unit form="raw">deg/s x 10^(-3)</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -368,12 +384,14 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="tank_pressure" signed="true" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
+          <Unit form="raw">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="tank_temp" signed="true" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">deg C</Unit>
+          <Unit form="raw">deg C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
@@ -397,7 +415,8 @@ See https://github.com/yamcs/pymdb
       </BooleanParameterType>
       <IntegerParameterType name="vent_temp" signed="true" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">deg C</Unit>
+          <Unit form="raw">deg C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
           <DefaultCalibrator>
@@ -412,6 +431,7 @@ See https://github.com/yamcs/pymdb
       <FloatParameterType name="vertical_speed" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft/s</Unit>
+          <Unit form="raw">ft/s</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>

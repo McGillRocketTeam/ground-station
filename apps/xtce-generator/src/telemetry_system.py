@@ -119,7 +119,7 @@ class TelemetrySystem(FlightSystem):
                         if "u" in encoded_type
                         else Y.IntegerEncodingScheme.TWOS_COMPLEMENT
                     )
-                    param = Y.IntegerParameter(
+                    param = Y.FloatParameter(
                         system=self.sys,
                         name=variable_name,
                         short_description=ui_name,

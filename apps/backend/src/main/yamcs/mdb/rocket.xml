@@ -6,7 +6,7 @@ See https://github.com/yamcs/pymdb
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="FlightComputer">
   <TelemetryMetaData>
     <ParameterTypeSet>
-      <IntegerParameterType name="acceleration_x" signed="true" sizeInBits="32">
+      <FloatParameterType name="acceleration_x" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
         </UnitSet>
@@ -19,8 +19,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="acceleration_y" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="acceleration_y" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
         </UnitSet>
@@ -33,8 +33,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="acceleration_z" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="acceleration_z" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">g</Unit>
         </UnitSet>
@@ -47,7 +47,7 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <FloatParameterType name="apogee_from_ground" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft</Unit>
@@ -72,7 +72,7 @@ See https://github.com/yamcs/pymdb
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
-      <IntegerParameterType name="battery_voltage" signed="true" sizeInBits="32">
+      <FloatParameterType name="battery_voltage" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">V</Unit>
         </UnitSet>
@@ -85,7 +85,7 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <StringParameterType name="call_sign">
         <StringDataEncoding encoding="US-ASCII">
           <SizeInBits>
@@ -96,12 +96,12 @@ See https://github.com/yamcs/pymdb
           </SizeInBits>
         </StringDataEncoding>
       </StringParameterType>
-      <IntegerParameterType name="cc_pressure" signed="true" sizeInBits="32">
+      <FloatParameterType name="cc_pressure" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
+      </FloatParameterType>
       <BooleanParameterType name="drogue_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -134,7 +134,7 @@ See https://github.com/yamcs/pymdb
           </DefaultCalibrator>
         </FloatDataEncoding>
       </FloatParameterType>
-      <IntegerParameterType name="fc_rssi" signed="true" sizeInBits="32">
+      <FloatParameterType name="fc_rssi" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">dBm</Unit>
         </UnitSet>
@@ -147,8 +147,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="fc_snr" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="fc_snr" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">dB</Unit>
         </UnitSet>
@@ -161,8 +161,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="fc_temp" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="fc_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">°C</Unit>
         </UnitSet>
@@ -175,7 +175,7 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <BooleanParameterType name="fdov_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -266,7 +266,7 @@ See https://github.com/yamcs/pymdb
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
-      <IntegerParameterType name="gyro_rate_x" signed="true" sizeInBits="32">
+      <FloatParameterType name="gyro_rate_x" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg/s</Unit>
         </UnitSet>
@@ -279,8 +279,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="gyro_rate_y" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="gyro_rate_y" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg/s</Unit>
         </UnitSet>
@@ -293,8 +293,8 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="gyro_rate_z" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="gyro_rate_z" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg/s</Unit>
         </UnitSet>
@@ -307,7 +307,7 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <BooleanParameterType name="main_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -365,18 +365,18 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="states_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <IntegerParameterType name="tank_pressure" signed="true" sizeInBits="32">
+      <FloatParameterType name="tank_pressure" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="tank_temp" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="tank_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">°C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
+      </FloatParameterType>
       <BooleanParameterType name="vent_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -395,7 +395,7 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="vent_energized_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <IntegerParameterType name="vent_temp" signed="true" sizeInBits="32">
+      <FloatParameterType name="vent_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">°C</Unit>
         </UnitSet>
@@ -408,7 +408,7 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <FloatParameterType name="vertical_speed" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">ft/s</Unit>

@@ -84,11 +84,6 @@ export function DashboardPage() {
         id: crypto.randomUUID(),
       });
       event.api.addPanel({
-        title: "Parameter Chart",
-        component: "parameter-chart",
-        id: crypto.randomUUID(),
-      });
-      event.api.addPanel({
         title: "Events",
         component: "events",
         id: crypto.randomUUID(),

@@ -33,8 +33,8 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
     ].filter(validAck),
 
     radio: [
-      extractAcknowledgement(command, "Radio_RX"),
-      extractAcknowledgement(command, "Radio_TX"),
+      extractAcknowledgement(command, "radio-controlstation-a_RX"),
+      extractAcknowledgement(command, "radio-controlstation-b_RX"),
     ].filter(validAck),
 
     flightComputer: [

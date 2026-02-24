@@ -6,33 +6,56 @@ import { useState, type ReactNode } from "react";
 
 const CardEntries = {
   "FLIGHT ATOMIC": [
-    "/FlightComputer/flight_stage",
-    "/FlightComputer/altimeter_altitude",
-    "/FlightComputer/altitude_from_sea_level",
-    "/FlightComputer/apogee_from_ground",
-    "/FlightComputer/atm_pressure",
-    "/FlightComputer/barometer_altitude",
-    "/FlightComputer/atm_temp",
-    "/FlightComputer/gps_latitude",
-    "/FlightComputer/gps_longitude",
-    "/FlightComputer/gps_altitude",
-    "/FlightComputer/gps_time_last_update",
-    "/FlightComputer/vertical_speed",
-    "/FlightComputer/acceleration_x",
-    "/FlightComputer/acceleration_y",
-    "/FlightComputer/acceleration_z",
-    "/FlightComputer/angle_yaw",
-    "/FlightComputer/angle_pitch",
-    "/FlightComputer/angle_roll",
-    "/FlightComputer/fc_rssi",
-    "/FlightComputer/fc_snr",
+    "FC435/FlightComputer/flight_stage",
+    "FC435/FlightComputer/altimeter_altitude",
+    "FC435/FlightComputer/altitude_from_sea_level",
+    "FC435/FlightComputer/apogee_from_ground",
+    "FC435/FlightComputer/atm_pressure",
+    "FC435/FlightComputer/barometer_altitude",
+    "FC435/FlightComputer/atm_temp",
+    "FC435/FlightComputer/gps_latitude",
+    "FC435/FlightComputer/gps_longitude",
+    "FC435/FlightComputer/gps_altitude",
+    "FC435/FlightComputer/gps_time_last_update",
+    "FC435/FlightComputer/vertical_speed",
+    "FC435/FlightComputer/acceleration_x",
+    "FC435/FlightComputer/acceleration_y",
+    "FC435/FlightComputer/acceleration_z",
+    "FC435/FlightComputer/angle_yaw",
+    "FC435/FlightComputer/angle_pitch",
+    "FC435/FlightComputer/angle_roll",
+    "FC435/FlightComputer/fc_rssi",
+    "FC435/FlightComputer/fc_snr",
+    "FC435/FlightComputer/flags",
+    "FC435/FlightComputer/flags_post_pad",
+    "FC435/FlightComputer/flags_pre_pad",
+    "FC435/FlightComputer/flight_atomic_flag",
+    "FC435/FlightComputer/states_atomic_flag",
+    "FC435/FlightComputer/seq",
+    "FC435/FlightComputer/padding",
   ],
-  "RADIO ATOMIC": ["/FlightComputer/call_sign"],
+  "RADIO ATOMIC": [
+    "FC435/FlightComputer/call_sign",
+    "FC435/FlightComputer/radio_atomic_flag",
+  ],
   "PROPULSION ATOMIC": [
-    "/FlightComputer/cc_pressure",
-    "/FlightComputer/tank_pressure",
-    "/FlightComputer/tank_temp",
-    "/FlightComputer/vent_temp",
+    "FC435/FlightComputer/cc_pressure",
+    "FC435/FlightComputer/tank_pressure",
+    "FC435/FlightComputer/tank_temp",
+    "FC435/FlightComputer/vent_temp",
+    "FC435/FlightComputer/prop_atomic_flag",
+    "FC435/FlightComputer/prop_energized_electric",
+    "FC435/FlightComputer/mov_hall_state",
+    "FC435/FlightComputer/drogue_armed_SW",
+    "FC435/FlightComputer/drogue_energized_SW",
+    "FC435/FlightComputer/fdov_armed_SW",
+    "FC435/FlightComputer/fdov_energized_SW",
+    "FC435/FlightComputer/main_armed_SW",
+    "FC435/FlightComputer/main_energized_SW",
+    "FC435/FlightComputer/mov_armed_SW",
+    "FC435/FlightComputer/mov_energized_SW",
+    "FC435/FlightComputer/vent_armed_SW",
+    "FC435/FlightComputer/vent_energized_SW",
   ],
 };
 
@@ -43,7 +66,7 @@ export const ParameterTable = makeCard({
   component: () => {
     return (
       <div className="h-full overflow-auto">
-        <div className="grid grid-cols-[1.5rem_3fr_1fr_auto] gap-px font-mono">
+        <div className="grid grid-cols-[1.5rem_auto_1fr_1fr] gap-px font-mono">
           <TableHeader />
           {Object.entries(CardEntries).map(([title, parameters]) => (
             <TableGroup key={title} name={title}>
@@ -66,11 +89,14 @@ function TableHeader() {
         Parameter
       </div>
       <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
-        Value
+        FC435
       </div>
       <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
-        Unit
+        FC903
       </div>
+      {/* <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1"> */}
+      {/*   Unit */}
+      {/* </div> */}
     </div>
   );
 }
@@ -106,8 +132,12 @@ function TableRow({ parameter }: { parameter: string }) {
   return (
     <div className="*:bg-background hover:*:bg-selection-background col-span-full grid grid-cols-subgrid text-sm *:px-1">
       <div />
-      <div className="line-clamp-1 text-ellipsis">{parameter}</div>
-      <Value name={parameter} />
+      <div className="line-clamp-1 text-ellipsis">
+        {parameter.split("/")[2]}
+      </div>
+      <Value name={"/" + parameter} />
+      <Value name={"/" + parameter.replace("435", "903")} />
+      {/* <div /> */}
     </div>
   );
 }
@@ -119,7 +149,6 @@ function Value({ name }: { name: string }) {
     onInitial: () => (
       <>
         <div className="text-muted-foreground text-right">Awaiting Value</div>
-        <div />
       </>
     ),
     onFailure: ({ cause }) => (
@@ -129,12 +158,11 @@ function Value({ name }: { name: string }) {
     ),
     onSuccess: ({ value }) => (
       <>
-        <div className="text-right">
+        <div className="line-clamp-1 text-right text-ellipsis">
           {"value" in value.engValue
             ? value.engValue.value.toLocaleString()
             : "Unknown Value Type"}
         </div>
-        <div>{value.numericId}</div>
       </>
     ),
   });

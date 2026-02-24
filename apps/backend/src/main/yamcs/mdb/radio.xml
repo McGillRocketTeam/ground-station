@@ -1,0 +1,62 @@
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
+	name="GSRadio">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<FloatParameterType name="rssi" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">dBm</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>-2</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+			<FloatParameterType name="snr" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">dB</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
+					<DefaultCalibrator>
+						<MathOperationCalibrator>
+							<ThisParameterOperand />
+							<ValueOperand>4</ValueOperand>
+							<Operator>/</Operator>
+						</MathOperationCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</FloatParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter name="rssi" parameterTypeRef="rssi" shortDescription="FC RSSI">
+				<LongDescription>Relative Signal Strength Indicator of the ground radio</LongDescription>
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="snr" parameterTypeRef="snr" shortDescription="FC SNR">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="GSRPacket">
+				<EntryList>
+					<ParameterRefEntry parameterRef="rssi">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="snr">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+</SpaceSystem>

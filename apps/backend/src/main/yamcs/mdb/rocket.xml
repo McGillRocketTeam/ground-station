@@ -427,7 +427,7 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="apogee_from_ground" parameterTypeRef="apogee_from_ground" shortDescription="Apogee From Ground">
-        <LongDescription>Cacluated on the FC in order to determine ejection.</LongDescription>
+        <LongDescription>Calculated on the FC in order to determine ejection.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="barometer_altitude_from_pad" parameterTypeRef="barometer_altitude_from_pad" shortDescription="Altitude From Pad">
@@ -484,22 +484,22 @@ See https://github.com/yamcs/pymdb
         <LongDescription>Temperature measured by the FC</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_armed_HW" parameterTypeRef="fdov_armed_HW" shortDescription="FDOV: Electrical ARM">
+      <Parameter name="fdov_armed_HW" parameterTypeRef="fdov_armed_HW" shortDescription="F/DOV: Electrical ARM">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_armed_SW" parameterTypeRef="fdov_armed_SW" shortDescription="FDOV: Logical ARM">
+      <Parameter name="fdov_armed_SW" parameterTypeRef="fdov_armed_SW" shortDescription="F/DOV: Logical ARM">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_continuity_HW" parameterTypeRef="fdov_continuity_HW" shortDescription="FDOV: Electrical Continuity">
+      <Parameter name="fdov_continuity_HW" parameterTypeRef="fdov_continuity_HW" shortDescription="F/DOV: Electrical Continuity">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_energizedCurrent_HW" parameterTypeRef="fdov_energizedCurrent_HW" shortDescription="FDOV: Electrical Energized Current">
+      <Parameter name="fdov_energizedCurrent_HW" parameterTypeRef="fdov_energizedCurrent_HW" shortDescription="F/DOV: Electrical Energized Current">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_energizedGate_HW" parameterTypeRef="fdov_energizedGate_HW" shortDescription="FDOV: Electrical Energized Gate">
+      <Parameter name="fdov_energizedGate_HW" parameterTypeRef="fdov_energizedGate_HW" shortDescription="F/DOV: Electrical Energized Gate">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_energized_SW" parameterTypeRef="fdov_energized_SW" shortDescription="FDOV: Logical Energized">
+      <Parameter name="fdov_energized_SW" parameterTypeRef="fdov_energized_SW" shortDescription="F/DOV: Logical Energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="flags" parameterTypeRef="flags" shortDescription="Packet Flags">
@@ -530,7 +530,7 @@ See https://github.com/yamcs/pymdb
       <Parameter name="gps_longitude" parameterTypeRef="gps_longitude" shortDescription="GPS Longitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update" shortDescription="Gps Time From Last Update">
+      <Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update" shortDescription="GPS Time From Last Update">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="gyro_rate_x" parameterTypeRef="gyro_rate_x" shortDescription="Gyroscopic Rate X">

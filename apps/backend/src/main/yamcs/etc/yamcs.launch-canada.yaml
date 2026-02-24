@@ -22,100 +22,99 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: ASTRA-433
-    class: org.yamcs.mrt.AstraAggregateDataLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    frequency: "435.00"
-    tmStream: tm_433_realtime
-
-  - name: ASTRA-903
-    class: org.yamcs.mrt.AstraAggregateDataLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    frequency: "903.00"
-    tmStream: tm_903_realtime
-
-  - name: ASTRA-Other
-    class: org.yamcs.mrt.AstraAggregateDataLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    frequency: "N/A"
-    tmStream: tm_daq_realtime
-
-  - name: ASTRA-Commands
-    class: org.yamcs.mrt.AstraCommandLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    tcStream: tc_realtime
-
-  - name: LabJack
-    class: org.yamcs.labjack.LabJackDataLink
-    tmStream: tm_labJack
-    tcStream: tc_labJack
-
   - name: simulator
     class: org.yamcs.tctm.UdpParameterDataLink
     stream: pp_realtime
     port: 11016
     json: true
 
+  - name: SystemA/Rocket/FlightComputer
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: pp_realtime
+  - name: SystemA/ControlStation/Radio
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: pp_realtime
+  - name: SystemA/Pad/Radio
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: pp_realtime
+
+  - name: SystemB/Rocket/FlightComputer
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: pp_realtime
+  - name: SystemB/ControlStation/Radio
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: pp_realtime
+  - name: SystemB/Pad/Radio
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: pp_realtime
+
 mdb:
-  - type: emptyNode
-    spec: "FC903"
-    subLoaders:
-      - type: xtce
-        args:
-          file: mdb/rocket.xml
-  - type: emptyNode
-    spec: "FC435"
-    subLoaders:
-      - type: xtce
-        args:
-          file: mdb/rocket.xml
   - type: xtce
     args:
       file: mdb/commands.xml
-  - type: xtce
-    spec: "LabJack"
-    args:
-      file: mdb/labjack-t7.xml
+  - type: emptyNode
+    spec: "SystemA"
+    subLoaders:
+      - type: emptyNode
+        spec: "Rocket"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/rocket.xml
 
-  - type: xtce
-    args:
-      file: mdb/thermocouple.xml
+      - type: emptyNode
+        spec: "ControlStation"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/radio.xml
+      - type: emptyNode
+        spec: "Pad"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/radio.xml
+
+  - type: emptyNode
+    spec: "SystemB"
+    subLoaders:
+      - type: emptyNode
+        spec: "Rocket"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/rocket.xml
+      - type: emptyNode
+        spec: "ControlStation"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/radio.xml
+      - type: emptyNode
+        spec: "Pad"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/radio.xml
+
 # Configuration for streams created at server startup
 streamConfig:
   tm:
     - name: "tm_433_realtime"
-      rootContainer: "/FC435/FlightComputer/FCFrame"
+      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
     - name: "tm_903_realtime"
-      rootContainer: "/FC903/FlightComputer/FCFrame"
+      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
-    - name: "tm_daq_realtime"
-      rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
-      processor: "realtime"
-    - name: "tm_dump"
-
-    # Labjack
-    - name: "tm_labJack"
-      processor: "realtime"
-      rootContainer: "/LabJackT7/LabJackPacket"
+    # - name: "tm_daq_realtime"
+    #   rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
+    #   processor: "realtime"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
   param: ["pp_realtime", "sys_param", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   tc:
-    - name: "tc_labJack"
-      processor: "realtime"
-      tcPatterns: ["/LabJackT7/.*"]
-
     - name: "tc_realtime"
       processor: "realtime"
       tcPatterns: ["/FlightComputer/.*"]

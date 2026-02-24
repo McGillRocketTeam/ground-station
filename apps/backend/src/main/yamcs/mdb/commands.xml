@@ -1,188 +1,231 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <!--
 This file was generated with Yamcs PyMDB.
 See https://github.com/yamcs/pymdb
 -->
-<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="FlightComputer">
-  <TelemetryMetaData/>
-  <CommandMetaData>
-    <MetaCommandSet>
-      <MetaCommand name="arm_recovery" abstract="false" shortDescription="ea">
-        <LongDescription>ARM Recovery</LongDescription>
-        <CommandContainer name="arm_recovery">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="battery_to_umbilical" abstract="false" shortDescription="uh">
-        <LongDescription>Umbilical High</LongDescription>
-        <CommandContainer name="battery_to_umbilical">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="disarm_recovery" abstract="false" shortDescription="ed">
-        <LongDescription>DISARM Recovery</LongDescription>
-        <CommandContainer name="disarm_recovery">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="drogue_ejection" abstract="false" shortDescription="eD">
-        <LongDescription>Drogue Ejection</LongDescription>
-        <CommandContainer name="drogue_ejection">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="emergency_cancel" abstract="false" shortDescription="pc">
-        <LongDescription>Emergency Cancel</LongDescription>
-        <CommandContainer name="emergency_cancel">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="critical"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="emergency_stop" abstract="false" shortDescription="pe">
-        <LongDescription>Emergency Stop</LongDescription>
-        <CommandContainer name="emergency_stop">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="critical"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="fdov_de-energize" abstract="false" shortDescription="p5">
-        <LongDescription>FDOV De-energize</LongDescription>
-        <CommandContainer name="fdov_de-energize">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="fdov_energize" abstract="false" shortDescription="p4">
-        <LongDescription>FDOV Energize</LongDescription>
-        <CommandContainer name="fdov_energize">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="landed" abstract="false" shortDescription="ld">
-        <LongDescription>Landed</LongDescription>
-        <CommandContainer name="landed">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="launch" abstract="false" shortDescription="pl">
-        <LongDescription>Launch</LongDescription>
-        <CommandContainer name="launch">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="critical"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="main_ejection" abstract="false" shortDescription="eM">
-        <LongDescription>Main Ejection</LongDescription>
-        <CommandContainer name="main_ejection">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="mov_arming" abstract="false" shortDescription="p2">
-        <LongDescription>MOV Arming</LongDescription>
-        <CommandContainer name="mov_arming">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="vital"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="mov_disarming" abstract="false" shortDescription="p3">
-        <LongDescription>MOV Disarming</LongDescription>
-        <CommandContainer name="mov_disarming">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="vital"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="propulsion_off" abstract="false" shortDescription="po">
-        <LongDescription>Propulsion Off</LongDescription>
-        <CommandContainer name="propulsion_off">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="propulsion_on" abstract="false" shortDescription="pi">
-        <LongDescription>Propulsion On</LongDescription>
-        <CommandContainer name="propulsion_on">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="radio_disable_slow_tx" abstract="false" shortDescription="r+">
-        <LongDescription>Radio Normal TX Speed</LongDescription>
-        <CommandContainer name="radio_disable_slow_tx">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="radio_enable_slow_tx" abstract="false" shortDescription="r-">
-        <LongDescription>Radio Slow TX Speed</LongDescription>
-        <CommandContainer name="radio_enable_slow_tx">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="reset_av" abstract="false" shortDescription="rs">
-        <LongDescription>Resets the FC</LongDescription>
-        <CommandContainer name="reset_av">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="reset_prop_boards_valve_state" abstract="false" shortDescription="pr">
-        <LongDescription>Reset Prop Valve States</LongDescription>
-        <CommandContainer name="reset_prop_boards_valve_state">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="umbilical_to_battery" abstract="false" shortDescription="ul">
-        <LongDescription>Umbilical Low</LongDescription>
-        <CommandContainer name="umbilical_to_battery">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="vent_valve_de-energize" abstract="false" shortDescription="p1">
-        <LongDescription>Vent Valve De-energize</LongDescription>
-        <CommandContainer name="vent_valve_de-energize">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="vital"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="vent_valve_energize" abstract="false" shortDescription="p0">
-        <LongDescription>Vent Valve Energize</LongDescription>
-        <CommandContainer name="vent_valve_energize">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="vital"/>
-        <VerifierSet/>
-      </MetaCommand>
-    </MetaCommandSet>
-  </CommandMetaData>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
+	name="FlightComputer">
+	<TelemetryMetaData />
+	<CommandMetaData>
+		<MetaCommandSet>
+			<MetaCommand name="arm_recovery" abstract="false" shortDescription="ea">
+				<LongDescription>ARM Recovery</LongDescription>
+				<CommandContainer name="arm_recovery">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="battery_to_umbilical" abstract="false" shortDescription="uh">
+				<LongDescription>Umbilical High</LongDescription>
+				<CommandContainer name="battery_to_umbilical">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="disarm_recovery" abstract="false" shortDescription="ed">
+				<LongDescription>DISARM Recovery</LongDescription>
+				<CommandContainer name="disarm_recovery">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="drogue_ejection" abstract="false" shortDescription="eD">
+				<LongDescription>Drogue Ejection</LongDescription>
+				<CommandContainer name="drogue_ejection">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="emergency_cancel" abstract="false" shortDescription="pc">
+				<LongDescription>Emergency Cancel</LongDescription>
+				<CommandContainer name="emergency_cancel">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="critical" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="emergency_stop" abstract="false" shortDescription="pe">
+				<LongDescription>Emergency Stop</LongDescription>
+				<CommandContainer name="emergency_stop">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="critical" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="fdov_de-energize" abstract="false" shortDescription="p5">
+				<LongDescription>FDOV De-energize</LongDescription>
+				<CommandContainer name="fdov_de-energize">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="fdov_energize" abstract="false" shortDescription="p4">
+				<LongDescription>FDOV Energize</LongDescription>
+				<CommandContainer name="fdov_energize">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="landed" abstract="false" shortDescription="ld">
+				<LongDescription>Landed</LongDescription>
+				<CommandContainer name="landed">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="launch" abstract="false" shortDescription="pl">
+				<LongDescription>Launch</LongDescription>
+				<CommandContainer name="launch">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="critical" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="main_ejection" abstract="false" shortDescription="eM">
+				<LongDescription>Main Ejection</LongDescription>
+				<CommandContainer name="main_ejection">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="mov_arming" abstract="false" shortDescription="p2">
+				<LongDescription>MOV Arming</LongDescription>
+				<CommandContainer name="mov_arming">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="vital" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="mov_disarming" abstract="false" shortDescription="p3">
+				<LongDescription>MOV Disarming</LongDescription>
+				<CommandContainer name="mov_disarming">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="vital" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="propulsion_off" abstract="false" shortDescription="po">
+				<LongDescription>Propulsion Off</LongDescription>
+				<CommandContainer name="propulsion_off">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="propulsion_on" abstract="false" shortDescription="pi">
+				<LongDescription>Propulsion On</LongDescription>
+				<CommandContainer name="propulsion_on">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="radio_disable_slow_tx" abstract="false" shortDescription="r+">
+				<LongDescription>Radio Normal TX Speed</LongDescription>
+				<CommandContainer name="radio_disable_slow_tx">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="radio_enable_slow_tx" abstract="false" shortDescription="r-">
+				<LongDescription>Radio Slow TX Speed</LongDescription>
+				<CommandContainer name="radio_enable_slow_tx">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="reset_av" abstract="false" shortDescription="rs">
+				<LongDescription>Resets the FC</LongDescription>
+				<CommandContainer name="reset_av">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="reset_prop_boards_valve_state" abstract="false" shortDescription="pr">
+				<LongDescription>Reset Prop Valve States</LongDescription>
+				<CommandContainer name="reset_prop_boards_valve_state">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="sd_close" abstract="false" shortDescription="sc">
+				<LongDescription>Close SD Card</LongDescription>
+				<CommandContainer name="sd_close">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="sd_delete_all" abstract="false" shortDescription="sd">
+				<LongDescription>Deletes SD Data</LongDescription>
+				<CommandContainer name="sd_delete_all">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="critical" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="sd_delete_arm" abstract="false" shortDescription="sa">
+				<LongDescription>Arm SD Deletion</LongDescription>
+				<CommandContainer name="sd_delete_arm">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="sd_delete_disarm" abstract="false" shortDescription="si">
+				<LongDescription>Disarm SD Deletion</LongDescription>
+				<CommandContainer name="sd_delete_disarm">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="sd_open" abstract="false" shortDescription="so">
+				<LongDescription>Open SD Card</LongDescription>
+				<CommandContainer name="sd_open">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="umbilical_to_battery" abstract="false" shortDescription="ul">
+				<LongDescription>Umbilical Low</LongDescription>
+				<CommandContainer name="umbilical_to_battery">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="vent_valve_de-energize" abstract="false" shortDescription="p1">
+				<LongDescription>Vent Valve De-energize</LongDescription>
+				<CommandContainer name="vent_valve_de-energize">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="vital" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="vent_valve_energize" abstract="false" shortDescription="p0">
+				<LongDescription>Vent Valve Energize</LongDescription>
+				<CommandContainer name="vent_valve_energize">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="vital" />
+				<VerifierSet />
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
 </SpaceSystem>

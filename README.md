@@ -44,27 +44,35 @@ Generate random data for development of the frontend. Without the simulator, we 
   - Real-time data synchronization with React components
   - Error handling and retry logic
 
-## 🛠️ Prerequisites
-
-- **Node.js** 22+
-- **pnpm** 10.26.1+
-- **Maven** 3.9+
-- **Docker** & **Docker Compose**
-- **Tilt** (for development orchestration)
-
 ## 📋 Installation
 
+Install the required tools:
+- [Node.js](https://nodejs.org/en/download)
+- [pnpm](https://pnpm.io/installation)
+- [Java (JDK)](https://www.oracle.com/ca-en/java/technologies/downloads/)
+- [Maven](https://maven.apache.org/)
+- [Tilt](https://docs.tilt.dev/install.html)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+or if you're on MacOS, install with Homebrew
+```bash
+brew install node pnpm java maven tilt
+brew install --cask docker-desktop
+```
+Then clone the repository and install the dependencies locally.
 ```bash
 # Clone the repository
 git clone https://github.com/McGillRocketTeam/ground-station
 cd ground-station
 # Install dependencies for all packages
 pnpm install
+# Build initial packages
+pnpm build
 ```
 
 ## 🏃‍♂️ Running Everything with Tilt
 
-**Tilt** orchestrates the entire development environment, including all Docker services and applications.
+**Tilt** orchestrates the entire development environment, including all Docker services and applications. **Ensure that Docker Desktop is running before you start Tilt.**
 
 ```bash
 # Start all services and applications
@@ -92,12 +100,6 @@ pnpm --filter @mrt/frontend dev
 
 ```bash
 YAMCS_INSTANCE=ground_station pnpm --filter @mrt/simulator dev
-```
-
-### Build All Packages
-
-```bash
-pnpm turbo run build
 ```
 
 ### Type Checking

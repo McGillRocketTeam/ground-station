@@ -6,7 +6,7 @@
 		<ParameterTypeSet>
 			<IntegerParameterType name="seq" signed="false" sizeInBits="32">
 				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
-					byteOrder="leastSignificantByteFirst" />
+					byteOrder="leastSignificantByteFirst" bitOrder="leastSignificantBitFirst" />
 			</IntegerParameterType>
 			<FloatParameterType name="rssi" sizeInBits="32">
 				<UnitSet>
@@ -26,7 +26,8 @@
 				<UnitSet>
 					<Unit form="calibrated">dB</Unit>
 				</UnitSet>
-				<IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
+				<IntegerDataEncoding sizeInBits="8" encoding="twosComplement"
+					bitOrder="leastSignificantBitFirst">
 					<DefaultCalibrator>
 						<MathOperationCalibrator>
 							<ThisParameterOperand />
@@ -59,13 +60,13 @@
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="RSSI">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>17</FixedValue>
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="SNR">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>25</FixedValue>
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 				</EntryList>

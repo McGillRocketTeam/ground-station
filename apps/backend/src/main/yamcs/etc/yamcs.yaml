@@ -9,7 +9,8 @@ dataDir: yamcs-data
 
 instances:
   - urrg 
-  - launch-canada 
+  # - launch-canada 
+  # - testsite
 
 # Secret key unique to a particular Yamcs installation.
 # This is used to provide cryptographic signing.

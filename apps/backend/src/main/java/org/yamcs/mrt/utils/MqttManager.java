@@ -7,7 +7,7 @@ import org.eclipse.paho.client.mqttv3.*;
 public class MqttManager implements MqttCallback {
   private static MqttManager instance;
   private MqttClient client;
-  private final String brokerUrl = "tcp://localhost:1883";
+  private final String brokerUrl = "tcp://192.168.0.9:1883";
   private final Map<String, MqttTopicHandler> handlers = new ConcurrentHashMap<>();
 
   private MqttManager() {

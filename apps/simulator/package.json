@@ -11,12 +11,12 @@
     "tsx": "^4.21.0"
   },
   "peerDependencies": {
-    "effect": "^3.19",
     "typescript": "^5"
   },
   "dependencies": {
-    "@effect/platform": "^0.94.2",
-    "@effect/platform-node": "^0.104.1",
-    "@mrt/yamcs-effect": "workspace:*"
+    "@effect/platform-node": "4.0.0-beta.14",
+    "@mrt/yamcs-effect": "workspace:*",
+    "effect": "4.0.0-beta.14",
+    "mqtt": "^5.15.0"
   }
 }

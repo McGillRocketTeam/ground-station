@@ -22,61 +22,26 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: ASTRA-433
-    class: org.yamcs.mrt.AstraAggregateDataLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    frequency: "435.00"
-    tmStream: tm_433_realtime
-
-  - name: ASTRA-903
-    class: org.yamcs.mrt.AstraAggregateDataLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    frequency: "903.00"
-    tmStream: tm_903_realtime
-
-  - name: ASTRA-Other
-    class: org.yamcs.mrt.AstraAggregateDataLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    frequency: "N/A"
-    tmStream: tm_daq_realtime
-
-  - name: ASTRA-Commands
-    class: org.yamcs.mrt.AstraCommandLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    tcStream: tc_realtime
-
   - name: LabJack
     class: org.yamcs.labjack.LabJackDataLink
     tmStream: tm_labJack
     tcStream: tc_labJack
 
-  - name: simulator
-    class: org.yamcs.tctm.UdpParameterDataLink
-    stream: pp_realtime
-    port: 11016
-    json: true
+  - name: Thermocouple
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: tm_thermocouple_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
+  - name: ControlBox
+    class: org.yamcs.mrt.links.ControlBoxLink
+    stream: tm_thermocouple_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
 
 mdb:
-  - type: emptyNode
-    spec: "FC903"
-    subLoaders:
-      - type: xtce
-        args:
-          file: mdb/rocket.xml
-  - type: emptyNode
-    spec: "FC435"
-    subLoaders:
-      - type: xtce
-        args:
-          file: mdb/rocket.xml
   - type: xtce
     args:
       file: mdb/commands.xml
@@ -84,28 +49,26 @@ mdb:
     spec: "LabJack"
     args:
       file: mdb/labjack-t7.xml
-
   - type: xtce
     args:
       file: mdb/thermocouple.xml
+
 # Configuration for streams created at server startup
 streamConfig:
   tm:
-    - name: "tm_433_realtime"
-      rootContainer: "/FC435/FlightComputer/FCFrame"
-      processor: "realtime"
-    - name: "tm_903_realtime"
-      rootContainer: "/FC903/FlightComputer/FCFrame"
-      processor: "realtime"
-    - name: "tm_daq_realtime"
+    - name: "tm_thermocouple_realtime"
       rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
       processor: "realtime"
-    - name: "tm_dump"
 
+    - name: "tm_controlbox_realtime"
+      rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
+      processor: "realtime"
     # Labjack
     - name: "tm_labJack"
       processor: "realtime"
       rootContainer: "/LabJackT7/LabJackPacket"
+
+    - name: "tm_dump"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
@@ -115,7 +78,3 @@ streamConfig:
     - name: "tc_labJack"
       processor: "realtime"
       tcPatterns: ["/LabJackT7/.*"]
-
-    - name: "tc_realtime"
-      processor: "realtime"
-      tcPatterns: ["/FlightComputer/.*"]

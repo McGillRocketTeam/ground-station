@@ -8,8 +8,8 @@ services:
 dataDir: yamcs-data
 
 instances:
-  - urrg 
-  # - launch-canada 
+  # - urrg 
+  - ground_station 
   # - testsite
 
 # Secret key unique to a particular Yamcs installation.

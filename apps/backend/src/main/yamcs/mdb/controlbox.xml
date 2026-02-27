@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
+	name="Thermocouple">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<BooleanParameterType name="boolean">
+				<IntegerDataEncoding sizeInBits="8" bitOrder="leastSignificantBitFirst" />
+			</BooleanParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="boolean" name="panel_1_switch_estop" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_2_switch_launch" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_3_switch_1" />
+			<Parameter parameterTypeRef="boolean" name="panel_3_switch_2" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_4_switch_1" />
+			<Parameter parameterTypeRef="boolean" name="panel_4_switch_2" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_5_switch_1" />
+			<Parameter parameterTypeRef="boolean" name="panel_5_switch_2" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_6_switch_1" />
+			<Parameter parameterTypeRef="boolean" name="panel_6_switch_2" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_7_switch_1" />
+			<Parameter parameterTypeRef="boolean" name="panel_7_switch_2" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_8_switch_1" />
+			<Parameter parameterTypeRef="boolean" name="panel_8_switch_2" />
+
+			<Parameter parameterTypeRef="boolean" name="panel_9_switch_key" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="ControlBoxPacket" abstract="false">
+				<EntryList>
+					<ParameterRefEntry parameterRef="panel_1_switch_estop">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_2_switch_launch">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_3_switch_1">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="panel_3_switch_2">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_4_switch_1">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="panel_4_switch_2">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_5_switch_1">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="panel_5_switch_2">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_6_switch_1">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="panel_6_switch_2">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_7_switch_1">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="panel_7_switch_2">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_8_switch_1">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="panel_8_switch_2">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+
+					<ParameterRefEntry parameterRef="panel_9_switch_key">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>0</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+</SpaceSystem>

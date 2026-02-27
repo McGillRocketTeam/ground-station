@@ -10,7 +10,7 @@ services:
   - class: org.yamcs.ProcessorCreatorService
     args:
       name: realtime
-      type: realtime
+      type: realtime-urrg
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:

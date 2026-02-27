@@ -1,8 +1,33 @@
-realtime:
+realtime-urrg:
   services:
     - class: org.yamcs.StreamTmPacketProvider
       args:
         streams: ["tm_433_realtime", "system_a_fc_realtime"]
+    - class: org.yamcs.StreamTcCommandReleaser
+    - class: org.yamcs.tctm.StreamParameterProvider
+    - class: org.yamcs.algorithms.AlgorithmManager
+    - class: org.yamcs.parameter.LocalParameterManager
+  config:
+    subscribeAll: true
+    allowContainerlessCommands: true
+    # Check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
+    alarm:
+      parameterCheck: true
+      parameterServer: enabled
+    tmProcessor:
+      # If container entries fit outside the binary packet, setting this to true causes the error
+      # to be ignored, otherwise an exception will be printed in Yamcs log output
+      ignoreOutOfContainerEntries: false
+    # Record all the parameters that have initial values at the start of the processor
+    recordInitialValues: true
+    # Record the local values
+    recordLocalValues: true
+
+realtime:
+  services:
+    - class: org.yamcs.StreamTmPacketProvider
+      args:
+        streams: ["tm_daq_realtime"]
     - class: org.yamcs.StreamTcCommandReleaser
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager

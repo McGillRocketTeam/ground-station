@@ -1,13 +1,14 @@
 package org.yamcs.labjack;
 
 import com.sun.jna.ptr.DoubleByReference;
+import com.sun.jna.ptr.IntByReference;
 import libs.LJM;
 import org.yamcs.logging.Log;
 
 /**
  * @author Jake
  * Utility class for LabJack. Contains a bunch of static methods that provide abstraction
- * on reading/writing from/to the LabJack.
+ * on reading/writing from/to the LabJack. 
  */
 public class LabJackUtil {
     //range of analog pins to poll on the LabJack (T7)
@@ -17,6 +18,11 @@ public class LabJackUtil {
 
     //total number of digital pins on the LabJack (T7)
     public static final int NUM_DIGITAL_PINS = 23;
+
+    // Stream mode configuration
+    public static final double SCAN_RATE = 100; // scans per channel per second (tune up if no SCAN_OVERLAP)
+    public static final int SCANS_PER_READ = 30;//scans per eStreamRead call (= 500ms of data)
+    public static final int STREAM_SETTLING_US = 0;     // 0 = auto; increase if STREAM_SCAN_OVERLAP persists
     private static final Log log = new Log(LabJackUtil.class);
 
 
@@ -75,21 +81,55 @@ public class LabJackUtil {
     }
 
     /**
-     * Reads a single analog pin
+     * Starts LabJack stream mode scanning AIN79-AIN123.
+     * eStreamRead will block until SCANS_PER_READ complete scans are buffered.
      * @param deviceHandle device handle of the connected LabJack
-     * @param pinNum pinNum of pin to read (MUST BE BETWEEN 0-13 inclusive)
-     * @return value read from analog pin, Double.NaN if error occurred
      */
-    public static double readAnalogPin(int deviceHandle, int pinNum){
-        DoubleByReference valueRef = new DoubleByReference(0);
-        int base_address = 0;
-        try{
-            LJM.eReadAddress(deviceHandle, base_address + pinNum*2, LJM.Constants.FLOAT32, valueRef);
-        } catch(Exception e){
-            log.error("Could not read from analog pin: " + (base_address + pinNum * 2));
-            return Double.NaN;
+    public static void startStream(int deviceHandle) throws Exception {
+        int[] scanList = new int[NUM_ANALOG_PINS];
+        for (int i = 0; i < NUM_ANALOG_PINS; i++) {
+            scanList[i] = (ANALOG_PIN_START + i) * 2; // register address = pin number * 2
         }
-        return valueRef.getValue();
+        // Stop any stream left over from a previous session (device persists stream state across restarts)
+        try { LJM.eStreamStop(deviceHandle); } catch (Exception ignored) {}
+        LJM.eWriteName(deviceHandle, "STREAM_SETTLING_US", STREAM_SETTLING_US);
+        DoubleByReference actualScanRate = new DoubleByReference((double) SCAN_RATE);
+        LJM.eStreamStart(deviceHandle, SCANS_PER_READ, NUM_ANALOG_PINS, scanList, actualScanRate);
+        DoubleByReference actualSettling = new DoubleByReference();
+        LJM.eReadName(deviceHandle, "STREAM_SETTLING_US", actualSettling);
+        log.info("Stream started — scan rate: " + actualScanRate.getValue()
+                + " Hz, settling: " + actualSettling.getValue() + " µs per channel");
+    }
+
+    /**
+     * Reads one batch of stream data. Blocks until SCANS_PER_READ complete scans are available.
+     * Returns a flat array of [ch0_scan0, ch1_scan0, ..., ch44_scan0, ch0_scan1, ...].
+     * @param deviceHandle device handle of the connected LabJack
+     * @return flat array of SCANS_PER_READ * NUM_ANALOG_PINS values, or null on error
+     */
+    public static double[] readStream(int deviceHandle) {
+        double[] data = new double[SCANS_PER_READ * NUM_ANALOG_PINS];
+        IntByReference deviceBacklog = new IntByReference(0);
+        IntByReference ljmBacklog = new IntByReference(0);
+        try {
+            LJM.eStreamRead(deviceHandle, data, deviceBacklog, ljmBacklog);
+        } catch (Exception e) {
+            log.error("Stream read failed: " + e.getMessage());
+            return null;
+        }
+        return data;
+    }
+
+    /**
+     * Stops LabJack stream mode.
+     * @param deviceHandle device handle of the connected LabJack
+     */
+    public static void stopStream(int deviceHandle) {
+        try {
+            LJM.eStreamStop(deviceHandle);
+        } catch (Exception e) {
+            log.error("Stream stop failed");
+        }
     }
 
     /**
@@ -119,8 +159,8 @@ public class LabJackUtil {
             log.error("Writing invalid state to digital pin (not HIGH or LOW)");
             return;
         }
-        if(pinNum < 0 || pinNum > 22){
-            log.error("Writing to digital pin that does not exist (not 0-22)");
+        if(pinNum < 0 || pinNum > 7){
+            log.error("Writing to digital pin that does not exist (FIO0-7, not 0-7)");
             return;
         }
 

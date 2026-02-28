@@ -1,440 +1,331 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem name="LabJackT7" xmlns="http://www.omg.org/spec/XTCE/20180204"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
-	<TelemetryMetaData>
-		<ParameterTypeSet>
-			<EnumeratedParameterType name="digital_pin_state">
-				<UnitSet />
-				<IntegerDataEncoding encoding="unsigned" sizeInBits="1" />
-				<EnumerationList>
-					<Enumeration value="0" label="low" />
-					<Enumeration value="1" label="high" />
-				</EnumerationList>
-			</EnumeratedParameterType>
+<SpaceSystem name="LabJackT7"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/XTCE/20180204"
+             xsi:schemaLocation="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd ">
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <EnumeratedParameterType name="digital_pin_state">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="1"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="low"/>
+                    <Enumeration value="1" label="high"/>
+                </EnumerationList>
+            </EnumeratedParameterType>
 
-			<FloatParameterType name="float_32">
-				<FloatDataEncoding encoding="IEEE754_1985" />
-			</FloatParameterType>
-		</ParameterTypeSet>
-		<ParameterSet>
-			<Parameter name="AIN0" parameterTypeRef="float_32" />
-			<Parameter name="AIN1" parameterTypeRef="float_32" />
-			<Parameter name="AIN2" parameterTypeRef="float_32" />
-			<Parameter name="AIN3" parameterTypeRef="float_32" />
-			<Parameter name="AIN4" parameterTypeRef="float_32" />
-			<Parameter name="AIN5" parameterTypeRef="float_32" />
-			<Parameter name="AIN6" parameterTypeRef="float_32" />
-			<Parameter name="AIN7" parameterTypeRef="float_32" />
-			<Parameter name="AIN8" parameterTypeRef="float_32" />
-			<Parameter name="AIN9" parameterTypeRef="float_32" />
-			<Parameter name="AIN10" parameterTypeRef="float_32" />
-			<Parameter name="AIN11" parameterTypeRef="float_32" />
-			<Parameter name="AIN12" parameterTypeRef="float_32" />
-			<Parameter name="AIN13" parameterTypeRef="float_32" />
-			<Parameter name="AIN14" parameterTypeRef="float_32" />
-			<Parameter name="AIN15" parameterTypeRef="float_32" />
-			<Parameter name="AIN16" parameterTypeRef="float_32" />
-			<Parameter name="AIN17" parameterTypeRef="float_32" />
-			<Parameter name="AIN18" parameterTypeRef="float_32" />
-			<Parameter name="AIN19" parameterTypeRef="float_32" />
-			<Parameter name="AIN20" parameterTypeRef="float_32" />
-			<Parameter name="AIN21" parameterTypeRef="float_32" />
-			<Parameter name="AIN22" parameterTypeRef="float_32" />
-			<Parameter name="AIN23" parameterTypeRef="float_32" />
-			<Parameter name="AIN24" parameterTypeRef="float_32" />
-			<Parameter name="AIN25" parameterTypeRef="float_32" />
-			<Parameter name="AIN26" parameterTypeRef="float_32" />
-			<Parameter name="AIN27" parameterTypeRef="float_32" />
-			<Parameter name="AIN28" parameterTypeRef="float_32" />
-			<Parameter name="AIN29" parameterTypeRef="float_32" />
-			<Parameter name="AIN30" parameterTypeRef="float_32" />
-			<Parameter name="AIN31" parameterTypeRef="float_32" />
-			<Parameter name="AIN32" parameterTypeRef="float_32" />
-			<Parameter name="AIN33" parameterTypeRef="float_32" />
-			<Parameter name="AIN34" parameterTypeRef="float_32" />
-			<Parameter name="AIN35" parameterTypeRef="float_32" />
-			<Parameter name="AIN36" parameterTypeRef="float_32" />
-			<Parameter name="AIN37" parameterTypeRef="float_32" />
-			<Parameter name="AIN38" parameterTypeRef="float_32" />
-			<Parameter name="AIN39" parameterTypeRef="float_32" />
-			<Parameter name="AIN40" parameterTypeRef="float_32" />
-			<Parameter name="AIN41" parameterTypeRef="float_32" />
-			<Parameter name="AIN42" parameterTypeRef="float_32" />
-			<Parameter name="AIN43" parameterTypeRef="float_32" />
-			<Parameter name="AIN44" parameterTypeRef="float_32" />
-			<Parameter name="AIN45" parameterTypeRef="float_32" />
-			<Parameter name="AIN46" parameterTypeRef="float_32" />
-			<Parameter name="AIN47" parameterTypeRef="float_32" />
-			<Parameter name="AIN48" parameterTypeRef="float_32" />
-			<Parameter name="AIN49" parameterTypeRef="float_32" />
-			<Parameter name="AIN50" parameterTypeRef="float_32" />
-			<Parameter name="AIN51" parameterTypeRef="float_32" />
-			<Parameter name="AIN52" parameterTypeRef="float_32" />
-			<Parameter name="AIN53" parameterTypeRef="float_32" />
-			<Parameter name="AIN54" parameterTypeRef="float_32" />
-			<Parameter name="AIN55" parameterTypeRef="float_32" />
-			<Parameter name="AIN56" parameterTypeRef="float_32" />
-			<Parameter name="AIN57" parameterTypeRef="float_32" />
-			<Parameter name="AIN58" parameterTypeRef="float_32" />
-			<Parameter name="AIN59" parameterTypeRef="float_32" />
-			<Parameter name="AIN60" parameterTypeRef="float_32" />
-			<Parameter name="AIN61" parameterTypeRef="float_32" />
-			<Parameter name="AIN62" parameterTypeRef="float_32" />
-			<Parameter name="AIN63" parameterTypeRef="float_32" />
-			<Parameter name="AIN64" parameterTypeRef="float_32" />
-			<Parameter name="AIN65" parameterTypeRef="float_32" />
-			<Parameter name="AIN66" parameterTypeRef="float_32" />
-			<Parameter name="AIN67" parameterTypeRef="float_32" />
-			<Parameter name="AIN68" parameterTypeRef="float_32" />
-			<Parameter name="AIN69" parameterTypeRef="float_32" />
-			<Parameter name="AIN70" parameterTypeRef="float_32" />
-			<Parameter name="AIN71" parameterTypeRef="float_32" />
-			<Parameter name="AIN72" parameterTypeRef="float_32" />
-			<Parameter name="AIN73" parameterTypeRef="float_32" />
-			<Parameter name="AIN74" parameterTypeRef="float_32" />
-			<Parameter name="AIN75" parameterTypeRef="float_32" />
-			<Parameter name="AIN76" parameterTypeRef="float_32" />
-			<Parameter name="AIN77" parameterTypeRef="float_32" />
-			<Parameter name="AIN78" parameterTypeRef="float_32" />
-			<Parameter name="AIN79" parameterTypeRef="float_32" />
-			<Parameter name="AIN80" parameterTypeRef="float_32" />
-			<Parameter name="AIN81" parameterTypeRef="float_32" />
-			<Parameter name="AIN82" parameterTypeRef="float_32" />
-			<Parameter name="AIN83" parameterTypeRef="float_32" />
-			<Parameter name="AIN84" parameterTypeRef="float_32" />
-			<Parameter name="AIN85" parameterTypeRef="float_32" />
-			<Parameter name="AIN86" parameterTypeRef="float_32" />
-			<Parameter name="AIN87" parameterTypeRef="float_32" />
-			<Parameter name="AIN88" parameterTypeRef="float_32" />
-			<Parameter name="AIN89" parameterTypeRef="float_32" />
-			<Parameter name="AIN90" parameterTypeRef="float_32" />
-			<Parameter name="AIN91" parameterTypeRef="float_32" />
-			<Parameter name="AIN92" parameterTypeRef="float_32" />
-			<Parameter name="AIN93" parameterTypeRef="float_32" />
-			<Parameter name="AIN94" parameterTypeRef="float_32" />
-			<Parameter name="AIN95" parameterTypeRef="float_32" />
-			<Parameter name="AIN96" parameterTypeRef="float_32" />
-			<Parameter name="AIN97" parameterTypeRef="float_32" />
-			<Parameter name="AIN98" parameterTypeRef="float_32" />
-			<Parameter name="AIN99" parameterTypeRef="float_32" />
-			<Parameter name="AIN100" parameterTypeRef="float_32" />
-			<Parameter name="AIN101" parameterTypeRef="float_32" />
-			<Parameter name="AIN102" parameterTypeRef="float_32" />
-			<Parameter name="AIN103" parameterTypeRef="float_32" />
-			<Parameter name="AIN104" parameterTypeRef="float_32" />
-			<Parameter name="AIN105" parameterTypeRef="float_32" />
-			<Parameter name="AIN106" parameterTypeRef="float_32" />
-			<Parameter name="AIN107" parameterTypeRef="float_32" />
-			<Parameter name="AIN108" parameterTypeRef="float_32" />
-			<Parameter name="AIN109" parameterTypeRef="float_32" />
-			<Parameter name="AIN110" parameterTypeRef="float_32" />
-			<Parameter name="AIN111" parameterTypeRef="float_32" />
-			<Parameter name="AIN112" parameterTypeRef="float_32" />
-			<Parameter name="AIN113" parameterTypeRef="float_32" />
-			<Parameter name="AIN114" parameterTypeRef="float_32" />
-			<Parameter name="AIN115" parameterTypeRef="float_32" />
-			<Parameter name="AIN116" parameterTypeRef="float_32" />
-			<Parameter name="AIN117" parameterTypeRef="float_32" />
-			<Parameter name="AIN118" parameterTypeRef="float_32" />
-			<Parameter name="AIN119" parameterTypeRef="float_32" />
-			<Parameter name="AIN120" parameterTypeRef="float_32" />
-			<Parameter name="AIN121" parameterTypeRef="float_32" />
-			<Parameter name="AIN122" parameterTypeRef="float_32" />
-			<Parameter name="AIN123" parameterTypeRef="float_32" />
-			<Parameter name="AIN124" parameterTypeRef="float_32" />
-			<Parameter name="AIN125" parameterTypeRef="float_32" />
-			<Parameter name="AIN126" parameterTypeRef="float_32" />
-			<Parameter name="AIN127" parameterTypeRef="float_32" />
+            <FloatParameterType name="float_32">
+                <FloatDataEncoding encoding="IEEE754_1985"/>
+            </FloatParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <Parameter name="AIN79" parameterTypeRef="float_32"/>
+            <Parameter name="AIN80" parameterTypeRef="float_32"/>
+            <Parameter name="AIN81" parameterTypeRef="float_32"/>
+            <Parameter name="AIN82" parameterTypeRef="float_32"/>
+            <Parameter name="AIN83" parameterTypeRef="float_32"/>
+            <Parameter name="AIN84" parameterTypeRef="float_32"/>
+            <Parameter name="AIN85" parameterTypeRef="float_32"/>
+            <Parameter name="AIN86" parameterTypeRef="float_32"/>
+            <Parameter name="AIN87" parameterTypeRef="float_32"/>
+            <Parameter name="AIN88" parameterTypeRef="float_32"/>
+            <Parameter name="AIN89" parameterTypeRef="float_32"/>
+            <Parameter name="AIN90" parameterTypeRef="float_32"/>
+            <Parameter name="AIN91" parameterTypeRef="float_32"/>
+            <Parameter name="AIN92" parameterTypeRef="float_32"/>
+            <Parameter name="AIN93" parameterTypeRef="float_32"/>
+            <Parameter name="AIN94" parameterTypeRef="float_32"/>
+            <Parameter name="AIN95" parameterTypeRef="float_32"/>
+            <Parameter name="AIN96" parameterTypeRef="float_32"/>
+            <Parameter name="AIN97" parameterTypeRef="float_32"/>
+            <Parameter name="AIN98" parameterTypeRef="float_32"/>
+            <Parameter name="AIN99" parameterTypeRef="float_32"/>
+            <Parameter name="AIN100" parameterTypeRef="float_32"/>
+            <Parameter name="AIN101" parameterTypeRef="float_32"/>
+            <Parameter name="AIN102" parameterTypeRef="float_32"/>
+            <Parameter name="AIN103" parameterTypeRef="float_32"/>
+            <Parameter name="AIN104" parameterTypeRef="float_32"/>
+            <Parameter name="AIN105" parameterTypeRef="float_32"/>
+            <Parameter name="AIN106" parameterTypeRef="float_32"/>
+            <Parameter name="AIN107" parameterTypeRef="float_32"/>
+            <Parameter name="AIN108" parameterTypeRef="float_32"/>
+            <Parameter name="AIN109" parameterTypeRef="float_32"/>
+            <Parameter name="AIN110" parameterTypeRef="float_32"/>
+            <Parameter name="AIN111" parameterTypeRef="float_32"/>
+            <Parameter name="AIN112" parameterTypeRef="float_32"/>
+            <Parameter name="AIN113" parameterTypeRef="float_32"/>
+            <Parameter name="AIN114" parameterTypeRef="float_32"/>
+            <Parameter name="AIN115" parameterTypeRef="float_32"/>
+            <Parameter name="AIN116" parameterTypeRef="float_32"/>
+            <Parameter name="AIN117" parameterTypeRef="float_32"/>
+            <Parameter name="AIN118" parameterTypeRef="float_32"/>
+            <Parameter name="AIN119" parameterTypeRef="float_32"/>
+            <Parameter name="AIN120" parameterTypeRef="float_32"/>
+            <Parameter name="AIN121" parameterTypeRef="float_32"/>
+            <Parameter name="AIN122" parameterTypeRef="float_32"/>
+            <Parameter name="AIN123" parameterTypeRef="float_32"/>
+
+            <Parameter name="FIO0" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="FIO1" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="FIO2" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="FIO3" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="FIO4" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="FIO5" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="FIO6" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="FIO7" parameterTypeRef="digital_pin_state"/>
+
+            <Parameter name="EIO0" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="EIO1" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="EIO2" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="EIO3" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="EIO4" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="EIO5" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="EIO6" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="EIO7" parameterTypeRef="digital_pin_state"/>
+
+            <Parameter name="CIO0" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="CIO1" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="CIO2" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="CIO3" parameterTypeRef="digital_pin_state"/>
+
+            <Parameter name="MIO0" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="MIO1" parameterTypeRef="digital_pin_state"/>
+            <Parameter name="MIO2" parameterTypeRef="digital_pin_state"/>
 
 
-			<Parameter name="FIO0" parameterTypeRef="digital_pin_state" />
-			<Parameter name="FIO1" parameterTypeRef="digital_pin_state" />
-			<Parameter name="FIO2" parameterTypeRef="digital_pin_state" />
-			<Parameter name="FIO3" parameterTypeRef="digital_pin_state" />
-			<Parameter name="FIO4" parameterTypeRef="digital_pin_state" />
-			<Parameter name="FIO5" parameterTypeRef="digital_pin_state" />
-			<Parameter name="FIO6" parameterTypeRef="digital_pin_state" />
-			<Parameter name="FIO7" parameterTypeRef="digital_pin_state" />
+            <Parameter name="calibrated_fill_pressure_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
+            <Parameter name="calibrated_purge_pressure_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
+            <Parameter name="calibrated_tank_pressure_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
+            <Parameter name="calibrated_run_pressure_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
+            <Parameter name="calibrated_thrust_newtons" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
+            <Parameter name="calibrated_tank_mass" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
+        </ParameterSet>
+        <ContainerSet>
+            <SequenceContainer name="LabJackPacket">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="AIN79"/>
+                    <ParameterRefEntry parameterRef="AIN80"/>
+                    <ParameterRefEntry parameterRef="AIN81"/>
+                    <ParameterRefEntry parameterRef="AIN82"/>
+                    <ParameterRefEntry parameterRef="AIN83"/>
+                    <ParameterRefEntry parameterRef="AIN84"/>
+                    <ParameterRefEntry parameterRef="AIN85"/>
+                    <ParameterRefEntry parameterRef="AIN86"/>
+                    <ParameterRefEntry parameterRef="AIN87"/>
+                    <ParameterRefEntry parameterRef="AIN88"/>
+                    <ParameterRefEntry parameterRef="AIN89"/>
+                    <ParameterRefEntry parameterRef="AIN90"/>
+                    <ParameterRefEntry parameterRef="AIN91"/>
+                    <ParameterRefEntry parameterRef="AIN92"/>
+                    <ParameterRefEntry parameterRef="AIN93"/>
+                    <ParameterRefEntry parameterRef="AIN94"/>
+                    <ParameterRefEntry parameterRef="AIN95"/>
+                    <ParameterRefEntry parameterRef="AIN96"/>
+                    <ParameterRefEntry parameterRef="AIN97"/>
+                    <ParameterRefEntry parameterRef="AIN98"/>
+                    <ParameterRefEntry parameterRef="AIN99"/>
+                    <ParameterRefEntry parameterRef="AIN100"/>
+                    <ParameterRefEntry parameterRef="AIN101"/>
+                    <ParameterRefEntry parameterRef="AIN102"/>
+                    <ParameterRefEntry parameterRef="AIN103"/>
+                    <ParameterRefEntry parameterRef="AIN104"/>
+                    <ParameterRefEntry parameterRef="AIN105"/>
+                    <ParameterRefEntry parameterRef="AIN106"/>
+                    <ParameterRefEntry parameterRef="AIN107"/>
+                    <ParameterRefEntry parameterRef="AIN108"/>
+                    <ParameterRefEntry parameterRef="AIN109"/>
+                    <ParameterRefEntry parameterRef="AIN110"/>
+                    <ParameterRefEntry parameterRef="AIN111"/>
+                    <ParameterRefEntry parameterRef="AIN112"/>
+                    <ParameterRefEntry parameterRef="AIN113"/>
+                    <ParameterRefEntry parameterRef="AIN114"/>
+                    <ParameterRefEntry parameterRef="AIN115"/>
+                    <ParameterRefEntry parameterRef="AIN116"/>
+                    <ParameterRefEntry parameterRef="AIN117"/>
+                    <ParameterRefEntry parameterRef="AIN118"/>
+                    <ParameterRefEntry parameterRef="AIN119"/>
+                    <ParameterRefEntry parameterRef="AIN120"/>
+                    <ParameterRefEntry parameterRef="AIN121"/>
+                    <ParameterRefEntry parameterRef="AIN122"/>
+                    <ParameterRefEntry parameterRef="AIN123"/>
 
-			<Parameter name="EIO0" parameterTypeRef="digital_pin_state" />
-			<Parameter name="EIO1" parameterTypeRef="digital_pin_state" />
-			<Parameter name="EIO2" parameterTypeRef="digital_pin_state" />
-			<Parameter name="EIO3" parameterTypeRef="digital_pin_state" />
-			<Parameter name="EIO4" parameterTypeRef="digital_pin_state" />
-			<Parameter name="EIO5" parameterTypeRef="digital_pin_state" />
-			<Parameter name="EIO6" parameterTypeRef="digital_pin_state" />
-			<Parameter name="EIO7" parameterTypeRef="digital_pin_state" />
+                    <ParameterRefEntry parameterRef="FIO0"/>
+                    <ParameterRefEntry parameterRef="FIO1"/>
+                    <ParameterRefEntry parameterRef="FIO2"/>
+                    <ParameterRefEntry parameterRef="FIO3"/>
+                    <ParameterRefEntry parameterRef="FIO4"/>
+                    <ParameterRefEntry parameterRef="FIO5"/>
+                    <ParameterRefEntry parameterRef="FIO6"/>
+                    <ParameterRefEntry parameterRef="FIO7"/>
 
-			<Parameter name="CIO0" parameterTypeRef="digital_pin_state" />
-			<Parameter name="CIO1" parameterTypeRef="digital_pin_state" />
-			<Parameter name="CIO2" parameterTypeRef="digital_pin_state" />
-			<Parameter name="CIO3" parameterTypeRef="digital_pin_state" />
+                    <ParameterRefEntry parameterRef="EIO0"/>
+                    <ParameterRefEntry parameterRef="EIO1"/>
+                    <ParameterRefEntry parameterRef="EIO2"/>
+                    <ParameterRefEntry parameterRef="EIO3"/>
+                    <ParameterRefEntry parameterRef="EIO4"/>
+                    <ParameterRefEntry parameterRef="EIO5"/>
+                    <ParameterRefEntry parameterRef="EIO6"/>
+                    <ParameterRefEntry parameterRef="EIO7"/>
 
-			<Parameter name="MIO0" parameterTypeRef="digital_pin_state" />
-			<Parameter name="MIO1" parameterTypeRef="digital_pin_state" />
-			<Parameter name="MIO2" parameterTypeRef="digital_pin_state" />
+                    <ParameterRefEntry parameterRef="CIO0"/>
+                    <ParameterRefEntry parameterRef="CIO1"/>
+                    <ParameterRefEntry parameterRef="CIO2"/>
+                    <ParameterRefEntry parameterRef="CIO3"/>
 
-
-			<Parameter name="calibrated_fill_pressure_psi" parameterTypeRef="float_32">
-				<ParameterProperties dataSource="derived" readOnly="true">
-				</ParameterProperties>
-			</Parameter>
-
-			<Parameter name="calibrated_tank_pressure_psi" parameterTypeRef="float_32">
-				<ParameterProperties dataSource="derived" readOnly="true">
-				</ParameterProperties>
-			</Parameter>
-		</ParameterSet>
-		<ContainerSet>
-			<SequenceContainer name="LabJackPacket">
-				<EntryList>
-					<ParameterRefEntry parameterRef="AIN0" />
-					<ParameterRefEntry parameterRef="AIN1" />
-					<ParameterRefEntry parameterRef="AIN2" />
-					<ParameterRefEntry parameterRef="AIN3" />
-					<ParameterRefEntry parameterRef="AIN4" />
-					<ParameterRefEntry parameterRef="AIN5" />
-					<ParameterRefEntry parameterRef="AIN6" />
-					<ParameterRefEntry parameterRef="AIN7" />
-					<ParameterRefEntry parameterRef="AIN8" />
-					<ParameterRefEntry parameterRef="AIN9" />
-					<ParameterRefEntry parameterRef="AIN10" />
-					<ParameterRefEntry parameterRef="AIN11" />
-					<ParameterRefEntry parameterRef="AIN12" />
-					<ParameterRefEntry parameterRef="AIN13" />
-					<!--                    <ParameterRefEntry parameterRef="AIN14"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN15"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN16"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN17"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN18"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN19"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN20"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN21"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN22"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN23"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN24"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN25"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN26"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN27"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN28"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN29"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN30"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN31"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN32"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN33"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN34"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN35"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN36"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN37"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN38"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN39"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN40"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN41"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN42"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN43"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN44"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN45"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN46"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN47"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN48"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN49"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN50"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN51"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN52"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN53"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN54"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN55"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN56"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN57"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN58"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN59"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN60"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN61"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN62"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN63"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN64"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN65"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN66"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN67"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN68"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN69"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN70"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN71"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN72"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN73"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN74"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN75"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN76"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN77"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN78"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN79"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN80"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN81"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN82"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN83"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN84"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN85"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN86"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN87"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN88"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN89"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN90"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN91"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN92"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN93"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN94"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN95"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN96"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN97"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN98"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN99"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN100"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN101"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN102"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN103"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN104"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN105"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN106"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN107"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN108"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN109"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN110"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN111"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN112"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN113"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN114"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN115"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN116"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN117"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN118"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN119"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN120"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN121"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN122"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN123"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN124"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN125"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN126"/>-->
-					<!--                    <ParameterRefEntry parameterRef="AIN127"/>-->
-
-
-					<ParameterRefEntry parameterRef="FIO0" />
-					<ParameterRefEntry parameterRef="FIO1" />
-					<ParameterRefEntry parameterRef="FIO2" />
-					<ParameterRefEntry parameterRef="FIO3" />
-					<ParameterRefEntry parameterRef="FIO4" />
-					<ParameterRefEntry parameterRef="FIO5" />
-					<ParameterRefEntry parameterRef="FIO6" />
-					<ParameterRefEntry parameterRef="FIO7" />
-
-					<ParameterRefEntry parameterRef="EIO0" />
-					<ParameterRefEntry parameterRef="EIO1" />
-					<ParameterRefEntry parameterRef="EIO2" />
-					<ParameterRefEntry parameterRef="EIO3" />
-					<ParameterRefEntry parameterRef="EIO4" />
-					<ParameterRefEntry parameterRef="EIO5" />
-					<ParameterRefEntry parameterRef="EIO6" />
-					<ParameterRefEntry parameterRef="EIO7" />
-
-					<ParameterRefEntry parameterRef="CIO0" />
-					<ParameterRefEntry parameterRef="CIO1" />
-					<ParameterRefEntry parameterRef="CIO2" />
-					<ParameterRefEntry parameterRef="CIO3" />
-
-					<ParameterRefEntry parameterRef="MIO0" />
-					<ParameterRefEntry parameterRef="MIO1" />
-					<ParameterRefEntry parameterRef="MIO2" />
-				</EntryList>
-			</SequenceContainer>
-		</ContainerSet>
-		<AlgorithmSet>
-			<MathAlgorithm name="calibrated_fill_pressure_psi">
-				<MathOperation outputParameterRef="calibrated_fill_pressure_psi">
-					<ParameterInstanceRefOperand parameterRef="AIN2" />
-					<ValueOperand>280.35</ValueOperand>
-					<Operator>*</Operator>
-					<ValueOperand>497.6</ValueOperand>
-					<Operator>-</Operator>
-					<TriggerSet>
-						<OnParameterUpdateTrigger parameterRef="AIN2" />
-					</TriggerSet>
-				</MathOperation>
-			</MathAlgorithm>
-			<MathAlgorithm name="calibrated_tank_pressure_psi">
-				<MathOperation outputParameterRef="calibrated_tank_pressure_psi">
-					<ParameterInstanceRefOperand parameterRef="AIN4" />
-					<ValueOperand>280.35</ValueOperand>
-					<Operator>*</Operator>
-					<ValueOperand>495.15</ValueOperand>
-					<Operator>-</Operator>
-					<TriggerSet>
-						<OnParameterUpdateTrigger parameterRef="AIN4" />
-					</TriggerSet>
-				</MathOperation>
-			</MathAlgorithm>
-		</AlgorithmSet>
-	</TelemetryMetaData>
-	<CommandMetaData>
-		<ArgumentTypeSet>
-			<EnumeratedArgumentType name="digital_pin_state">
-				<IntegerDataEncoding sizeInBits="1" />
-				<EnumerationList>
-					<Enumeration value="0" label="LOW" />
-					<Enumeration value="1" label="HIGH" />
-				</EnumerationList>
-			</EnumeratedArgumentType>
-			<FloatArgumentType name="DAC_voltage">
-				<UnitSet>
-					<Unit>V</Unit>
-				</UnitSet>
-				<FloatDataEncoding />
-				<ValidRangeSet>
-					<ValidRange minInclusive="0.00" maxInclusive="5.00" />
-				</ValidRangeSet>
-			</FloatArgumentType>
-			<IntegerArgumentType name="digital_pin_number" signed="false" sizeInBits="8">
-				<IntegerDataEncoding />
-				<ValidRangeSet>
-					<ValidRange minInclusive="0" maxInclusive="22" />
-				</ValidRangeSet>
-			</IntegerArgumentType>
-			<IntegerArgumentType name="DAC_pin_number" signed="false" sizeInBits="8">
-				<IntegerDataEncoding />
-				<ValidRangeSet>
-					<ValidRange minInclusive="0" maxInclusive="1" />
-				</ValidRangeSet>
-			</IntegerArgumentType>
-		</ArgumentTypeSet>
-		<MetaCommandSet>
-			<MetaCommand name="write_digital_pin">
-				<ArgumentList>
-					<Argument name="pin_number" argumentTypeRef="digital_pin_number"
-						shortDescription="Pin number of the digital pin (0-22)" />
-					<Argument name="pin_state" argumentTypeRef="digital_pin_state"
-						shortDescription="State to write to digital pin (HIGH/LOW)" />
-				</ArgumentList>
-				<CommandContainer name="write_digital_pin">
-					<EntryList>
-						<ArgumentRefEntry argumentRef="pin_state" />
-						<ArgumentRefEntry argumentRef="pin_number" />
-					</EntryList>
-				</CommandContainer>
-			</MetaCommand>
-			<MetaCommand name="write_DAC_pin">
-				<ArgumentList>
-					<Argument name="pin_number" argumentTypeRef="DAC_pin_number"
-						shortDescription="Pin number of the DAC pin (0-1)" />
-					<Argument name="pin_voltage" argumentTypeRef="DAC_voltage"
-						shortDescription="Voltage to set DAC pin to (0-5)" />
-				</ArgumentList>
-				<CommandContainer name="write_DAC_pin">
-					<EntryList>
-						<ArgumentRefEntry argumentRef="pin_voltage" />
-						<ArgumentRefEntry argumentRef="pin_number" />
-					</EntryList>
-				</CommandContainer>
-			</MetaCommand>
-		</MetaCommandSet>
-	</CommandMetaData>
+                    <ParameterRefEntry parameterRef="MIO0"/>
+                    <ParameterRefEntry parameterRef="MIO1"/>
+                    <ParameterRefEntry parameterRef="MIO2"/>
+                </EntryList>
+            </SequenceContainer>
+        </ContainerSet>
+        <AlgorithmSet>
+            <MathAlgorithm name="calibrated_fill_pressure_psi">
+                <MathOperation outputParameterRef="calibrated_fill_pressure_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN88"/>
+                    <ValueOperand>611</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>475</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN88"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_purge_pressure_psi">
+                <MathOperation outputParameterRef="calibrated_purge_pressure_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN90"/>
+                    <ValueOperand>611</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>460</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN90"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_tank_pressure_psi">
+                <MathOperation outputParameterRef="calibrated_tank_pressure_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN121"/>
+                    <ValueOperand>611</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>500  </ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN121"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_run_pressure_psi">
+                <MathOperation outputParameterRef="calibrated_run_pressure_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN122"/>
+                    <ValueOperand>611</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>513</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN122"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_thrust_newtons">
+                <MathOperation outputParameterRef="calibrated_thrust_newtons">
+                    <ParameterInstanceRefOperand parameterRef="AIN87"/>
+                    <ValueOperand>23236</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>2324</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN87"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_tank_mass">
+                <MathOperation outputParameterRef="calibrated_tank_mass">
+                    <ParameterInstanceRefOperand parameterRef="AIN82"/>
+                    <ValueOperand>28.22</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>0</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN82"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+        </AlgorithmSet>
+    </TelemetryMetaData>
+    <CommandMetaData>
+        <ArgumentTypeSet>
+            <EnumeratedArgumentType name="digital_pin_state">
+                <IntegerDataEncoding sizeInBits="1"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="LOW"/>
+                    <Enumeration value="1" label="HIGH"/>
+                </EnumerationList>
+            </EnumeratedArgumentType>
+            <FloatArgumentType name="DAC_voltage">
+                <UnitSet>
+                    <Unit>V</Unit>
+                </UnitSet>
+                <FloatDataEncoding/>
+                <ValidRangeSet>
+                    <ValidRange minInclusive="0.00" maxInclusive="5.00"/>
+                </ValidRangeSet>
+            </FloatArgumentType>
+            <IntegerArgumentType name="digital_pin_number" signed="false" sizeInBits="8">
+                <IntegerDataEncoding/>
+                <ValidRangeSet>
+                    <ValidRange minInclusive="0" maxInclusive="22"/>
+                </ValidRangeSet>
+            </IntegerArgumentType>
+            <IntegerArgumentType name="DAC_pin_number" signed="false" sizeInBits="8">
+                <IntegerDataEncoding/>
+                <ValidRangeSet>
+                    <ValidRange minInclusive="0" maxInclusive="1"/>
+                </ValidRangeSet>
+            </IntegerArgumentType>
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+            <MetaCommand name="write_digital_pin">
+                <ArgumentList>
+                    <Argument name="pin_number" argumentTypeRef="digital_pin_number" shortDescription="Pin number of the digital pin (0-22)"/>
+                    <Argument name="pin_state" argumentTypeRef="digital_pin_state" shortDescription="State to write to digital pin (HIGH/LOW)"/>
+                </ArgumentList>
+                <CommandContainer name="write_digital_pin">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="pin_state"/>
+                        <ArgumentRefEntry argumentRef="pin_number"/>
+                    </EntryList>
+                </CommandContainer>
+            </MetaCommand>
+            <MetaCommand name="write_DAC_pin">
+                <ArgumentList>
+                    <Argument name="pin_number" argumentTypeRef="DAC_pin_number" shortDescription="Pin number of the DAC pin (0-1)"/>
+                    <Argument name="pin_voltage" argumentTypeRef="DAC_voltage" shortDescription="Voltage to set DAC pin to (0-5)"/>
+                </ArgumentList>
+                <CommandContainer name="write_DAC_pin">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="pin_voltage"/>
+                        <ArgumentRefEntry argumentRef="pin_number"/>
+                    </EntryList>
+                </CommandContainer>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
 </SpaceSystem>

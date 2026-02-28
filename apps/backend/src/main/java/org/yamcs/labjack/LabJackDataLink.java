@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * This class manages the connection to the LabJack, reads and writes from/to the LabJack
  * and places its readings into a binary packet (defined in LABJ_XTCE.xml) which is then put into a TM stream.
  *
- * At the moment, all readable pins (digital and analog) are read at every possible moment.
+ * AINs are read continuously via LabJack stream mode at a fixed scan rate. Digital pins are polled periodically.
  */
 
 public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
@@ -46,8 +47,11 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
     Determines how many packets are sent to be graphed by YAMCS out of the total number of packets collected.
     E.g. for every GRAPH_FREQ number of packets collected, 1 packet is sent to YAMCS.
      */
+    // Send every scan to YAMCS UI — wireless latency makes eStreamRead calls expensive,
+    // so extract maximum value from each batch rather than throttling here.
     private static final int GRAPH_FREQ = 1;
     private int packetCount = 0;
+    private volatile byte[] lastDigitalData = new byte[3];
     //stores handle of currently connected LabJack device
     private int deviceHandle = 0;
 
@@ -102,54 +106,62 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
             }
             log.info("Set AIN79-AIN87 range to ±1V");
 
+            LabJackUtil.startStream(deviceHandle);
+            log.info("Stream started at " + LabJackUtil.SCAN_RATE + " scans/channel/second");
+
             isConnected = true;
 
         } catch(Exception e){
-            log.warn("Could not connect to LabJack");
+            log.warn("Could not connect to LabJack: " + e.getMessage());
         }
     }
 
     /**
-     * Reads all readable LabJack pins (analog, digital) and packs the readings into a binary packet according to
-     * LABJ_XTCE.xml where all analog data is in the most significant bits followed by all digital data.
-     * This binary packet is then added to the {@link #dataQueue}.
+     * Reads one batch of stream data (SCANS_PER_READ scans) and packs each scan into a TmPacket.
+     * Blocks until the LabJack has buffered enough data. Every GRAPH_FREQ scans one packet is
+     * forwarded to YAMCS; all scans are queued for CSV storage.
      */
-    private void readAllPins(){
-        if(!isConnected){
-            log.error("Attempting to read LabJack pins when no LabJack is connected");
-            throw new IllegalStateException();
+    private void streamRead() {
+        if (!isConnected) return;
+        double[] streamData = LabJackUtil.readStream(deviceHandle);
+        if (streamData == null) return;
+
+        long now = getCurrentTime();
+        byte[] digital = lastDigitalData;
+
+        for (int scan = 0; scan < LabJackUtil.SCANS_PER_READ; scan++) {
+            double[] scanValues = Arrays.copyOfRange(
+                    streamData,
+                    scan * LabJackUtil.NUM_ANALOG_PINS,
+                    (scan + 1) * LabJackUtil.NUM_ANALOG_PINS);
+
+            byte[] analogBinaryData = createAnalogBinaryPacket(scanValues);
+            byte[] combinedBinaryData = new byte[analogBinaryData.length + digital.length];
+            System.arraycopy(analogBinaryData, 0, combinedBinaryData, 0, analogBinaryData.length);
+            System.arraycopy(digital, 0, combinedBinaryData, analogBinaryData.length, digital.length);
+
+            dataIn(1, combinedBinaryData.length);
+            TmPacket tmPacket = new TmPacket(now, combinedBinaryData);
+
+            if (++packetCount >= GRAPH_FREQ) {
+                packetCount = 0;
+                processPacket(packetPreprocessor.process(tmPacket));
+            }
+
+            dataQueue.add(tmPacket);
         }
+    }
 
-        double[] analogReadings = new double[LabJackUtil.NUM_ANALOG_PINS];
-
-        for(int i = LabJackUtil.ANALOG_PIN_START; i <= LabJackUtil.ANALOG_PIN_END; i++){
-                analogReadings[i - LabJackUtil.ANALOG_PIN_START] = LabJackUtil.readAnalogPin(deviceHandle, i);
+    /**
+     * Polls DIO_STATE and caches the result for use by the stream read loop.
+     * Runs at a much lower rate than the analog stream since digital pins change slowly.
+     */
+    private void readDigitalPinsTask() {
+        if (!isConnected) return;
+        byte[] digital = LabJackUtil.readDigitalPins(deviceHandle);
+        if (digital != null) {
+            lastDigitalData = digital;
         }
-        byte[] analogBinaryData = createAnalogBinaryPacket(analogReadings);
-
-        byte[] digitalBinaryData = LabJackUtil.readDigitalPins(deviceHandle);
-
-        if(digitalBinaryData == null){
-            return;
-        }
-
-        byte[] combinedBinaryData = new byte[analogBinaryData.length + digitalBinaryData.length];
-        int index = 0;
-        for(; index < analogBinaryData.length; index++){
-            combinedBinaryData[index] = analogBinaryData[index];
-        }
-        for(; index < combinedBinaryData.length; index++){
-            combinedBinaryData[index] = digitalBinaryData[index-analogBinaryData.length];
-        }
-        dataIn(1, combinedBinaryData.length);
-        TmPacket tmPacket = new TmPacket(getCurrentTime(), combinedBinaryData);
-
-        if(++packetCount > GRAPH_FREQ){
-            packetCount = 0;
-            executorService.schedule(()-> processPacket(packetPreprocessor.process(tmPacket)), 0, TimeUnit.SECONDS);
-        }
-
-        dataQueue.add(tmPacket);
     }
 
 
@@ -216,6 +228,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
     protected void doStop() {
         if(isConnected){
             executorService.shutdown();
+            LabJackUtil.stopStream(deviceHandle);
             LJM.close(deviceHandle);
             isConnected = false;
 
@@ -264,7 +277,10 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
         }
 
         executorService = Executors.newScheduledThreadPool(5);
-        executorService.scheduleAtFixedRate(this::readAllPins, 25, 10, TimeUnit.MICROSECONDS);
+        // streamRead blocks until SCANS_PER_READ scans are ready, so 0-delay scheduleWithFixedDelay
+        // gives continuous back-to-back reads without thread pile-up
+        executorService.scheduleWithFixedDelay(this::streamRead, 0, 1, TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(this::readDigitalPinsTask, 0, 100, TimeUnit.MILLISECONDS);
         executorService.scheduleWithFixedDelay(this::savePacketToCSV, 1000, 500, TimeUnit.MILLISECONDS);
     }
 
@@ -286,7 +302,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
     public void doDisable() {
         if (isConnected) {
             executorService.shutdown();
-
+            LabJackUtil.stopStream(deviceHandle);
             LJM.close(deviceHandle);
             isConnected = false;
             try {
@@ -320,7 +336,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
     @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
-        Mdb mdb = MdbFactory.getInstance("gs_backend");
+        Mdb mdb = MdbFactory.getInstance("ground_station");
         tmExtractor = new XtceTmExtractor(mdb);
         sequenceContainer = mdb.getSequenceContainer("/LabJackT7/LabJackPacket");
         tmExtractor.startProviding(sequenceContainer);

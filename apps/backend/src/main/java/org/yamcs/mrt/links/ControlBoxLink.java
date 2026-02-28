@@ -5,9 +5,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
+import java.util.Set;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.YConfiguration;
+import org.yamcs.labjack.LabJackDataLink;
 import org.yamcs.logging.Log;
 import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
@@ -80,6 +82,23 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
       this(name, labJackPin, false);
     }
   }
+
+  /** Byte offset of the arming key switch in the telemetry packet. */
+  private static final int ARMING_KEY_OFFSET = 14;
+
+  /**
+   * Switches that require the arming key to be ON before their commands are dispatched. Identified
+   * by their byte offset in the telemetry packet. If a switch in this set changes while the key is
+   * OFF, the command is blocked and a warning is logged.
+   */
+  private static final Set<Integer> ARMING_KEY_GUARDED_SWITCHES =
+      Set.of(
+          13, // panel_8_switch_1
+          15 // panel_8_switch_2
+          );
+
+  /** Byte offset of the emergency stop switch in the telemetry packet. */
+  private static final int ESTOP_OFFSET = 0;
 
   @Override
   public void init(String instance, String name, YConfiguration config) {
@@ -179,6 +198,36 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     }
 
     int numSwitches = Math.min(currentPayload.length, previousSwitchStates.length);
+    boolean armingKeyOn =
+        currentPayload.length > ARMING_KEY_OFFSET && currentPayload[ARMING_KEY_OFFSET] != 0;
+    boolean estopOn = currentPayload.length > ESTOP_OFFSET && currentPayload[ESTOP_OFFSET] != 0;
+
+    // E-stop activation: on transition to ON, immediately set all mapped pins LOW
+    if (numSwitches > ESTOP_OFFSET
+        && currentPayload[ESTOP_OFFSET] != previousSwitchStates[ESTOP_OFFSET]
+        && estopOn) {
+      handleEmergencyStop();
+      // Store current state as baseline and do not process other switches for this packet
+      previousSwitchStates = currentPayload.clone();
+      return;
+    }
+
+    // If E-stop is currently asserted, block any other switch actions. Log attempts.
+    if (estopOn) {
+      for (int i = 0; i < numSwitches; i++) {
+        if (i == ESTOP_OFFSET) continue;
+        if (currentPayload[i] != previousSwitchStates[i]) {
+          SwitchMapping mapping = SWITCH_PIN_MAP.get(i);
+          String name = mapping != null ? mapping.name() : ("switch_" + i);
+          log.warn("Blocked switch change for " + name + " because E-STOP is active");
+        }
+      }
+      // Keep baseline in sync so changes made while E-stop was active are ignored
+      previousSwitchStates = currentPayload.clone();
+      return;
+    }
+
+    // Normal processing when no E-stop active
     for (int i = 0; i < numSwitches; i++) {
       if (currentPayload[i] != previousSwitchStates[i]) {
         SwitchMapping mapping = SWITCH_PIN_MAP.get(i);
@@ -188,6 +237,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
 
         boolean newState = currentPayload[i] != 0;
         log.info("Switch state change: " + mapping.name() + " -> " + (newState ? "ON" : "OFF"));
+
+        if (ARMING_KEY_GUARDED_SWITCHES.contains(i) && !armingKeyOn) {
+          log.warn("Blocked command for " + mapping.name() + ": arming key is OFF");
+          continue;
+        }
 
         if (mapping.labJackPin() >= 0) {
           if (mapping.isDac()) {
@@ -200,6 +254,28 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     }
 
     previousSwitchStates = currentPayload.clone();
+  }
+
+  /**
+   * Handles emergency stop activation by immediately setting all mapped LabJack pins to LOW. Uses
+   * direct LabJackDataLink calls (bypassing the HTTP API) for minimal latency.
+   */
+  private void handleEmergencyStop() {
+    log.warn("EMERGENCY STOP ACTIVATED - setting all mapped pins to LOW");
+
+    LabJackDataLink labJack = LabJackDataLink.getInstance();
+    if (labJack == null) {
+      log.error("E-stop: LabJackDataLink instance not available");
+      return;
+    }
+
+    for (var entry : SWITCH_PIN_MAP.values()) {
+      if (entry.labJackPin() >= 0) {
+        labJack.writeDigitalPin(entry.labJackPin(), 0);
+      }
+    }
+
+    log.warn("EMERGENCY STOP: all mapped pins set to LOW");
   }
 
   /**

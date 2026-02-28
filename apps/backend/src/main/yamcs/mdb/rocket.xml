@@ -6,65 +6,85 @@ See https://github.com/yamcs/pymdb
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="FlightComputer">
   <TelemetryMetaData>
     <ParameterTypeSet>
-      <IntegerParameterType name="acceleration_x" signed="true" sizeInBits="32">
+      <FloatParameterType name="acceleration_x" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">g</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
+              <ValueOperand>1000</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="acceleration_y" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
-          <DefaultCalibrator>
-            <MathOperationCalibrator>
-              <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
-              <Operator>/</Operator>
-            </MathOperationCalibrator>
-          </DefaultCalibrator>
-        </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="acceleration_z" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
-          <DefaultCalibrator>
-            <MathOperationCalibrator>
-              <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
-              <Operator>/</Operator>
-            </MathOperationCalibrator>
-          </DefaultCalibrator>
-        </IntegerDataEncoding>
-      </IntegerParameterType>
-      <FloatParameterType name="altimeter_altitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
       </FloatParameterType>
-      <FloatParameterType name="altitude_from_sea_level" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+      <FloatParameterType name="acceleration_y" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">g</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
       </FloatParameterType>
-      <IntegerParameterType name="angle_pitch" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="angle_roll" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="angle_yaw" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
-      </IntegerParameterType>
+      <FloatParameterType name="acceleration_z" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">g</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
       <FloatParameterType name="apogee_from_ground" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <UnitSet>
+          <Unit form="calibrated">ft</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
-      <FloatParameterType name="atm_pressure" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+      <FloatParameterType name="barometer_altitude_from_pad" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">ft</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
-      <FloatParameterType name="atm_temp" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+      <FloatParameterType name="barometer_altitude_from_sea_level" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">ft</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
-      <FloatParameterType name="barometer_altitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+      <IntegerParameterType name="battery_current_draw" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">mA</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <FloatParameterType name="battery_voltage" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">V</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>10</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
       </FloatParameterType>
       <StringParameterType name="call_sign">
         <StringDataEncoding encoding="US-ASCII">
@@ -76,26 +96,62 @@ See https://github.com/yamcs/pymdb
           </SizeInBits>
         </StringDataEncoding>
       </StringParameterType>
-      <IntegerParameterType name="cc_pressure" signed="true" sizeInBits="32">
+      <FloatParameterType name="cc_pressure" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="fc_rssi" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
+      </FloatParameterType>
+      <BooleanParameterType name="drogue_armed_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="drogue_armed_SW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="drogue_continuity_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="drogue_energizedCurrent_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="drogue_energizedGate_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="drogue_energized_SW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="fc_pressure" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">bar</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>2</ValueOperand>
-              <Operator>+</Operator>
-              <ValueOperand>400</ValueOperand>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </FloatDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="fc_rssi" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dBm</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>-2</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
-      <IntegerParameterType name="fc_snr" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="fc_snr" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="8" encoding="twosComplement">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -105,7 +161,21 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
+      <FloatParameterType name="fc_temp" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">°C</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>100</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
       <BooleanParameterType name="fdov_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -149,17 +219,113 @@ See https://github.com/yamcs/pymdb
         </EnumerationList>
       </EnumeratedParameterType>
       <FloatParameterType name="gps_altitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <UnitSet>
+          <Unit form="calibrated">m</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </FloatDataEncoding>
       </FloatParameterType>
       <FloatParameterType name="gps_latitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>10000000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </FloatDataEncoding>
       </FloatParameterType>
       <FloatParameterType name="gps_longitude" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>10000000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </FloatDataEncoding>
       </FloatParameterType>
       <FloatParameterType name="gps_time_last_update" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <UnitSet>
+          <Unit form="calibrated">s</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
+      <FloatParameterType name="gyro_rate_x" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg/s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="gyro_rate_y" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg/s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="gyro_rate_z" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg/s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <BooleanParameterType name="main_armed_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="main_armed_SW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="main_continuity_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="main_energizedCurrent_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="main_energizedGate_HW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="main_energized_SW" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
       <BooleanParameterType name="mov_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -184,24 +350,6 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="padding" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
-      <BooleanParameterType name="pilot_armed_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="pilot_armed_SW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="pilot_continuity_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="pilot_energizedCurrent_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="pilot_energizedGate_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="pilot_energized_SW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
       <BooleanParameterType name="prop_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -211,42 +359,24 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="radio_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <BooleanParameterType name="ring_armed_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="ring_armed_SW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="ring_continuity_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="ring_energizedCurrent_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="ring_energizedGate_HW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="ring_energized_SW" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
       <IntegerParameterType name="seq" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <BooleanParameterType name="states_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <IntegerParameterType name="tank_pressure" signed="true" sizeInBits="32">
+      <FloatParameterType name="tank_pressure" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="tank_temp" signed="true" sizeInBits="32">
+      </FloatParameterType>
+      <FloatParameterType name="tank_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">°C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
+      </FloatParameterType>
       <BooleanParameterType name="vent_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -265,7 +395,7 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="vent_energized_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <IntegerParameterType name="vent_temp" signed="true" sizeInBits="32">
+      <FloatParameterType name="vent_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">°C</Unit>
         </UnitSet>
@@ -278,79 +408,98 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-      </IntegerParameterType>
+      </FloatParameterType>
       <FloatParameterType name="vertical_speed" sizeInBits="32">
-        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <UnitSet>
+          <Unit form="calibrated">ft/s</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
     </ParameterTypeSet>
     <ParameterSet>
-      <Parameter name="acceleration_x" parameterTypeRef="acceleration_x" shortDescription="Acceleration x">
+      <Parameter name="acceleration_x" parameterTypeRef="acceleration_x" shortDescription="Acceleration X">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="acceleration_y" parameterTypeRef="acceleration_y" shortDescription="Acceleration y">
+      <Parameter name="acceleration_y" parameterTypeRef="acceleration_y" shortDescription="Acceleration Y">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="acceleration_z" parameterTypeRef="acceleration_z" shortDescription="Acceleration z">
+      <Parameter name="acceleration_z" parameterTypeRef="acceleration_z" shortDescription="Acceleration Z">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="altimeter_altitude" parameterTypeRef="altimeter_altitude" shortDescription="Altitude from ground">
-        <LongDescription>Calculated on FC</LongDescription>
+      <Parameter name="apogee_from_ground" parameterTypeRef="apogee_from_ground" shortDescription="Apogee From Ground">
+        <LongDescription>Calculated on the FC in order to determine ejection.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="altitude_from_sea_level" parameterTypeRef="altitude_from_sea_level" shortDescription="Altitude from sea level">
-        <LongDescription>Calculated on FC</LongDescription>
+      <Parameter name="barometer_altitude_from_pad" parameterTypeRef="barometer_altitude_from_pad" shortDescription="Altitude From Pad">
+        <LongDescription>Initalized by the flight computer when it started or restarted.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="angle_pitch" parameterTypeRef="angle_pitch" shortDescription="Angular pitch">
+      <Parameter name="barometer_altitude_from_sea_level" parameterTypeRef="barometer_altitude_from_sea_level" shortDescription="Altitude From Sea Level">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="angle_roll" parameterTypeRef="angle_roll" shortDescription="Angular roll">
+      <Parameter name="battery_current_draw" parameterTypeRef="battery_current_draw" shortDescription="Battery Current Draw">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="angle_yaw" parameterTypeRef="angle_yaw" shortDescription="Angular yaw">
+      <Parameter name="battery_voltage" parameterTypeRef="battery_voltage" shortDescription="Battery Voltage">
+        <LongDescription>Current voltage of the FC battery</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="apogee_from_ground" parameterTypeRef="apogee_from_ground" shortDescription="Apogee from ground (max it's hit)">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="atm_pressure" parameterTypeRef="atm_pressure" shortDescription="Atmospheric pressure">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="atm_temp" parameterTypeRef="atm_temp" shortDescription="Atmospheric temperature">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="barometer_altitude" parameterTypeRef="barometer_altitude" shortDescription="Altitude calculated from the barometric pressure">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="call_sign" parameterTypeRef="call_sign" shortDescription="call sign for radio transmission">
+      <Parameter name="call_sign" parameterTypeRef="call_sign" shortDescription="Call Sign">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="cc_pressure" parameterTypeRef="cc_pressure" shortDescription="Combustion Chamber Pressure">
         <LongDescription>Calculated from sensor voltage.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fc_rssi" parameterTypeRef="fc_rssi" shortDescription="Relative Signal Strength Indicator of FC radio">
+      <Parameter name="drogue_armed_HW" parameterTypeRef="drogue_armed_HW" shortDescription="drogue: electrical armed">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fc_snr" parameterTypeRef="fc_snr" shortDescription="Signal to noise ratio of the FC radio">
+      <Parameter name="drogue_armed_SW" parameterTypeRef="drogue_armed_SW" shortDescription="drogue: logical armed">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_armed_HW" parameterTypeRef="fdov_armed_HW" shortDescription="FDOV: Electrical ARM">
+      <Parameter name="drogue_continuity_HW" parameterTypeRef="drogue_continuity_HW" shortDescription="drogue: electrical continuity">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_armed_SW" parameterTypeRef="fdov_armed_SW" shortDescription="FDOV: Logical ARM">
+      <Parameter name="drogue_energizedCurrent_HW" parameterTypeRef="drogue_energizedCurrent_HW" shortDescription="drogue: electrical energized current">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_continuity_HW" parameterTypeRef="fdov_continuity_HW" shortDescription="FDOV: Electrical Continuity">
+      <Parameter name="drogue_energizedGate_HW" parameterTypeRef="drogue_energizedGate_HW" shortDescription="drogue: electrical energized gate">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_energizedCurrent_HW" parameterTypeRef="fdov_energizedCurrent_HW" shortDescription="FDOV: Electrical Energized Current">
+      <Parameter name="drogue_energized_SW" parameterTypeRef="drogue_energized_SW" shortDescription="drogue: logical energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_energizedGate_HW" parameterTypeRef="fdov_energizedGate_HW" shortDescription="FDOV: Electrical Energized Gate">
+      <Parameter name="fc_pressure" parameterTypeRef="fc_pressure" shortDescription="FC Pressure">
+        <LongDescription>Barometric pressure measured by the FC</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="fdov_energized_SW" parameterTypeRef="fdov_energized_SW" shortDescription="FDOV: Logical Energized">
+      <Parameter name="fc_rssi" parameterTypeRef="fc_rssi" shortDescription="FC RSSI">
+        <LongDescription>Relative Signal Strength Indicator of FC radio</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fc_snr" parameterTypeRef="fc_snr" shortDescription="FC SNR">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fc_temp" parameterTypeRef="fc_temp" shortDescription="FC Temperature">
+        <LongDescription>Temperature measured by the FC</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fdov_armed_HW" parameterTypeRef="fdov_armed_HW" shortDescription="F/DOV: Electrical ARM">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fdov_armed_SW" parameterTypeRef="fdov_armed_SW" shortDescription="F/DOV: Logical ARM">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fdov_continuity_HW" parameterTypeRef="fdov_continuity_HW" shortDescription="F/DOV: Electrical Continuity">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fdov_energizedCurrent_HW" parameterTypeRef="fdov_energizedCurrent_HW" shortDescription="F/DOV: Electrical Energized Current">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fdov_energizedGate_HW" parameterTypeRef="fdov_energizedGate_HW" shortDescription="F/DOV: Electrical Energized Gate">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fdov_energized_SW" parameterTypeRef="fdov_energized_SW" shortDescription="F/DOV: Logical Energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="flags" parameterTypeRef="flags" shortDescription="Packet Flags">
@@ -372,16 +521,43 @@ See https://github.com/yamcs/pymdb
         <LongDescription>The current stage the FC believes it is in.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="gps_altitude" parameterTypeRef="gps_altitude" shortDescription="GPS altitude">
+      <Parameter name="gps_altitude" parameterTypeRef="gps_altitude" shortDescription="GPS Altitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="gps_latitude" parameterTypeRef="gps_latitude" shortDescription="GPS latitude">
+      <Parameter name="gps_latitude" parameterTypeRef="gps_latitude" shortDescription="GPS Latitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="gps_longitude" parameterTypeRef="gps_longitude" shortDescription="GPS longitude">
+      <Parameter name="gps_longitude" parameterTypeRef="gps_longitude" shortDescription="GPS Longitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update" shortDescription="GPS time from last update">
+      <Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update" shortDescription="GPS Time From Last Update">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gyro_rate_x" parameterTypeRef="gyro_rate_x" shortDescription="Gyroscopic Rate X">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gyro_rate_y" parameterTypeRef="gyro_rate_y" shortDescription="Gyroscopic Rate Y">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gyro_rate_z" parameterTypeRef="gyro_rate_z" shortDescription="Gyroscopic Rate Z">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="main_armed_HW" parameterTypeRef="main_armed_HW" shortDescription="main: electrical armed">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="main_armed_SW" parameterTypeRef="main_armed_SW" shortDescription="main: logical armed">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="main_continuity_HW" parameterTypeRef="main_continuity_HW" shortDescription="main: electrical continuity">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="main_energizedCurrent_HW" parameterTypeRef="main_energizedCurrent_HW" shortDescription="main: electrical energized current">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="main_energizedGate_HW" parameterTypeRef="main_energizedGate_HW" shortDescription="main: electrical energized gate">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="main_energized_SW" parameterTypeRef="main_energized_SW" shortDescription="main: logical energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="mov_armed_HW" parameterTypeRef="mov_armed_HW" shortDescription="MOV: Electrical Armed">
@@ -403,29 +579,11 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="mov_hall_state" parameterTypeRef="mov_hall_state" shortDescription="MOV Hall State">
-        <LongDescription>Calculated from sensor voltage.</LongDescription>
+        <LongDescription>Calculated from hall state sensor voltage.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="padding" parameterTypeRef="padding" shortDescription="Padding">
         <LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="pilot_armed_HW" parameterTypeRef="pilot_armed_HW" shortDescription="Pilot: electrical armed">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="pilot_armed_SW" parameterTypeRef="pilot_armed_SW" shortDescription="Pilot: logical armed">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="pilot_continuity_HW" parameterTypeRef="pilot_continuity_HW" shortDescription="Pilot: electrical continuity">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="pilot_energizedCurrent_HW" parameterTypeRef="pilot_energizedCurrent_HW" shortDescription="Pilot: electrical energized current">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="pilot_energizedGate_HW" parameterTypeRef="pilot_energizedGate_HW" shortDescription="Pilot: electrical energized gate">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="pilot_energized_SW" parameterTypeRef="pilot_energized_SW" shortDescription="Pilot: logical energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="prop_atomic_flag" parameterTypeRef="prop_atomic_flag">
@@ -435,24 +593,6 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="radio_atomic_flag" parameterTypeRef="radio_atomic_flag">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="ring_armed_HW" parameterTypeRef="ring_armed_HW" shortDescription="3 ring: electrical armed">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="ring_armed_SW" parameterTypeRef="ring_armed_SW" shortDescription="3 ring: logical armed">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="ring_continuity_HW" parameterTypeRef="ring_continuity_HW" shortDescription="3 Ring: electrical continuity">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="ring_energizedCurrent_HW" parameterTypeRef="ring_energizedCurrent_HW" shortDescription="3 ring: electrical energized current">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="ring_energizedGate_HW" parameterTypeRef="ring_energizedGate_HW" shortDescription="3 ring: electrical energized gate">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="ring_energized_SW" parameterTypeRef="ring_energized_SW" shortDescription="3 ring: logical energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="seq" parameterTypeRef="seq" shortDescription="Sequence Number">
@@ -490,7 +630,7 @@ See https://github.com/yamcs/pymdb
       <Parameter name="vent_temp" parameterTypeRef="vent_temp" shortDescription="Vent Valve Temperature">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="vertical_speed" parameterTypeRef="vertical_speed" shortDescription="Vertical speed (descent rate)">
+      <Parameter name="vertical_speed" parameterTypeRef="vertical_speed" shortDescription="Vertical Speed (descent rate)">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
     </ParameterSet>
@@ -567,12 +707,17 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="altimeter_altitude">
+          <ParameterRefEntry parameterRef="barometer_altitude_from_pad">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="altitude_from_sea_level">
+          <ParameterRefEntry parameterRef="barometer_altitude_from_sea_level">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="fc_pressure">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -582,17 +727,7 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="atm_pressure">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="barometer_altitude">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="atm_temp">
+          <ParameterRefEntry parameterRef="fc_temp">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -637,17 +772,17 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="angle_yaw">
+          <ParameterRefEntry parameterRef="gyro_rate_x">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="angle_pitch">
+          <ParameterRefEntry parameterRef="gyro_rate_y">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="angle_roll">
+          <ParameterRefEntry parameterRef="gyro_rate_z">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -658,6 +793,16 @@ See https://github.com/yamcs/pymdb
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="fc_snr">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="battery_voltage">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="battery_current_draw">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -813,62 +958,62 @@ See https://github.com/yamcs/pymdb
               <FixedValue>11</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="pilot_armed_SW">
+          <ParameterRefEntry parameterRef="drogue_armed_SW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>10</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="pilot_armed_HW">
+          <ParameterRefEntry parameterRef="drogue_armed_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>9</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="pilot_energized_SW">
+          <ParameterRefEntry parameterRef="drogue_energized_SW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>8</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="pilot_energizedGate_HW">
+          <ParameterRefEntry parameterRef="drogue_energizedGate_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>23</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="pilot_energizedCurrent_HW">
+          <ParameterRefEntry parameterRef="drogue_energizedCurrent_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>22</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="pilot_continuity_HW">
+          <ParameterRefEntry parameterRef="drogue_continuity_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>21</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="ring_armed_SW">
+          <ParameterRefEntry parameterRef="main_armed_SW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>20</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="ring_armed_HW">
+          <ParameterRefEntry parameterRef="main_armed_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>19</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="ring_energized_SW">
+          <ParameterRefEntry parameterRef="main_energized_SW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>18</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="ring_energizedGate_HW">
+          <ParameterRefEntry parameterRef="main_energizedGate_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>17</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="ring_energizedCurrent_HW">
+          <ParameterRefEntry parameterRef="main_energizedCurrent_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>16</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="ring_continuity_HW">
+          <ParameterRefEntry parameterRef="main_continuity_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>31</FixedValue>
             </LocationInContainerInBits>
@@ -912,228 +1057,5 @@ See https://github.com/yamcs/pymdb
       </SequenceContainer>
     </ContainerSet>
   </TelemetryMetaData>
-  <CommandMetaData>
-    <ArgumentTypeSet>
-      <BooleanArgumentType name="radio_set_transmit__TX" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanArgumentType>
-      <BooleanArgumentType name="umbilical__UMB" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanArgumentType>
-    </ArgumentTypeSet>
-    <MetaCommandSet>
-      <MetaCommand name="arm_recovery" abstract="false" shortDescription="ea">
-        <CommandContainer name="arm_recovery">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="disarm_recovery" abstract="false" shortDescription="ed">
-        <CommandContainer name="disarm_recovery">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="drogue_ejection" abstract="false" shortDescription="de">
-        <CommandContainer name="drogue_ejection">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="emergency_cancel" abstract="false" shortDescription="ec">
-        <CommandContainer name="emergency_cancel">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="severe"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="emergency_stop" abstract="false" shortDescription="es">
-        <CommandContainer name="emergency_stop">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="severe"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="fdov_de-energize" abstract="false" shortDescription="fd">
-        <CommandContainer name="fdov_de-energize">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="fdov_energize" abstract="false" shortDescription="fe">
-        <CommandContainer name="fdov_energize">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="landed" abstract="false" shortDescription="ld">
-        <CommandContainer name="landed">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="launch" abstract="false" shortDescription="pl">
-        <CommandContainer name="launch">
-          <EntryList/>
-        </CommandContainer>
-        <TransmissionConstraintList>
-          <TransmissionConstraint timeOut="PT0S">
-            <BooleanExpression>
-              <Condition>
-                <ParameterInstanceRef parameterRef="mov_armed_SW" useCalibratedValue="true"/>
-                <ComparisonOperator>==</ComparisonOperator>
-                <Value>True</Value>
-              </Condition>
-            </BooleanExpression>
-          </TransmissionConstraint>
-          <TransmissionConstraint timeOut="PT0S">
-            <BooleanExpression>
-              <Condition>
-                <ParameterInstanceRef parameterRef="mov_armed_HW" useCalibratedValue="true"/>
-                <ComparisonOperator>==</ComparisonOperator>
-                <Value>True</Value>
-              </Condition>
-            </BooleanExpression>
-          </TransmissionConstraint>
-        </TransmissionConstraintList>
-        <CommandSignificance significance="severe"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="main_ejection" abstract="false" shortDescription="me">
-        <CommandContainer name="main_ejection">
-          <EntryList/>
-        </CommandContainer>
-        <TransmissionConstraintList>
-          <TransmissionConstraint timeOut="PT0S">
-            <BooleanExpression>
-              <Condition>
-                <ParameterInstanceRef parameterRef="ring_armed_HW" useCalibratedValue="true"/>
-                <ComparisonOperator>==</ComparisonOperator>
-                <Value>True</Value>
-              </Condition>
-            </BooleanExpression>
-          </TransmissionConstraint>
-          <TransmissionConstraint timeOut="PT0S">
-            <BooleanExpression>
-              <Condition>
-                <ParameterInstanceRef parameterRef="ring_armed_SW" useCalibratedValue="true"/>
-                <ComparisonOperator>==</ComparisonOperator>
-                <Value>True</Value>
-              </Condition>
-            </BooleanExpression>
-          </TransmissionConstraint>
-        </TransmissionConstraintList>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="mov_arming" abstract="false" shortDescription="p2">
-        <CommandContainer name="mov_arming">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="critical"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="mov_disarming" abstract="false" shortDescription="p3">
-        <CommandContainer name="mov_disarming">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="critical"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="propulsion_off" abstract="false" shortDescription="po">
-        <CommandContainer name="propulsion_off">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="watch"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="propulsion_on" abstract="false" shortDescription="pi">
-        <CommandContainer name="propulsion_on">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="watch"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="radio_disable_slow_tx" abstract="false" shortDescription="r+">
-        <CommandContainer name="radio_disable_slow_tx">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="radio_enable_slow_tx" abstract="false" shortDescription="r-">
-        <CommandContainer name="radio_enable_slow_tx">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="radio_set_transmit" abstract="false" shortDescription="rt">
-        <ArgumentList>
-          <Argument name="TX" argumentTypeRef="radio_set_transmit__TX"/>
-        </ArgumentList>
-        <CommandContainer name="radio_set_transmit">
-          <EntryList>
-            <ArgumentRefEntry argumentRef="TX">
-              <LocationInContainerInBits referenceLocation="previousEntry">
-                <FixedValue>0</FixedValue>
-              </LocationInContainerInBits>
-            </ArgumentRefEntry>
-          </EntryList>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="reset_from_start" abstract="false" shortDescription="rs">
-        <CommandContainer name="reset_from_start">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="reset_prop_boards_valve_state" abstract="false" shortDescription="rp">
-        <CommandContainer name="reset_prop_boards_valve_state">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="umbilical" abstract="false" shortDescription="ul">
-        <ArgumentList>
-          <Argument name="UMB" argumentTypeRef="umbilical__UMB"/>
-        </ArgumentList>
-        <CommandContainer name="umbilical">
-          <EntryList>
-            <ArgumentRefEntry argumentRef="UMB">
-              <LocationInContainerInBits referenceLocation="previousEntry">
-                <FixedValue>0</FixedValue>
-              </LocationInContainerInBits>
-            </ArgumentRefEntry>
-          </EntryList>
-        </CommandContainer>
-        <CommandSignificance significance="none"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="vent_valve_de-energize" abstract="false" shortDescription="vd">
-        <CommandContainer name="vent_valve_de-energize">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="critical"/>
-        <VerifierSet/>
-      </MetaCommand>
-      <MetaCommand name="vent_valve_energize" abstract="false" shortDescription="ve">
-        <CommandContainer name="vent_valve_energize">
-          <EntryList/>
-        </CommandContainer>
-        <CommandSignificance significance="critical"/>
-        <VerifierSet/>
-      </MetaCommand>
-    </MetaCommandSet>
-  </CommandMetaData>
+  <CommandMetaData/>
 </SpaceSystem>

@@ -18,6 +18,14 @@ const ListParametersResponse = Schema.Struct({
   totalSize: Schema.Int,
 });
 
+const ListCommandsResponse = Schema.Struct({
+  spaceSystems: Schema.optional(Schema.Array(yamcs.SpaceSystemInfo)),
+  commands: Schema.Array(yamcs.CommandInfo),
+
+  continuationToken: Schema.optional(Schema.String),
+  totalSize: Schema.Int,
+});
+
 const ListSpaceSystemsResponse = Schema.Struct({
   spaceSystems: Schema.Array(yamcs.SpaceSystemInfo),
 
@@ -40,6 +48,11 @@ export const mdbGroup = HttpApiGroup.make("mdb")
     HttpApiEndpoint.get("listParameters")`/${instanceParam}/parameters`
       .setUrlParams(UrlParams)
       .addSuccess(ListParametersResponse),
+  )
+  .add(
+    HttpApiEndpoint.get("listCommands")`/${instanceParam}/commands`
+      .setUrlParams(UrlParams)
+      .addSuccess(ListCommandsResponse),
   )
   .add(
     HttpApiEndpoint.get(

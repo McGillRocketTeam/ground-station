@@ -8,7 +8,9 @@ services:
 dataDir: yamcs-data
 
 instances:
+  # - urrg 
   - ground_station 
+  # - testsite
 
 # Secret key unique to a particular Yamcs installation.
 # This is used to provide cryptographic signing.

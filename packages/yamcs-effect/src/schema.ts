@@ -175,8 +175,9 @@ const spaceSystemInfoFields = {
   // ancillaryData: {[key: Schema.String]: AncillaryDataInfo},
 };
 
-export interface SpaceSystemInfo
-  extends Schema.Struct.Type<typeof spaceSystemInfoFields> {
+export interface SpaceSystemInfo extends Schema.Struct.Type<
+  typeof spaceSystemInfoFields
+> {
   // Define `subcategories` using recursion
   readonly sub?: ReadonlyArray<SpaceSystemInfo> | undefined;
 }
@@ -285,6 +286,9 @@ const BooleanValue = Schema.Struct({
 
 export const EnumeratedValue = Schema.Struct({
   type: Schema.Literal("ENUMERATED"),
+  value: Schema.propertySignature(Schema.String).pipe(
+    Schema.fromKey("stringValue"),
+  ),
 });
 
 export const AggregateValue = Schema.Struct({
@@ -448,4 +452,11 @@ export const Event = Schema.Struct({
   seqNumber: Schema.Number,
   message: Schema.String,
   severity: EventSeverity,
+});
+
+export const CommandInfo = Schema.Struct({
+  name: Schema.String,
+  qualifiedName: Schema.String,
+  shortDescription: Schema.optional(Schema.String),
+  longDescription: Schema.optional(Schema.String),
 });

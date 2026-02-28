@@ -95,8 +95,8 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
                   <AckCell command={command} name="Queued" />
                   <AckCell command={command} name="Released" />
                   <AckCell command={command} name="Sent" />
-                  <AckCell command={command} name="Radio_RX" />
-                  <AckCell command={command} name="Radio_TX" />
+                  <AckCell command={command} name="radio-controlstation-a_RX" />
+                  <AckCell command={command} name="radio-controlstation-b_RX" />
                   <FCAckCell command={command} name="CommandComplete" />
                 </DataGridRow>
               }

@@ -14,7 +14,6 @@ local_resource(
 		resource_deps=['backend', 'yamcs-effect', 'yamcs-atom']
 )
 
-
 local_resource(
     'backend',
     serve_cmd="cd apps/backend && mvn yamcs:run",
@@ -49,7 +48,7 @@ local_resource(
     }
 
     .\\venv\\Scripts\\pip install -r requirements.txt
-    .\\venv\\Scripts\\python converter.py --output "../backend/src/main/yamcs/mdb/rocket.xml"
+    .\\venv\\Scripts\\python ./src/xtce_generator.py --output-telemetry-xml "../../backend/src/main/yamcs/mdb/rocket.xml" --output-commanding-xml "../../backend/src/main/yamcs/mdb/commands.xml"
     ''' or '''
     set -e
 
@@ -60,14 +59,13 @@ local_resource(
     fi
 
     ./venv/bin/pip install -r requirements.txt
-    ./venv/bin/python converter.py --output "../backend/src/main/yamcs/mdb/rocket.xml"
+    ./venv/bin/python ./src/xtce_generator.py --output-telemetry-xml "../backend/src/main/yamcs/mdb/rocket.xml" --output-commanding-xml "../backend/src/main/yamcs/mdb/commands.xml"
     ''',
     deps=[
         "requirements.txt",
-        "converter.py",
+        "xtce_generator.py",
     ]
 )
-
 
 local_resource(
     'yamcs-effect',

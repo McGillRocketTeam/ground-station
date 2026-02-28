@@ -35,9 +35,10 @@ realtime:
   config:
     subscribeAll: true
     allowContainerlessCommands: true
-    # Check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
+    # Alarm checking disabled — LabJack AINs have no limits defined, so this was a no-op
+    # at 5100 parameter updates/second. Re-enable if alarm limits are added.
     alarm:
-      parameterCheck: true
+      parameterCheck: false
       parameterServer: enabled
     tmProcessor:
       # If container entries fit outside the binary packet, setting this to true causes the error

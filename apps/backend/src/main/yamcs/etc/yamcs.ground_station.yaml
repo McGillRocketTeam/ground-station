@@ -26,6 +26,10 @@ dataLinks:
     class: org.yamcs.labjack.LabJackDataLink
     tmStream: tm_labJack
     tcStream: tc_labJack
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
 
   - name: Thermocouple
     class: org.yamcs.mrt.links.AstraGenericTmLink
@@ -36,7 +40,7 @@ dataLinks:
 
   - name: ControlBox
     class: org.yamcs.mrt.links.ControlBoxLink
-    stream: tm_thermocouple_realtime
+    stream: tm_controlbox_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -44,7 +48,7 @@ dataLinks:
 mdb:
   - type: xtce
     args:
-      file: mdb/commands.xml
+      file: mdb/controlbox.xml
   - type: xtce
     spec: "LabJack"
     args:
@@ -61,7 +65,7 @@ streamConfig:
       processor: "realtime"
 
     - name: "tm_controlbox_realtime"
-      rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
+      rootContainer: "/ControlBox/ControlBoxPacket"
       processor: "realtime"
     # Labjack
     - name: "tm_labJack"

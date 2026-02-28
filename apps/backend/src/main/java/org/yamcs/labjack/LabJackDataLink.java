@@ -6,12 +6,7 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.Mdb;
-import org.yamcs.mdb.MdbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.tctm.AbstractTcTmParamLink;
-import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.SequenceContainer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -61,8 +56,6 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
     private final Queue<TmPacket> dataQueue = new ConcurrentLinkedQueue<>();
     private ScheduledExecutorService executorService;
     private BufferedWriter csvWriter;
-    private XtceTmExtractor tmExtractor;
-    private SequenceContainer sequenceContainer;
 
 
     public LabJackDataLink(){
@@ -167,28 +160,35 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
 
 
     private void savePacketToCSV() {
-
-        while(!dataQueue.isEmpty()){
-            StringBuilder row = new StringBuilder();
-
-            TmPacket dataArr = dataQueue.poll();
-            LocalDateTime dateTime = Instant.ofEpochMilli(dataArr.getReceptionTime())
+        while (!dataQueue.isEmpty()) {
+            TmPacket pkt = dataQueue.poll();
+            LocalDateTime dateTime = Instant.ofEpochMilli(pkt.getReceptionTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
+
+            StringBuilder row = new StringBuilder();
             row.append(dateTime.format(DateTimeFormatter.ISO_LOCAL_TIME)).append(",");
-            var result = tmExtractor.processPacket(dataArr.getPacket(), dataArr.getGenerationTime(), dataArr.getReceptionTime(), dataArr.getSeqCount());
-            row.append(dataArr.getReceptionTime());
-            for(var param : result.getParameterResult()){
-                row.append(param.getEngValue()).append(",");
+
+            ByteBuffer buf = ByteBuffer.wrap(pkt.getPacket());
+
+            // 45 analog floats packed as big-endian IEEE 754
+            for (int i = 0; i < LabJackUtil.NUM_ANALOG_PINS; i++) {
+                row.append(buf.getFloat()).append(",");
             }
-            row.setLength(row.length()-1);
+
+            // 3 digital bytes → 23 individual DIO pin states (MSB of byte[0] = DIO0)
+            int d = ((buf.get() & 0xFF) << 16) | ((buf.get() & 0xFF) << 8) | (buf.get() & 0xFF);
+            for (int n = 0; n < LabJackUtil.NUM_DIGITAL_PINS; n++) {
+                row.append((d >> (23 - n)) & 1);
+                if (n < LabJackUtil.NUM_DIGITAL_PINS - 1) row.append(",");
+            }
+
             try {
                 csvWriter.write(row.toString());
                 csvWriter.newLine();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
         }
     }
 
@@ -336,17 +336,6 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
     @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
-        Mdb mdb = MdbFactory.getInstance("ground_station");
-        tmExtractor = new XtceTmExtractor(mdb);
-        sequenceContainer = mdb.getSequenceContainer("/LabJackT7/LabJackPacket");
-        tmExtractor.startProviding(sequenceContainer);
-
-        for(var seqEntry : sequenceContainer.getEntryList()){
-            if(seqEntry instanceof ParameterEntry parameterEntry){
-                tmExtractor.startProviding(parameterEntry.getParameter());
-            }
-        }
-
     }
 
     @Override

@@ -40,11 +40,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    * to the corresponding LabJack digital pin number.
    *
    * <p>Packet layout (from controlbox.xml): byte 0: panel_1_switch_estop byte 1:
-   * panel_2_switch_launch byte 2: panel_3_switch_1 byte 3: panel_3_switch_2 byte 4:
-   * panel_4_switch_1 byte 5: panel_4_switch_2 byte 6: panel_5_switch_1 byte 7: panel_5_switch_2
-   * byte 8: panel_6_switch_1 byte 9: panel_6_switch_2 byte 10: panel_7_switch_1 byte 11:
-   * panel_7_switch_2 byte 12: panel_8_switch_1 byte 13: panel_8_switch_2 byte 14:
-   * panel_9_switch_key
+   * panel_2_switch_launch byte 2: panel_2_switch_2 byte 3: panel_3_switch_1 byte 4:
+   * panel_3_switch_2 byte 5: panel_4_switch_1 byte 6: panel_4_switch_2 byte 7: panel_5_switch_1
+   * byte 8: panel_5_switch_2 byte 9: panel_6_switch_1 byte 10: panel_6_switch_2 byte 11:
+   * panel_7_IGN+ byte 12: panel_7_IGN- byte 13: panel_8_switch_1 byte 14: panel_9_switch_key
+   * byte 15: panel_8_switch_2
    *
    * <p>Pin number -1 means the switch is not mapped to a LabJack pin.
    *
@@ -57,24 +57,29 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
       Map.ofEntries(
           Map.entry(0, new SwitchMapping("panel_1_switch_estop", -1)), // E-stop: not mapped
           Map.entry(1, new SwitchMapping("panel_2_switch_launch", -1)), // Launch: not mapped
-          Map.entry(2, new SwitchMapping("panel_3_switch_1", 0)), // FIO0
-          Map.entry(3, new SwitchMapping("panel_3_switch_2", 1)), // FIO1
-          Map.entry(4, new SwitchMapping("panel_4_switch_1", 2)), // FIO2
-          Map.entry(5, new SwitchMapping("panel_4_switch_2", 3)), // FIO3
-          Map.entry(6, new SwitchMapping("panel_5_switch_1", 4)), // FIO4
-          Map.entry(7, new SwitchMapping("panel_5_switch_2", 5)), // FIO5
-          Map.entry(8, new SwitchMapping("panel_6_switch_1", 6)), // FIO6
-          Map.entry(9, new SwitchMapping("panel_6_switch_2", 7)), // FIO7
-          Map.entry(10, new SwitchMapping("panel_7_switch_1", 8)), // EIO0
-          Map.entry(11, new SwitchMapping("panel_7_switch_2", 9)), // EIO1
-          Map.entry(12, new SwitchMapping("panel_8_switch_1", 10)), // EIO2
-          Map.entry(13, new SwitchMapping("panel_8_switch_2", 11)), // EIO3
-          Map.entry(14, new SwitchMapping("panel_9_switch_key", -1)) // Key: not mapped
+          Map.entry(2, new SwitchMapping("panel_2_switch_2", -1)), // not mapped
+          Map.entry(3, new SwitchMapping("panel_3_switch_1", 0)), // FIO0
+          Map.entry(4, new SwitchMapping("panel_3_switch_2", 1)), // FIO1
+          Map.entry(5, new SwitchMapping("panel_4_switch_1", 2)), // FIO2
+          Map.entry(6, new SwitchMapping("panel_4_switch_2", 3)), // FIO3
+          Map.entry(7, new SwitchMapping("panel_5_switch_1", 4)), // FIO4
+          Map.entry(8, new SwitchMapping("panel_5_switch_2", 5)), // FIO5
+          Map.entry(9, new SwitchMapping("panel_6_switch_1", 6)), // FIO6
+          Map.entry(10, new SwitchMapping("panel_6_switch_2", 7)), // FIO7
+          Map.entry(11, new SwitchMapping("panel_7_IGN+", 0, true)), // DAC0
+          Map.entry(12, new SwitchMapping("panel_7_IGN-", 1, true)), // DAC1
+          Map.entry(13, new SwitchMapping("panel_8_switch_1", 10)), // EIO2
+          Map.entry(14, new SwitchMapping("panel_9_switch_key", -1)), // Key: not mapped
+          Map.entry(15, new SwitchMapping("panel_8_switch_2", 11)) // EIO3
           );
 
   // @formatter:on
 
-  private record SwitchMapping(String name, int labJackPin) {}
+  private record SwitchMapping(String name, int labJackPin, boolean isDac) {
+    SwitchMapping(String name, int labJackPin) {
+      this(name, labJackPin, false);
+    }
+  }
 
   @Override
   public void init(String instance, String name, YConfiguration config) {
@@ -185,7 +190,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
         log.info("Switch state change: " + mapping.name() + " -> " + (newState ? "ON" : "OFF"));
 
         if (mapping.labJackPin() >= 0) {
-          issueWriteDigitalPinCommand(mapping.labJackPin(), newState, mapping.name());
+          if (mapping.isDac()) {
+            issueWriteDACPinCommand(mapping.labJackPin(), newState, mapping.name());
+          } else {
+            issueWriteDigitalPinCommand(mapping.labJackPin(), newState, mapping.name());
+          }
         }
       }
     }
@@ -245,6 +254,62 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
             ex -> {
               log.error(
                   "Error issuing write_digital_pin for " + switchName + ": " + ex.getMessage());
+              return null;
+            });
+  }
+
+  /**
+   * Issues a /LabJackT7/write_DAC_pin command via the Yamcs HTTP API.
+   *
+   * @param pinNumber the LabJack DAC pin number (0 or 1)
+   * @param pinState true → 5.0 V, false → 0.0 V
+   * @param switchName the name of the control box switch (for logging)
+   */
+  private void issueWriteDACPinCommand(int pinNumber, boolean pinState, String switchName) {
+    float voltage = pinState ? 5.0f : 0.0f;
+    String url =
+        String.format(
+            "http://localhost:%d/api/processors/%s/%s/commands/LabJackT7/write_DAC_pin",
+            YAMCS_HTTP_PORT, YAMCS_INSTANCE, YAMCS_PROCESSOR);
+
+    String jsonBody =
+        String.format(
+            "{\"args\": {\"pin_number\": %d, \"pin_voltage\": %s}}", pinNumber, voltage);
+
+    HttpRequest request =
+        HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+            .build();
+
+    httpClient
+        .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        .thenAccept(
+            response -> {
+              if (response.statusCode() == 200) {
+                log.info(
+                    "Issued write_DAC_pin: pin="
+                        + pinNumber
+                        + " voltage="
+                        + voltage
+                        + "V (triggered by "
+                        + switchName
+                        + ")");
+              } else {
+                log.warn(
+                    "Failed to issue write_DAC_pin for "
+                        + switchName
+                        + ": HTTP "
+                        + response.statusCode()
+                        + " - "
+                        + response.body());
+              }
+            })
+        .exceptionally(
+            ex -> {
+              log.error(
+                  "Error issuing write_DAC_pin for " + switchName + ": " + ex.getMessage());
               return null;
             });
   }

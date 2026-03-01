@@ -55,6 +55,7 @@ public class RadiosLink extends AstraSubLink {
       }
     }
 
+    dataIn(1, message.getPayload().length);
     for (var tmPacket : tmConverter.convert(message)) {
       tmPacket = packetPreprocessor.process(tmPacket);
       if (tmPacket != null) {

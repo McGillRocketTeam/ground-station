@@ -138,6 +138,9 @@ importers:
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../../packages/yamcs-effect
+      bit-buffer:
+        specifier: ^0.3.0
+        version: 0.3.0
       effect:
         specifier: 4.0.0-beta.14
         version: 4.0.0-beta.14
@@ -1352,6 +1355,9 @@ packages:
   baseline-browser-mapping@2.9.18:
     resolution: {integrity: sha512-e23vBV1ZLfjb9apvfPk4rHVu2ry6RIr2Wfs+O324okSidrX7pTAnEJPCh/O5BtRlr7QtZI7ktOP3vsqr7Z5XoA==}
     hasBin: true
+
+  bit-buffer@0.3.0:
+    resolution: {integrity: sha512-ZuHiT8XheCOwON2r23HCmy55TpPeYBe2d6BDdOMuvCmswI+6szog44JeE3sVuaF0K2kLatuXBTQ6WCCcI4KMyw==}
 
   bl@6.1.6:
     resolution: {integrity: sha512-jLsPgN/YSvPUg9UX0Kd73CXpm2Psg9FxMeCSXnk3WBO3CMT10JMwijubhGfHCnFu6TPn1ei3b975dxv7K2pWVg==}
@@ -3867,6 +3873,8 @@ snapshots:
   base64-js@1.5.1: {}
 
   baseline-browser-mapping@2.9.18: {}
+
+  bit-buffer@0.3.0: {}
 
   bl@6.1.6:
     dependencies:

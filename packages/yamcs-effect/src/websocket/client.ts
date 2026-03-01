@@ -1,11 +1,6 @@
 import { Chunk, Config, Effect, Schema, Stream, StreamEmit } from "effect";
 import { Cancel, type SubscriptionRequest } from "./client-messages.js";
-import {
-  Events,
-  Reply,
-  Messages as ServerMessages,
-  SubscriptionId,
-} from "./server-messages.js";
+import { Events, Reply, Messages as ServerMessages, SubscriptionId } from "./server-messages.js";
 
 export class WebSocketClient extends Effect.Service<WebSocketClient>()(
   "@mrt/yamcs-effect/WebSocketClient",
@@ -20,9 +15,7 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
       // Socket will be automatically closed when the scope ends.
       const ws = yield* Effect.acquireRelease(
         Effect.gen(function* () {
-          return yield* Effect.try(
-            () => new WebSocket(`${yamcsUrl}api/websocket`),
-          );
+          return yield* Effect.try(() => new WebSocket(`${yamcsUrl}api/websocket`));
         }),
         (ws) =>
           Effect.gen(function* () {
@@ -48,17 +41,11 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
         });
       });
 
-      const messages = Stream.async(
-        (emit: StreamEmit.Emit<never, never, string, void>) => {
-          ws.addEventListener("message", (event: MessageEvent) => {
-            emit(Effect.succeed(Chunk.of(event.data)));
-          });
-        },
-      ).pipe(
-        Stream.filterMap((m) =>
-          Schema.decodeOption(ServerMessages)(JSON.parse(m)),
-        ),
-      );
+      const messages = Stream.async((emit: StreamEmit.Emit<never, never, string, void>) => {
+        ws.addEventListener("message", (event: MessageEvent) => {
+          emit(Effect.succeed(Chunk.of(event.data)));
+        });
+      }).pipe(Stream.filterMap((m) => Schema.decodeOption(ServerMessages)(JSON.parse(m))));
 
       yield* messages.pipe(
         Stream.runForEachScoped((message) =>
@@ -71,18 +58,14 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
         Effect.gen(function* () {
           const messageId = id++;
           yield* Effect.logDebug(`Sending Message ${data.type}`, data);
-          yield* Effect.sync(() =>
-            ws.send(JSON.stringify({ ...data, id: messageId })),
-          );
+          yield* Effect.sync(() => ws.send(JSON.stringify({ ...data, id: messageId })));
 
           // we wait in this effect until we get a reply with the call id
           // this way we can return it and know the call id for future messages.
           const replyMessage = yield* messages.pipe(
             Stream.filter(Schema.is(Reply)),
             Stream.filter((m) => m.data.replyTo === messageId),
-            Stream.takeUntil(
-              (m) => m.type === "reply" && m.data.replyTo === messageId,
-            ),
+            Stream.takeUntil((m) => m.type === "reply" && m.data.replyTo === messageId),
             Stream.runCollect,
           );
 
@@ -98,9 +81,7 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
           return reply.call!;
         });
 
-      const subscribe = Effect.fnUntraced(function* (
-        request: typeof SubscriptionRequest.Type,
-      ) {
+      const subscribe = Effect.fnUntraced(function* (request: typeof SubscriptionRequest.Type) {
         const { _tag, ...data } = request;
 
         const call = yield* send({

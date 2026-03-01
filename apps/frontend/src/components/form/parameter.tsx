@@ -10,25 +10,14 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import type { FormFieldRenderer } from "@/lib/form";
 import { useAtom } from "@effect-atom/atom-react";
 
-const frameworks = [
-  "Next.js",
-  "SvelteKit",
-  "Nuxt.js",
-  "Remix",
-  "Astro",
-] as const;
+const frameworks = ["Next.js", "SvelteKit", "Nuxt.js", "Remix", "Astro"] as const;
 
 export const ParameterField: FormFieldRenderer = (title, atom) => {
   const [value, setValue] = useAtom(atom);
   return (
     <Field>
       <FieldLabel>{title}</FieldLabel>
-      <Combobox
-        items={frameworks}
-        autoHighlight
-        value={value}
-        onValueChange={setValue}
-      >
+      <Combobox items={frameworks} autoHighlight value={value} onValueChange={setValue}>
         <ComboboxInput placeholder="Select a parameter" />
         <ComboboxContent>
           <ComboboxEmpty>No parameter found.</ComboboxEmpty>

@@ -1,9 +1,4 @@
-import {
-  HttpApiEndpoint,
-  HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
+import { HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema } from "@effect/platform";
 import { Schema } from "effect";
 import { CommandId, ParameterSample, QualifiedName } from "../schema.js";
 

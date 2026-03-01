@@ -4,6 +4,12 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    oxfmt:
+      specifier: ^0.35.0
+      version: 0.35.0
+
 importers:
 
   .:
@@ -114,6 +120,9 @@ importers:
       globals:
         specifier: ^16.5.0
         version: 16.5.0
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.35.0
       prettier:
         specifier: ^3.8.1
         version: 3.8.1
@@ -155,7 +164,7 @@ importers:
         specifier: latest
         version: 25.3.3
       oxfmt:
-        specifier: ^0.35.0
+        specifier: 'catalog:'
         version: 0.35.0
       tsx:
         specifier: ^4.21.0
@@ -194,6 +203,9 @@ importers:
       effect:
         specifier: ^3.19
         version: 3.19.15
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.35.0
       typescript:
         specifier: ^5
         version: 5.9.3

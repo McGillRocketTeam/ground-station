@@ -9,9 +9,7 @@ import { ThemeProvider } from "./components/theme-provider.tsx";
 import "./index.css";
 
 Atom.runtime.addGlobalLayer(Logger.pretty);
-Atom.runtime.addGlobalLayer(
-  Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env)),
-);
+Atom.runtime.addGlobalLayer(Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env)));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

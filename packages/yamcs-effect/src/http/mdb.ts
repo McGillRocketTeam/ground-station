@@ -1,9 +1,4 @@
-import {
-  HttpApiEndpoint,
-  HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
+import { HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema } from "@effect/platform";
 import { Schema } from "effect";
 import * as yamcs from "../schema.js";
 
@@ -40,9 +35,7 @@ const UrlParams = Schema.Struct({
 
 export const mdbGroup = HttpApiGroup.make("mdb")
   .add(
-    HttpApiEndpoint.get("getMissionDatabase")`/${instanceParam}`.addSuccess(
-      yamcs.MissionDatabase,
-    ),
+    HttpApiEndpoint.get("getMissionDatabase")`/${instanceParam}`.addSuccess(yamcs.MissionDatabase),
   )
   .add(
     HttpApiEndpoint.get("listParameters")`/${instanceParam}/parameters`
@@ -55,23 +48,19 @@ export const mdbGroup = HttpApiGroup.make("mdb")
       .addSuccess(ListCommandsResponse),
   )
   .add(
-    HttpApiEndpoint.get(
-      "getParameter",
-    )`/${instanceParam}/parameters/${nameParam}`.addSuccess(
+    HttpApiEndpoint.get("getParameter")`/${instanceParam}/parameters/${nameParam}`.addSuccess(
       yamcs.ParameterInfo,
     ),
   )
   .add(
-    HttpApiEndpoint.get(
-      "getSpaceSystem",
-    )`/${instanceParam}/space-systems/${nameParam}`.addSuccess(
+    HttpApiEndpoint.get("getSpaceSystem")`/${instanceParam}/space-systems/${nameParam}`.addSuccess(
       yamcs.SpaceSystemInfo,
     ),
   )
   .add(
-    HttpApiEndpoint.get(
-      "listSpaceSystems",
-    )`/${instanceParam}/space-systems`.addSuccess(ListSpaceSystemsResponse),
+    HttpApiEndpoint.get("listSpaceSystems")`/${instanceParam}/space-systems`.addSuccess(
+      ListSpaceSystemsResponse,
+    ),
   )
   .addError(HttpApiError.NotFound)
   .prefix("/mdb");

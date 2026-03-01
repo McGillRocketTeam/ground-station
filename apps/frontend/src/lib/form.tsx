@@ -28,10 +28,7 @@ export const formTitle = <A, I, R>(schema: Schema.Schema<A, I, R>): string =>
     Option.getOrElse(() => "Unnamed Field"),
   );
 
-export type FormFieldRenderer = (
-  title: string,
-  atom: Atom.Writable<any, string>,
-) => JSX.Element;
+export type FormFieldRenderer = (title: string, atom: Atom.Writable<any, string>) => JSX.Element;
 
 const formFieldMap = {
   string: StringField,

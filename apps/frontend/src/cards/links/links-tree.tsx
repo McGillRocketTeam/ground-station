@@ -1,25 +1,11 @@
-import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-} from "@/components/ui/data-grid";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Popover as PopoverPrimitive } from "@base-ui/react";
 import { Ellipsis } from "lucide-react";
 import { Fragment } from "react/jsx-runtime";
 import { LinkDetail } from "./link-detail";
-import {
-  buildLinkTree,
-  colorByStatus,
-  type Link,
-  type LinkNode,
-} from "./utils";
+import { buildLinkTree, colorByStatus, type Link, type LinkNode } from "./utils";
 
 const linksPopover = PopoverPrimitive.createHandle<Link>();
 export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
@@ -52,36 +38,20 @@ export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
   );
 }
 
-export function LinkRows({
-  links,
-  depth,
-}: {
-  links: ReadonlyArray<LinkNode>;
-  depth: number;
-}) {
+export function LinkRows({ links, depth }: { links: ReadonlyArray<LinkNode>; depth: number }) {
   return links.map((link, index) => {
     const isLast = index === links.length - 1;
 
     return (
       <Fragment key={link.name}>
         <LinkRow link={link} depth={depth} isLast={isLast} />
-        {link.children.length > 0 && (
-          <LinkRows links={link.children} depth={depth + 1} />
-        )}
+        {link.children.length > 0 && <LinkRows links={link.children} depth={depth + 1} />}
       </Fragment>
     );
   });
 }
 
-function LinkRow({
-  link,
-  depth,
-  isLast,
-}: {
-  link: LinkNode;
-  depth: number;
-  isLast: boolean;
-}) {
+function LinkRow({ link, depth, isLast }: { link: LinkNode; depth: number; isLast: boolean }) {
   return (
     <PopoverTrigger
       payload={link}
@@ -102,10 +72,7 @@ function LinkRow({
             {/* Vertical continuation line */}
             {depth > 0 && (
               <span
-                className={cn(
-                  "absolute top-0 left-0 w-px bg-current",
-                  isLast ? "h-1/2" : "h-full",
-                )}
+                className={cn("absolute top-0 left-0 w-px bg-current", isLast ? "h-1/2" : "h-full")}
                 style={{ left: depth * 16 - 8 }}
               />
             )}
@@ -130,8 +97,7 @@ function LinkRow({
           </div>
 
           <div className="line-clamp-1 text-ellipsis">
-            {!link.detailedStatus?.startsWith(link.status) &&
-              link.status + ", "}
+            {!link.detailedStatus?.startsWith(link.status) && link.status + ", "}
             {link.detailedStatus}
           </div>
 

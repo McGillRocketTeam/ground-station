@@ -1,16 +1,6 @@
-import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-} from "@/components/ui/data-grid";
+import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
 import { makeCard } from "@/lib/cards";
-import {
-  Result,
-  useAtomSet,
-  useAtomSuspense,
-  useAtomValue,
-} from "@effect-atom/atom-react";
+import { Result, useAtomSet, useAtomSuspense, useAtomValue } from "@effect-atom/atom-react";
 import { YamcsAtomClient } from "@mrt/yamcs-atom";
 import { Cause, Schema } from "effect";
 
@@ -46,9 +36,7 @@ export const CommandButtonCard = makeCard({
 });
 
 function CommandButtonTable() {
-  const sendCommand = useAtomSet(
-    YamcsAtomClient.mutation("command", "issueCommand"),
-  );
+  const sendCommand = useAtomSet(YamcsAtomClient.mutation("command", "issueCommand"));
 
   const { commands } = useAtomSuspense(
     YamcsAtomClient.query("mdb", "listCommands", {

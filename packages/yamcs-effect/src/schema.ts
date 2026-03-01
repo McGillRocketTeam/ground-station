@@ -35,28 +35,16 @@ export const SplineCalibratorInfo = Schema.TaggedStruct("SPLINE", {
   points: Schema.Array(SplinePointInfo),
 });
 
-export const JavaExpressionCalibratorInfo = Schema.TaggedStruct(
-  "JAVA_EXPRESSION",
-  {
-    formula: Schema.String,
-  },
-);
+export const JavaExpressionCalibratorInfo = Schema.TaggedStruct("JAVA_EXPRESSION", {
+  formula: Schema.String,
+});
 
-export const MathOperationCalibratorInfo = Schema.TaggedStruct(
-  "MATH_OPERATION",
-  {},
-);
+export const MathOperationCalibratorInfo = Schema.TaggedStruct("MATH_OPERATION", {});
 
 export const CalibratorInfo = Schema.transformOrFail(
   // Source
   Schema.Struct({
-    type: Schema.Literal(
-      "POLYNOMIAL",
-      "SPLINE",
-      "MATH_OPERATION",
-      "JAVA_EXPRESSION",
-      "ALGORITHM",
-    ),
+    type: Schema.Literal("POLYNOMIAL", "SPLINE", "MATH_OPERATION", "JAVA_EXPRESSION", "ALGORITHM"),
     polynomialCalibrator: Schema.optional(PolynomialCalibratorInfo),
     splineCalibrator: Schema.optional(SplineCalibratorInfo),
     javaExpressionCalibrator: Schema.optional(JavaExpressionCalibratorInfo),
@@ -82,10 +70,7 @@ export const CalibratorInfo = Schema.transformOrFail(
           return ParseResult.succeed(MathOperationCalibratorInfo.make());
         default:
           return ParseResult.fail(
-            new ParseResult.Unexpected(
-              input.type,
-              "Couldn't decode unknown calibrator",
-            ),
+            new ParseResult.Unexpected(input.type, "Couldn't decode unknown calibrator"),
           );
       }
     },
@@ -101,13 +86,7 @@ export const CalibratorInfo = Schema.transformOrFail(
   },
 );
 
-export const DataEncodingType = Schema.Literal(
-  "BINARY",
-  "BOOLEAN",
-  "FLOAT",
-  "INTEGER",
-  "STRING",
-);
+export const DataEncodingType = Schema.Literal("BINARY", "BOOLEAN", "FLOAT", "INTEGER", "STRING");
 
 export const DataEncodingInfo = Schema.Struct({
   type: DataEncodingType,
@@ -175,9 +154,7 @@ const spaceSystemInfoFields = {
   // ancillaryData: {[key: Schema.String]: AncillaryDataInfo},
 };
 
-export interface SpaceSystemInfo extends Schema.Struct.Type<
-  typeof spaceSystemInfoFields
-> {
+export interface SpaceSystemInfo extends Schema.Struct.Type<typeof spaceSystemInfoFields> {
   // Define `subcategories` using recursion
   readonly sub?: ReadonlyArray<SpaceSystemInfo> | undefined;
 }
@@ -216,79 +193,57 @@ export const CommandIdObject = Schema.Struct({
 
 const FloatValue = Schema.Struct({
   type: Schema.Literal("FLOAT"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("floatValue"),
-  ),
+  value: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("floatValue")),
 });
 
 const DoubleValue = Schema.Struct({
   type: Schema.Literal("DOUBLE"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("doubleValue"),
-  ),
+  value: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("doubleValue")),
 });
 
 const Sint32Value = Schema.Struct({
   type: Schema.Literal("SINT32"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("sint32Value"),
-  ),
+  value: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("sint32Value")),
 });
 
 const Uint32Value = Schema.Struct({
   type: Schema.Literal("UINT32"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("uint32Value"),
-  ),
+  value: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("uint32Value")),
 });
 
 const Sint64Value = Schema.Struct({
   type: Schema.Literal("SINT64"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("sint64Value"),
-  ),
+  value: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("sint64Value")),
 });
 
 const Uint64Value = Schema.Struct({
   type: Schema.Literal("UINT64"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("uint64Value"),
-  ),
+  value: Schema.propertySignature(Schema.Number).pipe(Schema.fromKey("uint64Value")),
 });
 
 const BinaryValue = Schema.Struct({
   type: Schema.Literal("BINARY"),
-  value: Schema.propertySignature(Schema.Uint8ArrayFromBase64).pipe(
-    Schema.fromKey("binaryValue"),
-  ),
+  value: Schema.propertySignature(Schema.Uint8ArrayFromBase64).pipe(Schema.fromKey("binaryValue")),
 });
 
 const StringValue = Schema.Struct({
   type: Schema.Literal("STRING"),
-  value: Schema.propertySignature(Schema.String).pipe(
-    Schema.fromKey("stringValue"),
-  ),
+  value: Schema.propertySignature(Schema.String).pipe(Schema.fromKey("stringValue")),
 });
 
 const TimestampValue = Schema.Struct({
   type: Schema.Literal("TIMESTAMP"),
-  value: Schema.propertySignature(Schema.DateFromString).pipe(
-    Schema.fromKey("stringValue"),
-  ),
+  value: Schema.propertySignature(Schema.DateFromString).pipe(Schema.fromKey("stringValue")),
 });
 
 const BooleanValue = Schema.Struct({
   type: Schema.Literal("BOOLEAN"),
-  value: Schema.propertySignature(Schema.Boolean).pipe(
-    Schema.fromKey("booleanValue"),
-  ),
+  value: Schema.propertySignature(Schema.Boolean).pipe(Schema.fromKey("booleanValue")),
 });
 
 export const EnumeratedValue = Schema.Struct({
   type: Schema.Literal("ENUMERATED"),
-  value: Schema.propertySignature(Schema.String).pipe(
-    Schema.fromKey("stringValue"),
-  ),
+  value: Schema.propertySignature(Schema.String).pipe(Schema.fromKey("stringValue")),
 });
 
 export const AggregateValue = Schema.Struct({
@@ -325,9 +280,7 @@ export const CommandHistoryEntry = Schema.Struct({
   id: CommandId,
   commandName: QualifiedName,
 
-  aliases: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.String }),
-  ),
+  aliases: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.String })),
   origin: Schema.String,
   sequenceNumber: Schema.Number,
   commandId: CommandIdObject,
@@ -340,9 +293,7 @@ export const StreamingCommandHisotryEntry = Schema.Struct({
   id: CommandId,
   commandName: QualifiedName,
 
-  aliases: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.String }),
-  ),
+  aliases: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.String })),
   origin: Schema.String,
   sequenceNumber: Schema.optional(Schema.Number),
   commandId: CommandIdObject,
@@ -358,9 +309,7 @@ export const IssueCommandRequest = Schema.Struct({
   /**
    * The name/value assignments for this command.
    */
-  args: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.Any }),
-  ),
+  args: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Any })),
 
   /**
    * The origin of the command. Typically a hostname.

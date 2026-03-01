@@ -1,9 +1,4 @@
-import {
-  HttpApiEndpoint,
-  HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
+import { HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema } from "@effect/platform";
 import { Schema } from "effect";
 import {
   CommandHistoryEntry,
@@ -27,14 +22,12 @@ const ListCommandsResponse = Schema.Struct({
 
 export const commandGroup = HttpApiGroup.make("command")
   .add(
-    HttpApiEndpoint.get(
-      "listCommands",
-    )`/archive/${instanceParam}/commands`.addSuccess(ListCommandsResponse),
+    HttpApiEndpoint.get("listCommands")`/archive/${instanceParam}/commands`.addSuccess(
+      ListCommandsResponse,
+    ),
   )
   .add(
-    HttpApiEndpoint.get(
-      "getCommand",
-    )`/archive/${instanceParam}/commands/${idParam}`.addSuccess(
+    HttpApiEndpoint.get("getCommand")`/archive/${instanceParam}/commands/${idParam}`.addSuccess(
       CommandHistoryEntry,
     ),
   )

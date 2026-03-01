@@ -10,7 +10,9 @@
     "check-types": "tsc --noEmit",
     "dev": "tsc -b --watch",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "devDependencies": {
     "@types/node": "latest",
@@ -20,6 +22,7 @@
     "@effect/platform": "^0.94",
     "effect": "^3.19",
     "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "typescript": "^5"
   }
 }

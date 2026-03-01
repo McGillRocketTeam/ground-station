@@ -1,8 +1,15 @@
+import { Fragment, type ReactNode } from "react";
+
 import { Separator } from "@/components/ui/separator";
 import { cn, stringifyValue } from "@/lib/utils";
-import { Fragment, type ReactNode } from "react";
+
 import { BrailleSpinner } from "./braile-spinner";
-import { collectAcks, extractAttribute, type Ack, type CommandHistoryEntry } from "./utils";
+import {
+  collectAcks,
+  extractAttribute,
+  type Ack,
+  type CommandHistoryEntry,
+} from "./utils";
 
 export function CommandDetail({ command }: { command: CommandHistoryEntry }) {
   return (
@@ -34,7 +41,9 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
               return (
                 <Fragment key={assignment.name}>
                   <div className="relative ml-2 pl-4">
-                    {!isLast && <span className="absolute top-0 left-1 h-full border-l" />}
+                    {!isLast && (
+                      <span className="absolute top-0 left-1 h-full border-l" />
+                    )}
 
                     {isLast && (
                       <>
@@ -71,7 +80,9 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
         </div>
         <div className="space-y-0.5">
           <Label>Seq. Number</Label>
-          <div>{stringifyValue(extractAttribute(command, "Sequence_Count"))}</div>
+          <div>
+            {stringifyValue(extractAttribute(command, "Sequence_Count"))}
+          </div>
         </div>
       </div>
       <Separator />
@@ -114,7 +125,13 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
   );
 }
 
-function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) {
+function FCAckRow({
+  ack,
+  command,
+}: {
+  ack: Ack;
+  command: CommandHistoryEntry;
+}) {
   if (ack.status === "??") return;
 
   return (
@@ -132,7 +149,11 @@ function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) 
       <div>
         {ack.time && (
           <span className="text-muted-foreground ml-2 text-xs">
-            +{Math.abs(command.generationTime.getMilliseconds() - ack.time.getMilliseconds())}
+            +
+            {Math.abs(
+              command.generationTime.getMilliseconds() -
+                ack.time.getMilliseconds(),
+            )}
             ms
           </span>
         )}
@@ -164,11 +185,17 @@ function AckRow({
         {ack.status === "PENDING" ? <BrailleSpinner /> : ack.status}
       </div>
       <div>
-        {friendlyName ? friendlyName.toLocaleUpperCase() : ack.name.toLocaleUpperCase()}
+        {friendlyName
+          ? friendlyName.toLocaleUpperCase()
+          : ack.name.toLocaleUpperCase()}
 
         {ack.time && (
           <span className="text-muted-foreground ml-2 text-xs">
-            +{Math.abs(command.generationTime.getMilliseconds() - ack.time.getMilliseconds())}
+            +
+            {Math.abs(
+              command.generationTime.getMilliseconds() -
+                ack.time.getMilliseconds(),
+            )}
             ms
           </span>
         )}

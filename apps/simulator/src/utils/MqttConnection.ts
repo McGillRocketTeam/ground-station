@@ -1,5 +1,7 @@
-import { Config, Effect, Layer, Schema, ServiceMap } from "effect";
+import { Effect, Layer, Schema, ServiceMap } from "effect";
 import mqtt from "mqtt";
+
+import { BROKER_URL } from "./Config.ts";
 
 interface PublishParameters {
   message: string | Buffer;
@@ -22,7 +24,7 @@ export class MqttConnection extends ServiceMap.Service<
   static readonly layer = Layer.effect(
     this,
     Effect.gen(function* () {
-      const brokerUrl = yield* Config.nonEmptyString("BROKER_URL");
+      const brokerUrl = yield* BROKER_URL;
       const client = mqtt.connect(brokerUrl);
 
       yield* Effect.callback<void>((resume) => {

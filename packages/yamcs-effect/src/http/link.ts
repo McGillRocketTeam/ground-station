@@ -1,5 +1,11 @@
-import { HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema } from "@effect/platform";
+import {
+  HttpApiEndpoint,
+  HttpApiError,
+  HttpApiGroup,
+  HttpApiSchema,
+} from "@effect/platform";
 import { Schema } from "effect";
+
 import { CommandId, LinkInfo, QualifiedName } from "../schema.js";
 
 const instanceParam = HttpApiSchema.param("instance", Schema.String);
@@ -15,16 +21,20 @@ export const linkGroup = HttpApiGroup.make("link")
       }),
     ),
   )
-  .add(HttpApiEndpoint.get("getLink")`/${instanceParam}/${linkParam}`.addSuccess(LinkInfo))
   .add(
-    HttpApiEndpoint.post("enableLink")`/${instanceParam}/${linkParam}%3Aenable`.addSuccess(
+    HttpApiEndpoint.get("getLink")`/${instanceParam}/${linkParam}`.addSuccess(
       LinkInfo,
     ),
   )
   .add(
-    HttpApiEndpoint.post("disableLink")`/${instanceParam}/${linkParam}%3Adisable`.addSuccess(
-      LinkInfo,
-    ),
+    HttpApiEndpoint.post(
+      "enableLink",
+    )`/${instanceParam}/${linkParam}%3Aenable`.addSuccess(LinkInfo),
+  )
+  .add(
+    HttpApiEndpoint.post(
+      "disableLink",
+    )`/${instanceParam}/${linkParam}%3Adisable`.addSuccess(LinkInfo),
   )
   .add(
     HttpApiEndpoint.post(

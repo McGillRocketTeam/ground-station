@@ -21,6 +21,11 @@
 						</MathOperationCalibrator>
 					</DefaultCalibrator>
 				</IntegerDataEncoding>
+				<ValidRange
+					validRangeAppliesToCalibrated="false"
+					minInclusive="0"
+					maxInclusive="255"
+				/>
 			</FloatParameterType>
 			<FloatParameterType name="snr" sizeInBits="32">
 				<UnitSet>
@@ -36,6 +41,11 @@
 						</MathOperationCalibrator>
 					</DefaultCalibrator>
 				</IntegerDataEncoding>
+				<ValidRange
+					validRangeAppliesToCalibrated="false"
+					minInclusive="-128"
+					maxInclusive="127"
+				/>
 			</FloatParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>

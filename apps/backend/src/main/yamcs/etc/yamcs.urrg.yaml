@@ -37,13 +37,13 @@ dataLinks:
 
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_b_fc_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemB/ControlStation/Radio
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_b_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2

@@ -1,3 +1,7 @@
+import { Atom, Result, useAtom, useAtomValue } from "@effect-atom/atom-react";
+import { commandsSubscriptionAtom } from "@mrt/yamcs-atom";
+import { Check, Search, X } from "lucide-react";
+
 import {
   DataGridBody,
   DataGridHead,
@@ -5,14 +9,20 @@ import {
   DataGridRow,
   DataGridSearch,
 } from "@/components/ui/data-grid";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn, formatDate, stringifyValue } from "@/lib/utils";
-import { Atom, Result, useAtom, useAtomValue } from "@effect-atom/atom-react";
-import { commandsSubscriptionAtom } from "@mrt/yamcs-atom";
-import { Check, Search, X } from "lucide-react";
+
 import { BrailleSpinner } from "./braile-spinner";
 import { CommandDetail } from "./command-detail";
-import { extractAcknowledgement, extractAttribute, type CommandHistoryEntry } from "./utils";
+import {
+  extractAcknowledgement,
+  extractAttribute,
+  type CommandHistoryEntry,
+} from "./utils";
 
 export function CommandHistoryTable() {
   const commandHistory = useAtomValue(commandsSubscriptionAtom);
@@ -23,7 +33,8 @@ export function CommandHistoryTable() {
         <div
           className={cn(
             "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(5,1.5rem)_auto] gap-px rounded-none",
-            (commandHistory._tag === "Initial" || commandHistory._tag === "Failure") &&
+            (commandHistory._tag === "Initial" ||
+              commandHistory._tag === "Failure") &&
               "min-h-full",
           )}
         >
@@ -54,7 +65,9 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
   return (
     <DataGridBody className="text-sm">
       {commands
-        .filter((cmd) => cmd.commandName.toLowerCase().includes(commandSearchText))
+        .filter((cmd) =>
+          cmd.commandName.toLowerCase().includes(commandSearchText),
+        )
         .map((command) => (
           <Popover key={command.id}>
             <PopoverTrigger
@@ -62,15 +75,23 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
               nativeButton={false}
               render={
                 <DataGridRow className="group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
-                  <div className="col-span-2 text-right">{formatDate(command.generationTime)}</div>
+                  <div className="col-span-2 text-right">
+                    {formatDate(command.generationTime)}
+                  </div>
                   <div className="no-scrollbar line-clamp-1 overflow-x-scroll">
                     {command.commandName}
                   </div>
                   <div className="text-center">
-                    {stringifyValue(extractAttribute(command, "Command_Id"), "")}
+                    {stringifyValue(
+                      extractAttribute(command, "Command_Id"),
+                      "",
+                    )}
                   </div>
                   <div className="text-center">
-                    {stringifyValue(extractAttribute(command, "Sequence_Count"), "")}
+                    {stringifyValue(
+                      extractAttribute(command, "Sequence_Count"),
+                      "",
+                    )}
                   </div>
 
                   <AckCell command={command} name="Queued" />
@@ -92,7 +113,13 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
   );
 }
 
-function FCAckCell({ command, name }: { command: CommandHistoryEntry; name: string }) {
+function FCAckCell({
+  command,
+  name,
+}: {
+  command: CommandHistoryEntry;
+  name: string;
+}) {
   const ack = extractAcknowledgement(command, name, true);
   return (
     <div
@@ -100,7 +127,9 @@ function FCAckCell({ command, name }: { command: CommandHistoryEntry; name: stri
         "grid place-items-center text-sm",
         ack.status === "OK" && "text-success",
         ack.status === "??" && "text-muted-foreground",
-        ack.status !== "??" && ack.status !== "OK" && "bg-error! text-error-foreground",
+        ack.status !== "??" &&
+          ack.status !== "OK" &&
+          "bg-error! text-error-foreground",
       )}
     >
       {ack.status === "OK" && "SUCCESS"}
@@ -109,22 +138,32 @@ function FCAckCell({ command, name }: { command: CommandHistoryEntry; name: stri
   );
 }
 
-function AckCell({ command, name }: { command: CommandHistoryEntry; name: string }) {
+function AckCell({
+  command,
+  name,
+}: {
+  command: CommandHistoryEntry;
+  name: string;
+}) {
   const ack = extractAcknowledgement(command, name);
   return (
     <div
       className={cn(
         "grid place-items-center",
         ack.status === "OK" && "text-success",
-        ack.status === "??" || (ack.status === "PENDING" && "text-muted-foreground"),
-        ack.status !== "??" && ack.status !== "PENDING" && ack.status !== "OK" && "text-error",
+        ack.status === "??" ||
+          (ack.status === "PENDING" && "text-muted-foreground"),
+        ack.status !== "??" &&
+          ack.status !== "PENDING" &&
+          ack.status !== "OK" &&
+          "text-error",
       )}
     >
       {ack.status === "OK" && <Check className="size-3.5" />}
       {ack.status === "PENDING" && <BrailleSpinner />}
-      {ack.status !== "OK" && ack.status !== "??" && ack.status !== "PENDING" && (
-        <X className="size-4" />
-      )}
+      {ack.status !== "OK" &&
+        ack.status !== "??" &&
+        ack.status !== "PENDING" && <X className="size-4" />}
     </div>
   );
 }

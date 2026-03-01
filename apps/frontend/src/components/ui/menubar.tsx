@@ -2,6 +2,7 @@
 
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { Menubar as MenubarPrimitive } from "@base-ui/react/menubar";
+import { CheckIcon } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -20,13 +21,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { CheckIcon } from "lucide-react";
 
 function Menubar({ className, ...props }: MenubarPrimitive.Props) {
   return (
     <MenubarPrimitive
       data-slot="menubar"
-      className={cn("bg-background flex h-9 items-center rounded-lg border p-1", className)}
+      className={cn(
+        "bg-background flex h-9 items-center rounded-lg border p-1",
+        className,
+      )}
       {...props}
     />
   );
@@ -36,15 +39,22 @@ function MenubarMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
   return <DropdownMenu data-slot="menubar-menu" {...props} />;
 }
 
-function MenubarGroup({ ...props }: React.ComponentProps<typeof DropdownMenuGroup>) {
+function MenubarGroup({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuGroup>) {
   return <DropdownMenuGroup data-slot="menubar-group" {...props} />;
 }
 
-function MenubarPortal({ ...props }: React.ComponentProps<typeof DropdownMenuPortal>) {
+function MenubarPortal({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPortal>) {
   return <DropdownMenuPortal data-slot="menubar-portal" {...props} />;
 }
 
-function MenubarTrigger({ className, ...props }: React.ComponentProps<typeof DropdownMenuTrigger>) {
+function MenubarTrigger({
+  className,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuTrigger>) {
   return (
     <DropdownMenuTrigger
       data-slot="menubar-trigger"
@@ -125,11 +135,17 @@ function MenubarCheckboxItem({
   );
 }
 
-function MenubarRadioGroup({ ...props }: React.ComponentProps<typeof DropdownMenuRadioGroup>) {
+function MenubarRadioGroup({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuRadioGroup>) {
   return <DropdownMenuRadioGroup data-slot="menubar-radio-group" {...props} />;
 }
 
-function MenubarRadioItem({ className, children, ...props }: MenuPrimitive.RadioItem.Props) {
+function MenubarRadioItem({
+  className,
+  children,
+  ...props
+}: MenuPrimitive.RadioItem.Props) {
   return (
     <MenuPrimitive.RadioItem
       data-slot="menubar-radio-item"
@@ -158,7 +174,10 @@ function MenubarLabel({
     <DropdownMenuLabel
       data-slot="menubar-label"
       data-inset={inset}
-      className={cn("text-muted-foreground px-2 py-1.5 text-xs data-[inset]:pl-8", className)}
+      className={cn(
+        "text-muted-foreground px-2 py-1.5 text-xs data-[inset]:pl-8",
+        className,
+      )}
       {...props}
     />
   );
@@ -193,7 +212,9 @@ function MenubarShortcut({
   );
 }
 
-function MenubarSub({ ...props }: React.ComponentProps<typeof DropdownMenuSub>) {
+function MenubarSub({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuSub>) {
   return <DropdownMenuSub data-slot="menubar-sub" {...props} />;
 }
 

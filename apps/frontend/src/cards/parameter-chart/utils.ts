@@ -1,5 +1,6 @@
-import { stringifyValue } from "@/lib/utils";
 import type { CommandHistoryEvent } from "@mrt/yamcs-effect";
+
+import { stringifyValue } from "@/lib/utils";
 
 export type CommandHistoryEntry = (typeof CommandHistoryEvent.Type)["data"];
 
@@ -7,7 +8,10 @@ export function extractAttribute(command: CommandHistoryEntry, attr: string) {
   return command.attr.find((a) => a.name === attr)?.value;
 }
 
-export function extractAcknowledgement(command: CommandHistoryEntry, ack: string) {
+export function extractAcknowledgement(
+  command: CommandHistoryEntry,
+  ack: string,
+) {
   const statusValue = extractAttribute(command, `Acknowledge_${ack}_Status`);
   const timeValue = extractAttribute(command, `Acknowledge_${ack}_Time`);
 
@@ -27,5 +31,7 @@ export function formatCommandDate(d: Date) {
     second: "2-digit",
   });
 
-  return isToday ? d.toLocaleTimeString() : d.toLocaleDateString() + ", " + time;
+  return isToday
+    ? d.toLocaleTimeString()
+    : d.toLocaleDateString() + ", " + time;
 }

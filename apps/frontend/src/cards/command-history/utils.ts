@@ -1,5 +1,6 @@
-import { stringifyValue } from "@/lib/utils";
 import type { CommandHistoryEvent } from "@mrt/yamcs-effect";
+
+import { stringifyValue } from "@/lib/utils";
 
 export type CommandHistoryEntry = (typeof CommandHistoryEvent.Type)["data"];
 
@@ -37,7 +38,9 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
       extractAcknowledgement(command, "radio-controlstation-b_RX"),
     ].filter(validAck),
 
-    flightComputer: [extractAcknowledgement(command, "CommandComplete", true)].filter(validAck),
+    flightComputer: [
+      extractAcknowledgement(command, "CommandComplete", true),
+    ].filter(validAck),
   };
 }
 
@@ -50,7 +53,10 @@ export function extractAcknowledgement(
     command,
     `${customPrefix ? "" : "Acknowledge_"}${ack}_Status`,
   );
-  const timeValue = extractAttribute(command, `${customPrefix ? "" : "Acknowledge_"}${ack}_Time`);
+  const timeValue = extractAttribute(
+    command,
+    `${customPrefix ? "" : "Acknowledge_"}${ack}_Time`,
+  );
 
   const messageValue = extractAttribute(
     command,
@@ -75,5 +81,7 @@ export function formatCommandDate(d: Date) {
     second: "2-digit",
   });
 
-  return isToday ? d.toLocaleTimeString() : d.toLocaleDateString() + ", " + time;
+  return isToday
+    ? d.toLocaleTimeString()
+    : d.toLocaleDateString() + ", " + time;
 }

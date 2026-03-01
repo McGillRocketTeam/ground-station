@@ -1,7 +1,16 @@
 import { Schema } from "effect";
-import { LinkInfo, NamedObjectId, StreamingCommandHisotryEntry, Value, Event } from "../schema.js";
 
-export const SubscriptionId = Schema.NonNegativeInt.pipe(Schema.brand("SubscriptionId"));
+import {
+  LinkInfo,
+  NamedObjectId,
+  StreamingCommandHisotryEntry,
+  Value,
+  Event,
+} from "../schema.js";
+
+export const SubscriptionId = Schema.NonNegativeInt.pipe(
+  Schema.brand("SubscriptionId"),
+);
 
 export type SubscriptionId = typeof SubscriptionId.Type;
 
@@ -86,7 +95,10 @@ export const ParmeterInfoEvent = Schema.Struct({
   // info: Schema.Record({ key: Schema.Number, value: ParameterInfo }),
 });
 
-export const ParameterEvent = Schema.Union(ParmeterInfoEvent, PrameterDataEvent);
+export const ParameterEvent = Schema.Union(
+  ParmeterInfoEvent,
+  PrameterDataEvent,
+);
 
 export const EventsEvent = Schema.Struct({
   type: Schema.Literal("events"),

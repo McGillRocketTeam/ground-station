@@ -1,7 +1,9 @@
-import { makeCard } from "@/lib/cards";
 import { Result, useAtomValue } from "@effect-atom/atom-react";
 import { linksSubscriptionAtom } from "@mrt/yamcs-atom";
 import { Cause, Schema } from "effect";
+
+import { makeCard } from "@/lib/cards";
+
 import { LinksTree } from "./links-tree";
 
 export const LinksCard = makeCard({

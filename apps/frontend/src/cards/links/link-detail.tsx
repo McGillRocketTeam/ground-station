@@ -1,8 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import type { ReactNode } from "react";
+
 import { useAtomSet } from "@effect-atom/atom-react";
 import { YamcsAtomClient } from "@mrt/yamcs-atom";
-import type { ReactNode } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+
 import { colorByStatus, type Link } from "./utils";
 
 function Label({ children }: { children: ReactNode }) {
@@ -10,9 +13,15 @@ function Label({ children }: { children: ReactNode }) {
 }
 
 export function LinkDetail({ link }: { link: Link }) {
-  const enableLinkAction = useAtomSet(YamcsAtomClient.mutation("link", "enableLink"));
-  const disableLinkAction = useAtomSet(YamcsAtomClient.mutation("link", "disableLink"));
-  const resetCounterAction = useAtomSet(YamcsAtomClient.mutation("link", "resetCounters"));
+  const enableLinkAction = useAtomSet(
+    YamcsAtomClient.mutation("link", "enableLink"),
+  );
+  const disableLinkAction = useAtomSet(
+    YamcsAtomClient.mutation("link", "disableLink"),
+  );
+  const resetCounterAction = useAtomSet(
+    YamcsAtomClient.mutation("link", "resetCounters"),
+  );
 
   const path = {
     instance: import.meta.env.YAMCS_INSTANCE,
@@ -53,13 +62,21 @@ export function LinkDetail({ link }: { link: Link }) {
           <Separator />
           <div className="grid grid-cols-2 gap-1 font-sans">
             {link.disabled ? (
-              <Button onClick={() => enableLinkAction({ path })}>Enable Link</Button>
+              <Button onClick={() => enableLinkAction({ path })}>
+                Enable Link
+              </Button>
             ) : (
-              <Button variant="destructive" onClick={() => disableLinkAction({ path })}>
+              <Button
+                variant="destructive"
+                onClick={() => disableLinkAction({ path })}
+              >
                 Disable Link
               </Button>
             )}
-            <Button variant="secondary" onClick={() => resetCounterAction({ path })}>
+            <Button
+              variant="secondary"
+              onClick={() => resetCounterAction({ path })}
+            >
               Reset Counters
             </Button>
           </div>

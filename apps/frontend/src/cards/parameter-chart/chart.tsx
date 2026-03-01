@@ -9,9 +9,16 @@ import {
 import { parameterSubscriptionAtom, YamcsAtomClient } from "@mrt/yamcs-atom";
 import Dygraph from "dygraphs";
 import { Effect } from "effect";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 
-const isDurationMode = (mode: ChartMode): mode is DurationMode => mode.type === "duration";
+const isDurationMode = (mode: ChartMode): mode is DurationMode =>
+  mode.type === "duration";
 
 const MAX_DATA_POINTS = 1000;
 const PARAMETER_NAME = "/FlightComputer/acceleration_x";
@@ -34,10 +41,9 @@ const defaultMode: ChartMode = {
   durationMs: 60 * 1000,
 };
 
-const chartModeAtom: Atom.Writable<ChartMode, ChartMode> = Atom.make(defaultMode) as Atom.Writable<
-  ChartMode,
-  ChartMode
->;
+const chartModeAtom: Atom.Writable<ChartMode, ChartMode> = Atom.make(
+  defaultMode,
+) as Atom.Writable<ChartMode, ChartMode>;
 
 const isFixedWindowInPast = (mode: ChartMode): boolean => {
   if (mode.type !== "fixed") return false;
@@ -105,7 +111,11 @@ const chartDataWithSubscriptionAtom: Atom.Writable<
     return [] as BandDataPoint[];
   },
   (ctx, update: BandDataPoint | BandDataPoint[]) => {
-    if (Array.isArray(update) && update.length > 0 && Array.isArray(update[0])) {
+    if (
+      Array.isArray(update) &&
+      update.length > 0 &&
+      Array.isArray(update[0])
+    ) {
       ctx.setSelf(update as BandDataPoint[]);
     } else {
       const currentData = ctx.get(chartDataWithSubscriptionAtom);
@@ -122,16 +132,22 @@ function ModeControls() {
   const [mode, setMode] = useAtom(chartModeAtom);
 
   const isDuration = mode.type === "duration";
-  const durationMinutes = isDuration ? (mode as DurationMode).durationMs / 60000 : 1;
+  const durationMinutes = isDuration
+    ? (mode as DurationMode).durationMs / 60000
+    : 1;
   const fixedMode = !isDuration ? (mode as FixedWindowMode) : null;
 
   return (
     <div className="bg-background/80 border-border absolute top-2 left-2 z-10 rounded border p-2 text-xs backdrop-blur-sm">
       <div className="mb-2 flex gap-2">
         <button
-          onClick={() => setMode({ type: "duration", durationMs: durationMinutes * 60000 })}
+          onClick={() =>
+            setMode({ type: "duration", durationMs: durationMinutes * 60000 })
+          }
           className={`rounded px-2 py-1 ${
-            isDuration ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-secondary/80"
+            isDuration
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary hover:bg-secondary/80"
           }`}
         >
           Duration
@@ -240,20 +256,31 @@ export function ParameterChart() {
 
       if (parameterValue.engValue && "value" in parameterValue.engValue) {
         numericValue = Number(parameterValue.engValue.value) || 0;
-      } else if (parameterValue.rawValue && "value" in parameterValue.rawValue) {
+      } else if (
+        parameterValue.rawValue &&
+        "value" in parameterValue.rawValue
+      ) {
         numericValue = Number(parameterValue.rawValue.value) || 0;
       }
 
       const currentMode = modeRef.current;
-      const newPoint: BandDataPoint = [timestamp, [numericValue, numericValue, numericValue]];
+      const newPoint: BandDataPoint = [
+        timestamp,
+        [numericValue, numericValue, numericValue],
+      ];
 
       if (currentMode.type === "duration") {
         // Filter points outside the sliding window (creates scrolling effect)
         const cutoffTime = timestamp.getTime() - currentMode.durationMs;
         const currentData = dataRef.current;
-        const filtered = currentData.filter((point) => point[0].getTime() >= cutoffTime);
+        const filtered = currentData.filter(
+          (point) => point[0].getTime() >= cutoffTime,
+        );
         const newData: BandDataPoint[] = [...filtered, newPoint];
-        if (newData.length !== currentData.length || filtered.length !== currentData.length) {
+        if (
+          newData.length !== currentData.length ||
+          filtered.length !== currentData.length
+        ) {
           setChartData(newData);
         }
       } else {
@@ -274,7 +301,11 @@ export function ParameterChart() {
   );
 
   const handleDoubleClick = useCallback(
-    (_event: MouseEvent, _g: Dygraph, _context: { cancelNextDblclick?: boolean }) => {
+    (
+      _event: MouseEvent,
+      _g: Dygraph,
+      _context: { cancelNextDblclick?: boolean },
+    ) => {
       // Always reset to duration mode regardless of dygraphs internal state
       setMode({ type: "duration", durationMs: 60 * 1000 });
       refreshChartData();

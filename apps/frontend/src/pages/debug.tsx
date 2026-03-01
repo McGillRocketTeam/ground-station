@@ -1,3 +1,6 @@
+import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
+import { useState } from "react";
+
 import { Form } from "@/components/form";
 import {
   Menubar,
@@ -7,13 +10,22 @@ import {
   MenubarRadioItem,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { CardArray, CardComponentMap, CardSchemaMap, type CardId } from "@/lib/cards";
-import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
-import { useState } from "react";
+import {
+  CardArray,
+  CardComponentMap,
+  CardSchemaMap,
+  type CardId,
+} from "@/lib/cards";
 
 const selectedCardAtom = Atom.make<CardId>("parameter-table");
-const selectedSchemaAtom = Atom.map(selectedCardAtom, (id) => CardSchemaMap[id]);
-const selectedComponentAtom = Atom.map(selectedCardAtom, (id) => CardComponentMap[id]);
+const selectedSchemaAtom = Atom.map(
+  selectedCardAtom,
+  (id) => CardSchemaMap[id],
+);
+const selectedComponentAtom = Atom.map(
+  selectedCardAtom,
+  (id) => CardComponentMap[id],
+);
 
 export function DebugPage() {
   const selectedSchema = useAtomValue(selectedSchemaAtom);

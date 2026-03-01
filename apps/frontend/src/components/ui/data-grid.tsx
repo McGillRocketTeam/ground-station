@@ -1,6 +1,8 @@
-import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
 import type { ComponentProps } from "react";
+
+import { X } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 export function DataGridHeader({ className, ...props }: ComponentProps<"div">) {
   return (

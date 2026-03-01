@@ -1,8 +1,9 @@
-import { makeCard } from "@/lib/cards";
 import { Result, useAtomValue } from "@effect-atom/atom-react";
 import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
 import { Cause, Schema } from "effect";
 import { useState, type ReactNode } from "react";
+
+import { makeCard } from "@/lib/cards";
 
 const CardEntries = {
   "FLIGHT ATOMIC": [
@@ -34,7 +35,10 @@ const CardEntries = {
     "FC435/FlightComputer/seq",
     "FC435/FlightComputer/padding",
   ],
-  "RADIO ATOMIC": ["FC435/FlightComputer/call_sign", "FC435/FlightComputer/radio_atomic_flag"],
+  "RADIO ATOMIC": [
+    "FC435/FlightComputer/call_sign",
+    "FC435/FlightComputer/radio_atomic_flag",
+  ],
   "PROPULSION ATOMIC": [
     "FC435/FlightComputer/cc_pressure",
     "FC435/FlightComputer/tank_pressure",
@@ -129,7 +133,9 @@ function TableRow({ parameter }: { parameter: string }) {
   return (
     <div className="*:bg-background hover:*:bg-selection-background col-span-full grid grid-cols-subgrid text-sm *:px-1">
       <div />
-      <div className="line-clamp-1 text-ellipsis">{parameter.split("/")[2]}</div>
+      <div className="line-clamp-1 text-ellipsis">
+        {parameter.split("/")[2]}
+      </div>
       <Value name={"/" + parameter} />
       <Value name={"/" + parameter.replace("435", "903")} />
       {/* <div /> */}
@@ -154,7 +160,9 @@ function Value({ name }: { name: string }) {
     onSuccess: ({ value }) => (
       <>
         <div className="line-clamp-1 text-right text-ellipsis">
-          {"value" in value.engValue ? value.engValue.value.toLocaleString() : "Unknown Value Type"}
+          {"value" in value.engValue
+            ? value.engValue.value.toLocaleString()
+            : "Unknown Value Type"}
         </div>
       </>
     ),

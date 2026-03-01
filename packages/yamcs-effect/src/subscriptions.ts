@@ -1,11 +1,15 @@
-import { Config, Effect, Schema, Stream } from "effect";
 import {
   HttpApiClient,
   FetchHttpClient,
   HttpClient,
   HttpClientRequest,
 } from "@effect/platform";
-import { WebSocketClient } from "./websocket/client.js";
+import { Config, Effect, Schema, Stream } from "effect";
+
+import type { QualifiedName } from "./schema.js";
+
+import { YamcsApi } from "./http/index.js";
+import { mergeCommandEntries } from "./utils.js";
 import {
   SubscribeTimeRequest,
   SubscribeLinksRequest,
@@ -14,6 +18,7 @@ import {
   SubscribeEventsRequest,
   type SubscriptionRequest,
 } from "./websocket/client-messages.js";
+import { WebSocketClient } from "./websocket/client.js";
 import {
   TimeEvent,
   LinkEvent,
@@ -22,9 +27,6 @@ import {
   EventsEvent,
   type ParameterValue,
 } from "./websocket/server-messages.js";
-import type { QualifiedName } from "./schema.js";
-import { YamcsApi } from "./http/index.js";
-import { mergeCommandEntries } from "./utils.js";
 
 /**
  * YamcsSubscriptions provides pre-built Effect Streams for subscribing to
@@ -103,7 +105,10 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
             );
 
             const initial = new Map(
-              priorCommands.map((c) => [c.id, c as typeof import("./schema.js").StreamingCommandHisotryEntry.Type]),
+              priorCommands.map((c) => [
+                c.id,
+                c as typeof import("./schema.js").StreamingCommandHisotryEntry.Type,
+              ]),
             );
 
             const dataStream = stream.pipe(
@@ -192,9 +197,7 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
        * real-time events via WebSocket and accumulates them.
        */
       const events = (
-        priorEvents: ReadonlyArray<
-          typeof import("./schema.js").Event.Type
-        >,
+        priorEvents: ReadonlyArray<typeof import("./schema.js").Event.Type>,
       ) =>
         Stream.unwrap(
           Effect.gen(function* () {
@@ -206,9 +209,7 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
             const initial = [...priorEvents];
 
             return stream.pipe(
-              Stream.mapEffect((m) =>
-                Schema.decodeUnknown(EventsEvent)(m),
-              ),
+              Stream.mapEffect((m) => Schema.decodeUnknown(EventsEvent)(m)),
               Stream.scan(initial, (allEvents, event) => [
                 ...allEvents,
                 event.data,

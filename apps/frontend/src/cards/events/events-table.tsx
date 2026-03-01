@@ -1,12 +1,4 @@
 import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-  DataGridSearch,
-} from "@/components/ui/data-grid";
-import { cn } from "@/lib/utils";
-import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -19,6 +11,16 @@ import {
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { memo, useState } from "react";
 import { Fragment } from "react/jsx-runtime";
+
+import {
+  DataGridBody,
+  DataGridHead,
+  DataGridHeader,
+  DataGridRow,
+  DataGridSearch,
+} from "@/components/ui/data-grid";
+import { cn } from "@/lib/utils";
+
 import type { Event } from ".";
 
 const HeaderButton = memo(function HeaderButton({
@@ -59,7 +61,9 @@ const columns: ColumnDef<Event>[] = [
       <HeaderButton
         className="col-span-2"
         isSorted={column.getIsSorted()}
-        onToggleSort={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        onToggleSort={() =>
+          column.toggleSorting(column.getIsSorted() === "asc")
+        }
       >
         Severity
       </HeaderButton>
@@ -70,7 +74,9 @@ const columns: ColumnDef<Event>[] = [
     header: ({ column }) => (
       <HeaderButton
         isSorted={column.getIsSorted()}
-        onToggleSort={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        onToggleSort={() =>
+          column.toggleSorting(column.getIsSorted() === "asc")
+        }
       >
         Source
       </HeaderButton>
@@ -86,7 +92,9 @@ const columns: ColumnDef<Event>[] = [
       <HeaderButton
         className="justify-end"
         isSorted={column.getIsSorted()}
-        onToggleSort={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        onToggleSort={() =>
+          column.toggleSorting(column.getIsSorted() === "asc")
+        }
       >
         Generation Time
       </HeaderButton>
@@ -154,8 +162,12 @@ export function EventsTable({ events }: { events: Array<Event> }) {
             <DataGridSearch
               placeholder="Filter messages..."
               className="col-span-4"
-              value={(table.getColumn("message")?.getFilterValue() as string) ?? ""}
-              onChange={(value) => table.getColumn("message")?.setFilterValue(value)}
+              value={
+                (table.getColumn("message")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(value) =>
+                table.getColumn("message")?.setFilterValue(value)
+              }
             />
 
             {table.getHeaderGroups().map((headerGroup) => (
@@ -165,7 +177,10 @@ export function EventsTable({ events }: { events: Array<Event> }) {
                     <Fragment key={header.id}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </Fragment>
                   );
                 })}
@@ -177,11 +192,17 @@ export function EventsTable({ events }: { events: Array<Event> }) {
               table
                 .getRowModel()
                 .rows.map((row) => (
-                  <EventRow key={row.id} event={row.original} isSelected={row.getIsSelected()} />
+                  <EventRow
+                    key={row.id}
+                    event={row.original}
+                    isSelected={row.getIsSelected()}
+                  />
                 ))
             ) : (
               <DataGridRow>
-                <div className="col-span-full grid h-24 place-items-center">No results.</div>
+                <div className="col-span-full grid h-24 place-items-center">
+                  No results.
+                </div>
               </DataGridRow>
             )}
           </DataGridBody>

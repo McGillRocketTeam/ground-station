@@ -23,7 +23,10 @@
 .dv-scrollable:hover .dv-scrollbar-horizontal,
 .dv-scrollable.dv-scrollable-resizing .dv-scrollbar-horizontal,
 .dv-scrollable.dv-scrollable-scrolling .dv-scrollbar-horizontal {
-  background-color: var(--dv-scrollbar-background-color, rgba(255, 255, 255, 0.25));
+  background-color: var(
+    --dv-scrollbar-background-color,
+    rgba(255, 255, 255, 0.25)
+  );
 }
 
 .dv-svg {
@@ -65,9 +68,13 @@
   --dv-drag-over-background-color: "";
   --dv-group-view-background-color: var(--dv-color-abyss-dark);
   /* Top bar color */
-  --dv-tabs-and-actions-container-background-color: var(--color-neutral-background);
+  --dv-tabs-and-actions-container-background-color: var(
+    --color-neutral-background
+  );
   /* Active tab color */
-  --dv-activegroup-visiblepanel-tab-background-color: var(--dv-color-abyss-accent);
+  --dv-activegroup-visiblepanel-tab-background-color: var(
+    --dv-color-abyss-accent
+  );
   --dv-activegroup-hiddenpanel-tab-background-color: color-mix(
     in oklch,
     var(--dv-color-abyss-accent) 15%,
@@ -86,7 +93,9 @@
     var(--dv-color-abyss-primary-text) 50%,
     var(--color-black)
   );
-  --dv-inactivegroup-visiblepanel-tab-color: var(--dv-color-abyss-secondary-text);
+  --dv-inactivegroup-visiblepanel-tab-color: var(
+    --dv-color-abyss-secondary-text
+  );
   --dv-inactivegroup-hiddenpanel-tab-color: color-mix(
     in oklch,
     var(--dv-color-abyss-secondary-text-text) 50%,
@@ -139,8 +148,14 @@
   border-radius: var(--dv-border-radius);
 }
 
-.dockview-theme-abyss-spaced .dv-groupview.dv-active-group > .dv-tabs-and-actions-container {
-  background: color-mix(in oklch, var(--dv-color-abyss-accent) 10%, transparent);
+.dockview-theme-abyss-spaced
+  .dv-groupview.dv-active-group
+  > .dv-tabs-and-actions-container {
+  background: color-mix(
+    in oklch,
+    var(--dv-color-abyss-accent) 10%,
+    transparent
+  );
   border-bottom: 1px solid var(--dv-color-abyss-accent);
 }
 
@@ -629,23 +644,33 @@
   width: 4px;
 }
 
-.dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash.dv-enabled {
+.dv-split-view-container.dv-horizontal
+  > .dv-sash-container
+  > .dv-sash.dv-enabled {
   cursor: ew-resize;
 }
 
-.dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash.dv-disabled {
+.dv-split-view-container.dv-horizontal
+  > .dv-sash-container
+  > .dv-sash.dv-disabled {
   cursor: default;
 }
 
-.dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash.dv-maximum {
+.dv-split-view-container.dv-horizontal
+  > .dv-sash-container
+  > .dv-sash.dv-maximum {
   cursor: w-resize;
 }
 
-.dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash.dv-minimum {
+.dv-split-view-container.dv-horizontal
+  > .dv-sash-container
+  > .dv-sash.dv-minimum {
   cursor: e-resize;
 }
 
-.dv-split-view-container.dv-horizontal > .dv-view-container > .dv-view:not(:first-child)::before {
+.dv-split-view-container.dv-horizontal
+  > .dv-view-container
+  > .dv-view:not(:first-child)::before {
   height: 100%;
   width: 1px;
 }
@@ -659,19 +684,27 @@
   height: 4px;
 }
 
-.dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash.dv-enabled {
+.dv-split-view-container.dv-vertical
+  > .dv-sash-container
+  > .dv-sash.dv-enabled {
   cursor: ns-resize;
 }
 
-.dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash.dv-disabled {
+.dv-split-view-container.dv-vertical
+  > .dv-sash-container
+  > .dv-sash.dv-disabled {
   cursor: default;
 }
 
-.dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash.dv-maximum {
+.dv-split-view-container.dv-vertical
+  > .dv-sash-container
+  > .dv-sash.dv-maximum {
   cursor: n-resize;
 }
 
-.dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash.dv-minimum {
+.dv-split-view-container.dv-vertical
+  > .dv-sash-container
+  > .dv-sash.dv-minimum {
   cursor: s-resize;
 }
 
@@ -679,7 +712,9 @@
   width: 100%;
 }
 
-.dv-split-view-container.dv-vertical > .dv-view-container > .dv-view:not(:first-child)::before {
+.dv-split-view-container.dv-vertical
+  > .dv-view-container
+  > .dv-view:not(:first-child)::before {
   height: 1px;
   width: 100%;
 }
@@ -724,7 +759,8 @@
   position: absolute;
 }
 
-.dv-split-view-container.dv-separator-border .dv-view:not(:first-child)::before {
+.dv-split-view-container.dv-separator-border
+  .dv-view:not(:first-child)::before {
   content: " ";
   position: absolute;
   top: 0;
@@ -906,20 +942,25 @@
   font-size: var(--dv-tabs-and-actions-container-font-size);
 }
 
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-scrollable {
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab
+  .dv-scrollable {
   flex-grow: 1;
 }
 
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab
+  .dv-tabs-container {
   flex-grow: 1;
 }
 
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab
+  .dv-tabs-container
+  .dv-tab {
   flex-grow: 1;
   padding: 0px;
 }
 
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-void-container {
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab
+  .dv-void-container {
   flex-grow: 0;
 }
 

@@ -4,7 +4,7 @@
   "type": "module",
   "module": "src/index.ts",
   "scripts": {
-    "dev": "BROKER_URL=mqtt://localhost:1883 tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",

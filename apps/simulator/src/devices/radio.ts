@@ -14,6 +14,8 @@ export const RadioSimulator = (baseTopic: string) =>
       .publish({ topic: baseTopic + "/status", message: "OK" })
       .pipe(Effect.repeat(Schedule.spaced("5 seconds")), Effect.forkChild);
 
+    yield* Effect.log("Status: OK");
+
     const buildPacket = yield* makePacketBuilder(container);
 
     const publishTelemetry = Effect.gen(function* () {

@@ -2,7 +2,7 @@ import { Config, Effect, Layer, Schema, ServiceMap } from "effect";
 import mqtt from "mqtt";
 
 interface PublishParameters {
-  message: string;
+  message: string | Buffer;
   topic: string;
   opts?: mqtt.IClientPublishOptions;
 }

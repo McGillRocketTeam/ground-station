@@ -13,9 +13,13 @@
     "noUnusedLocals": true,
     "noImplicitOverride": true,
 
+    "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    "rootDir": "src",
+    "outDir": "dist"
   },
   "include": ["src"]
 }

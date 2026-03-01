@@ -2,7 +2,12 @@ realtime:
   services:
     - class: org.yamcs.StreamTmPacketProvider
       args:
-        streams: ["tm_433_realtime", "system_a_fc_realtime"]
+        streams: [
+          "system_a_radio_realtime",
+          "system_a_fc_realtime", 
+          "system_b_radio_realtime", 
+          "system_b_fc_realtime"
+        ]
     - class: org.yamcs.StreamTcCommandReleaser
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager

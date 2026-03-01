@@ -22,12 +22,6 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: simulator
-    class: org.yamcs.tctm.UdpParameterDataLink
-    stream: pp_realtime
-    port: 11016
-    json: true
-
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -94,18 +88,19 @@ mdb:
 # Configuration for streams created at server startup
 streamConfig:
   tm:
-    - name: "tm_433_realtime"
-      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
-      processor: "realtime"
     - name: "system_a_fc_realtime"
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
+    - name: "system_b_fc_realtime"
+      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+      processor: "realtime"
+
     - name: "system_a_radio_realtime"
       rootContainer: "/SystemA/ControlStation/Radio/TelemetryPacket"
       processor: "realtime"
-    # - name: "tm_daq_realtime"
-    #   rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
-    #   processor: "realtime"
+    - name: "system_b_radio_realtime"
+      rootContainer: "/SystemB/ControlStation/Radio/TelemetryPacket"
+      processor: "realtime"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]

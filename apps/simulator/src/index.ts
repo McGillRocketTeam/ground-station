@@ -12,6 +12,7 @@ const logger = Logger.consolePretty({
 });
 
 const simulator = Effect.gen(function* () {
+  yield* Effect.addFinalizer(() => Effect.log("EXIT"));
   yield* Effect.all(
     [
       RadioSimulator("SystemA/ControlStation/Radio"),
@@ -28,6 +29,17 @@ const simulator = Effect.gen(function* () {
   Effect.provide(MqttConnection.layer),
   Effect.provide(Logger.layer([logger])),
   Effect.catch((e) => Effect.logError(e)),
+  Effect.scoped,
 );
 
-NodeRuntime.runMain(simulator);
+NodeRuntime.runMain(simulator, {
+  teardown: function customTeardown(exit, onExit) {
+    if (exit._tag === "Failure") {
+      console.error("Program ended with an error.");
+      onExit(1);
+    } else {
+      console.log("Program finished successfully.");
+      onExit(0);
+    }
+  },
+});

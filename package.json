@@ -6,6 +6,8 @@
   "scripts": {
     "turbo": "turbo",
     "build": "turbo build",
+    "fmt": "turbo fmt",
+    "fmt:check": "turbo fmt:check",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {

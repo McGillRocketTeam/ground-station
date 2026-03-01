@@ -1,22 +1,25 @@
 {
   "name": "@mrt/simulator",
-  "module": "src/index.ts",
-  "type": "module",
   "private": true,
+  "type": "module",
+  "module": "src/index.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
-  },
-  "devDependencies": {
-    "@types/node": "latest",
-    "tsx": "^4.21.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+    "dev": "BROKER_URL=mqtt://localhost:1883 tsx watch src/index.ts",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
     "@effect/platform-node": "4.0.0-beta.14",
     "@mrt/yamcs-effect": "workspace:*",
     "effect": "4.0.0-beta.14",
     "mqtt": "^5.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "oxfmt": "^0.35.0",
+    "tsx": "^4.21.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }

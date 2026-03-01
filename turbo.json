@@ -8,6 +8,12 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "fmt": {
+      "dependsOn": ["^fmt"]
+    },
+    "fmt:check": {
+      "dependsOn": ["^fmt:check"]
+    },
     "dev": {
       "persistent": true,
       "cache": false

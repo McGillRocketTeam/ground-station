@@ -1,7 +1,7 @@
 import { Effect } from "effect";
-import { MqttConnection } from "../utils/MqttConnection.js";
+import { MqttConnection } from "../utils/MqttConnection.ts";
 
-export const RadioSimulator = (baseTopic: string) =>
+export const FlightComputerSimulator = (baseTopic: string) =>
   Effect.gen(function* () {
     const mqtt = yield* MqttConnection;
 

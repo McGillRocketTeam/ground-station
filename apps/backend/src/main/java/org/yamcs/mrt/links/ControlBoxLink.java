@@ -4,12 +4,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.YConfiguration;
 import org.yamcs.labjack.LabJackDataLink;
+import org.yamcs.labjack.LabJackUtil;
 import org.yamcs.logging.Log;
 import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
@@ -31,7 +33,20 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   // Previous switch states for change detection (null = no previous packet received yet)
   private byte[] previousSwitchStates = null;
 
+  // Debounce: track last command time per switch index to suppress bounce-induced duplicate commands
+  private final Map<Integer, Long> lastCommandTime = new HashMap<>();
+  private static final long DEBOUNCE_MS = 75;
+
   private static final int YAMCS_HTTP_PORT = 8090;
+  private static final int FILL_FIO = 1;
+  private static final int DUMP_FIO = 3;
+  private static final int PURG_FIO = 5;
+  private static final int MOV__FIO = 6;
+  private static final int BLKT_FIO = 4;
+  private static final int VENT_FIO = 7;
+  private static final int RUN__FIO = 0;
+
+
   private static final String YAMCS_INSTANCE = "ground_station";
   private static final String YAMCS_PROCESSOR = "realtime";
 
@@ -42,11 +57,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    * to the corresponding LabJack digital pin number.
    *
    * <p>Packet layout (from controlbox.xml): byte 0: panel_1_switch_estop byte 1:
-   * panel_2_switch_launch byte 2: panel_2_switch_2 byte 3: panel_3_switch_1 byte 4:
-   * panel_3_switch_2 byte 5: panel_4_switch_1 byte 6: panel_4_switch_2 byte 7: panel_5_switch_1
-   * byte 8: panel_5_switch_2 byte 9: panel_6_switch_1 byte 10: panel_6_switch_2 byte 11:
-   * panel_7_IGN+ byte 12: panel_7_IGN- byte 13: panel_8_switch_1 byte 14: panel_9_switch_key
-   * byte 15: panel_8_switch_2
+   * panel_2_switch_launch byte 2: panel_3_switch_1 byte 3: panel_3_switch_2 byte 4:
+   * panel_4_switch_1 byte 5: panel_4_switch_2 byte 6: panel_5_switch_1 byte 7: panel_5_switch_2
+   * byte 8: panel_6_switch_1 byte 9: panel_6_switch_2 byte 10: panel_7_switch_1 byte 11:
+   * panel_7_switch_2 byte 12: panel_8_switch_1 byte 13: panel_9_switch_key byte 14:
+   * panel_8_switch_2 (BLKT)
    *
    * <p>Pin number -1 means the switch is not mapped to a LabJack pin.
    *
@@ -57,22 +72,21 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   // @formatter:off
   private static final Map<Integer, SwitchMapping> SWITCH_PIN_MAP =
       Map.ofEntries(
-          Map.entry(0, new SwitchMapping("panel_1_switch_estop", -1)), // E-stop: not mapped
-          Map.entry(1, new SwitchMapping("panel_2_switch_launch", -1)), // Launch: not mapped
-          Map.entry(2, new SwitchMapping("panel_2_switch_2", -1)), // not mapped
-          Map.entry(3, new SwitchMapping("panel_3_switch_1", 0)), // FIO0
-          Map.entry(4, new SwitchMapping("panel_3_switch_2", 1)), // FIO1
-          Map.entry(5, new SwitchMapping("panel_4_switch_1", 2)), // FIO2
-          Map.entry(6, new SwitchMapping("panel_4_switch_2", 3)), // FIO3
-          Map.entry(7, new SwitchMapping("panel_5_switch_1", 4)), // FIO4
-          Map.entry(8, new SwitchMapping("panel_5_switch_2", 5)), // FIO5
-          Map.entry(9, new SwitchMapping("panel_6_switch_1", 6)), // FIO6
-          Map.entry(10, new SwitchMapping("panel_6_switch_2", 7)), // FIO7
-          Map.entry(11, new SwitchMapping("panel_7_IGN+", 0, true)), // DAC0
-          Map.entry(12, new SwitchMapping("panel_7_IGN-", 1, true)), // DAC1
-          Map.entry(13, new SwitchMapping("panel_8_switch_1", 10)), // EIO2
-          Map.entry(14, new SwitchMapping("panel_9_switch_key", -1)), // Key: not mapped
-          Map.entry(15, new SwitchMapping("panel_8_switch_2", 11)) // EIO3
+          Map.entry(0,  new SwitchMapping("panel_1_switch_estop",   -1)),            // E-stop: not mapped
+          Map.entry(1,  new SwitchMapping("panel_2_switch_launch",  RUN__FIO)),      // Launch
+          Map.entry(2,  new SwitchMapping("panel_3_switch_1",       MOV__FIO)),      // FIO6
+          Map.entry(3,  new SwitchMapping("panel_3_switch_2",       DUMP_FIO)),      // FIO3
+          Map.entry(4,  new SwitchMapping("panel_4_switch_1",       VENT_FIO)),      // FIO7
+          Map.entry(5,  new SwitchMapping("panel_4_switch_2",       FILL_FIO)),      // FIO1
+          Map.entry(6,  new SwitchMapping("panel_5_switch_1",       PURG_FIO)),      // FIO5
+          Map.entry(7,  new SwitchMapping("panel_5_switch_2",       -1)),             // FIO5
+          Map.entry(8,  new SwitchMapping("panel_6_switch_1",       -1)),             // FIO6
+          Map.entry(9,  new SwitchMapping("panel_6_switch_2",       -1)),             // FIO7
+          Map.entry(10, new SwitchMapping("panel_7_switch_1",       -1)),             // DAC0
+          Map.entry(11, new SwitchMapping("panel_7_switch_2",       1,    true)),    // DAC1
+          Map.entry(12, new SwitchMapping("panel_8_switch_1",       0,    true)),    // DAC0
+          Map.entry(14, new SwitchMapping("panel_9_switch_key",     -1)),            // Key: not mapped
+          Map.entry(15, new SwitchMapping("panel_8_switch_2",       BLKT_FIO))      // FIO4
           );
 
   // @formatter:on
@@ -84,7 +98,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   }
 
   /** Byte offset of the arming key switch in the telemetry packet. */
-  private static final int ARMING_KEY_OFFSET = 14;
+  private static final int ARMING_KEY_OFFSET = 13;
 
   /**
    * Switches that require the arming key to be ON before their commands are dispatched. Identified
@@ -93,8 +107,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    */
   private static final Set<Integer> ARMING_KEY_GUARDED_SWITCHES =
       Set.of(
-          13, // panel_8_switch_1
-          15 // panel_8_switch_2
+          12, // panel_8_switch_1
+          14  // panel_8_switch_2 (BLKT)
           );
 
   /** Byte offset of the emergency stop switch in the telemetry packet. */
@@ -221,7 +235,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
           String name = mapping != null ? mapping.name() : ("switch_" + i);
           log.warn("Blocked switch change for " + name + " because E-STOP is active");
         }
-      }
+      } 
       // Keep baseline in sync so changes made while E-stop was active are ignored
       previousSwitchStates = currentPayload.clone();
       return;
@@ -243,6 +257,14 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
           continue;
         }
 
+        long now = System.currentTimeMillis();
+        Long last = lastCommandTime.get(i);
+        if (last != null && (now - last) < DEBOUNCE_MS) {
+          log.debug("Debounced rapid change for " + mapping.name());
+          continue;
+        }
+        lastCommandTime.put(i, now);
+
         if (mapping.labJackPin() >= 0) {
           if (mapping.isDac()) {
             issueWriteDACPinCommand(mapping.labJackPin(), newState, mapping.name());
@@ -257,11 +279,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   }
 
   /**
-   * Handles emergency stop activation by immediately setting all mapped LabJack pins to LOW. Uses
+   * Handles emergency stop activation by immediately setting all LabJack digital pins to LOW. Uses
    * direct LabJackDataLink calls (bypassing the HTTP API) for minimal latency.
    */
   private void handleEmergencyStop() {
-    log.warn("EMERGENCY STOP ACTIVATED - setting all mapped pins to LOW");
+    log.warn("EMERGENCY STOP ACTIVATED - setting all digital pins to LOW");
 
     LabJackDataLink labJack = LabJackDataLink.getInstance();
     if (labJack == null) {
@@ -269,13 +291,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
       return;
     }
 
-    for (var entry : SWITCH_PIN_MAP.values()) {
-      if (entry.labJackPin() >= 0) {
-        labJack.writeDigitalPin(entry.labJackPin(), 0);
-      }
+    for (int pin = 0; pin < LabJackUtil.NUM_DIGITAL_PINS; pin++) {
+      labJack.writeDigitalPin(pin, 0);
     }
 
-    log.warn("EMERGENCY STOP: all mapped pins set to LOW");
+    log.warn("EMERGENCY STOP: all digital pins set to LOW");
   }
 
   /**

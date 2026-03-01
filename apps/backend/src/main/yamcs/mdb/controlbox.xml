@@ -109,13 +109,13 @@
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="panel_8_switch_2">
+					<ParameterRefEntry parameterRef="panel_9_switch_key">
 						<LocationInContainerInBits referenceLocation="previousEntry">
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 
-					<ParameterRefEntry parameterRef="panel_9_switch_key">
+					<ParameterRefEntry parameterRef="panel_8_switch_2">
 						<LocationInContainerInBits referenceLocation="previousEntry">
 							<FixedValue>0</FixedValue>
 						</LocationInContainerInBits>

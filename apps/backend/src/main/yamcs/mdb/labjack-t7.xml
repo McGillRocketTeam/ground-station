@@ -201,7 +201,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN88"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>475</ValueOperand>
+                    <ValueOperand>490</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN88"/>
@@ -213,7 +213,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN90"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>460</ValueOperand>
+                    <ValueOperand>468</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN90"/>
@@ -225,7 +225,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN121"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>500  </ValueOperand>
+                    <ValueOperand>497  </ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN121"/>
@@ -237,7 +237,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN122"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>513</ValueOperand>
+                    <ValueOperand>504</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN122"/>
@@ -258,13 +258,13 @@
             </MathAlgorithm>
             <MathAlgorithm name="calibrated_tank_mass">
                 <MathOperation outputParameterRef="calibrated_tank_mass">
-                    <ParameterInstanceRefOperand parameterRef="AIN82"/>
-                    <ValueOperand>28.22</ValueOperand>
+                    <ParameterInstanceRefOperand parameterRef="AIN80"/>
+                    <ValueOperand>143.87</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>0</ValueOperand>
+                    <ValueOperand>94.11</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN82"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN80"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>

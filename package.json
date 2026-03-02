@@ -15,6 +15,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@effect/language-service": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "turbo": "2.7.6"

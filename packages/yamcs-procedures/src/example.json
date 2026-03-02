@@ -1,0 +1,61 @@
+{
+  "$schema": "https://yamcs.org/schema/stack.schema.json",
+  "steps": [
+    {
+      "type": "text",
+      "text": "# Kitchen Sink Procedures\n\nVelit est ad Lorem culpa eiusmod. Nisi reprehenderit sunt aliqua aliquip. Reprehenderit ad mollit ea cupidatat excepteur nisi cillum eu duis culpa anim. Ipsum eu aute consectetur eu. Tempor aliquip mollit incididunt id amet ea consequat deserunt irure ipsum mollit ipsum nulla sint amet. Labore anim aute deserunt consequat elit sint adipisicing eu id consequat. Sunt laborum elit enim enim veniam irure adipisicing consequat veniam qui qui quis fugiat excepteur."
+    },
+    {
+      "type": "check",
+      "comment": "Comment goes here.",
+      "parameters": [
+        {
+          "parameter": "/SystemA/ControlStation/Radio/RSSI"
+        },
+        {
+          "parameter": "/SystemB/ControlStation/Radio/RSSI"
+        },
+        {
+          "parameter": "/SystemA/ControlStation/Radio/SNR"
+        },
+        {
+          "parameter": "/SystemB/ControlStation/Radio/RSSI"
+        }
+      ]
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemA/ControlStation/Radio/RSSI",
+          "operator": "eq",
+          "value": "100"
+        },
+        {
+          "parameter": "/SystemB/ControlStation/Radio/SNR",
+          "operator": "neq",
+          "value": "100"
+        }
+      ],
+      "delay": 2,
+      "timeout": 4,
+      "comment": "timeouts are in ms"
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/emergency_cancel",
+      "comment": "asdf",
+      "stream": "tc_realtime",
+      "extraOptions": [],
+      "arguments": [],
+      "advancement": {
+        "acknowledgment": "Acknowledge_Sent",
+        "wait": 234234
+      }
+    }
+  ],
+  "advancement": {
+    "acknowledgment": "Acknowledge_Queued",
+    "wait": 0
+  }
+}

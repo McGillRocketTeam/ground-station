@@ -1,3 +1,7 @@
+import { Atom, Result, useAtom, useAtomValue } from "@effect-atom/atom-react";
+import { commandsSubscriptionAtom } from "@mrt/yamcs-atom";
+import { Check, Search, X } from "lucide-react";
+
 import {
   DataGridBody,
   DataGridHead,
@@ -11,9 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn, formatDate, stringifyValue } from "@/lib/utils";
-import { Atom, Result, useAtom, useAtomValue } from "@effect-atom/atom-react";
-import { commandsSubscriptionAtom } from "@mrt/yamcs-atom";
-import { Check, Search, X } from "lucide-react";
+
 import { BrailleSpinner } from "./braile-spinner";
 import { CommandDetail } from "./command-detail";
 import {

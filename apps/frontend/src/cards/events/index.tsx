@@ -1,8 +1,11 @@
-import { makeCard } from "@/lib/cards";
+import type { EventsEvent } from "@mrt/yamcs-effect";
+
 import { Result, useAtomValue } from "@effect-atom/atom-react";
 import { eventsSubscriptionAtom } from "@mrt/yamcs-atom";
-import type { EventsEvent } from "@mrt/yamcs-effect";
 import { Cause, Schema } from "effect";
+
+import { makeCard } from "@/lib/cards";
+
 import { EventsTable } from "./events-table";
 
 export type Event = (typeof EventsEvent.Type)["data"];

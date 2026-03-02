@@ -8,15 +8,21 @@
   "scripts": {
     "build": "tsc -b",
     "check-types": "tsc --noEmit",
-    "dev": "tsc -b --watch"
+    "dev": "tsc -b --watch",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
   "devDependencies": {
     "@types/node": "latest",
     "tsx": "^4.21.0"
   },
   "peerDependencies": {
-    "effect": "^3.19",
     "@effect/platform": "^0.94",
+    "effect": "^3.19",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "typescript": "^5"
   }
 }

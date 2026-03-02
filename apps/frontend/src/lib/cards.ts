@@ -1,3 +1,8 @@
+import type { IDockviewPanelProps } from "dockview-react";
+import type { ReactNode } from "react";
+
+import { Schema } from "effect";
+
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
@@ -5,9 +10,6 @@ import { LinksCard } from "@/cards/links";
 import { ParameterChartCard } from "@/cards/parameter-chart";
 import { ParameterTable } from "@/cards/parameter-table";
 import { TextCard } from "@/cards/text-card";
-import type { IDockviewPanelProps } from "dockview-react";
-import { Schema } from "effect";
-import type { ReactNode } from "react";
 
 export interface CardDefinition<
   Id extends string,

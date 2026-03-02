@@ -1,3 +1,7 @@
+import { Popover as PopoverPrimitive } from "@base-ui/react";
+import { Ellipsis } from "lucide-react";
+import { Fragment } from "react/jsx-runtime";
+
 import {
   DataGridBody,
   DataGridHead,
@@ -10,9 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Popover as PopoverPrimitive } from "@base-ui/react";
-import { Ellipsis } from "lucide-react";
-import { Fragment } from "react/jsx-runtime";
+
 import { LinkDetail } from "./link-detail";
 import {
   buildLinkTree,

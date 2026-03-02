@@ -1,5 +1,6 @@
-import { cn } from "@/lib/utils";
 import { PlusIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 export function DashboardPlus() {
   return (

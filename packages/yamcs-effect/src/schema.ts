@@ -460,3 +460,102 @@ export const CommandInfo = Schema.Struct({
   shortDescription: Schema.optional(Schema.String),
   longDescription: Schema.optional(Schema.String),
 });
+
+export const OperatorType = Schema.Literal(
+  "EQUAL_TO",
+  "NOT_EQUAL_TO",
+  "GREATER_THAN",
+  "GREATER_THAN_OR_EQUAL_TO",
+  "SMALLER_THAN",
+  "SMALLER_THAN_OR_EQUAL_TO",
+);
+
+export const ReferenceLocationType = Schema.Literal(
+  "CONTAINER_START",
+  "PREVIOUS_ENTRY",
+);
+
+export const ArgumentTypeInfo = Schema.Struct({
+  name: Schema.String,
+  engType: Schema.String,
+});
+
+export const ArgumentInfo = Schema.Struct({
+  name: Schema.String,
+  description: Schema.String,
+  initialValue: Schema.String,
+  type: ArgumentTypeInfo,
+});
+
+export const FixedValueInfo = Schema.Struct({
+  name: Schema.String,
+  hexValue: Schema.String,
+  sizeInBits: Schema.Number,
+});
+
+export const RepeatInfo = Schema.Struct({
+  fixedCount: Schema.NumberFromString, // String decimal
+  dynamicCount: Schema.suspend(() => ParameterInfo),
+  bitsBetween: Schema.Number,
+});
+
+export const IndirectParameterRefInfo = Schema.Struct({
+  parameter: Schema.suspend(() => ParameterInfo),
+  aliasNamespace: Schema.String,
+});
+
+export interface ContainerInfo extends Schema.Struct.Type<
+  typeof containerInfoFields
+> {
+  readonly baseContainer?: ContainerInfo | undefined;
+}
+
+export const ComparisonInfo = Schema.Struct({
+  parameter: Schema.suspend(() => ParameterInfo),
+  operator: OperatorType,
+  value: Schema.String,
+  argument: ArgumentInfo,
+});
+
+const containerInfoFields = {
+  name,
+  qualifiedName,
+  shortDescription,
+  longDescription,
+  alias,
+  maxInterval: Schema.String,
+  sizeInBits: Schema.Number,
+  restrictionCriteria: Schema.Array(ComparisonInfo),
+  restrictionCriteriaExpression: Schema.String,
+  entry: Schema.Array(Schema.suspend(() => SequenceEntryInfo)),
+  usedBy: Schema.Any,
+  ancillaryData: Schema.Record({ key: Schema.String, value: Schema.String }),
+  archivePartition: Schema.Boolean,
+};
+
+export interface ContainerInfo extends Schema.Struct.Type<
+  typeof containerInfoFields
+> {
+  readonly baseContainer?: ContainerInfo | undefined;
+}
+
+export const ContainerInfo: Schema.Schema<ContainerInfo, any, any> =
+  Schema.Struct({
+    ...containerInfoFields,
+    baseContainer: Schema.optional(
+      Schema.suspend(
+        (): Schema.Schema<ContainerInfo, any, any> => ContainerInfo,
+      ),
+    ),
+  });
+
+export const SequenceEntryInfo = Schema.Struct({
+  locationInBits: Schema.Number,
+  referenceLocation: ReferenceLocationType,
+  container: Schema.optional(ContainerInfo),
+  parameter: Schema.suspend(() => ParameterInfo),
+  argument: ArgumentInfo,
+  fixedValue: FixedValueInfo,
+  repeat: RepeatInfo,
+  indirectParameterRef: IndirectParameterRefInfo,
+});

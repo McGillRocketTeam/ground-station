@@ -2,16 +2,23 @@
   "name": "frontend-monorepo",
   "version": "1.0.0",
   "description": "",
-  "packageManager": "pnpm@10.26.1",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
   "scripts": {
     "turbo": "turbo",
     "build": "turbo build",
+    "fmt": "turbo fmt",
+    "fmt:check": "turbo fmt:check",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "turbo": "2.7.6"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "packageManager": "pnpm@10.26.1"
 }

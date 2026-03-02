@@ -1,0 +1,112 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      producers: ["jvm", "fs", "diskstats", "rocksdb"]
+  - class: org.yamcs.ProcessorCreatorService
+    args:
+      name: realtime
+      type: realtime
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      realtimeFiller:
+        enabled: true
+      backFiller:
+        enabled: false
+        warmupTime: 60
+  - class: org.yamcs.timeline.TimelineService
+
+dataLinks:
+  - name: SystemA/Rocket/FlightComputer
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: system_a_fc_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+  - name: SystemA/ControlStation/Radio
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: system_a_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
+  - name: SystemB/Rocket/FlightComputer
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: system_b_fc_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+  - name: SystemB/ControlStation/Radio
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: system_b_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
+mdb:
+  - type: xtce
+    args:
+      file: mdb/commands.xml
+  - type: emptyNode
+    spec: "SystemA"
+    subLoaders:
+      - type: emptyNode
+        spec: "Rocket"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/rocket.xml
+
+      - type: emptyNode
+        spec: "ControlStation"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/radio.xml
+
+  - type: emptyNode
+    spec: "SystemB"
+    subLoaders:
+      - type: emptyNode
+        spec: "Rocket"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/rocket.xml
+      - type: emptyNode
+        spec: "ControlStation"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/radio.xml
+
+# Configuration for streams created at server startup
+streamConfig:
+  tm:
+    - name: "system_a_fc_realtime"
+      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+      processor: "realtime"
+    - name: "system_b_fc_realtime"
+      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+      processor: "realtime"
+
+    - name: "system_a_radio_realtime"
+      rootContainer: "/SystemA/ControlStation/Radio/TelemetryPacket"
+      processor: "realtime"
+    - name: "system_b_radio_realtime"
+      rootContainer: "/SystemB/ControlStation/Radio/TelemetryPacket"
+      processor: "realtime"
+
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  tc:
+    - name: "tc_realtime"
+      processor: "realtime"
+      tcPatterns: ["/FlightComputer/.*"]

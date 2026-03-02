@@ -1,4 +1,4 @@
-import type { StreamingCommandHisotryEntry } from "@mrt/yamcs-effect";
+import type { StreamingCommandHisotryEntry } from "./schema.js";
 
 export function mergeCommandEntries(
   current: typeof StreamingCommandHisotryEntry.Type,
@@ -26,7 +26,7 @@ export function mergeCommandEntries(
       ? mergeAssignments(current.assignments, incoming.assignments)
       : undefined;
 
-  // Merge the rest of the fields — prefer fresh metadata from `incoming`
+  // Merge the rest of the fields -- prefer fresh metadata from `incoming`
   return {
     ...current,
     ...incoming,

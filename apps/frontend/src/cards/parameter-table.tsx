@@ -1,8 +1,9 @@
-import { makeCard } from "@/lib/cards";
 import { Result, useAtomValue } from "@effect-atom/atom-react";
 import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
 import { Cause, Schema } from "effect";
 import { useState, type ReactNode } from "react";
+
+import { makeCard } from "@/lib/cards";
 
 const CardEntries = {
   "FLIGHT ATOMIC": [

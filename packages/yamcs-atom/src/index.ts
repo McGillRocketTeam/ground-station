@@ -1,17 +1,11 @@
 import { Atom, AtomHttpApi, Result } from "@effect-atom/atom-react";
-import { Effect, Schema, Chunk, Stream, Schedule, Config } from "effect";
+import { Effect, Layer, Stream, Schedule, Config } from "effect";
 import {
-  EventsEvent,
-  SubscribeCommandsRequest,
-  SubscribeEventsRequest,
-  SubscribeLinksRequest,
-  SubscribeParameterRequest,
-  SubscribeTimeRequest,
   SubscriptionRequest,
   WebSocketClient,
+  YamcsSubscriptions,
 } from "@mrt/yamcs-effect";
 import type {
-  StreamingCommandHisotryEntry,
   QualifiedName,
   ParameterValue,
 } from "@mrt/yamcs-effect";
@@ -19,9 +13,8 @@ import {
   TimeEvent,
   LinkEvent,
   CommandHistoryEvent,
-  ParameterEvent,
+  EventsEvent,
 } from "@mrt/yamcs-effect";
-import { mergeCommandEntries } from "./utils.js";
 import {
   FetchHttpClient,
   HttpClient,
@@ -61,7 +54,9 @@ export class YamcsAtomClient extends AtomHttpApi.Tag<YamcsAtomClient>()(
   },
 ) {}
 
-export const yamcsRuntime = Atom.runtime(WebSocketClient.Default);
+export const yamcsRuntime = Atom.runtime(
+  YamcsSubscriptions.Default.pipe(Layer.provide(WebSocketClient.Default)),
+);
 
 export const timeSubscriptionAtom: Atom.Atom<
   Result.Result<
@@ -71,25 +66,7 @@ export const timeSubscriptionAtom: Atom.Atom<
     UnknownException | ParseError | ConfigError
   >
 > = yamcsRuntime.atom(
-  Stream.unwrap(
-    Effect.gen(function* () {
-      const instance = yield* Config.string("YAMCS_INSTANCE");
-      const ws = yield* WebSocketClient;
-
-      const { call, stream } = yield* ws.subscribe(
-        SubscribeTimeRequest.make({
-          instance,
-          processor: "realtime",
-        }),
-      );
-
-      return stream.pipe(
-        Stream.mapEffect((m) => Schema.decodeUnknown(TimeEvent)(m)),
-        Stream.map((m) => m.data),
-        Stream.ensuring(ws.unsubscribe(call)),
-      );
-    }),
-  ),
+  Effect.map(YamcsSubscriptions, (subs) => subs.time).pipe(Stream.unwrap),
 );
 
 export const linksSubscriptionAtom: Atom.Atom<
@@ -98,22 +75,7 @@ export const linksSubscriptionAtom: Atom.Atom<
     UnknownException | ParseError | ConfigError
   >
 > = yamcsRuntime.atom(
-  Stream.unwrap(
-    Effect.gen(function* () {
-      const instance = yield* Config.string("YAMCS_INSTANCE");
-      const ws = yield* WebSocketClient;
-
-      const { call, stream } = yield* ws.subscribe(
-        SubscribeLinksRequest.make({ instance }),
-      );
-
-      return stream.pipe(
-        Stream.mapEffect((m) => Schema.decodeUnknown(LinkEvent)(m)),
-        Stream.map((m) => m.data.links),
-        Stream.ensuring(ws.unsubscribe(call)),
-      );
-    }),
-  ),
+  Effect.map(YamcsSubscriptions, (subs) => subs.links).pipe(Stream.unwrap),
 );
 
 export const commandsSubscriptionAtom: Atom.Atom<
@@ -129,59 +91,16 @@ export const commandsSubscriptionAtom: Atom.Atom<
 > = yamcsRuntime.atom((get) =>
   Stream.unwrap(
     Effect.gen(function* () {
+      const subs = yield* YamcsSubscriptions;
       const instance = yield* Config.string("YAMCS_INSTANCE");
-      const ws = yield* WebSocketClient;
 
-      const subscription = ws.subscribe(
-        SubscribeCommandsRequest.make({
-          instance,
-          processor: "realtime",
-        }),
-      );
-
-      const queryPriorCommands = get.result(
+      const { commands: priorCommands } = yield* get.result(
         YamcsAtomClient.query("command", "listCommands", {
           path: { instance },
         }),
       );
 
-      const [{ call, stream }, { commands: priorCommands }] = yield* Effect.all(
-        [subscription, queryPriorCommands],
-        {
-          concurrency: "unbounded",
-        },
-      );
-
-      const initial: Map<string, typeof StreamingCommandHisotryEntry.Type> =
-        new Map(priorCommands.map((c) => [c.id, c]));
-
-      const dataStream = stream.pipe(
-        Stream.mapEffect((m) => Schema.decodeUnknown(CommandHistoryEvent)(m)),
-        Stream.map((m) => m.data),
-        Stream.ensuring(ws.unsubscribe(call)),
-      );
-
-      return dataStream.pipe(
-        Stream.scanEffect(initial, (state, commandEntry) =>
-          Effect.sync(() => {
-            const id = commandEntry.id;
-            const current = state.get(id);
-
-            if (current) {
-              state.set(id, mergeCommandEntries(current, commandEntry));
-            } else {
-              state.set(id, commandEntry);
-            }
-
-            return state;
-          }),
-        ),
-        Stream.map((m) =>
-          Array.from(m.values()).sort(
-            (a, b) => b.generationTime.getTime() - a.generationTime.getTime(),
-          ),
-        ),
-      );
+      return subs.commands(priorCommands);
     }),
   ),
 );
@@ -195,46 +114,8 @@ export const parameterSubscriptionAtom: (
   >
 > = Atom.family((qualifiedName: QualifiedName) =>
   yamcsRuntime.atom(
-    Stream.unwrap(
-      Effect.gen(function* () {
-        const instance = yield* Config.string("YAMCS_INSTANCE");
-        const ws = yield* WebSocketClient;
-
-        const { call, stream } = yield* ws.subscribe(
-          SubscribeParameterRequest.make({
-            instance,
-            processor: "realtime",
-            id: [{ name: qualifiedName }],
-          }),
-        );
-
-        const eventStream = stream.pipe(
-          Stream.mapEffect((m) => Schema.decodeUnknown(ParameterEvent)(m.data)),
-        );
-
-        // Store the mapping
-        const mapping = Chunk.toReadonlyArray(
-          yield* eventStream.pipe(
-            Stream.filter((e) => "mapping" in e),
-            Stream.take(1),
-            Stream.runCollect,
-          ),
-        )[0]!.mapping;
-
-        return eventStream.pipe(
-          Stream.filter((e) => "values" in e),
-          Stream.map(({ values }) =>
-            Object.fromEntries(
-              values.map((v) => {
-                const key = mapping[v.numericId]?.name;
-                return [key, v];
-              }),
-            ),
-          ),
-          Stream.map((a) => a[qualifiedName]),
-          Stream.ensuring(ws.unsubscribe(call)),
-        );
-      }),
+    Effect.map(YamcsSubscriptions, (subs) => subs.parameter(qualifiedName)).pipe(
+      Stream.unwrap,
     ),
   ),
 );
@@ -247,8 +128,8 @@ export const eventsSubscriptionAtom: Atom.Atom<
 > = yamcsRuntime.atom((get) =>
   Stream.unwrap(
     Effect.gen(function* () {
+      const subs = yield* YamcsSubscriptions;
       const instance = yield* Config.string("YAMCS_INSTANCE");
-      const ws = yield* WebSocketClient;
 
       const { events } = yield* get.result(
         YamcsAtomClient.query("event", "listEvents", { path: { instance } }),
@@ -256,22 +137,7 @@ export const eventsSubscriptionAtom: Atom.Atom<
 
       const priorEvents = events.slice().reverse();
 
-      const { call, stream } = yield* ws.subscribe(
-        SubscribeEventsRequest.make({ instance }),
-      );
-
-      return stream.pipe(
-        // decode websocket messages
-        Stream.mapEffect((m) => Schema.decodeUnknown(EventsEvent)(m)),
-
-        // accumulate events
-        Stream.scan(priorEvents, (allEvents, event) => [
-          ...allEvents,
-          event.data,
-        ]),
-
-        Stream.ensuring(ws.unsubscribe(call)),
-      );
+      return subs.events(priorEvents);
     }),
   ),
 );
@@ -279,11 +145,8 @@ export const eventsSubscriptionAtom: Atom.Atom<
 export const websocketAtom = Atom.family(
   (type: typeof SubscriptionRequest.Type) =>
     yamcsRuntime.atom(
-      Stream.unwrap(
-        Effect.gen(function* () {
-          const ws = yield* WebSocketClient;
-          return (yield* ws.subscribe(type)).stream;
-        }),
+      Effect.map(YamcsSubscriptions, (subs) => subs.websocket(type)).pipe(
+        Stream.unwrap,
       ),
     ),
 );

@@ -1,11 +1,4 @@
 import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-} from "@/components/ui/data-grid";
-import { makeCard } from "@/lib/cards";
-import {
   Result,
   useAtomSet,
   useAtomSuspense,
@@ -13,6 +6,14 @@ import {
 } from "@effect-atom/atom-react";
 import { YamcsAtomClient } from "@mrt/yamcs-atom";
 import { Cause, Schema } from "effect";
+
+import {
+  DataGridBody,
+  DataGridHead,
+  DataGridHeader,
+  DataGridRow,
+} from "@/components/ui/data-grid";
+import { makeCard } from "@/lib/cards";
 
 type Command = {
   name: string;

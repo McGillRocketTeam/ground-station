@@ -1,6 +1,11 @@
 packages:
-  - 'packages/*'
-  - 'apps/*'
+  - "packages/*"
+  - "apps/*"
 
 catalog:
-  'typescript': 5.9.3
+  typescript: 5.9.3
+  oxfmt: ^0.35.0
+  oxlint: ^1.50.0
+  effect: beta
+  "@effect/platform-node": beta
+  "@effect/language-service": latest

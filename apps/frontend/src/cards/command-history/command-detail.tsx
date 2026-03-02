@@ -1,6 +1,8 @@
+import { Fragment, type ReactNode } from "react";
+
 import { Separator } from "@/components/ui/separator";
 import { cn, stringifyValue } from "@/lib/utils";
-import { Fragment, type ReactNode } from "react";
+
 import { BrailleSpinner } from "./braile-spinner";
 import {
   collectAcks,
@@ -65,9 +67,7 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
       </div>
       <div className="space-y-0.5">
         <Label>Issuer</Label>
-        <div>
-          {`${stringifyValue(extractAttribute(command, "username"))} @${command.origin}`}
-        </div>
+        <div>{`${stringifyValue(extractAttribute(command, "username"))} @${command.origin}`}</div>
       </div>
       <div className="grid grid-cols-3">
         <div className="space-y-0.5">

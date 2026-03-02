@@ -159,6 +159,46 @@ See https://github.com/yamcs/pymdb
         <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
+      <MetaCommand name="sd_close" abstract="false" shortDescription="sc">
+        <LongDescription>Close SD Card</LongDescription>
+        <CommandContainer name="sd_close">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="sd_delete_all" abstract="false" shortDescription="sd">
+        <LongDescription>Deletes SD Data</LongDescription>
+        <CommandContainer name="sd_delete_all">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="critical"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="sd_delete_arm" abstract="false" shortDescription="sa">
+        <LongDescription>Arm SD Deletion</LongDescription>
+        <CommandContainer name="sd_delete_arm">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="sd_delete_disarm" abstract="false" shortDescription="si">
+        <LongDescription>Disarm SD Deletion</LongDescription>
+        <CommandContainer name="sd_delete_disarm">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="sd_open" abstract="false" shortDescription="so">
+        <LongDescription>Open SD Card</LongDescription>
+        <CommandContainer name="sd_open">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
       <MetaCommand name="umbilical_to_battery" abstract="false" shortDescription="ul">
         <LongDescription>Umbilical Low</LongDescription>
         <CommandContainer name="umbilical_to_battery">

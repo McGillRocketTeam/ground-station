@@ -1,22 +1,30 @@
 {
   "name": "@mrt/simulator",
-  "module": "src/index.ts",
-  "type": "module",
   "private": true,
+  "type": "module",
+  "module": "src/index.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "dependencies": {
+    "@effect/platform-node": "catalog:",
+    "@mrt/yamcs-effect": "workspace:*",
+    "bit-buffer": "^0.3.0",
+    "effect": "catalog:",
+    "mqtt": "^5.15.0"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "tsx": "^4.21.0"
   },
   "peerDependencies": {
-    "effect": "^3.19",
     "typescript": "^5"
-  },
-  "dependencies": {
-    "@effect/platform": "^0.94.2",
-    "@effect/platform-node": "^0.104.1",
-    "@mrt/yamcs-effect": "workspace:*"
   }
 }

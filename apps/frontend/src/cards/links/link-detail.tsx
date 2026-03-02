@@ -1,8 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import type { ReactNode } from "react";
+
 import { useAtomSet } from "@effect-atom/atom-react";
 import { YamcsAtomClient } from "@mrt/yamcs-atom";
-import type { ReactNode } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+
 import { colorByStatus, type Link } from "./utils";
 
 function Label({ children }: { children: ReactNode }) {

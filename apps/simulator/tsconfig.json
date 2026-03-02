@@ -1,12 +1,25 @@
 {
   "compilerOptions": {
+    "incremental": true,
     "composite": true,
-    "declaration": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "module": "ESNext",
     "target": "ES2022",
-    "moduleResolution": "Node"
+    "module": "NodeNext",
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "rewriteRelativeImportExtensions": true,
+
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noImplicitOverride": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+
+    "rootDir": "src",
+    "outDir": "dist"
   },
   "include": ["src"]
 }

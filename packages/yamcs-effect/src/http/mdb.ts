@@ -5,6 +5,7 @@ import {
   HttpApiSchema,
 } from "@effect/platform";
 import { Schema } from "effect";
+
 import * as yamcs from "../schema.js";
 
 const instanceParam = HttpApiSchema.param("instance", Schema.String);
@@ -53,6 +54,13 @@ export const mdbGroup = HttpApiGroup.make("mdb")
     HttpApiEndpoint.get("listCommands")`/${instanceParam}/commands`
       .setUrlParams(UrlParams)
       .addSuccess(ListCommandsResponse),
+  )
+  .add(
+    HttpApiEndpoint.get(
+      "getContainer",
+    )`/${instanceParam}/containers/${nameParam}`.addSuccess(
+      yamcs.ContainerInfo,
+    ),
   )
   .add(
     HttpApiEndpoint.get(

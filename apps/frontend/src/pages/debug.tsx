@@ -1,3 +1,6 @@
+import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
+import { useState } from "react";
+
 import { Form } from "@/components/form";
 import {
   Menubar,
@@ -13,8 +16,6 @@ import {
   CardSchemaMap,
   type CardId,
 } from "@/lib/cards";
-import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
-import { useState } from "react";
 
 const selectedCardAtom = Atom.make<CardId>("parameter-table");
 const selectedSchemaAtom = Atom.map(

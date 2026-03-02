@@ -1,12 +1,4 @@
 import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-  DataGridSearch,
-} from "@/components/ui/data-grid";
-import { cn } from "@/lib/utils";
-import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -19,6 +11,16 @@ import {
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { memo, useState } from "react";
 import { Fragment } from "react/jsx-runtime";
+
+import {
+  DataGridBody,
+  DataGridHead,
+  DataGridHeader,
+  DataGridRow,
+  DataGridSearch,
+} from "@/components/ui/data-grid";
+import { cn } from "@/lib/utils";
+
 import type { Event } from ".";
 
 const HeaderButton = memo(function HeaderButton({

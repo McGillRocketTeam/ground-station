@@ -5,6 +5,7 @@ import {
   HttpApiSchema,
 } from "@effect/platform";
 import { Schema } from "effect";
+
 import { CommandId, Event } from "../schema.js";
 
 const instanceParam = HttpApiSchema.param("instance", Schema.String);

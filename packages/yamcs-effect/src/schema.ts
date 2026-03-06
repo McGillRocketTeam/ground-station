@@ -1,4 +1,4 @@
-import { ParseResult, Schema } from "effect";
+import { Schema, SchemaIssue, Option, Effect, SchemaGetter } from "effect";
 
 export const NamedObjectId = Schema.Struct({
   name: Schema.String,
@@ -22,7 +22,8 @@ export const UnitInfo = Schema.Struct({
   unit: Schema.String,
 });
 
-export const PolynomialCalibratorInfo = Schema.TaggedStruct("POLYNOMIAL", {
+export const PolynomialCalibratorInfo = Schema.Struct({
+  type: Schema.Literal("POLYNOMIAL"),
   coefficients: Schema.Array(Schema.Number),
 });
 
@@ -31,88 +32,87 @@ export const SplinePointInfo = Schema.Struct({
   calibrated: Schema.Number,
 });
 
-export const SplineCalibratorInfo = Schema.TaggedStruct("SPLINE", {
+export const SplineCalibratorInfo = Schema.Struct({
+  type: Schema.Literal("SPLINE"),
   points: Schema.Array(SplinePointInfo),
 });
 
-export const JavaExpressionCalibratorInfo = Schema.TaggedStruct(
-  "JAVA_EXPRESSION",
-  {
-    formula: Schema.String,
-  },
-);
+export const JavaExpressionCalibratorInfo = Schema.Struct({
+  type: Schema.Literal("JAVA_EXPRESSION"),
+  formula: Schema.String,
+});
 
-export const MathOperationCalibratorInfo = Schema.TaggedStruct(
-  "MATH_OPERATION",
-  {},
-);
+export const MathOperationCalibratorInfo = Schema.Struct({
+  type: Schema.Literal("MATH_OPERATION"),
+});
 
-export const CalibratorInfo = Schema.transformOrFail(
-  // Source
-  Schema.Struct({
-    type: Schema.Literal(
-      "POLYNOMIAL",
-      "SPLINE",
-      "MATH_OPERATION",
-      "JAVA_EXPRESSION",
-      "ALGORITHM",
-    ),
-    polynomialCalibrator: Schema.optional(PolynomialCalibratorInfo),
-    splineCalibrator: Schema.optional(SplineCalibratorInfo),
-    javaExpressionCalibrator: Schema.optional(JavaExpressionCalibratorInfo),
-  }),
-  // Target
-  Schema.Union(
-    JavaExpressionCalibratorInfo,
-    SplineCalibratorInfo,
-    PolynomialCalibratorInfo,
-    MathOperationCalibratorInfo,
-  ),
-  {
-    strict: true,
-    decode: (input) => {
-      switch (input.type) {
-        case "SPLINE":
-          return ParseResult.succeed(input.splineCalibrator!);
-        case "POLYNOMIAL":
-          return ParseResult.succeed(input.polynomialCalibrator!);
-        case "JAVA_EXPRESSION":
-          return ParseResult.succeed(input.javaExpressionCalibrator!);
-        case "MATH_OPERATION":
-          return ParseResult.succeed(MathOperationCalibratorInfo.make());
-        default:
-          return ParseResult.fail(
-            new ParseResult.Unexpected(
-              input.type,
-              "Couldn't decode unknown calibrator",
-            ),
-          );
-      }
-    },
-    // Encode: Forbid reversing the hashed password back to plain text
-    encode: (initial, _, ast) =>
-      ParseResult.fail(
-        new ParseResult.Forbidden(
-          ast,
-          initial,
-          "Encoding back into an API response is not supported at this time.",
+export const CalibratorInfo = Schema.Struct({
+  type: Schema.Literals([
+    "POLYNOMIAL",
+    "SPLINE",
+    "MATH_OPERATION",
+    "JAVA_EXPRESSION",
+    "ALGORITHM",
+  ]),
+  polynomialCalibrator: Schema.optional(PolynomialCalibratorInfo),
+  splineCalibrator: Schema.optional(SplineCalibratorInfo),
+  javaExpressionCalibrator: Schema.optional(JavaExpressionCalibratorInfo),
+}).pipe(
+  Schema.decodeTo(
+    Schema.Union([
+      JavaExpressionCalibratorInfo,
+      SplineCalibratorInfo,
+      PolynomialCalibratorInfo,
+      MathOperationCalibratorInfo,
+    ]),
+    {
+      decode: SchemaGetter.transformOrFail((input) =>
+        Effect.gen(function* () {
+          switch (input.type) {
+            case "SPLINE":
+              return yield* Effect.succeed(input.splineCalibrator!);
+            case "POLYNOMIAL":
+              return yield* Effect.succeed(input.polynomialCalibrator!);
+            case "JAVA_EXPRESSION":
+              return yield* Effect.succeed(input.javaExpressionCalibrator!);
+            case "MATH_OPERATION":
+              return yield* Effect.succeed(
+                MathOperationCalibratorInfo.makeUnsafe({
+                  type: "MATH_OPERATION",
+                }),
+              );
+            default:
+              return yield* Effect.fail(
+                new SchemaIssue.InvalidValue(Option.some(input.type), {
+                  cause: "Unknown case",
+                }),
+              );
+          }
+        }),
+      ),
+      encode: SchemaGetter.transformOrFail(() =>
+        Effect.fail(
+          new SchemaIssue.InvalidValue(Option.some({}), {
+            cause: "Can't Encode",
+          }),
         ),
       ),
-  },
+    },
+  ),
 );
 
-export const DataEncodingType = Schema.Literal(
+export const DataEncodingType = Schema.Literals([
   "BINARY",
   "BOOLEAN",
   "FLOAT",
   "INTEGER",
   "STRING",
-);
+]);
 
 export const DataEncodingInfo = Schema.Struct({
   type: DataEncodingType,
   littleEndian: Schema.optional(Schema.Boolean),
-  sizeInBits: Schema.optional(Schema.NonNegativeInt),
+  sizeInBits: Schema.optional(Schema.Int),
   encoding: Schema.optional(Schema.String),
   defaultCalibrator: Schema.optional(CalibratorInfo),
   // contextCalibrators: Schema.Array(ContextCalibratorInfo)
@@ -131,7 +131,7 @@ export const ParameterTypeInfo = Schema.Struct({
   unitSet: Schema.optional(Schema.Array(UnitInfo)),
 });
 
-export const DataSourceType = Schema.Literal(
+export const DataSourceType = Schema.Literals([
   "TELEMETERED",
   "DERIVED",
   "CONSTANT",
@@ -143,7 +143,7 @@ export const DataSourceType = Schema.Literal(
   "EXTERNAL2",
   "EXTERNAL3",
   "GROUND",
-);
+]);
 
 export const ParameterInfo = Schema.Struct({
   name,
@@ -208,7 +208,7 @@ export const CommandId = Schema.String;
 export type CommandId = typeof CommandId.Type;
 
 export const CommandIdObject = Schema.Struct({
-  generationTime: Schema.DateFromString,
+  generationTime: Schema.DateTimeUtcFromString,
   origin: Schema.String,
   sequenceNumber: Schema.Number,
   commandName: QualifiedName,
@@ -216,86 +216,64 @@ export const CommandIdObject = Schema.Struct({
 
 const FloatValue = Schema.Struct({
   type: Schema.Literal("FLOAT"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("floatValue"),
-  ),
-});
+  value: Schema.Number,
+}).pipe(Schema.encodeKeys({ value: "floatValue" }));
 
 const DoubleValue = Schema.Struct({
   type: Schema.Literal("DOUBLE"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("doubleValue"),
-  ),
-});
+  value: Schema.Number,
+}).pipe(Schema.encodeKeys({ value: "doubleValue" }));
 
 const Sint32Value = Schema.Struct({
   type: Schema.Literal("SINT32"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("sint32Value"),
-  ),
-});
+  value: Schema.Number,
+}).pipe(Schema.encodeKeys({ value: "sint32Value" }));
 
 const Uint32Value = Schema.Struct({
   type: Schema.Literal("UINT32"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("uint32Value"),
-  ),
-});
+  value: Schema.Number,
+}).pipe(Schema.encodeKeys({ value: "uint32Value" }));
 
 const Sint64Value = Schema.Struct({
   type: Schema.Literal("SINT64"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("sint64Value"),
-  ),
-});
+  value: Schema.Number,
+}).pipe(Schema.encodeKeys({ value: "sint64Value" }));
 
 const Uint64Value = Schema.Struct({
   type: Schema.Literal("UINT64"),
-  value: Schema.propertySignature(Schema.Number).pipe(
-    Schema.fromKey("uint64Value"),
-  ),
-});
+  value: Schema.Number,
+}).pipe(Schema.encodeKeys({ value: "uint64Value" }));
 
 const BinaryValue = Schema.Struct({
   type: Schema.Literal("BINARY"),
-  value: Schema.propertySignature(Schema.Uint8ArrayFromBase64).pipe(
-    Schema.fromKey("binaryValue"),
-  ),
-});
+  value: Schema.Uint8ArrayFromBase64,
+}).pipe(Schema.encodeKeys({ value: "binaryValue" }));
 
 const StringValue = Schema.Struct({
   type: Schema.Literal("STRING"),
-  value: Schema.propertySignature(Schema.String).pipe(
-    Schema.fromKey("stringValue"),
-  ),
-});
+  value: Schema.String,
+}).pipe(Schema.encodeKeys({ value: "stringValue" }));
 
 const TimestampValue = Schema.Struct({
   type: Schema.Literal("TIMESTAMP"),
-  value: Schema.propertySignature(Schema.DateFromString).pipe(
-    Schema.fromKey("stringValue"),
-  ),
-});
+  value: Schema.DateTimeUtcFromString,
+}).pipe(Schema.encodeKeys({ value: "stringValue" }));
 
 const BooleanValue = Schema.Struct({
   type: Schema.Literal("BOOLEAN"),
-  value: Schema.propertySignature(Schema.Boolean).pipe(
-    Schema.fromKey("booleanValue"),
-  ),
-});
+  value: Schema.Boolean,
+}).pipe(Schema.encodeKeys({ value: "booleanValue" }));
 
 export const EnumeratedValue = Schema.Struct({
   type: Schema.Literal("ENUMERATED"),
-  value: Schema.propertySignature(Schema.String).pipe(
-    Schema.fromKey("stringValue"),
-  ),
-});
+  value: Schema.String,
+}).pipe(Schema.encodeKeys({ value: "stringValue" }));
 
 export const AggregateValue = Schema.Struct({
   type: Schema.Literal("AGGREGATE"),
 });
 
-export const Value = Schema.Union(
+export const Value = Schema.Union([
   FloatValue,
   DoubleValue,
   Sint32Value,
@@ -308,7 +286,7 @@ export const Value = Schema.Union(
   BooleanValue,
   EnumeratedValue,
   AggregateValue,
-);
+]);
 
 export const CommandHistoryAttribute = Schema.Struct({
   name: Schema.String,
@@ -325,14 +303,12 @@ export const CommandHistoryEntry = Schema.Struct({
   id: CommandId,
   commandName: QualifiedName,
 
-  aliases: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.String }),
-  ),
+  aliases: Schema.optional(Schema.Record(Schema.String, Schema.String)),
   origin: Schema.String,
   sequenceNumber: Schema.Number,
   commandId: CommandIdObject,
   attr: Schema.Array(CommandHistoryAttribute),
-  generationTime: Schema.DateFromString,
+  generationTime: Schema.DateTimeUtcFromString,
   assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
@@ -340,14 +316,12 @@ export const StreamingCommandHisotryEntry = Schema.Struct({
   id: CommandId,
   commandName: QualifiedName,
 
-  aliases: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.String }),
-  ),
+  aliases: Schema.optional(Schema.Record(Schema.String, Schema.String)),
   origin: Schema.String,
   sequenceNumber: Schema.optional(Schema.Number),
   commandId: CommandIdObject,
   attr: Schema.Array(CommandHistoryAttribute),
-  generationTime: Schema.DateFromString,
+  generationTime: Schema.DateTimeUtcFromString,
   assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
@@ -358,9 +332,7 @@ export const IssueCommandRequest = Schema.Struct({
   /**
    * The name/value assignments for this command.
    */
-  args: Schema.optional(
-    Schema.Record({ key: Schema.String, value: Schema.Any }),
-  ),
+  args: Schema.optional(Schema.Record(Schema.String, Schema.Any)),
 
   /**
    * The origin of the command. Typically a hostname.
@@ -390,7 +362,7 @@ export const IssueCommandRequest = Schema.Struct({
 
 export const IssueCommandResponse = Schema.Struct({
   id: CommandId,
-  generationTime: Schema.DateFromString,
+  generationTime: Schema.DateTimeUtcFromString,
   origin: Schema.String,
   sequenceNumber: Schema.Number,
   commandName: QualifiedName,
@@ -404,7 +376,7 @@ export const IssueCommandResponse = Schema.Struct({
 export const ActionInfo = Schema.Struct({
   id: Schema.String,
   label: Schema.String,
-  style: Schema.Literal("PUSH_BUTTON", "CHECK_BOX"),
+  style: Schema.Literals(["PUSH_BUTTON", "CHECK_BOX"]),
   enabled: Schema.Boolean,
   checked: Schema.Boolean,
 });
@@ -425,30 +397,30 @@ export const LinkInfo = Schema.Struct({
 });
 
 export const ParameterSample = Schema.Struct({
-  time: Schema.DateFromString,
+  time: Schema.DateTimeUtcFromString,
   avg: Schema.Number,
   min: Schema.Number,
   max: Schema.Number,
   n: Schema.Number,
-  minTime: Schema.DateFromString,
-  maxTime: Schema.DateFromString,
-  firstTime: Schema.DateFromString,
-  lastTime: Schema.DateFromString,
+  minTime: Schema.DateTimeUtcFromString,
+  maxTime: Schema.DateTimeUtcFromString,
+  firstTime: Schema.DateTimeUtcFromString,
+  lastTime: Schema.DateTimeUtcFromString,
 });
 
-export const EventSeverity = Schema.Literal(
+export const EventSeverity = Schema.Literals([
   "INFO",
   "WATCH",
   "WARNING",
   "DISTRESS",
   "CRITICAL",
   "SEVERE",
-);
+]);
 
 export const Event = Schema.Struct({
   source: Schema.String,
-  generationTime: Schema.DateFromString,
-  receptionTime: Schema.DateFromString,
+  generationTime: Schema.DateTimeUtcFromString,
+  receptionTime: Schema.DateTimeUtcFromString,
   seqNumber: Schema.Number,
   message: Schema.String,
   severity: EventSeverity,
@@ -461,19 +433,19 @@ export const CommandInfo = Schema.Struct({
   longDescription: Schema.optional(Schema.String),
 });
 
-export const OperatorType = Schema.Literal(
+export const OperatorType = Schema.Literals([
   "EQUAL_TO",
   "NOT_EQUAL_TO",
   "GREATER_THAN",
   "GREATER_THAN_OR_EQUAL_TO",
   "SMALLER_THAN",
   "SMALLER_THAN_OR_EQUAL_TO",
-);
+]);
 
-export const ReferenceLocationType = Schema.Literal(
+export const ReferenceLocationType = Schema.Literals([
   "CONTAINER_START",
   "PREVIOUS_ENTRY",
-);
+]);
 
 export const ArgumentTypeInfo = Schema.Struct({
   name: Schema.String,
@@ -494,68 +466,55 @@ export const FixedValueInfo = Schema.Struct({
 });
 
 export const RepeatInfo = Schema.Struct({
-  fixedCount: Schema.NumberFromString, // String decimal
-  dynamicCount: Schema.suspend(() => ParameterInfo),
+  fixedCount: Schema.String, // String decimal
+  // dynamicCount: Schema.suspend(() => ParameterInfo),
   bitsBetween: Schema.Number,
 });
 
 export const IndirectParameterRefInfo = Schema.Struct({
-  parameter: Schema.suspend(() => ParameterInfo),
+  // parameter: Schema.suspend(() => ParameterInfo),
   aliasNamespace: Schema.String,
 });
 
-export interface ContainerInfo extends Schema.Struct.Type<
-  typeof containerInfoFields
-> {
-  readonly baseContainer?: ContainerInfo | undefined;
-}
-
 export const ComparisonInfo = Schema.Struct({
-  parameter: Schema.suspend(() => ParameterInfo),
+  // parameter: Schema.suspend(() => ParameterInfo),
   operator: OperatorType,
   value: Schema.String,
   argument: ArgumentInfo,
 });
 
-const containerInfoFields = {
-  name,
-  qualifiedName,
-  shortDescription,
-  longDescription,
-  alias,
-  maxInterval: Schema.String,
-  sizeInBits: Schema.Number,
-  restrictionCriteria: Schema.Array(ComparisonInfo),
-  restrictionCriteriaExpression: Schema.String,
-  entry: Schema.Array(Schema.suspend(() => SequenceEntryInfo)),
-  usedBy: Schema.Any,
-  ancillaryData: Schema.Record({ key: Schema.String, value: Schema.String }),
-  archivePartition: Schema.Boolean,
-};
-
-export interface ContainerInfo extends Schema.Struct.Type<
-  typeof containerInfoFields
-> {
-  readonly baseContainer?: ContainerInfo | undefined;
-}
-
-export const ContainerInfo: Schema.Schema<ContainerInfo, any, any> =
+export class ContainerInfo extends Schema.Opaque<ContainerInfo>()(
   Schema.Struct({
-    ...containerInfoFields,
-    baseContainer: Schema.optional(
-      Schema.suspend(
-        (): Schema.Schema<ContainerInfo, any, any> => ContainerInfo,
-      ),
+    name,
+    qualifiedName,
+    shortDescription,
+    longDescription,
+    alias,
+    maxInterval: Schema.String,
+    sizeInBits: Schema.Number,
+    restrictionCriteria: Schema.Array(ComparisonInfo),
+    restrictionCriteriaExpression: Schema.String,
+    entry: Schema.Array(
+      Schema.suspend((): Schema.Codec<SequenceEntryInfo> => SequenceEntryInfo),
     ),
-  });
+    usedBy: Schema.Any,
+    ancillaryData: Schema.Record(Schema.String, Schema.String),
+    archivePartition: Schema.Boolean,
+    baseContainer: Schema.suspend(
+      (): Schema.Codec<ContainerInfo> => ContainerInfo,
+    ),
+  }),
+) {}
 
-export const SequenceEntryInfo = Schema.Struct({
-  locationInBits: Schema.Number,
-  referenceLocation: ReferenceLocationType,
-  container: Schema.optional(ContainerInfo),
-  parameter: Schema.suspend(() => ParameterInfo),
-  argument: ArgumentInfo,
-  fixedValue: FixedValueInfo,
-  repeat: RepeatInfo,
-  indirectParameterRef: IndirectParameterRefInfo,
-});
+export class SequenceEntryInfo extends Schema.Opaque<SequenceEntryInfo>()(
+  Schema.Struct({
+    locationInBits: Schema.Number,
+    referenceLocation: ReferenceLocationType,
+    container: Schema.optional(ContainerInfo),
+    // parameter: Schema.suspend(() => ParameterInfo),
+    argument: ArgumentInfo,
+    fixedValue: FixedValueInfo,
+    repeat: RepeatInfo,
+    indirectParameterRef: IndirectParameterRefInfo,
+  }),
+) {}

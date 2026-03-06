@@ -1,35 +1,33 @@
+import { Schema } from "effect";
 import {
+  HttpApiGroup,
   HttpApiEndpoint,
   HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
-import { Schema } from "effect";
+} from "effect/unstable/httpapi";
 
-import { CommandId, ParameterSample, QualifiedName } from "../schema.js";
+import { ParameterSample, QualifiedName } from "../schema.js";
 
-const instanceParam = HttpApiSchema.param("instance", Schema.String);
-const parameterNameParam = HttpApiSchema.param("parameterName", QualifiedName);
+const GetSamplesResponse = Schema.Struct({
+  sample: Schema.Array(ParameterSample),
+});
 
-export const idParam = HttpApiSchema.param("id", CommandId);
-
-export const parameterGroup = HttpApiGroup.make("parameter")
-  .add(
-    HttpApiEndpoint.get(
-      "getSamples",
-    )`/stream-archive/${instanceParam}/parameters/${parameterNameParam}/samples`
-      .setUrlParams(
-        Schema.Struct({
-          start: Schema.DateFromString,
-          stop: Schema.optional(Schema.DateFromString),
-        }),
-      )
-      .addSuccess(
-        Schema.Struct({
-          sample: Schema.Array(ParameterSample),
-        }),
-      ),
-  )
-  .addError(HttpApiError.NotFound);
+export const parameterGroup = HttpApiGroup.make("parameter").add(
+  HttpApiEndpoint.get(
+    "getSamples",
+    "/stream-archive/:instance/parameters/:parameterName/samples",
+    {
+      params: {
+        instance: Schema.String,
+        parameterName: QualifiedName,
+      },
+      query: {
+        start: Schema.String,
+        stop: Schema.optional(Schema.String),
+      },
+      success: GetSamplesResponse,
+      error: [HttpApiError.NotFound],
+    },
+  ),
+);
 
 export default parameterGroup;

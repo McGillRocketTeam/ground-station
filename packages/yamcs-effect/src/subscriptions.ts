@@ -1,14 +1,15 @@
 import {
-  HttpApiClient,
-  FetchHttpClient,
-  HttpClient,
-  HttpClientRequest,
-} from "@effect/platform";
-import { Config, Effect, Schema, Stream } from "effect";
+  Config,
+  DateTime,
+  Effect,
+  Layer,
+  Schema,
+  ServiceMap,
+  Stream,
+} from "effect";
 
 import type { QualifiedName } from "./schema.js";
 
-import { YamcsApi } from "./http/index.js";
 import { mergeCommandEntries } from "./utils.js";
 import {
   SubscribeTimeRequest,
@@ -37,11 +38,10 @@ import {
  * The `commands` and `events` streams also fetch prior data via HTTP,
  * requiring `HttpClient.HttpClient` in their context.
  */
-export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
+export class YamcsSubscriptions extends ServiceMap.Service<YamcsSubscriptions>()(
   "@mrt/yamcs-effect/YamcsSubscriptions",
   {
-    dependencies: [],
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const ws = yield* WebSocketClient;
       const instance = yield* Config.string("YAMCS_INSTANCE");
 
@@ -52,14 +52,14 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
       const time = Stream.unwrap(
         Effect.gen(function* () {
           const { call, stream } = yield* ws.subscribe(
-            SubscribeTimeRequest.make({
+            SubscribeTimeRequest.makeUnsafe({
               instance,
               processor: "realtime",
             }),
           );
 
           return stream.pipe(
-            Stream.mapEffect((m) => Schema.decodeUnknown(TimeEvent)(m)),
+            Stream.mapEffect((m) => Schema.decodeUnknownEffect(TimeEvent)(m)),
             Stream.map((m) => m.data),
             Stream.ensuring(ws.unsubscribe(call)),
           );
@@ -73,11 +73,11 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
       const links = Stream.unwrap(
         Effect.gen(function* () {
           const { call, stream } = yield* ws.subscribe(
-            SubscribeLinksRequest.make({ instance }),
+            SubscribeLinksRequest.makeUnsafe({ instance }),
           );
 
           return stream.pipe(
-            Stream.mapEffect((m) => Schema.decodeUnknown(LinkEvent)(m)),
+            Stream.mapEffect((m) => Schema.decodeUnknownEffect(LinkEvent)(m)),
             Stream.map((m) => m.data.links),
             Stream.ensuring(ws.unsubscribe(call)),
           );
@@ -98,7 +98,7 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
         Stream.unwrap(
           Effect.gen(function* () {
             const { call, stream } = yield* ws.subscribe(
-              SubscribeCommandsRequest.make({
+              SubscribeCommandsRequest.makeUnsafe({
                 instance,
                 processor: "realtime",
               }),
@@ -113,7 +113,7 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
 
             const dataStream = stream.pipe(
               Stream.mapEffect((m) =>
-                Schema.decodeUnknown(CommandHistoryEvent)(m),
+                Schema.decodeUnknownEffect(CommandHistoryEvent)(m),
               ),
               Stream.map((m) => m.data),
               Stream.ensuring(ws.unsubscribe(call)),
@@ -137,7 +137,8 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
               Stream.map((m) =>
                 Array.from(m.values()).sort(
                   (a, b) =>
-                    b.generationTime.getTime() - a.generationTime.getTime(),
+                    DateTime.toEpochMillis(b.generationTime) -
+                    DateTime.toEpochMillis(a.generationTime),
                 ),
               ),
             );
@@ -153,7 +154,7 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
         Stream.unwrap(
           Effect.gen(function* () {
             const { call, stream } = yield* ws.subscribe(
-              SubscribeParameterRequest.make({
+              SubscribeParameterRequest.makeUnsafe({
                 instance,
                 processor: "realtime",
                 id: [{ name: qualifiedName }],
@@ -162,7 +163,7 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
 
             const eventStream = stream.pipe(
               Stream.mapEffect((m) =>
-                Schema.decodeUnknown(ParameterEvent)(m.data),
+                Schema.decodeUnknownEffect(ParameterEvent)(m.data),
               ),
             );
 
@@ -202,14 +203,16 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
         Stream.unwrap(
           Effect.gen(function* () {
             const { call, stream } = yield* ws.subscribe(
-              SubscribeEventsRequest.make({ instance }),
+              SubscribeEventsRequest.makeUnsafe({ instance }),
             );
 
             // priorEvents should be in chronological order (oldest first)
             const initial = [...priorEvents];
 
             return stream.pipe(
-              Stream.mapEffect((m) => Schema.decodeUnknown(EventsEvent)(m)),
+              Stream.mapEffect((m) =>
+                Schema.decodeUnknownEffect(EventsEvent)(m),
+              ),
               Stream.scan(initial, (allEvents, event) => [
                 ...allEvents,
                 event.data,
@@ -233,4 +236,6 @@ export class YamcsSubscriptions extends Effect.Service<YamcsSubscriptions>()(
       return { time, links, commands, parameter, events, websocket };
     }),
   },
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

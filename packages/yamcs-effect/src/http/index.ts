@@ -1,4 +1,4 @@
-import { HttpApi } from "@effect/platform";
+import { HttpApi } from "effect/unstable/httpapi";
 
 import commandGroup from "./command.js";
 import eventGroup from "./event.js";

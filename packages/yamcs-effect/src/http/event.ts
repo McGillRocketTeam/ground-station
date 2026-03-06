@@ -1,27 +1,27 @@
+import { Schema } from "effect";
 import {
+  HttpApiGroup,
   HttpApiEndpoint,
   HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
-import { Schema } from "effect";
+} from "effect/unstable/httpapi";
 
-import { CommandId, Event } from "../schema.js";
+import { Event } from "../schema.js";
 
-const instanceParam = HttpApiSchema.param("instance", Schema.String);
+const ListEventsResponse = Schema.Struct({
+  events: Schema.Array(Event),
+});
 
-export const idParam = HttpApiSchema.param("id", CommandId);
-
-export const eventGroup = HttpApiGroup.make("event")
-  .add(
-    HttpApiEndpoint.get(
-      "listEvents",
-    )`/archive/${instanceParam}/events?source=ASTRA&limit=500&order=asc`.addSuccess(
-      Schema.Struct({
-        events: Schema.Array(Event),
-      }),
-    ),
-  )
-  .addError(HttpApiError.NotFound);
+export const eventGroup = HttpApiGroup.make("event").add(
+  HttpApiEndpoint.get("listEvents", "/archive/:instance/events", {
+    params: { instance: Schema.String },
+    query: {
+      source: Schema.optional(Schema.String),
+      limit: Schema.optional(Schema.String),
+      order: Schema.optional(Schema.String),
+    },
+    success: ListEventsResponse,
+    error: [HttpApiError.NotFound],
+  }),
+);
 
 export default eventGroup;

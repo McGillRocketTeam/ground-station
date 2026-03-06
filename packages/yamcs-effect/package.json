@@ -12,15 +12,18 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "prepare": "effect-language-service patch"
+  },
+  "dependencies": {
+    "effect": "catalog:"
   },
   "devDependencies": {
+    "@effect/language-service": "catalog:",
     "@types/node": "latest",
     "tsx": "^4.21.0"
   },
   "peerDependencies": {
-    "@effect/platform": "^0.94",
-    "effect": "^3.19",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "typescript": "^5"

@@ -1,5 +1,26 @@
 {
   "compilerOptions": {
+    // Module System
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleDetection": "force",
+
+    // Import handling
+    "verbatimModuleSyntax": true,
+    "rewriteRelativeImportExtensions": true,
+
+    //Type Safety
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noImplicitOverride": true,
+
+    // Development
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+
+    // Effect
     "plugins": [
       {
         "name": "@effect/language-service"

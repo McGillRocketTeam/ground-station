@@ -1,4 +1,4 @@
-import { Chunk, Config, Effect, Schema, Stream, StreamEmit } from "effect";
+import { Config, Data, Effect, Layer, Queue, Schema, ServiceMap, Stream } from "effect";
 
 import { Cancel, type SubscriptionRequest } from "./client-messages.js";
 import {
@@ -8,22 +8,38 @@ import {
   SubscriptionId,
 } from "./server-messages.js";
 
-export class WebSocketClient extends Effect.Service<WebSocketClient>()(
-  "@mrt/yamcs-effect/WebSocketClient",
+export class WebSocketError extends Data.TaggedError("WebSocketError")<{
+  readonly cause: unknown;
+}> {}
+
+export class WebSocketClient extends ServiceMap.Service<
+  WebSocketClient,
   {
-    accessors: true,
-    dependencies: [],
-    scoped: Effect.gen(function* () {
+    readonly messages: Stream.Stream<typeof ServerMessages.Type>;
+    readonly send: (
+      data: Record<string, any>,
+    ) => Effect.Effect<SubscriptionId>;
+    readonly subscribe: (
+      request: typeof SubscriptionRequest.Type,
+    ) => Effect.Effect<{
+      call: SubscriptionId;
+      stream: Stream.Stream<typeof Events.Type>;
+    }>;
+    readonly unsubscribe: (call: SubscriptionId) => Effect.Effect<void>;
+  }
+>()("@mrt/yamcs-effect/WebSocketClient") {
+  static readonly layer = Layer.effect(
+    this,
+    Effect.gen(function* () {
       const yamcsUrl = yield* Config.url("YAMCS_URL");
       yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
-      let id = SubscriptionId.make(1);
+      let id = SubscriptionId.makeUnsafe(1);
 
       // Socket will be automatically closed when the scope ends.
       const ws = yield* Effect.acquireRelease(
-        Effect.gen(function* () {
-          return yield* Effect.try(
-            () => new WebSocket(`${yamcsUrl}api/websocket`),
-          );
+        Effect.try({
+          try: () => new WebSocket(`${yamcsUrl}api/websocket`),
+          catch: (cause) => new WebSocketError({ cause }),
         }),
         (ws) =>
           Effect.gen(function* () {
@@ -35,34 +51,29 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
       );
 
       // Wait for the open event
-      yield* Effect.async((resume) => {
-        ws.addEventListener("open", (event) => {
+      yield* Effect.callback<void>((resume) => {
+        ws.addEventListener("open", (_event) => {
           ws.send(JSON.stringify({ id, type: "status" }));
           id++;
-
-          resume(
-            Effect.gen(function* () {
-              yield* Effect.log("WebSocket Opened");
-              yield* Effect.succeed(event);
-            }),
-          );
+          resume(Effect.log("WebSocket Opened"));
         });
       });
 
-      const messages = Stream.async(
-        (emit: StreamEmit.Emit<never, never, string, void>) => {
+      const messages = Stream.callback<typeof ServerMessages.Type>((queue) =>
+        Effect.sync(() => {
           ws.addEventListener("message", (event: MessageEvent) => {
-            emit(Effect.succeed(Chunk.of(event.data)));
+            const parsed = Schema.decodeUnknownOption(ServerMessages)(
+              JSON.parse(event.data as string),
+            );
+            if (parsed._tag === "Some") {
+              Queue.offerUnsafe(queue, parsed.value);
+            }
           });
-        },
-      ).pipe(
-        Stream.filterMap((m) =>
-          Schema.decodeOption(ServerMessages)(JSON.parse(m)),
-        ),
+        }),
       );
 
       yield* messages.pipe(
-        Stream.runForEachScoped((message) =>
+        Stream.runForEach((message) =>
           Effect.logDebug(`Websocket Message (${message.type})`, message),
         ),
         Effect.forkScoped,
@@ -87,7 +98,7 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
             Stream.runCollect,
           );
 
-          const reply = Chunk.toReadonlyArray(replyMessage)[0]!;
+          const reply = replyMessage[0]!;
 
           if (reply.data.exception) {
             yield* Effect.logError(
@@ -121,7 +132,7 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
         yield* Effect.sync(() =>
           ws.send(
             JSON.stringify(
-              Cancel.make({
+              Cancel.makeUnsafe({
                 type: "cancel",
                 options: { call },
               }),
@@ -132,5 +143,5 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
 
       return { messages, send, subscribe, unsubscribe };
     }),
-  },
-) {}
+  );
+}

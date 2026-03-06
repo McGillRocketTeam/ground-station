@@ -11,10 +11,10 @@ catalogs:
       version: 0.77.0
     '@effect/platform-node':
       specifier: beta
-      version: 4.0.0-beta.21
+      version: 4.0.0-beta.27
     effect:
       specifier: beta
-      version: 4.0.0-beta.21
+      version: 4.0.0-beta.27
     oxfmt:
       specifier: ^0.35.0
       version: 0.35.0
@@ -46,10 +46,13 @@ importers:
         version: 1.1.0(@types/react@19.2.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@effect-atom/atom-react':
         specifier: ^0.4.6
-        version: 0.4.6(@effect/experimental@0.58.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3))(@effect/platform@0.94.2(effect@3.19.15))(@effect/rpc@0.73.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15))(effect@3.19.15)(react@19.2.3)(scheduler@0.27.0)
+        version: 0.4.6(@effect/experimental@0.58.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3))(@effect/platform@0.94.5(effect@3.19.15))(@effect/rpc@0.73.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15))(effect@3.19.15)(react@19.2.3)(scheduler@0.27.0)
+      '@effect/platform':
+        specifier: ^0.94.5
+        version: 0.94.5(effect@3.19.15)
       '@effect/platform-browser':
         specifier: ^0.74.0
-        version: 0.74.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)
+        version: 0.74.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)
       '@fontsource-variable/jetbrains-mono':
         specifier: ^5.2.8
         version: 5.2.8
@@ -146,7 +149,7 @@ importers:
     dependencies:
       '@effect/platform-node':
         specifier: 'catalog:'
-        version: 4.0.0-beta.21(effect@4.0.0-beta.21)(ioredis@5.9.3)
+        version: 4.0.0-beta.27(effect@4.0.0-beta.27)(ioredis@5.9.3)
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../../packages/yamcs-effect
@@ -155,7 +158,7 @@ importers:
         version: 0.3.0
       effect:
         specifier: 'catalog:'
-        version: 4.0.0-beta.21
+        version: 4.0.0-beta.27
       mqtt:
         specifier: ^5.15.0
         version: 5.15.0
@@ -165,7 +168,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: latest
-        version: 25.3.3
+        version: 25.3.4
       oxfmt:
         specifier: 'catalog:'
         version: 0.35.0
@@ -196,19 +199,16 @@ importers:
     devDependencies:
       '@types/node':
         specifier: latest
-        version: 25.3.3
+        version: 25.3.4
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
 
   packages/yamcs-effect:
     dependencies:
-      '@effect/platform':
-        specifier: ^0.94
-        version: 0.94.2(effect@3.19.15)
       effect:
-        specifier: ^3.19
-        version: 3.19.15
+        specifier: 'catalog:'
+        version: 4.0.0-beta.27
       oxfmt:
         specifier: 'catalog:'
         version: 0.35.0
@@ -219,9 +219,12 @@ importers:
         specifier: ^5
         version: 5.9.3
     devDependencies:
+      '@effect/language-service':
+        specifier: 'catalog:'
+        version: 0.77.0
       '@types/node':
         specifier: latest
-        version: 25.3.3
+        version: 25.3.4
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -230,10 +233,10 @@ importers:
     dependencies:
       '@effect/opentelemetry':
         specifier: 4.0.0-beta.21
-        version: 4.0.0-beta.21(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.21)
+        version: 4.0.0-beta.21(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.27)
       '@effect/platform-node':
         specifier: 'catalog:'
-        version: 4.0.0-beta.21(effect@4.0.0-beta.21)(ioredis@5.9.3)
+        version: 4.0.0-beta.27(effect@4.0.0-beta.27)(ioredis@5.9.3)
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../yamcs-effect
@@ -245,7 +248,7 @@ importers:
         version: 2.5.1(@opentelemetry/api@1.9.0)
       effect:
         specifier: 'catalog:'
-        version: 4.0.0-beta.21
+        version: 4.0.0-beta.27
       typescript:
         specifier: ^5
         version: 5.9.3
@@ -255,7 +258,7 @@ importers:
         version: 0.77.0
       '@types/node':
         specifier: latest
-        version: 25.3.3
+        version: 25.3.4
       oxfmt:
         specifier: 'catalog:'
         version: 0.35.0
@@ -519,23 +522,28 @@ packages:
       '@effect/platform': ^0.94.0
       effect: ^3.19.13
 
-  '@effect/platform-node-shared@4.0.0-beta.21':
-    resolution: {integrity: sha512-nPjV/F0aJdJVc92jIMsCxXLd8AcFnK249vhvVf8bwf8PA5oFsS+Kv3P8zqGiUVyuigTUHh3Dx1cVsl8VQ0XXQw==}
+  '@effect/platform-node-shared@4.0.0-beta.27':
+    resolution: {integrity: sha512-prRa5MIWGAvq2g6FgVP5RFfPwI+DvcXCaEZetvPMK70wdkTR1+jKQqJ9QDKWNIP+2d4llE/cF21SvcpBJWq0gw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.21
+      effect: ^4.0.0-beta.27
 
-  '@effect/platform-node@4.0.0-beta.21':
-    resolution: {integrity: sha512-hu8tBQkz7P43+yoWnAKCBtRWbK0lXoDRx8jc2rn21q71JxmRdSEuiKAmAWCgfPvrT2FmFCfue/xYPJxLF1n9CA==}
+  '@effect/platform-node@4.0.0-beta.27':
+    resolution: {integrity: sha512-UPZMtFVnDIM5nb6A2pEPo229VnfgMdvl/9sGiQaYRB9qEVHerk0elxcoWOb2szoivBYePYFOsPKIWpR6jCldtQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.21
+      effect: ^4.0.0-beta.27
       ioredis: ^5.7.0
 
   '@effect/platform@0.94.2':
     resolution: {integrity: sha512-85vdwpnK4oH/rJ3EuX/Gi2Hkt+K4HvXWr9bxCuqvty9hxyEcRxkJcqTesYrcVoQB6aULb1Za2B0MKoTbvffB3Q==}
     peerDependencies:
       effect: ^3.19.15
+
+  '@effect/platform@0.94.5':
+    resolution: {integrity: sha512-z05APUiDDPbodhTkH/RJqOLoCU11bU2IZLfcwLFrld03+ob1VeqRnELQlmueLIYm6NZifHAtjl32V+GRt34y4A==}
+    peerDependencies:
+      effect: ^3.19.17
 
   '@effect/rpc@0.73.0':
     resolution: {integrity: sha512-iMPf6tTriz8sK0l5x4koFId8Hz5nFptHYg8WqyjHGIIVLTpZxuiSqhmXZG7FnAs5N2n6uCEws4wWGcIgXNUrFg==}
@@ -1395,8 +1403,8 @@ packages:
   '@types/node@24.10.9':
     resolution: {integrity: sha512-ne4A0IpG3+2ETuREInjPNhUGis1SFjv1d5asp8MzEAGtOZeTeHVDOYqOgqfhvseqg/iXty2hjBf1zAOb7RNiNw==}
 
-  '@types/node@25.3.3':
-    resolution: {integrity: sha512-DpzbrH7wIcBaJibpKo9nnSQL0MTRdnWttGyE5haGwK86xgMOkFLp7vEyfQPGLOJh5wNYiJ3V9PmUMDhV9u8kkQ==}
+  '@types/node@25.3.4':
+    resolution: {integrity: sha512-NB1qVMIPsjfYtrY+9cCTj2VqLBh/TIDmsZXtmM2Xsn+W2yMlkA9Q1Okpr9W3f1fyGgvelw8ojumDsv8Vc0xufQ==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -1717,8 +1725,8 @@ packages:
   effect@3.19.15:
     resolution: {integrity: sha512-vzMmgfZKLcojmUjBdlQx+uaKryO7yULlRxjpDnHdnvcp1NPHxJyoM6IOXBLlzz2I/uPtZpGKavt5hBv7IvGZkA==}
 
-  effect@4.0.0-beta.21:
-    resolution: {integrity: sha512-M2pujOGwVpu3q+10S7C99Ql19BreKgxKXNLZy8NpJ7ymT1vs7NzG9NWI6dFtcF5do0Dzas1Kpa8NwSH+sqy/Cw==}
+  effect@4.0.0-beta.27:
+    resolution: {integrity: sha512-bNQEF3vaVGF8jAJ+HW1A4DaxVNmujgEu89sO+VNW1AvUYtPGMtKPTBU15K9inu1rG+hkxNFFRlVvLAJsdaE2mg==}
 
   electron-to-chromium@1.5.278:
     resolution: {integrity: sha512-dQ0tM1svDRQOwxnXxm+twlGTjr9Upvt8UFWAgmLsxEzFQxhbti4VwxmMjsDxVC51Zo84swW7FVCXEV+VAkhuPw==}
@@ -3313,11 +3321,29 @@ snapshots:
       - '@effect/platform'
       - '@effect/rpc'
 
+  '@effect-atom/atom-react@0.4.6(@effect/experimental@0.58.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3))(@effect/platform@0.94.5(effect@3.19.15))(@effect/rpc@0.73.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15))(effect@3.19.15)(react@19.2.3)(scheduler@0.27.0)':
+    dependencies:
+      '@effect-atom/atom': 0.4.13(@effect/experimental@0.58.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3))(@effect/platform@0.94.5(effect@3.19.15))(@effect/rpc@0.73.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15))(effect@3.19.15)
+      effect: 3.19.15
+      react: 19.2.3
+      scheduler: 0.27.0
+    transitivePeerDependencies:
+      - '@effect/experimental'
+      - '@effect/platform'
+      - '@effect/rpc'
+
   '@effect-atom/atom@0.4.13(@effect/experimental@0.58.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3))(@effect/platform@0.94.2(effect@3.19.15))(@effect/rpc@0.73.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15))(effect@3.19.15)':
     dependencies:
       '@effect/experimental': 0.58.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3)
       '@effect/platform': 0.94.2(effect@3.19.15)
       '@effect/rpc': 0.73.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)
+      effect: 3.19.15
+
+  '@effect-atom/atom@0.4.13(@effect/experimental@0.58.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3))(@effect/platform@0.94.5(effect@3.19.15))(@effect/rpc@0.73.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15))(effect@3.19.15)':
+    dependencies:
+      '@effect/experimental': 0.58.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3)
+      '@effect/platform': 0.94.5(effect@3.19.15)
+      '@effect/rpc': 0.73.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)
       effect: 3.19.15
 
   '@effect/experimental@0.58.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3)':
@@ -3328,39 +3354,47 @@ snapshots:
     optionalDependencies:
       ioredis: 5.9.3
 
+  '@effect/experimental@0.58.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)(ioredis@5.9.3)':
+    dependencies:
+      '@effect/platform': 0.94.5(effect@3.19.15)
+      effect: 3.19.15
+      uuid: 11.1.0
+    optionalDependencies:
+      ioredis: 5.9.3
+
   '@effect/language-service@0.72.0': {}
 
   '@effect/language-service@0.77.0': {}
 
-  '@effect/opentelemetry@4.0.0-beta.21(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.21)':
+  '@effect/opentelemetry@4.0.0-beta.21(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.27)':
     dependencies:
       '@opentelemetry/semantic-conventions': 1.40.0
-      effect: 4.0.0-beta.21
+      effect: 4.0.0-beta.27
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/resources': 2.5.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-logs': 0.212.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 2.5.1(@opentelemetry/api@1.9.0)
 
-  '@effect/platform-browser@0.74.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)':
+  '@effect/platform-browser@0.74.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)':
     dependencies:
-      '@effect/platform': 0.94.2(effect@3.19.15)
+      '@effect/platform': 0.94.5(effect@3.19.15)
       effect: 3.19.15
       multipasta: 0.2.7
 
-  '@effect/platform-node-shared@4.0.0-beta.21(effect@4.0.0-beta.21)':
+  '@effect/platform-node-shared@4.0.0-beta.27(effect@4.0.0-beta.27)':
     dependencies:
       '@types/ws': 8.18.1
-      effect: 4.0.0-beta.21
+      effect: 4.0.0-beta.27
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.21(effect@4.0.0-beta.21)(ioredis@5.9.3)':
+  '@effect/platform-node@4.0.0-beta.27(effect@4.0.0-beta.27)(ioredis@5.9.3)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.21(effect@4.0.0-beta.21)
-      effect: 4.0.0-beta.21
+      '@effect/platform-node-shared': 4.0.0-beta.27(effect@4.0.0-beta.27)
+      effect: 4.0.0-beta.27
       ioredis: 5.9.3
       mime: 4.1.0
       undici: 7.22.0
@@ -3375,9 +3409,22 @@ snapshots:
       msgpackr: 1.11.8
       multipasta: 0.2.7
 
+  '@effect/platform@0.94.5(effect@3.19.15)':
+    dependencies:
+      effect: 3.19.15
+      find-my-way-ts: 0.1.6
+      msgpackr: 1.11.8
+      multipasta: 0.2.7
+
   '@effect/rpc@0.73.0(@effect/platform@0.94.2(effect@3.19.15))(effect@3.19.15)':
     dependencies:
       '@effect/platform': 0.94.2(effect@3.19.15)
+      effect: 3.19.15
+      msgpackr: 1.11.8
+
+  '@effect/rpc@0.73.0(@effect/platform@0.94.5(effect@3.19.15))(effect@3.19.15)':
+    dependencies:
+      '@effect/platform': 0.94.5(effect@3.19.15)
       effect: 3.19.15
       msgpackr: 1.11.8
 
@@ -3962,7 +4009,7 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
-  '@types/node@25.3.3':
+  '@types/node@25.3.4':
     dependencies:
       undici-types: 7.18.2
 
@@ -3976,7 +4023,7 @@ snapshots:
 
   '@types/readable-stream@4.0.23':
     dependencies:
-      '@types/node': 25.3.3
+      '@types/node': 25.3.4
 
   '@types/statuses@2.0.6': {}
 
@@ -3984,7 +4031,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 25.3.3
+      '@types/node': 25.3.4
 
   '@vitejs/plugin-react@5.1.2(vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
@@ -4254,7 +4301,7 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
 
-  effect@4.0.0-beta.21:
+  effect@4.0.0-beta.27:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.5.3

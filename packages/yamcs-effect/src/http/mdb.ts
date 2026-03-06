@@ -1,15 +1,11 @@
+import { Schema } from "effect";
 import {
+  HttpApiGroup,
   HttpApiEndpoint,
   HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
-import { Schema } from "effect";
+} from "effect/unstable/httpapi";
 
 import * as yamcs from "../schema.js";
-
-const instanceParam = HttpApiSchema.param("instance", Schema.String);
-const nameParam = HttpApiSchema.param("name", yamcs.QualifiedName);
 
 const ListParametersResponse = Schema.Struct({
   spaceSystems: Schema.optional(Schema.Array(yamcs.SpaceSystemInfo)),
@@ -34,54 +30,76 @@ const ListSpaceSystemsResponse = Schema.Struct({
   totalSize: Schema.Int,
 });
 
-const UrlParams = Schema.Struct({
-  q: Schema.String.pipe(Schema.optional),
-  limit: Schema.NumberFromString.pipe(Schema.optional),
-});
-
 export const mdbGroup = HttpApiGroup.make("mdb")
   .add(
-    HttpApiEndpoint.get("getMissionDatabase")`/${instanceParam}`.addSuccess(
-      yamcs.MissionDatabase,
-    ),
+    HttpApiEndpoint.get("getMissionDatabase", "/mdb/:instance", {
+      params: { instance: Schema.String },
+      success: yamcs.MissionDatabase,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
-    HttpApiEndpoint.get("listParameters")`/${instanceParam}/parameters`
-      .setUrlParams(UrlParams)
-      .addSuccess(ListParametersResponse),
+    HttpApiEndpoint.get("listParameters", "/mdb/:instance/parameters", {
+      params: { instance: Schema.String },
+      query: {
+        q: Schema.optional(Schema.String),
+        limit: Schema.optional(Schema.String),
+      },
+      success: ListParametersResponse,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
-    HttpApiEndpoint.get("listCommands")`/${instanceParam}/commands`
-      .setUrlParams(UrlParams)
-      .addSuccess(ListCommandsResponse),
+    HttpApiEndpoint.get("listCommands", "/mdb/:instance/commands", {
+      params: { instance: Schema.String },
+      query: {
+        q: Schema.optional(Schema.String),
+        limit: Schema.optional(Schema.String),
+      },
+      success: ListCommandsResponse,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
-    HttpApiEndpoint.get(
-      "getContainer",
-    )`/${instanceParam}/containers/${nameParam}`.addSuccess(
-      yamcs.ContainerInfo,
-    ),
+    HttpApiEndpoint.get("getContainer", "/mdb/:instance/containers/:name", {
+      params: {
+        instance: Schema.String,
+        name: yamcs.QualifiedName,
+      },
+      success: yamcs.ContainerInfo,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
-    HttpApiEndpoint.get(
-      "getParameter",
-    )`/${instanceParam}/parameters/${nameParam}`.addSuccess(
-      yamcs.ParameterInfo,
-    ),
+    HttpApiEndpoint.get("getParameter", "/mdb/:instance/parameters/:name", {
+      params: {
+        instance: Schema.String,
+        name: yamcs.QualifiedName,
+      },
+      success: yamcs.ParameterInfo,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
     HttpApiEndpoint.get(
       "getSpaceSystem",
-    )`/${instanceParam}/space-systems/${nameParam}`.addSuccess(
-      yamcs.SpaceSystemInfo,
+      "/mdb/:instance/space-systems/:name",
+      {
+        params: {
+          instance: Schema.String,
+          name: yamcs.QualifiedName,
+        },
+        success: yamcs.SpaceSystemInfo,
+        error: [HttpApiError.NotFound],
+      },
     ),
   )
   .add(
-    HttpApiEndpoint.get(
-      "listSpaceSystems",
-    )`/${instanceParam}/space-systems`.addSuccess(ListSpaceSystemsResponse),
-  )
-  .addError(HttpApiError.NotFound)
-  .prefix("/mdb");
+    HttpApiEndpoint.get("listSpaceSystems", "/mdb/:instance/space-systems", {
+      params: { instance: Schema.String },
+      success: ListSpaceSystemsResponse,
+      error: [HttpApiError.NotFound],
+    }),
+  );
 
 export default mdbGroup;

@@ -35,7 +35,7 @@ Generate random data for development of the frontend. Without the simulator, we 
   - Comprehensive schema definitions for YAMCS data structures
   - Support for parameters, commands, links, and time events
 
-#### **`@mrt/yamcs-atom`** - React State Management Layer
+#### **`apps/frontend/src/lib/atom`** - React State Management Layer
 
 - **Purpose**: Reactive state management using [Effect Atom](https://github.com/tim-smart/effect-atom)
 - **Features**:

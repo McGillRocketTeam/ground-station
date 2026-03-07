@@ -1,5 +1,6 @@
-import { Atom, useAtomValue } from "@effect-atom/atom-react";
+import { useAtomValue } from "@effect/atom-react";
 import { Option } from "effect";
+import { Atom } from "effect/unstable/reactivity";
 
 import type { CardId, CardSchemaMap } from "@/lib/cards";
 

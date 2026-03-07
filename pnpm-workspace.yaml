@@ -7,5 +7,6 @@ catalog:
   oxfmt: ^0.35.0
   oxlint: ^1.50.0
   effect: beta
+  "@effect/platform-browser": beta
   "@effect/platform-node": beta
   "@effect/language-service": latest

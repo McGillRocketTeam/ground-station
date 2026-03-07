@@ -1,1 +1,0 @@
-# @mrt/yamcs-atom

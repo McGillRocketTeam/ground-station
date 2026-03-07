@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
-import { useAtomSet } from "@effect-atom/atom-react";
-import { YamcsAtomClient } from "@mrt/yamcs-atom";
+import { useAtomSet } from "@effect/atom-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { YamcsAtomHttpClient } from "@/lib/atom";
 
 import { colorByStatus, type Link } from "./utils";
 
@@ -14,16 +14,16 @@ function Label({ children }: { children: ReactNode }) {
 
 export function LinkDetail({ link }: { link: Link }) {
   const enableLinkAction = useAtomSet(
-    YamcsAtomClient.mutation("link", "enableLink"),
+    YamcsAtomHttpClient.mutation("link", "enableLink"),
   );
   const disableLinkAction = useAtomSet(
-    YamcsAtomClient.mutation("link", "disableLink"),
+    YamcsAtomHttpClient.mutation("link", "disableLink"),
   );
   const resetCounterAction = useAtomSet(
-    YamcsAtomClient.mutation("link", "resetCounters"),
+    YamcsAtomHttpClient.mutation("link", "resetCounters"),
   );
 
-  const path = {
+  const params = {
     instance: import.meta.env.YAMCS_INSTANCE,
     link: link.name,
   };
@@ -62,20 +62,20 @@ export function LinkDetail({ link }: { link: Link }) {
           <Separator />
           <div className="grid grid-cols-2 gap-1 font-sans">
             {link.disabled ? (
-              <Button onClick={() => enableLinkAction({ path })}>
+              <Button onClick={() => enableLinkAction({ params })}>
                 Enable Link
               </Button>
             ) : (
               <Button
                 variant="destructive"
-                onClick={() => disableLinkAction({ path })}
+                onClick={() => disableLinkAction({ params })}
               >
                 Disable Link
               </Button>
             )}
             <Button
               variant="secondary"
-              onClick={() => resetCounterAction({ path })}
+              onClick={() => resetCounterAction({ params })}
             >
               Reset Counters
             </Button>

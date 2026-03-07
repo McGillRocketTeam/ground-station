@@ -1,4 +1,13 @@
-import { Config, Data, Effect, Layer, Queue, Schema, ServiceMap, Stream } from "effect";
+import {
+  Config,
+  Data,
+  Effect,
+  Layer,
+  Queue,
+  Schema,
+  ServiceMap,
+  Stream,
+} from "effect";
 
 import { Cancel, type SubscriptionRequest } from "./client-messages.js";
 import {
@@ -8,25 +17,25 @@ import {
   SubscriptionId,
 } from "./server-messages.js";
 
+export interface WebSocketClientService {
+  readonly messages: Stream.Stream<typeof ServerMessages.Type>;
+  readonly send: (data: Record<string, any>) => Effect.Effect<SubscriptionId>;
+  readonly subscribe: (
+    request: typeof SubscriptionRequest.Type,
+  ) => Effect.Effect<{
+    call: SubscriptionId;
+    stream: Stream.Stream<typeof Events.Type>;
+  }>;
+  readonly unsubscribe: (call: SubscriptionId) => Effect.Effect<void>;
+}
+
 export class WebSocketError extends Data.TaggedError("WebSocketError")<{
   readonly cause: unknown;
 }> {}
 
 export class WebSocketClient extends ServiceMap.Service<
   WebSocketClient,
-  {
-    readonly messages: Stream.Stream<typeof ServerMessages.Type>;
-    readonly send: (
-      data: Record<string, any>,
-    ) => Effect.Effect<SubscriptionId>;
-    readonly subscribe: (
-      request: typeof SubscriptionRequest.Type,
-    ) => Effect.Effect<{
-      call: SubscriptionId;
-      stream: Stream.Stream<typeof Events.Type>;
-    }>;
-    readonly unsubscribe: (call: SubscriptionId) => Effect.Effect<void>;
-  }
+  WebSocketClientService
 >()("@mrt/yamcs-effect/WebSocketClient") {
   static readonly layer = Layer.effect(
     this,

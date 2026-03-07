@@ -11,7 +11,7 @@ local_resource(
 		},
 		labels=['mrt'],
 		links='http://localhost:5173',
-		resource_deps=['backend', 'yamcs-effect', 'yamcs-atom']
+		resource_deps=['backend', 'yamcs-effect']
 )
 
 local_resource(
@@ -71,14 +71,7 @@ local_resource(
     'yamcs-effect',
     serve_cmd="pnpm turbo dev --filter @mrt/yamcs-effect",
 		labels=['packages'],
-		resource_deps=['backend']
-)
-
-local_resource(
-    'yamcs-atom',
-    serve_cmd="pnpm turbo dev --filter @mrt/yamcs-atom",
-		labels=['packages'],
-		resource_deps=['backend', 'yamcs-effect']
+		resource_deps=[]
 )
 
 docker_compose(

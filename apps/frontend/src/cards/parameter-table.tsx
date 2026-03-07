@@ -1,8 +1,9 @@
-import { Result, useAtomValue } from "@effect-atom/atom-react";
-import { parameterSubscriptionAtom } from "@mrt/yamcs-atom";
+import { useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { useState, type ReactNode } from "react";
 
+import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
 const CardEntries = {
@@ -146,7 +147,7 @@ function TableRow({ parameter }: { parameter: string }) {
 function Value({ name }: { name: string }) {
   const result = useAtomValue(parameterSubscriptionAtom(name));
 
-  return Result.match(result, {
+  return AsyncResult.match(result, {
     onInitial: () => (
       <>
         <div className="text-muted-foreground text-right">Awaiting Value</div>

@@ -1,4 +1,3 @@
-import { Atom } from "@effect-atom/atom-react";
 import { useState, type ReactNode } from "react";
 import { Outlet } from "react-router";
 

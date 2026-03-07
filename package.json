@@ -18,6 +18,7 @@
     "@effect/language-service": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "typescript": "catalog:",
     "turbo": "2.7.6"
   },
   "packageManager": "pnpm@10.26.1"

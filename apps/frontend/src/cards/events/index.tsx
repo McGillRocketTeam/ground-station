@@ -1,9 +1,10 @@
 import type { EventsEvent } from "@mrt/yamcs-effect";
 
-import { Result, useAtomValue } from "@effect-atom/atom-react";
-import { eventsSubscriptionAtom } from "@mrt/yamcs-atom";
+import { useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 
+import { eventsSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
 import { EventsTable } from "./events-table";
@@ -17,7 +18,7 @@ export const EventsCard = makeCard({
   component: () => {
     const result = useAtomValue(eventsSubscriptionAtom);
 
-    return Result.builder(result)
+    return AsyncResult.builder(result)
       .onInitial(() => (
         <div className="text-muted-foreground grid min-h-full w-full animate-pulse place-items-center font-mono uppercase">
           Awaiting Events

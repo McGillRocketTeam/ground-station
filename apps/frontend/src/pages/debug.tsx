@@ -1,4 +1,5 @@
-import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
+import { useAtom, useAtomValue } from "@effect/atom-react";
+import { Atom } from "effect/unstable/reactivity";
 import { useState } from "react";
 
 import { Form } from "@/components/form";

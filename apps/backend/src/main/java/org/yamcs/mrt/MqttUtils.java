@@ -69,8 +69,7 @@ public class MqttUtils {
   static void connect(
       MqttConnectOptions connOpts, MqttAsyncClient client, Log log, EventProducer eventProducer)
       throws MqttException {
-    System.out.println(
-        "Connecting to MQTT with clientId {} and options: {}", client.getClientId(), connOpts);
+    log.info("Connecting to MQTT with clientId {} and options: {}", client.getClientId(), connOpts);
 
     client.connect(
         connOpts,

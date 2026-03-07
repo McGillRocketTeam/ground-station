@@ -1,5 +1,5 @@
-import { Atom, Result, useAtom, useAtomValue } from "@effect-atom/atom-react";
-import { commandsSubscriptionAtom } from "@mrt/yamcs-atom";
+import { useAtom, useAtomValue } from "@effect/atom-react";
+import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import { Check, Search, X } from "lucide-react";
 
 import {
@@ -14,6 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { commandsSubscriptionAtom } from "@/lib/atom";
 import { cn, formatDate, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
@@ -40,7 +41,7 @@ export function CommandHistoryTable() {
         >
           <Header />
 
-          {Result.builder(commandHistory)
+          {AsyncResult.builder(commandHistory)
             .onInitial(() => (
               <div className="text-muted-foreground col-span-full min-h-full animate-pulse text-center font-mono uppercase">
                 Loading Command History

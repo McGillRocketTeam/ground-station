@@ -1,14 +1,13 @@
 import {
-  Atom,
   useAtom,
   useAtomRefresh,
   useAtomSet,
   useAtomSubscribe,
   useAtomValue,
-} from "@effect-atom/atom-react";
-import { parameterSubscriptionAtom, YamcsAtomClient } from "@mrt/yamcs-atom";
+} from "@effect/atom-react";
 import Dygraph from "dygraphs";
 import { Effect } from "effect";
+import { Atom } from "effect/unstable/reactivity";
 import {
   useCallback,
   useEffect,
@@ -16,6 +15,8 @@ import {
   useMemo,
   useRef,
 } from "react";
+
+import { YamcsAtomHttpClient, parameterSubscriptionAtom } from "@/lib/atom";
 
 const isDurationMode = (mode: ChartMode): mode is DurationMode =>
   mode.type === "duration";
@@ -75,18 +76,18 @@ const chartHistoryAtom = Atom.make((get) =>
   Effect.gen(function* () {
     const { start, end } = get(timeRangeAtom);
 
-    const urlParams: { start: Date; stop?: Date } = { start };
+    const query: { start: Date; stop?: Date } = { start };
     if (end.getTime() < Date.now()) {
-      urlParams.stop = end;
+      query.stop = end;
     }
 
     const history = yield* get.resultOnce(
-      YamcsAtomClient.query("parameter", "getSamples", {
-        path: {
+      YamcsAtomHttpClient.query("parameter", "getSamples", {
+        params: {
           instance: import.meta.env.YAMCS_INSTANCE,
           parameterName: PARAMETER_NAME,
         },
-        urlParams,
+        query,
       }),
     );
 

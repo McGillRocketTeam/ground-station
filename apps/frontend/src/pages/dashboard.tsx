@@ -1,6 +1,5 @@
-import { Atom, useAtom, useAtomSuspense } from "@effect-atom/atom-react";
+import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { BrowserKeyValueStore } from "@effect/platform-browser";
-import { timeSubscriptionAtom } from "@mrt/yamcs-atom";
 import {
   DockviewApi,
   DockviewReact,
@@ -9,10 +8,12 @@ import {
   type SerializedDockview,
 } from "dockview-react";
 import { Schema } from "effect";
+import { Atom } from "effect/unstable/reactivity";
 import { Suspense, useEffect, useState } from "react";
 
 import { DashboardPlus } from "@/components/dashboard/dashboard-plus";
 import { DashboardTab } from "@/components/dashboard/dashboard-tab";
+import { timeSubscriptionAtom } from "@/lib/atom";
 import { CardComponentMap } from "@/lib/cards";
 import { formatDate } from "@/lib/utils";
 

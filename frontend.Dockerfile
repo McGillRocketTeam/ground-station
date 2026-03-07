@@ -9,7 +9,6 @@ COPY package.json pnpm-lock.yaml ./
 
 COPY apps/frontend/package.json apps/frontend/
 COPY packages/yamcs-effect/package.json packages/yamcs-effect/
-COPY packages/yamcs-atom/package.json packages/yamcs-atom/
 
 RUN pnpm install --filter frontend...
 

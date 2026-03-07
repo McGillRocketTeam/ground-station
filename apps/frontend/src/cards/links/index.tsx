@@ -1,7 +1,8 @@
-import { Result, useAtomValue } from "@effect-atom/atom-react";
-import { linksSubscriptionAtom } from "@mrt/yamcs-atom";
+import { useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 
+import { linksSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
 import { LinksTree } from "./links-tree";
@@ -13,7 +14,7 @@ export const LinksCard = makeCard({
   component: () => {
     const links = useAtomValue(linksSubscriptionAtom);
 
-    return Result.builder(links)
+    return AsyncResult.builder(links)
       .onInitial(() => (
         <div className="text-muted-foreground grid min-h-full w-full animate-pulse place-items-center font-mono uppercase">
           Awaiting Links

@@ -1,11 +1,6 @@
-import {
-  Result,
-  useAtomSet,
-  useAtomSuspense,
-  useAtomValue,
-} from "@effect-atom/atom-react";
-import { YamcsAtomClient } from "@mrt/yamcs-atom";
+import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 
 import {
   DataGridBody,
@@ -13,11 +8,8 @@ import {
   DataGridHeader,
   DataGridRow,
 } from "@/components/ui/data-grid";
+import { YamcsAtomHttpClient } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
-
-type Command = {
-  name: string;
-};
 
 export const CommandButtonCard = makeCard({
   id: "command-button",
@@ -25,12 +17,12 @@ export const CommandButtonCard = makeCard({
   schema: Schema.Struct({}),
   component: () => {
     const commandList = useAtomValue(
-      YamcsAtomClient.query("command", "listCommands", {
-        path: { instance: import.meta.env.YAMCS_INSTANCE },
+      YamcsAtomHttpClient.query("command", "listCommands", {
+        params: { instance: import.meta.env.YAMCS_INSTANCE },
       }),
     );
 
-    return Result.builder(commandList)
+    return AsyncResult.builder(commandList)
       .onInitial(() => (
         <div className="text-muted-foreground grid min-h-full w-full animate-pulse place-items-center font-mono uppercase">
           Awaiting Links
@@ -48,13 +40,13 @@ export const CommandButtonCard = makeCard({
 
 function CommandButtonTable() {
   const sendCommand = useAtomSet(
-    YamcsAtomClient.mutation("command", "issueCommand"),
+    YamcsAtomHttpClient.mutation("command", "issueCommand"),
   );
 
   const { commands } = useAtomSuspense(
-    YamcsAtomClient.query("mdb", "listCommands", {
-      path: { instance: "ground_station" },
-      urlParams: {},
+    YamcsAtomHttpClient.query("mdb", "listCommands", {
+      params: { instance: "ground_station" },
+      query: {},
     }),
   ).value;
 
@@ -76,7 +68,7 @@ function CommandButtonTable() {
               <button
                 onClick={() =>
                   sendCommand({
-                    path: {
+                    params: {
                       instance: import.meta.env.YAMCS_INSTANCE,
                       processor: "realtime",
                       name: command.qualifiedName,

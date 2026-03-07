@@ -1,4 +1,4 @@
-import type { Atom } from "@effect-atom/atom-react";
+import type { Atom } from "effect/unstable/reactivity";
 import type { JSX } from "react";
 
 import { Option, Schema, SchemaAST } from "effect";

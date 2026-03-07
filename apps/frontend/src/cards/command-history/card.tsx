@@ -1,6 +1,7 @@
 import { useAtom, useAtomValue } from "@effect/atom-react";
 import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import { Check, Search, X } from "lucide-react";
+import { memo, useMemo } from "react";
 
 import {
   DataGridBody,
@@ -27,7 +28,7 @@ import {
 } from "./utils";
 
 export function CommandHistoryTable() {
-  // const commandHistory = useAtomValue(commandsSubscriptionAtom);
+  const commandHistory = useAtomValue(commandsSubscriptionAtom);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -35,87 +36,98 @@ export function CommandHistoryTable() {
         <div
           className={cn(
             "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(5,1.5rem)_auto] gap-px rounded-none",
-            // (commandHistory._tag === "Initial" ||
-            //   commandHistory._tag === "Failure") &&
-            //   "min-h-full",
+            (commandHistory._tag === "Initial" ||
+              commandHistory._tag === "Failure") &&
+              "min-h-full",
           )}
         >
           <Header />
 
-          {/* {AsyncResult.builder(commandHistory) */}
-          {/*   .onInitial(() => ( */}
-          {/*     <div className="text-muted-foreground col-span-full min-h-full animate-pulse text-center font-mono uppercase"> */}
-          {/*       Loading Command History */}
-          {/*     </div> */}
-          {/*   )) */}
-          {/*   .onError((error) => ( */}
-          {/*     <pre className="text-error col-span-full min-h-full text-center uppercase"> */}
-          {/*       {error.toString()} */}
-          {/*     </pre> */}
-          {/*   )) */}
-          {/*   .onSuccess((commands) => <Body commands={commands} />) */}
-          {/*   .render()} */}
+          {AsyncResult.builder(commandHistory)
+            .onInitial(() => (
+              <div className="text-muted-foreground col-span-full min-h-full animate-pulse text-center font-mono uppercase">
+                Loading Command History
+              </div>
+            ))
+            .onError((error) => (
+              <pre className="text-error col-span-full min-h-full text-center uppercase">
+                {error.toString()}
+              </pre>
+            ))
+            .onSuccess((commands) => <Body commands={commands} />)
+            .render()}
         </div>
       </div>
     </div>
   );
 }
 
-function Body({ commands }: { commands: CommandHistoryEntry[] }) {
+const Body = memo(function Body({
+  commands,
+}: {
+  commands: CommandHistoryEntry[];
+}) {
   const commandSearchText = useAtomValue(commandSearchAtom);
+  const filteredCommands = useMemo(
+    () =>
+      commands.filter((cmd) =>
+        cmd.commandName.toLowerCase().includes(commandSearchText),
+      ),
+    [commands, commandSearchText],
+  );
 
   return (
     <DataGridBody className="text-sm">
-      {commands
-        .filter((cmd) =>
-          cmd.commandName.toLowerCase().includes(commandSearchText),
-        )
-        .map((command) => (
-          <Popover key={command.id}>
-            <PopoverTrigger
-              payload={command}
-              nativeButton={false}
-              render={
-                <DataGridRow className="group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
-                  <div className="col-span-2 text-right">
-                    {formatDate(command.generationTime)}
-                  </div>
-                  <div className="no-scrollbar line-clamp-1 overflow-x-scroll">
-                    {command.commandName}
-                  </div>
-                  <div className="text-center">
-                    {stringifyValue(
-                      extractAttribute(command, "Command_Id"),
-                      "",
-                    )}
-                  </div>
-                  <div className="text-center">
-                    {stringifyValue(
-                      extractAttribute(command, "Sequence_Count"),
-                      "",
-                    )}
-                  </div>
-
-                  <AckCell command={command} name="Queued" />
-                  <AckCell command={command} name="Released" />
-                  <AckCell command={command} name="Sent" />
-                  <IndexedTargetAckCell command={command} index={0} />
-                  <IndexedTargetAckCell command={command} index={1} />
-                  <FCAckCell command={command} name="CommandComplete" />
-                </DataGridRow>
-              }
-            />
-
-            <PopoverContent>
-              <CommandDetail command={command} />
-            </PopoverContent>
-          </Popover>
-        ))}
+      {filteredCommands.map((command) => (
+        <CommandRow key={command.id} command={command} />
+      ))}
     </DataGridBody>
   );
-}
+});
 
-function FCAckCell({
+const CommandRow = memo(function CommandRow({
+  command,
+}: {
+  command: CommandHistoryEntry;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        payload={command}
+        nativeButton={false}
+        render={
+          <DataGridRow className="group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
+            <div className="col-span-2 text-right">
+              {formatDate(command.generationTime)}
+            </div>
+            <div className="no-scrollbar line-clamp-1 overflow-x-scroll">
+              {command.commandName}
+            </div>
+            <div className="text-center">
+              {stringifyValue(extractAttribute(command, "Command_Id"), "")}
+            </div>
+            <div className="text-center">
+              {stringifyValue(extractAttribute(command, "Sequence_Count"), "")}
+            </div>
+
+            <AckCell command={command} name="Queued" />
+            <AckCell command={command} name="Released" />
+            <AckCell command={command} name="Sent" />
+            <IndexedTargetAckCell command={command} index={0} />
+            <IndexedTargetAckCell command={command} index={1} />
+            <FCAckCell command={command} name="CommandComplete" />
+          </DataGridRow>
+        }
+      />
+
+      <PopoverContent>
+        <CommandDetail command={command} />
+      </PopoverContent>
+    </Popover>
+  );
+});
+
+const FCAckCell = memo(function FCAckCell({
   command,
   name,
 }: {
@@ -144,9 +156,9 @@ function FCAckCell({
         "FAILURE"}
     </div>
   );
-}
+});
 
-function IndexedTargetAckCell({
+const IndexedTargetAckCell = memo(function IndexedTargetAckCell({
   command,
   index,
 }: {
@@ -162,9 +174,9 @@ function IndexedTargetAckCell({
   }
 
   return <AckCell command={command} name={ack.name} />;
-}
+});
 
-function AckCell({
+const AckCell = memo(function AckCell({
   command,
   name,
 }: {
@@ -192,11 +204,11 @@ function AckCell({
         ack.status !== "PENDING" && <X className="size-4" />}
     </div>
   );
-}
+});
 
 const commandSearchAtom = Atom.make("");
 
-function SearchInput() {
+const SearchInput = memo(function SearchInput() {
   const [commandSearchText, setCommandSearchText] = useAtom(commandSearchAtom);
 
   return (
@@ -207,9 +219,9 @@ function SearchInput() {
       onChange={setCommandSearchText}
     />
   );
-}
+});
 
-function Header() {
+const Header = memo(function Header() {
   return (
     <DataGridHeader className="bg-background sticky top-0 z-20">
       <DataGridHead className="grid place-items-center">
@@ -231,4 +243,4 @@ function Header() {
       <DataGridHead className="text-center">ACK</DataGridHead>
     </DataGridHeader>
   );
-}
+});

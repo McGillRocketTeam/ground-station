@@ -1,7 +1,7 @@
 import { useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
-import { useState, type ReactNode } from "react";
+import { memo, useState, type ReactNode } from "react";
 
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
@@ -83,7 +83,7 @@ export const ParameterTable = makeCard({
   },
 });
 
-function TableHeader() {
+const TableHeader = memo(function TableHeader() {
   return (
     <div className="text-white-text sticky top-0 z-10 col-span-full grid grid-cols-subgrid text-sm uppercase">
       <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1" />
@@ -101,9 +101,15 @@ function TableHeader() {
       {/* </div> */}
     </div>
   );
-}
+});
 
-function TableGroup({ children, name }: { children: ReactNode; name: string }) {
+const TableGroup = memo(function TableGroup({
+  children,
+  name,
+}: {
+  children: ReactNode;
+  name: string;
+}) {
   const [collapse, setCollapse] = useState(false);
 
   return (
@@ -128,9 +134,9 @@ function TableGroup({ children, name }: { children: ReactNode; name: string }) {
       )}
     </>
   );
-}
+});
 
-function TableRow({ parameter }: { parameter: string }) {
+const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
   return (
     <div className="*:bg-background hover:*:bg-selection-background col-span-full grid grid-cols-subgrid text-sm *:px-1">
       <div />
@@ -142,9 +148,9 @@ function TableRow({ parameter }: { parameter: string }) {
       {/* <div /> */}
     </div>
   );
-}
+});
 
-function Value({ name }: { name: string }) {
+const Value = memo(function Value({ name }: { name: string }) {
   const result = useAtomValue(parameterSubscriptionAtom(name));
 
   return AsyncResult.match(result, {
@@ -168,4 +174,4 @@ function Value({ name }: { name: string }) {
       </>
     ),
   });
-}
+});

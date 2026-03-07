@@ -1,5 +1,6 @@
 import { Popover as PopoverPrimitive } from "@base-ui/react";
 import { Ellipsis } from "lucide-react";
+import { memo, useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
 
 import {
@@ -25,7 +26,7 @@ import {
 
 const linksPopover = PopoverPrimitive.createHandle<Link>();
 export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
-  const linkTree = buildLinkTree(links);
+  const linkTree = useMemo(() => buildLinkTree(links), [links]);
 
   return (
     <div className="grid grid-cols-[1.5rem_auto_1fr_auto_auto_1.5rem] gap-x-px">
@@ -54,7 +55,7 @@ export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
   );
 }
 
-export function LinkRows({
+export const LinkRows = memo(function LinkRows({
   links,
   depth,
 }: {
@@ -73,9 +74,9 @@ export function LinkRows({
       </Fragment>
     );
   });
-}
+});
 
-function LinkRow({
+const LinkRow = memo(function LinkRow({
   link,
   depth,
   isLast,
@@ -148,4 +149,4 @@ function LinkRow({
       }
     />
   );
-}
+});

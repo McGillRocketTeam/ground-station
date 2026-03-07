@@ -23,11 +23,12 @@ import {
   ConfigProvider,
   DateTime,
   Effect,
+  Exit,
   Logger,
-  Option,
   Schema,
   Schedule,
   Stream,
+  Tracer,
   type Layer,
 } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
@@ -38,10 +39,55 @@ type ArchivedCommandHistoryEntry =
 type StreamingCommandHistoryEntry =
   typeof import("@mrt/yamcs-effect").StreamingCommandHisotryEntry.Type;
 
+type DecodedMessage<A> = {
+  raw: unknown;
+  decoded: Exit.Exit<A, Schema.SchemaError>;
+};
+
+function logValidationFailure(label: string, error: unknown, raw: unknown) {
+  return Effect.sync(() => {
+    console.error(`[yamcs] Failed to decode ${label}`, {
+      error,
+      raw,
+    });
+  });
+}
+
+function isDecodedSuccess<A>(
+  message: DecodedMessage<A>,
+): message is { raw: unknown; decoded: Exit.Success<A, Schema.SchemaError> } {
+  return Exit.isSuccess(message.decoded);
+}
+
+function decodeStreamOrLog<A, E, R>(
+  stream: Stream.Stream<unknown, E, R>,
+  schema: Schema.Schema<A> & { readonly DecodingServices: never },
+  label: string,
+): Stream.Stream<A, E, R> {
+  return stream.pipe(
+    Stream.map(
+      (raw): DecodedMessage<A> => ({
+        raw,
+        decoded: Schema.decodeUnknownExit(schema)(raw),
+      }),
+    ),
+    Stream.tap((message) =>
+      Exit.isFailure(message.decoded)
+        ? logValidationFailure(label, message.decoded.cause, message.raw)
+        : Effect.sync(() => undefined),
+    ),
+    Stream.map((message) =>
+      isDecodedSuccess(message) ? [message.decoded.value] : [],
+    ),
+    Stream.flattenIterable,
+  ) as Stream.Stream<A, E, R>;
+}
+
 const frontendRuntimeFactory = Atom.context({ memoMap: Atom.defaultMemoMap });
 const localStorageRuntime = Atom.runtime(
   BrowserKeyValueStore.layerLocalStorage,
 );
+const yamcsBaseUrl = import.meta.env.YAMCS_URL;
 
 frontendRuntimeFactory.addGlobalLayer(Logger.layer([Logger.consolePretty()]));
 frontendRuntimeFactory.addGlobalLayer(
@@ -65,8 +111,13 @@ export class YamcsAtomHttpClient extends AtomHttpApi.Service<YamcsAtomHttpClient
     runtime: frontendRuntimeFactory,
     transformClient: (client) =>
       client.pipe(
+        HttpClient.transformResponse((effect) =>
+          Effect.provideService(effect, Tracer.DisablePropagation, true),
+        ),
         HttpClient.mapRequest((req) =>
-          HttpClientRequest.setUrl(req.url.replaceAll("%3A", ":"))(req),
+          HttpClientRequest.setUrl(
+            new URL(req.url.replaceAll("%3A", ":"), yamcsBaseUrl).toString(),
+          )(req),
         ),
         HttpClient.retryTransient({
           times: 3,
@@ -89,9 +140,12 @@ const timeSubscriptionAtomForInstance = Atom.family((instance: string) =>
         );
 
         return stream.pipe(
-          Stream.mapEffect((message) =>
-            Schema.decodeUnknownEffect(TimeEvent)(message),
-          ),
+          (stream) =>
+            decodeStreamOrLog(
+              stream,
+              TimeEvent,
+              `time subscription (${instance})`,
+            ),
           Stream.map((message) => message.data),
           Stream.ensuring(ws.unsubscribe(call)),
         );
@@ -110,9 +164,12 @@ const linksSubscriptionAtomForInstance = Atom.family((instance: string) =>
         );
 
         return stream.pipe(
-          Stream.mapEffect((message) =>
-            Schema.decodeUnknownEffect(LinkEvent)(message),
-          ),
+          (stream) =>
+            decodeStreamOrLog(
+              stream,
+              LinkEvent,
+              `links subscription (${instance})`,
+            ),
           Stream.map((message) => message.data.links),
           Stream.ensuring(ws.unsubscribe(call)),
         );
@@ -127,10 +184,18 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
       Effect.gen(function* () {
         const ws = yield* WebSocketClient;
         const { commands: priorCommands } = yield* Effect.orElseSucceed(
-          get.result(
-            YamcsAtomHttpClient.query("command", "listCommands", {
-              params: { instance },
-            }),
+          Effect.tapError(
+            get.result(
+              YamcsAtomHttpClient.query("command", "listCommands", {
+                params: { instance },
+              }),
+            ),
+            (error) =>
+              logValidationFailure(
+                `command history archive query (${instance})`,
+                error,
+                { instance },
+              ),
           ),
           () => ({
             commands: [] as ReadonlyArray<ArchivedCommandHistoryEntry>,
@@ -152,11 +217,13 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
         );
 
         const dataStream = stream.pipe(
-          Stream.map((message) =>
-            Schema.decodeUnknownOption(CommandHistoryEvent)(message),
-          ),
-          Stream.filter(Option.isSome),
-          Stream.map((message) => message.value.data),
+          (stream) =>
+            decodeStreamOrLog(
+              stream,
+              CommandHistoryEvent,
+              `command history subscription (${instance})`,
+            ),
+          Stream.map((message) => message.data),
           Stream.ensuring(ws.unsubscribe(call)),
         );
 
@@ -212,10 +279,10 @@ const parameterSubscriptionAtomForInstance = Atom.family(
             }),
           );
 
-          const eventStream = stream.pipe(
-            Stream.mapEffect((message) =>
-              Schema.decodeUnknownEffect(ParameterEvent)(message.data),
-            ),
+          const eventStream = decodeStreamOrLog(
+            Stream.map(stream, (message) => message.data),
+            ParameterEvent,
+            `parameter subscription (${instance}:${qualifiedName})`,
           );
 
           const mappingEvents = yield* eventStream.pipe(
@@ -266,9 +333,12 @@ const eventsSubscriptionAtomForInstance = Atom.family((instance: string) =>
         const initial = [...events.slice().reverse()];
 
         return stream.pipe(
-          Stream.mapEffect((message) =>
-            Schema.decodeUnknownEffect(EventsEvent)(message),
-          ),
+          (stream) =>
+            decodeStreamOrLog(
+              stream,
+              EventsEvent,
+              `events subscription (${instance})`,
+            ),
           Stream.scan(initial, (allEvents, event) => [
             ...allEvents,
             event.data,

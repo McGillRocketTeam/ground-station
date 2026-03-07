@@ -1,3 +1,5 @@
+import type { ParameterValue } from "@mrt/yamcs-effect";
+
 import {
   useAtom,
   useAtomRefresh,
@@ -7,7 +9,7 @@ import {
 } from "@effect/atom-react";
 import Dygraph from "dygraphs";
 import { DateTime, Effect } from "effect";
-import { Atom } from "effect/unstable/reactivity";
+import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import {
   useCallback,
   useEffect,
@@ -27,6 +29,7 @@ const isDurationMode = (mode: ChartMode): mode is DurationMode =>
 
 const MAX_DATA_POINTS = 1000;
 const PARAMETER_NAME = "/FlightComputer/acceleration_x";
+const parameterLiveAtom = parameterSubscriptionAtom(PARAMETER_NAME);
 
 type DurationMode = {
   type: "duration";
@@ -253,49 +256,52 @@ export function ParameterChart() {
   const setChartData = useAtomSet(chartDataWithSubscriptionAtom);
   const refreshChartData = useAtomRefresh(chartDataWithSubscriptionAtom);
 
-  // No 'immediate' option - prevents infinite loop from atom triggering its own update
-  useAtomSubscribe(parameterSubscriptionAtom(PARAMETER_NAME), (result) => {
-    if (!isLiveRef.current) return;
+  const handleParameterUpdate = useCallback(
+    (result: AsyncResult.AsyncResult<typeof ParameterValue.Type, unknown>) => {
+      if (!isLiveRef.current) return;
 
-    if (result._tag === "Success") {
-      const parameterValue = result.value;
-      const timestamp = DateTime.toDate(parameterValue.generationTime);
-      let numericValue = 0;
+      if (result._tag === "Success") {
+        const parameterValue = result.value;
+        const timestamp = DateTime.toDate(parameterValue.generationTime);
+        let numericValue = 0;
 
-      if (parameterValue.engValue && "value" in parameterValue.engValue) {
-        numericValue = Number(parameterValue.engValue.value) || 0;
-      } else if (
-        parameterValue.rawValue &&
-        "value" in parameterValue.rawValue
-      ) {
-        numericValue = Number(parameterValue.rawValue.value) || 0;
-      }
-
-      const currentMode = modeRef.current;
-      const newPoint: BandDataPoint = [
-        timestamp,
-        [numericValue, numericValue, numericValue],
-      ];
-
-      if (currentMode.type === "duration") {
-        // Filter points outside the sliding window (creates scrolling effect)
-        const cutoffTime = timestamp.getTime() - currentMode.durationMs;
-        const currentData = dataRef.current;
-        const filtered = currentData.filter(
-          (point) => point[0].getTime() >= cutoffTime,
-        );
-        const newData: BandDataPoint[] = [...filtered, newPoint];
-        if (
-          newData.length !== currentData.length ||
-          filtered.length !== currentData.length
+        if (parameterValue.engValue && "value" in parameterValue.engValue) {
+          numericValue = Number(parameterValue.engValue.value) || 0;
+        } else if (
+          parameterValue.rawValue &&
+          "value" in parameterValue.rawValue
         ) {
-          setChartData(newData);
+          numericValue = Number(parameterValue.rawValue.value) || 0;
         }
-      } else {
-        setChartData(newPoint);
+
+        const currentMode = modeRef.current;
+        const newPoint: BandDataPoint = [
+          timestamp,
+          [numericValue, numericValue, numericValue],
+        ];
+
+        if (currentMode.type === "duration") {
+          const cutoffTime = timestamp.getTime() - currentMode.durationMs;
+          const currentData = dataRef.current;
+          const filtered = currentData.filter(
+            (point) => point[0].getTime() >= cutoffTime,
+          );
+          const newData: BandDataPoint[] = [...filtered, newPoint];
+          if (
+            newData.length !== currentData.length ||
+            filtered.length !== currentData.length
+          ) {
+            setChartData(newData);
+          }
+        } else {
+          setChartData(newPoint);
+        }
       }
-    }
-  });
+    },
+    [setChartData],
+  );
+
+  useAtomSubscribe(parameterLiveAtom, handleParameterUpdate);
 
   const handleZoom = useCallback(
     (minDate: number, maxDate: number) => {
@@ -330,22 +336,27 @@ export function ParameterChart() {
     [handleDoubleClick],
   );
 
-  useAtomValue(chartDataWithSubscriptionAtom, (data) => {
-    if (!chartRef.current && containerRef.current && data.length > 0) {
-      chartRef.current = new Dygraph(containerRef.current, data, {
+  useLayoutEffect(() => {
+    if (!containerRef.current || chartData.length === 0) {
+      return;
+    }
+
+    if (!chartRef.current) {
+      chartRef.current = new Dygraph(containerRef.current, chartData, {
         labels: ["Time", "Value"],
         legend: "never",
         connectSeparatedPoints: true,
         drawGapEdgePoints: true,
-        customBars: true, // Enable high/low bands using [min, avg, max] format
+        customBars: true,
         zoomCallback: handleZoom,
         interactionModel,
         strokeWidth: 2,
       });
-    } else if (data.length > 0) {
-      chartRef.current!.updateOptions({ file: data });
+      return;
     }
-  });
+
+    chartRef.current.updateOptions({ file: chartData });
+  }, [chartData, handleZoom, interactionModel]);
 
   // Only update zoomCallback since interactionModel is memoized
   useLayoutEffect(() => {

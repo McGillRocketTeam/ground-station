@@ -85,13 +85,6 @@ export function InstanceProtectedPage(): ReactNode {
 
   return (
     <>
-      <div className="fixed right-2 bottom-2 z-50 w-[20rem] max-w-[calc(100vw-1rem)]">
-        <InstanceSelector
-          currentInstance={instance}
-          onApply={setInstance}
-          onClear={() => setInstance("")}
-        />
-      </div>
       <Outlet />
     </>
   );

@@ -3,7 +3,7 @@ services:
     args:
       cors:
         allowOrigin: "*"
-        allowCredentials: false
+        allowCredentials: true
 
 dataDir: yamcs-data
 

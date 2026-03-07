@@ -1,7 +1,8 @@
 import type { IDockviewPanelProps } from "dockview-react";
-import type { ReactNode } from "react";
+import type { ErrorInfo, ReactNode } from "react";
 
 import { Schema } from "effect";
+import { Component, createElement } from "react";
 
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
@@ -23,11 +24,57 @@ export interface CardDefinition<
   ) => ReactNode;
 }
 
+class CardErrorBoundary extends Component<
+  {
+    cardName: string;
+    children?: ReactNode;
+  },
+  {
+    error: Error | null;
+  }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error(`[dashboard] Card crashed: ${this.props.cardName}`, {
+      error,
+      errorInfo,
+    });
+  }
+
+  render() {
+    if (this.state.error) {
+      return createElement(
+        "div",
+        {
+          className:
+            "text-error grid h-full place-items-center p-4 font-mono text-xs uppercase",
+        },
+        `${this.props.cardName} failed to render: ${this.state.error.message}`,
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 export function makeCard<
   const Id extends string,
   T extends Schema.Struct.Fields,
 >(props: CardDefinition<Id, T>): CardDefinition<Id, T> {
-  return props;
+  return {
+    ...props,
+    component: (cardProps) =>
+      createElement(
+        CardErrorBoundary,
+        { cardName: props.name },
+        props.component(cardProps),
+      ),
+  };
 }
 
 // Source of truth - add all cards here

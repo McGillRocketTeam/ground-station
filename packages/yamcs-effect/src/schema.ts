@@ -8,6 +8,16 @@ export const NamedObjectId = Schema.Struct({
 export const QualifiedName = Schema.String;
 export type QualifiedName = typeof Schema.String.Type;
 
+const YamcsDateFromMillisString = Schema.NumberFromString.pipe(
+  Schema.decodeTo(Schema.DateTimeUtcFromMillis),
+);
+
+export const YamcsDate = Schema.Union([
+  Schema.DateTimeUtcFromMillis,
+  Schema.DateTimeUtcFromString,
+  YamcsDateFromMillisString,
+]);
+
 const name = Schema.String;
 const qualifiedName = QualifiedName;
 
@@ -208,7 +218,7 @@ export const CommandId = Schema.String;
 export type CommandId = typeof CommandId.Type;
 
 export const CommandIdObject = Schema.Struct({
-  generationTime: Schema.DateTimeUtcFromString,
+  generationTime: YamcsDate,
   origin: Schema.String,
   sequenceNumber: Schema.Number,
   commandName: QualifiedName,
@@ -256,7 +266,7 @@ const StringValue = Schema.Struct({
 
 const TimestampValue = Schema.Struct({
   type: Schema.Literal("TIMESTAMP"),
-  value: Schema.DateTimeUtcFromString,
+  value: YamcsDate,
 }).pipe(Schema.encodeKeys({ value: "stringValue" }));
 
 const BooleanValue = Schema.Struct({
@@ -308,7 +318,7 @@ export const CommandHistoryEntry = Schema.Struct({
   sequenceNumber: Schema.Number,
   commandId: CommandIdObject,
   attr: Schema.Array(CommandHistoryAttribute),
-  generationTime: Schema.DateTimeUtcFromString,
+  generationTime: YamcsDate,
   assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
@@ -321,7 +331,7 @@ export const StreamingCommandHisotryEntry = Schema.Struct({
   sequenceNumber: Schema.optional(Schema.Number),
   commandId: CommandIdObject,
   attr: Schema.Array(CommandHistoryAttribute),
-  generationTime: Schema.DateTimeUtcFromString,
+  generationTime: YamcsDate,
   assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
@@ -367,7 +377,7 @@ export const IssueCommandRequest = Schema.Struct({
 
 export const IssueCommandResponse = Schema.Struct({
   id: CommandId,
-  generationTime: Schema.DateTimeUtcFromString,
+  generationTime: YamcsDate,
   origin: Schema.String,
   sequenceNumber: Schema.Number,
   commandName: QualifiedName,
@@ -402,15 +412,15 @@ export const LinkInfo = Schema.Struct({
 });
 
 export const ParameterSample = Schema.Struct({
-  time: Schema.DateTimeUtcFromString,
+  time: YamcsDate,
   avg: Schema.Number,
   min: Schema.Number,
   max: Schema.Number,
   n: Schema.Number,
-  minTime: Schema.DateTimeUtcFromString,
-  maxTime: Schema.DateTimeUtcFromString,
-  firstTime: Schema.DateTimeUtcFromString,
-  lastTime: Schema.DateTimeUtcFromString,
+  minTime: YamcsDate,
+  maxTime: YamcsDate,
+  firstTime: YamcsDate,
+  lastTime: YamcsDate,
 });
 
 export const EventSeverity = Schema.Literals([
@@ -424,8 +434,8 @@ export const EventSeverity = Schema.Literals([
 
 export const Event = Schema.Struct({
   source: Schema.String,
-  generationTime: Schema.DateTimeUtcFromString,
-  receptionTime: Schema.DateTimeUtcFromString,
+  generationTime: YamcsDate,
+  receptionTime: YamcsDate,
   seqNumber: Schema.Number,
   message: Schema.String,
   severity: EventSeverity,
@@ -523,3 +533,15 @@ export class SequenceEntryInfo extends Schema.Opaque<SequenceEntryInfo>()(
     indirectParameterRef: IndirectParameterRefInfo,
   }),
 ) {}
+
+export const YamcsInstance = Schema.Struct({
+  // Instance name.
+  name: Schema.String,
+  missionDatabase: MissionDatabase,
+  // processors: Schema.Array(ProcessorInfo);
+  // state: InstanceState;
+
+  //in case the state=FAILED, this field will indicate the cause of the failure
+  // the missionDatabase and other fields may not be filled when this happens
+  failureCause: Schema.optional(Schema.String),
+});

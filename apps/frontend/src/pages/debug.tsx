@@ -38,7 +38,7 @@ export function DebugPage() {
 
       <div className="grid place-items-center p-4">
         {selectedComponent ? (
-          <div>{selectedComponent({ parameter: "/a/b", command: "asdf" })}</div>
+          <div>{selectedComponent({} as never)}</div>
         ) : (
           <div className="text-muted-foreground">No Card Selected</div>
         )}

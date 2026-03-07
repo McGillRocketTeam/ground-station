@@ -20,13 +20,14 @@ import { cn, formatDate, stringifyValue } from "@/lib/utils";
 import { BrailleSpinner } from "./braile-spinner";
 import { CommandDetail } from "./command-detail";
 import {
+  collectAcks,
   extractAcknowledgement,
   extractAttribute,
   type CommandHistoryEntry,
 } from "./utils";
 
 export function CommandHistoryTable() {
-  const commandHistory = useAtomValue(commandsSubscriptionAtom);
+  // const commandHistory = useAtomValue(commandsSubscriptionAtom);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -34,26 +35,26 @@ export function CommandHistoryTable() {
         <div
           className={cn(
             "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(5,1.5rem)_auto] gap-px rounded-none",
-            (commandHistory._tag === "Initial" ||
-              commandHistory._tag === "Failure") &&
-              "min-h-full",
+            // (commandHistory._tag === "Initial" ||
+            //   commandHistory._tag === "Failure") &&
+            //   "min-h-full",
           )}
         >
           <Header />
 
-          {AsyncResult.builder(commandHistory)
-            .onInitial(() => (
-              <div className="text-muted-foreground col-span-full min-h-full animate-pulse text-center font-mono uppercase">
-                Loading Command History
-              </div>
-            ))
-            .onError((error) => (
-              <pre className="text-error col-span-full min-h-full text-center uppercase">
-                {error.toString()}
-              </pre>
-            ))
-            .onSuccess((commands) => <Body commands={commands} />)
-            .render()}
+          {/* {AsyncResult.builder(commandHistory) */}
+          {/*   .onInitial(() => ( */}
+          {/*     <div className="text-muted-foreground col-span-full min-h-full animate-pulse text-center font-mono uppercase"> */}
+          {/*       Loading Command History */}
+          {/*     </div> */}
+          {/*   )) */}
+          {/*   .onError((error) => ( */}
+          {/*     <pre className="text-error col-span-full min-h-full text-center uppercase"> */}
+          {/*       {error.toString()} */}
+          {/*     </pre> */}
+          {/*   )) */}
+          {/*   .onSuccess((commands) => <Body commands={commands} />) */}
+          {/*   .render()} */}
         </div>
       </div>
     </div>
@@ -98,8 +99,8 @@ function Body({ commands }: { commands: CommandHistoryEntry[] }) {
                   <AckCell command={command} name="Queued" />
                   <AckCell command={command} name="Released" />
                   <AckCell command={command} name="Sent" />
-                  <AckCell command={command} name="radio-controlstation-a_RX" />
-                  <AckCell command={command} name="radio-controlstation-b_RX" />
+                  <IndexedTargetAckCell command={command} index={0} />
+                  <IndexedTargetAckCell command={command} index={1} />
                   <FCAckCell command={command} name="CommandComplete" />
                 </DataGridRow>
               }
@@ -127,16 +128,40 @@ function FCAckCell({
       className={cn(
         "grid place-items-center text-sm",
         ack.status === "OK" && "text-success",
+        ack.status === "PENDING" && "text-muted-foreground",
         ack.status === "??" && "text-muted-foreground",
         ack.status !== "??" &&
+          ack.status !== "PENDING" &&
           ack.status !== "OK" &&
           "bg-error! text-error-foreground",
       )}
     >
       {ack.status === "OK" && "SUCCESS"}
-      {ack.status !== "OK" && ack.status !== "??" && "FAILURE"}
+      {ack.status === "PENDING" && <BrailleSpinner />}
+      {ack.status !== "OK" &&
+        ack.status !== "PENDING" &&
+        ack.status !== "??" &&
+        "FAILURE"}
     </div>
   );
+}
+
+function IndexedTargetAckCell({
+  command,
+  index,
+}: {
+  command: CommandHistoryEntry;
+  index: number;
+}) {
+  const ack = collectAcks(command).uplink[index];
+
+  if (!ack) {
+    return (
+      <div className="text-muted-foreground grid place-items-center">-</div>
+    );
+  }
+
+  return <AckCell command={command} name={ack.name} />;
 }
 
 function AckCell({
@@ -192,7 +217,7 @@ function Header() {
       </DataGridHead>
       <SearchInput />
       <DataGridHead className="col-span-3 text-center">G.S.C.</DataGridHead>
-      <DataGridHead className="col-span-2 text-center">RADIO</DataGridHead>
+      <DataGridHead className="col-span-2 text-center">UPLINK</DataGridHead>
       <DataGridHead className="text-center">FC</DataGridHead>
       <DataGridHead className="col-span-2">Timestamp</DataGridHead>
       <DataGridHead>Command</DataGridHead>
@@ -201,8 +226,8 @@ function Header() {
       <DataGridHead className="text-center">Q</DataGridHead>
       <DataGridHead className="text-center">R</DataGridHead>
       <DataGridHead className="text-center">S</DataGridHead>
-      <DataGridHead className="text-center">RX</DataGridHead>
-      <DataGridHead className="text-center">TX</DataGridHead>
+      <DataGridHead className="text-center">U1</DataGridHead>
+      <DataGridHead className="text-center">U2</DataGridHead>
       <DataGridHead className="text-center">ACK</DataGridHead>
     </DataGridHeader>
   );

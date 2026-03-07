@@ -46,7 +46,7 @@ const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
 const dashboardLocalStorage = Atom.kvs({
   runtime: runtime,
   key: "mrt-dashboard",
-  schema: Schema.Object,
+  schema: Schema.ObjectKeyword,
   defaultValue: () => ({}),
 });
 

@@ -1,6 +1,7 @@
 import type { Value } from "@mrt/yamcs-effect";
 
 import { clsx, type ClassValue } from "clsx";
+import { DateTime } from "effect";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -50,7 +51,8 @@ export function displayValue(value: typeof Value.Type): Display {
   }
 }
 
-export function formatDate(date: Date) {
+export function formatDate(date: Date | DateTime.DateTime) {
+  const value = date instanceof Date ? date : DateTime.toDate(date);
   const months = [
     "Jan",
     "Feb",
@@ -66,12 +68,12 @@ export function formatDate(date: Date) {
     "Dec",
   ];
 
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = months[date.getMonth()];
+  const day = String(value.getDate()).padStart(2, "0");
+  const month = months[value.getMonth()];
 
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
+  const hours = String(value.getHours()).padStart(2, "0");
+  const minutes = String(value.getMinutes()).padStart(2, "0");
+  const seconds = String(value.getSeconds()).padStart(2, "0");
 
   return `${day} ${month} ${hours}:${minutes}:${seconds}`;
 }

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
-import { useAtomSet } from "@effect/atom-react";
+import { useAtomSet, useAtomValue } from "@effect/atom-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { YamcsAtomHttpClient } from "@/lib/atom";
+import { YamcsAtomHttpClient, selectedInstanceAtom } from "@/lib/atom";
 
 import { colorByStatus, type Link } from "./utils";
 
@@ -13,6 +13,7 @@ function Label({ children }: { children: ReactNode }) {
 }
 
 export function LinkDetail({ link }: { link: Link }) {
+  const instance = useAtomValue(selectedInstanceAtom);
   const enableLinkAction = useAtomSet(
     YamcsAtomHttpClient.mutation("link", "enableLink"),
   );
@@ -24,7 +25,7 @@ export function LinkDetail({ link }: { link: Link }) {
   );
 
   const params = {
-    instance: import.meta.env.YAMCS_INSTANCE,
+    instance,
     link: link.name,
   };
 

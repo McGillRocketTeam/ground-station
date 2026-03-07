@@ -10,14 +10,15 @@ export function extractAttribute(command: CommandHistoryEntry, attr: string) {
 
 export type Ack = {
   name: string;
+  label: string;
   status: string;
-  time: Date | undefined;
+  time: CommandHistoryEntry["generationTime"] | undefined;
   message: string | undefined;
 };
 
 interface Acks {
   groundStation: Ack[];
-  radio: Ack[];
+  uplink: Ack[];
   flightComputer: Ack[];
 }
 
@@ -26,6 +27,8 @@ function validAck(ack: Ack): boolean {
 }
 
 export function collectAcks(command: CommandHistoryEntry): Acks {
+  const ackNames = listAckNames(command);
+
   return {
     groundStation: [
       extractAcknowledgement(command, "Queued"),
@@ -33,15 +36,49 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
       extractAcknowledgement(command, "Sent"),
     ].filter(validAck),
 
-    radio: [
-      extractAcknowledgement(command, "radio-controlstation-a_RX"),
-      extractAcknowledgement(command, "radio-controlstation-b_RX"),
-    ].filter(validAck),
+    uplink: ackNames
+      .filter((ack) => ack.startsWith("uplink_"))
+      .map((ack) => extractAcknowledgement(command, ack))
+      .filter(validAck),
 
     flightComputer: [
+      ...ackNames
+        .filter((ack) => ack.startsWith("fc_"))
+        .map((ack) => extractAcknowledgement(command, ack)),
       extractAcknowledgement(command, "CommandComplete", true),
     ].filter(validAck),
   };
+}
+
+function listAckNames(command: CommandHistoryEntry) {
+  const ackNames = new Set<string>();
+
+  for (const attribute of command.attr) {
+    if (!attribute.name.endsWith("_Status")) {
+      continue;
+    }
+
+    if (attribute.name.startsWith("Acknowledge_")) {
+      ackNames.add(
+        attribute.name.slice("Acknowledge_".length, -"_Status".length),
+      );
+      continue;
+    }
+
+    if (attribute.name === "CommandComplete_Status") {
+      ackNames.add("CommandComplete");
+    }
+  }
+
+  return Array.from(ackNames).sort();
+}
+
+function formatAckLabel(ack: string) {
+  if (ack === "CommandComplete") {
+    return "overall";
+  }
+
+  return ack.replace(/^(uplink_|fc_)/, "").replaceAll("_", " ");
 }
 
 export function extractAcknowledgement(
@@ -65,6 +102,7 @@ export function extractAcknowledgement(
 
   return {
     name: ack,
+    label: formatAckLabel(ack),
     status: stringifyValue(statusValue, "??"),
     time: timeValue?.type === "TIMESTAMP" ? timeValue.value : undefined,
     message: messageValue?.type === "STRING" ? messageValue.value : undefined,

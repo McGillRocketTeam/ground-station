@@ -48,6 +48,18 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: pp_realtime
 
+  - name: FlightComputerCommands
+    class: org.yamcs.mqtt.MqttFanoutCommandLink
+    autoReconnect: true
+    brokers:
+      - tcp://localhost:1883
+    tcStream: tc_realtime
+    targets:
+      - name: SystemA
+        baseTopic: SystemA/Rocket/FlightComputer
+      - name: SystemB
+        baseTopic: SystemB/Rocket/FlightComputer
+
 mdb:
   - type: xtce
     args:

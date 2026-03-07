@@ -353,6 +353,11 @@ export const IssueCommandRequest = Schema.Struct({
   comment: Schema.optional(Schema.String),
 
   /**
+   * Custom command options registered on the server.
+   */
+  extra: Schema.optional(Schema.Record(Schema.String, Schema.Any)),
+
+  /**
    * Override the stream on which the command should be sent out.
    *
    * Requires elevated privilege.

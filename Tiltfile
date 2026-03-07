@@ -6,7 +6,6 @@ local_resource(
     'frontend',
     serve_cmd="pnpm --filter @mrt/frontend dev",
 		serve_env={
-			'YAMCS_INSTANCE': 'ground_station',
 			'YAMCS_URL': 'http://localhost:8090',
 		},
 		labels=['mrt'],

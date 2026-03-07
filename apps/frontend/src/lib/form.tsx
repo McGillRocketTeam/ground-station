@@ -1,34 +1,37 @@
 import type { Atom } from "effect/unstable/reactivity";
 import type { JSX } from "react";
 
-import { Option, Schema, SchemaAST } from "effect";
+import { Schema, SchemaAST } from "effect";
 
 import { CommandField } from "@/components/form/command";
 import { ParameterField } from "@/components/form/parameter";
 import { StringField } from "@/components/form/string";
 
-export const FormTypeAnnotationId = Symbol.for("mrt/form/type");
-export const FormTitleAnnotationId = Symbol.for("mrt/form/title");
+export const FormTypeAnnotationId: unique symbol = Symbol.for(
+  "mrt/form/type",
+) as never;
+export const FormTitleAnnotationId: unique symbol = Symbol.for(
+  "mrt/form/title",
+) as never;
 
 export type FormType = "unknown" | "string" | "parameter" | "command";
 
 declare module "effect/Schema" {
   namespace Annotations {
-    interface GenericSchema<A> extends Schema<A> {
-      [FormTypeAnnotationId]?: FormType;
+    interface Annotations {
+      readonly [FormTypeAnnotationId]?: FormType | undefined;
+      readonly [FormTitleAnnotationId]?: string | undefined;
     }
   }
 }
 
-export const formType = <A, I, R>(schema: Schema.Schema<A, I, R>): FormType =>
-  SchemaAST.getAnnotation<FormType>(FormTypeAnnotationId)(schema.ast).pipe(
-    Option.getOrElse(() => "unknown"),
-  ) as FormType;
+export const formType = (schema: Schema.Schema<unknown>): FormType =>
+  (SchemaAST.resolve(schema.ast)?.[FormTypeAnnotationId] ??
+    "unknown") as FormType;
 
-export const formTitle = <A, I, R>(schema: Schema.Schema<A, I, R>): string =>
-  SchemaAST.getAnnotation<string>(FormTitleAnnotationId)(schema.ast).pipe(
-    Option.getOrElse(() => "Unnamed Field"),
-  );
+export const formTitle = (schema: Schema.Schema<unknown>): string =>
+  (SchemaAST.resolve(schema.ast)?.[FormTitleAnnotationId] ??
+    "Unnamed Field") as string;
 
 export type FormFieldRenderer = (
   title: string,

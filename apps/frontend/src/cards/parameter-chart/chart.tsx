@@ -6,7 +6,7 @@ import {
   useAtomValue,
 } from "@effect/atom-react";
 import Dygraph from "dygraphs";
-import { Effect } from "effect";
+import { DateTime, Effect } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import {
   useCallback,
@@ -16,7 +16,11 @@ import {
   useRef,
 } from "react";
 
-import { YamcsAtomHttpClient, parameterSubscriptionAtom } from "@/lib/atom";
+import {
+  YamcsAtomHttpClient,
+  parameterSubscriptionAtom,
+  selectedInstanceAtom,
+} from "@/lib/atom";
 
 const isDurationMode = (mode: ChartMode): mode is DurationMode =>
   mode.type === "duration";
@@ -74,17 +78,20 @@ type BandDataPoint = [Date, [number, number, number]];
 
 const chartHistoryAtom = Atom.make((get) =>
   Effect.gen(function* () {
+    const instance = get(selectedInstanceAtom);
     const { start, end } = get(timeRangeAtom);
 
-    const query: { start: Date; stop?: Date } = { start };
+    const query: { start: string; stop?: string } = {
+      start: start.toISOString(),
+    };
     if (end.getTime() < Date.now()) {
-      query.stop = end;
+      query.stop = end.toISOString();
     }
 
     const history = yield* get.resultOnce(
       YamcsAtomHttpClient.query("parameter", "getSamples", {
         params: {
-          instance: import.meta.env.YAMCS_INSTANCE,
+          instance,
           parameterName: PARAMETER_NAME,
         },
         query,
@@ -93,7 +100,7 @@ const chartHistoryAtom = Atom.make((get) =>
 
     // Map to [Date, [min, avg, max]] format for dygraphs customBars
     const data = history.sample.map((h) => [
-      h.time,
+      DateTime.toDate(h.time),
       [h.min ?? h.avg, h.avg, h.max ?? h.avg],
     ]) as BandDataPoint[];
     return data;
@@ -252,7 +259,7 @@ export function ParameterChart() {
 
     if (result._tag === "Success") {
       const parameterValue = result.value;
-      const timestamp = new Date(parameterValue.generationTime);
+      const timestamp = DateTime.toDate(parameterValue.generationTime);
       let numericValue = 0;
 
       if (parameterValue.engValue && "value" in parameterValue.engValue) {
@@ -375,6 +382,7 @@ export function ParameterChart() {
 
   return (
     <div ref={parentRef} className="absolute inset-0 bottom-2 grid">
+      <ModeControls />
       <div ref={containerRef} />
     </div>
   );

@@ -28,6 +28,33 @@ realtime:
     # Record the local values
     recordLocalValues: true
 
+launch-canada-realtime:
+  services:
+    - class: org.yamcs.StreamTmPacketProvider
+      args:
+        streams: [
+          "system_a_fc_realtime",
+          "system_a_controlstation_radio_realtime",
+          "system_a_pad_radio_realtime",
+          "system_b_fc_realtime",
+          "system_b_controlstation_radio_realtime",
+          "system_b_pad_radio_realtime"
+        ]
+    - class: org.yamcs.StreamTcCommandReleaser
+    - class: org.yamcs.tctm.StreamParameterProvider
+    - class: org.yamcs.algorithms.AlgorithmManager
+    - class: org.yamcs.parameter.LocalParameterManager
+  config:
+    subscribeAll: true
+    allowContainerlessCommands: true
+    alarm:
+      parameterCheck: true
+      parameterServer: enabled
+    tmProcessor:
+      ignoreOutOfContainerEntries: false
+    recordInitialValues: true
+    recordLocalValues: true
+
 
 # Used to perform step-by-step archive replays to displays, etc
 Archive:

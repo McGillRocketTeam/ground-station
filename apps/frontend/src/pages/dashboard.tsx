@@ -1,4 +1,4 @@
-import { useAtom, useAtomSuspense } from "@effect/atom-react";
+import { useAtom, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { BrowserKeyValueStore } from "@effect/platform-browser";
 import {
   DockviewApi,
@@ -8,12 +8,29 @@ import {
   type SerializedDockview,
 } from "dockview-react";
 import { Schema } from "effect";
-import { Atom } from "effect/unstable/reactivity";
+import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import { Suspense, useEffect, useState } from "react";
 
 import { DashboardPlus } from "@/components/dashboard/dashboard-plus";
 import { DashboardTab } from "@/components/dashboard/dashboard-tab";
-import { timeSubscriptionAtom } from "@/lib/atom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  selectedInstanceAtom,
+  timeSubscriptionAtom,
+  YamcsAtomHttpClient,
+} from "@/lib/atom";
 import { CardComponentMap } from "@/lib/cards";
 import { formatDate } from "@/lib/utils";
 
@@ -71,6 +88,7 @@ export function DashboardPage() {
     setApi(event.api);
 
     try {
+      throw "test";
       event.api.fromJSON(layout as SerializedDockview);
     } catch (err) {
       console.error("Error loading layout", err);
@@ -80,11 +98,11 @@ export function DashboardPage() {
         component: "parameter-table",
         id: crypto.randomUUID(),
       });
-      event.api.addPanel({
-        title: "Command History",
-        component: "command-history",
-        id: crypto.randomUUID(),
-      });
+      // event.api.addPanel({
+      //   title: "Command History",
+      //   component: "command-history",
+      //   id: crypto.randomUUID(),
+      // });
       event.api.addPanel({
         title: "Events",
         component: "events",
@@ -106,10 +124,7 @@ export function DashboardPage() {
   return (
     <div className="fixed flex h-full w-full flex-col gap-1.25 p-1.25">
       <div className="flex flex-row justify-between">
-        <div className="flex flex-col font-mono text-xs uppercase">
-          <div className="text-mrt">McGill Rocket Team</div>
-          <div className="text-muted-foreground">Ground Station Controls</div>
-        </div>
+        <TitleMenu />
         <MissionTime />
       </div>
       <div className="grow">
@@ -122,5 +137,57 @@ export function DashboardPage() {
         />
       </div>
     </div>
+  );
+}
+
+function TitleMenu() {
+  const [selectedInstance, setSelectedInstance] = useAtom(selectedInstanceAtom);
+  const instancesResult = useAtomValue(
+    YamcsAtomHttpClient.query("instances", "listInstances", {}),
+  );
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <div className="flex flex-col font-mono text-xs uppercase items-start">
+          <div className="text-mrt">McGill Rocket Team</div>
+          <div className="text-muted-foreground">Ground Station Controls</div>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuGroup>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>Instance</DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                {AsyncResult.builder(instancesResult)
+                  .onInitial(() => (
+                    <DropdownMenuItem className="animate-pulse">
+                      {selectedInstance}
+                    </DropdownMenuItem>
+                  ))
+                  .onSuccess(({ instances }) => (
+                    <DropdownMenuRadioGroup
+                      value={selectedInstance}
+                      onValueChange={setSelectedInstance}
+                    >
+                      {instances.map((instance) => (
+                        <DropdownMenuRadioItem
+                          closeOnClick
+                          key={instance.name}
+                          value={instance.name}
+                        >
+                          {instance.name}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  ))
+                  .render()}
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

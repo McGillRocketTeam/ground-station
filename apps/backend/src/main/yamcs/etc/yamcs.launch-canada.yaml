@@ -10,7 +10,7 @@ services:
   - class: org.yamcs.ProcessorCreatorService
     args:
       name: realtime
-      type: realtime
+      type: launch-canada-realtime
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
@@ -30,23 +30,41 @@ dataLinks:
 
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_a_fc_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
   - name: SystemA/ControlStation/Radio
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_a_controlstation_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
   - name: SystemA/Pad/Radio
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_a_pad_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
 
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_b_fc_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
   - name: SystemB/ControlStation/Radio
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_b_controlstation_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
   - name: SystemB/Pad/Radio
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_b_pad_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
 
   - name: FlightComputerCommands
     class: org.yamcs.mqtt.MqttFanoutCommandLink
@@ -112,15 +130,25 @@ mdb:
 # Configuration for streams created at server startup
 streamConfig:
   tm:
-    - name: "tm_433_realtime"
+    - name: "system_a_fc_realtime"
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
-    - name: "tm_903_realtime"
-      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+    - name: "system_b_fc_realtime"
+      rootContainer: "/SystemB/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
-    # - name: "tm_daq_realtime"
-    #   rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
-    #   processor: "realtime"
+
+    - name: "system_a_controlstation_radio_realtime"
+      rootContainer: "/SystemA/ControlStation/Radio/TelemetryPacket"
+      processor: "realtime"
+    - name: "system_a_pad_radio_realtime"
+      rootContainer: "/SystemA/Pad/Radio/TelemetryPacket"
+      processor: "realtime"
+    - name: "system_b_controlstation_radio_realtime"
+      rootContainer: "/SystemB/ControlStation/Radio/TelemetryPacket"
+      processor: "realtime"
+    - name: "system_b_pad_radio_realtime"
+      rootContainer: "/SystemB/Pad/Radio/TelemetryPacket"
+      processor: "realtime"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]

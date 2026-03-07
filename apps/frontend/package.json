@@ -12,7 +12,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix --fix-suggestions --fix-dangerously"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",

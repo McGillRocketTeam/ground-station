@@ -11,6 +11,8 @@ import { Schema } from "effect";
 import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import { Suspense, useEffect, useState } from "react";
 
+import { DashboardCommandMenu } from "@/components/dashboard/dashboard-command";
+import { DashboardKeybinds } from "@/components/dashboard/dashboard-keybinds";
 import { DashboardPlus } from "@/components/dashboard/dashboard-plus";
 import { DashboardTab } from "@/components/dashboard/dashboard-tab";
 import {
@@ -31,10 +33,10 @@ import {
   timeSubscriptionAtom,
   YamcsAtomHttpClient,
 } from "@/lib/atom";
-import { CardComponentMap } from "@/lib/cards";
-import { formatDate } from "@/lib/utils";
 
 import "./dashboard.css";
+import { CardComponentMap } from "@/lib/cards";
+import { formatDate } from "@/lib/utils";
 
 function Time() {
   const { value: time } = useAtomSuspense(timeSubscriptionAtom).value;
@@ -127,6 +129,8 @@ export function DashboardPage() {
         <TitleMenu />
         <MissionTime />
       </div>
+      <DashboardCommandMenu />
+      <DashboardKeybinds />
       <div className="grow">
         <DockviewReact
           onReady={onReady}

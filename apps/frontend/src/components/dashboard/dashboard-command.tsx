@@ -24,10 +24,10 @@ import {
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
 import {
-  DashboardActionCommandGroup,
-  useDashboardDashboardActions,
-  useDashboardInstanceActions,
-  useDashboardViewActions,
+  DashboardActionCommandGroups,
+  useDashboardDashboardActionGroups,
+  useDashboardInstanceActionGroups,
+  useDashboardViewActionGroups,
 } from "./dashboard-actions";
 
 export const dashboardCommandMenuAtom = Atom.make(false);
@@ -64,6 +64,9 @@ export function DashboardCommandMenu() {
             <Suspense>
               <InstanceCommandGroup />
             </Suspense>
+            <CommandGroup heading="Commands">
+              <CommandItem>Send Command</CommandItem>
+            </CommandGroup>
           </CommandList>
         </Command>
       </CommandDialog>
@@ -192,27 +195,24 @@ function SwitchInstanceDialog() {
 function InstanceCommandGroup() {
   const setOpen = useAtomSet(dashboardCommandMenuAtom);
   const setSwitchInstanceOpen = useAtomSet(switchInstanceMenuAtom);
-  const dashboardActions = useDashboardDashboardActions();
-  const viewActions = useDashboardViewActions();
-  const instanceActions = useDashboardInstanceActions();
+  const dashboardGroups = useDashboardDashboardActionGroups();
+  const viewGroups = useDashboardViewActionGroups();
+  const instanceGroups = useDashboardInstanceActionGroups();
 
   return (
     <>
-      <DashboardActionCommandGroup
-        actions={dashboardActions}
-        heading="Dashboard"
+      <DashboardActionCommandGroups
+        groups={dashboardGroups}
         onAction={() => setOpen(false)}
       />
       <CommandSeparator />
-      <DashboardActionCommandGroup
-        actions={viewActions}
-        heading="View"
+      <DashboardActionCommandGroups
+        groups={viewGroups}
         onAction={() => setOpen(false)}
       />
       <CommandSeparator />
-      <DashboardActionCommandGroup
-        actions={instanceActions}
-        heading="Switch Instance"
+      <DashboardActionCommandGroups
+        groups={instanceGroups}
         onAction={() => {
           setSwitchInstanceOpen(false);
           setOpen(false);

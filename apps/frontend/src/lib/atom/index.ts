@@ -36,6 +36,7 @@ import { Atom, AtomHttpApi } from "effect/unstable/reactivity";
 type ArchivedCommandHistoryEntry =
   typeof import("@mrt/yamcs-effect").CommandHistoryEntry.Type;
 type ArchivedEvent = typeof import("@mrt/yamcs-effect").Event.Type;
+type ArchivedLink = typeof import("@mrt/yamcs-effect").LinkInfo.Type;
 type StreamingCommandHistoryEntry =
   typeof import("@mrt/yamcs-effect").StreamingCommandHisotryEntry.Type;
 
@@ -165,23 +166,43 @@ const timeSubscriptionAtomForInstance = Atom.family((instance: string) =>
 );
 
 const linksSubscriptionAtomForInstance = Atom.family((instance: string) =>
-  subscriptionRuntime.atom(
+  subscriptionRuntime.atom((get) =>
     Stream.unwrap(
       Effect.gen(function* () {
         const ws = yield* WebSocketClient;
+        const { links: priorLinks } = yield* Effect.orElseSucceed(
+          Effect.tapError(
+            get.result(
+              YamcsAtomHttpClient.query("link", "listLinks", {
+                params: { instance },
+              }),
+            ),
+            (error) =>
+              logValidationFailure(`links initial query (${instance})`, error, {
+                instance,
+              }),
+          ),
+          () => ({
+            links: [] as ReadonlyArray<ArchivedLink>,
+          }),
+        );
+
         const { call, stream } = yield* ws.subscribe(
           SubscribeLinksRequest.makeUnsafe({ instance }),
         );
 
-        return stream.pipe(
-          (stream) =>
-            decodeStreamOrLog(
-              stream,
-              LinkEvent,
-              `links subscription (${instance})`,
-            ),
-          Stream.map((message) => message.data.links),
-          Stream.ensuring(ws.unsubscribe(call)),
+        return Stream.concat(
+          Stream.succeed(priorLinks),
+          stream.pipe(
+            (stream) =>
+              decodeStreamOrLog(
+                stream,
+                LinkEvent,
+                `links subscription (${instance})`,
+              ),
+            Stream.map((message) => message.data.links),
+            Stream.ensuring(ws.unsubscribe(call)),
+          ),
         );
       }),
     ),

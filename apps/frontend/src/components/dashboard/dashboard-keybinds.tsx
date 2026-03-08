@@ -6,22 +6,26 @@ import { Suspense } from "react";
 
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
-import type { DashboardAction } from "./dashboard-actions";
+import type {
+  DashboardAction,
+  DashboardActionGroup,
+} from "./dashboard-actions";
 
 import {
-  useDashboardDashboardActions,
-  useDashboardViewActions,
+  flattenDashboardActionGroups,
+  useDashboardDashboardActionGroups,
+  useDashboardViewActionGroups,
 } from "./dashboard-actions";
 import { switchInstanceMenuAtom } from "./dashboard-command";
 
 export function DashboardKeybinds() {
-  const dashboardActions = useDashboardDashboardActions();
-  const viewActions = useDashboardViewActions();
+  const dashboardGroups = useDashboardDashboardActionGroups();
+  const viewGroups = useDashboardViewActionGroups();
 
   return (
     <>
-      <DashboardActionKeybinds actions={dashboardActions} />
-      <DashboardActionKeybinds actions={viewActions} />
+      <DashboardActionKeybinds groups={dashboardGroups} />
+      <DashboardActionKeybinds groups={viewGroups} />
       <Suspense>
         <InstanceCommandKeybinds />
       </Suspense>
@@ -30,11 +34,11 @@ export function DashboardKeybinds() {
 }
 
 function DashboardActionKeybinds({
-  actions,
+  groups,
 }: {
-  actions: ReadonlyArray<DashboardAction>;
+  groups: ReadonlyArray<DashboardActionGroup>;
 }) {
-  return actions.map((action) =>
+  return flattenDashboardActionGroups(groups).map((action) =>
     action.shortcut ? (
       <DashboardActionKeybind
         action={action}
@@ -55,6 +59,10 @@ function DashboardActionKeybind({
   useHotkey(
     hotkey,
     () => {
+      if (action.disabled) {
+        return;
+      }
+
       action.run();
     },
     { conflictBehavior: "allow", stopPropagation: false },

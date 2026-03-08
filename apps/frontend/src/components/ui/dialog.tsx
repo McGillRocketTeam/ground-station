@@ -7,13 +7,22 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-function Dialog({ ...props }: DialogPrimitive.Root.Props) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
-}
+const Dialog: typeof DialogPrimitive.Root & {
+  createHandle: typeof DialogPrimitive.createHandle;
+} = Object.assign(
+  function Dialog<Payload>({ ...props }: DialogPrimitive.Root.Props<Payload>) {
+    return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+  },
+  {
+    createHandle: DialogPrimitive.createHandle,
+  },
+);
 
-function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
+const DialogTrigger: typeof DialogPrimitive.Trigger = function DialogTrigger<
+  Payload,
+>({ ...props }: DialogPrimitive.Trigger.Props<Payload>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
-}
+};
 
 function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;

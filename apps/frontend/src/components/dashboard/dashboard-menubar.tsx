@@ -11,10 +11,10 @@ import {
 } from "@/components/ui/menubar";
 
 import {
-  DashboardActionMenubarGroup,
-  useDashboardDashboardActions,
-  useDashboardInstanceActions,
-  useDashboardViewActions,
+  DashboardActionMenubarGroups,
+  useDashboardDashboardActionGroups,
+  useDashboardInstanceActionGroups,
+  useDashboardViewActionGroups,
 } from "./dashboard-actions";
 
 export function DashboardMenuBar() {
@@ -30,26 +30,26 @@ export function DashboardMenuBar() {
 }
 
 function DashboardMenuBarMenu() {
-  const actions = useDashboardDashboardActions();
+  const groups = useDashboardDashboardActionGroups();
 
   return (
     <MenubarMenu>
       <MenubarTrigger>Dashboard</MenubarTrigger>
       <MenubarContent className="w-44">
-        <DashboardActionMenubarGroup actions={actions} />
+        <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
   );
 }
 
 function InstanceMenuBarMenu() {
-  const actions = useDashboardInstanceActions();
+  const groups = useDashboardInstanceActionGroups();
 
   return (
     <MenubarMenu>
       <MenubarTrigger>Instance</MenubarTrigger>
       <MenubarContent className="w-44">
-        <DashboardActionMenubarGroup actions={actions} />
+        <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
   );
@@ -69,13 +69,13 @@ function InstanceMenuBarFallback() {
 }
 
 function ViewMenuBarMenu() {
-  const actions = useDashboardViewActions();
+  const groups = useDashboardViewActionGroups();
 
   return (
     <MenubarMenu>
       <MenubarTrigger>View</MenubarTrigger>
       <MenubarContent className="w-44">
-        <DashboardActionMenubarGroup actions={actions} />
+        <DashboardActionMenubarGroups groups={groups} />
         <MenubarSeparator />
         <MenubarGroup>
           <MenubarItem>Hide Sidebar</MenubarItem>

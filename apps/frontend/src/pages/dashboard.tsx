@@ -1,7 +1,6 @@
-import { useAtom, useAtomSuspense } from "@effect/atom-react";
+import { useAtom, useAtomSet, useAtomSuspense } from "@effect/atom-react";
 import { BrowserKeyValueStore } from "@effect/platform-browser";
 import {
-  DockviewApi,
   DockviewReact,
   themeAbyssSpaced,
   type DockviewReadyEvent,
@@ -9,15 +8,21 @@ import {
 } from "dockview-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
 
 import { DashboardCommandMenu } from "@/components/dashboard/dashboard-command";
 import { DashboardKeybinds } from "@/components/dashboard/dashboard-keybinds";
+import {
+  dashboardDockviewApiAtom,
+  initializeDashboardLayoutHistoryAtom,
+  pushDashboardLayoutHistoryAtom,
+} from "@/components/dashboard/dashboard-layout";
 import { DashboardMenuBar } from "@/components/dashboard/dashboard-menubar";
 import { DashboardPlus } from "@/components/dashboard/dashboard-plus";
 import { DashboardTab } from "@/components/dashboard/dashboard-tab";
 
 import "./dashboard.css";
+import { EditDialogPanel as EditPanelDialog } from "@/components/dashboard/edit-panel-dialog";
 import { timeSubscriptionAtom } from "@/lib/atom";
 import { CardComponentMap } from "@/lib/cards";
 import { formatDate } from "@/lib/utils";
@@ -54,8 +59,12 @@ const dashboardLocalStorage = Atom.kvs({
 });
 
 export function DashboardPage() {
-  const [api, setApi] = useState<DockviewApi>();
+  const [api, setApi] = useAtom(dashboardDockviewApiAtom);
   const [layout, setLayout] = useAtom(dashboardLocalStorage);
+  const initializeDashboardLayoutHistory = useAtomSet(
+    initializeDashboardLayoutHistoryAtom,
+  );
+  const pushDashboardLayoutHistory = useAtomSet(pushDashboardLayoutHistoryAtom);
 
   useEffect(() => {
     if (!api) {
@@ -65,16 +74,23 @@ export function DashboardPage() {
     const disposable = api.onDidLayoutChange(() => {
       const layout: SerializedDockview = api.toJSON();
       setLayout(layout);
+      pushDashboardLayoutHistory(layout);
     });
 
     return () => disposable.dispose();
-  }, [api]);
+  }, [api, pushDashboardLayoutHistory, setLayout]);
+
+  useEffect(
+    () => () => {
+      setApi(undefined);
+    },
+    [setApi],
+  );
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
     try {
-      throw "test";
       event.api.fromJSON(layout as SerializedDockview);
     } catch (err) {
       console.error("Error loading layout", err);
@@ -105,6 +121,10 @@ export function DashboardPage() {
         id: crypto.randomUUID(),
       });
     }
+
+    const initialLayout = event.api.toJSON();
+    setLayout(initialLayout);
+    initializeDashboardLayoutHistory(initialLayout);
   };
 
   return (
@@ -116,6 +136,7 @@ export function DashboardPage() {
         </div>
         <MissionTime />
       </div>
+      <EditPanelDialog />
       <DashboardCommandMenu />
       <DashboardKeybinds />
       <DashboardMenuBar />

@@ -1,3 +1,5 @@
+import type { ConsequenceLevel } from "@mrt/yamcs-effect";
+
 import {
   useAtom,
   useAtomSet,
@@ -97,14 +99,64 @@ function SendCommandDialog() {
                   });
                 }}
               >
+                <CommandConsequenceLevelIcon
+                  level={command.significance?.consequenceLevel}
+                />
                 {command.longDescription}
-                <CommandShortcut>{command.shortDescription}</CommandShortcut>
+                <CommandShortcut className="font-mono text-xs uppercase">
+                  {command.shortDescription}
+                </CommandShortcut>
               </CommandItem>
             ))}
           </CommandGroup>
         </CommandList>
       </Command>
     </CommandDialog>
+  );
+}
+
+function CommandConsequenceLevelIcon({
+  level,
+}: {
+  level: typeof ConsequenceLevel.Type | undefined;
+}) {
+  const activeBars =
+    level === "WATCH"
+      ? 1
+      : level === "WARNING"
+        ? 2
+        : level === "DISTRESS" || level === "SEVERE" || level === "CRITICAL"
+          ? 3
+          : 0;
+  const isDangerLevel = level === "SEVERE" || level === "CRITICAL";
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-3.5 overflow-visible"
+      viewBox="0 0 18 18"
+    >
+      {[
+        { x: 1.5, y: 10.5, height: 6 },
+        { x: 7.5, y: 6.5, height: 10 },
+        { x: 13.5, y: 2.5, height: 14 },
+      ].map((bar, index) => (
+        <rect
+          key={bar.x}
+          x={bar.x}
+          y={bar.y}
+          width={3}
+          height={bar.height}
+          className={
+            index < activeBars
+              ? isDangerLevel
+                ? "fill-current text-destructive"
+                : "fill-current"
+              : "fill-current opacity-20"
+          }
+        />
+      ))}
+    </svg>
   );
 }
 

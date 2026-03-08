@@ -441,11 +441,41 @@ export const Event = Schema.Struct({
   severity: EventSeverity,
 });
 
+export const ConsequenceLevel = Schema.Literals([
+  // All commands which are not in a category below
+  "NONE",
+
+  // ISO 14490: telecommand that, if executed at the wrong time or in the
+  // wrong configuration, could cause irreversible loss or damage for the
+  // mission (i.e. endanger the achievement of the primary mission objectives)
+  "CRITICAL",
+
+  // ISO 14490: telecommand that is not a critical telecommand but is essential
+  // to the success of the mission and, if sent at the wrong time, could cause
+  // momentary loss of the mission
+  "DISTRESS",
+
+  // ISO 14490: telecommand that is not expected to be used for nominal or
+  // foreseeable contingency operations, that is included for unforeseen contingency
+  // operations, and that could cause irreversible damage if executed at the wrong
+  // time or in the wrong configuration
+  "SEVERE",
+
+  // Mission specific
+  "WARNING",
+
+  // Mission specific
+  "WATCH",
+]);
+
 export const CommandInfo = Schema.Struct({
   name: Schema.String,
   qualifiedName: Schema.String,
   shortDescription: Schema.optional(Schema.String),
   longDescription: Schema.optional(Schema.String),
+  significance: Schema.optional(
+    Schema.Struct({ consequenceLevel: ConsequenceLevel }),
+  ),
 });
 
 export const OperatorType = Schema.Literals([

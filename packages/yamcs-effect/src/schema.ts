@@ -425,8 +425,10 @@ export const ParameterSample = Schema.Struct({
 
 export const EventSeverity = Schema.Literals([
   "INFO",
+  "ERROR",
   "WATCH",
   "WARNING",
+  "WARNING_NEW",
   "DISTRESS",
   "CRITICAL",
   "SEVERE",
@@ -437,8 +439,11 @@ export const Event = Schema.Struct({
   generationTime: YamcsDate,
   receptionTime: YamcsDate,
   seqNumber: Schema.Number,
+  type: Schema.optional(Schema.String),
   message: Schema.String,
   severity: EventSeverity,
+  createdBy: Schema.optional(Schema.String),
+  extra: Schema.optional(Schema.Record(Schema.String, Schema.String)),
 });
 
 export const ConsequenceLevel = Schema.Literals([

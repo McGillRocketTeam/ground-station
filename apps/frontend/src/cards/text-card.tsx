@@ -20,5 +20,5 @@ export const TextCard = makeCard({
       }),
     ),
   }),
-  component: (props) => <div>Hello Text Card</div>,
+  component: () => <div>Hello Text Card</div>,
 });

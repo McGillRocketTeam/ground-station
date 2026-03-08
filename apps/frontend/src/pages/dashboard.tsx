@@ -28,13 +28,13 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import "./dashboard.css";
 import {
   selectedInstanceAtom,
   timeSubscriptionAtom,
   YamcsAtomHttpClient,
 } from "@/lib/atom";
-
-import "./dashboard.css";
 import { CardComponentMap } from "@/lib/cards";
 import { formatDate } from "@/lib/utils";
 
@@ -141,6 +141,27 @@ export function DashboardPage() {
         />
       </div>
     </div>
+  );
+}
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+} from "@/components/ui/sidebar";
+
+export function DashboardSidebar() {
+  return (
+    <Sidebar>
+      <SidebarHeader />
+      <SidebarContent>
+        <SidebarGroup />
+        <SidebarGroup />
+      </SidebarContent>
+      <SidebarFooter />
+    </Sidebar>
   );
 }
 

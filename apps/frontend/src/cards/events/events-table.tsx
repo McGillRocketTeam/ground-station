@@ -19,7 +19,7 @@ import {
   DataGridRow,
   DataGridSearch,
 } from "@/components/ui/data-grid";
-import { cn } from "@/lib/utils";
+import { cn, formatUtcDateTime } from "@/lib/utils";
 
 import type { Event } from ".";
 
@@ -127,7 +127,7 @@ const EventRow = memo(function EventRow({
       <div className="col-span-2 text-right">{severity}</div>
       <div className="text-center">{source}</div>
       <div className="line-clamp-2 text-ellipsis">{message}</div>
-      <div className="text-right">{generationTime.toLocaleString()}</div>
+      <div className="text-right">{formatUtcDateTime(generationTime)}</div>
     </DataGridRow>
   );
 });

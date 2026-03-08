@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 
 import { Separator } from "@/components/ui/separator";
-import { cn, stringifyValue } from "@/lib/utils";
+import { cn, formatUtcDateTime, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
 import {
@@ -74,7 +74,7 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
       </div>
       <div className="space-y-0.5">
         <Label>Generation Time</Label>
-        <div>{command.generationTime.toLocaleString()}</div>
+        <div>{formatUtcDateTime(command.generationTime)}</div>
       </div>
       <div className="space-y-0.5">
         <Label>Issuer</Label>

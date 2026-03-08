@@ -36,6 +36,7 @@ import { Atom, AtomHttpApi } from "effect/unstable/reactivity";
 
 type ArchivedCommandHistoryEntry =
   typeof import("@mrt/yamcs-effect").CommandHistoryEntry.Type;
+type ArchivedEvent = typeof import("@mrt/yamcs-effect").Event.Type;
 type StreamingCommandHistoryEntry =
   typeof import("@mrt/yamcs-effect").StreamingCommandHisotryEntry.Type;
 
@@ -249,8 +250,7 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
           Stream.map((state) =>
             Array.from(state.values()).sort(
               (a, b) =>
-                DateTime.toEpochMillis(b.generationTime) -
-                DateTime.toEpochMillis(a.generationTime),
+                b.generationTime.epochMillis - a.generationTime.epochMillis,
             ),
           ),
         );
@@ -319,31 +319,64 @@ const eventsSubscriptionAtomForInstance = Atom.family((instance: string) =>
     Stream.unwrap(
       Effect.gen(function* () {
         const ws = yield* WebSocketClient;
-        const { events } = yield* get.result(
-          YamcsAtomHttpClient.query("event", "listEvents", {
-            params: { instance },
-            query: {},
-          }),
-        );
+        const priorEvents: Array<ArchivedEvent> = [];
+        let next: string | undefined;
+
+        while (true) {
+          const response = yield* Effect.orElseSucceed(
+            Effect.tapError(
+              get.result(
+                YamcsAtomHttpClient.query("event", "listEvents", {
+                  params: { instance },
+                  query: next ? { next } : {},
+                }),
+              ),
+              (error) =>
+                logValidationFailure(
+                  `events archive query (${instance})`,
+                  error,
+                  {
+                    instance,
+                    next,
+                  },
+                ),
+            ),
+            () => ({
+              events: [] as ReadonlyArray<ArchivedEvent>,
+              continuationToken: undefined,
+            }),
+          );
+
+          priorEvents.push(...response.events);
+
+          if (!response.continuationToken) {
+            break;
+          }
+
+          next = response.continuationToken;
+        }
 
         const { call, stream } = yield* ws.subscribe(
           SubscribeEventsRequest.makeUnsafe({ instance }),
         );
 
-        const initial = [...events.slice().reverse()];
+        const initial = [...priorEvents].reverse();
 
-        return stream.pipe(
-          (stream) =>
-            decodeStreamOrLog(
-              stream,
-              EventsEvent,
-              `events subscription (${instance})`,
-            ),
-          Stream.scan(initial, (allEvents, event) => [
-            ...allEvents,
-            event.data,
-          ]),
-          Stream.ensuring(ws.unsubscribe(call)),
+        return Stream.concat(
+          Stream.succeed(initial),
+          stream.pipe(
+            (stream) =>
+              decodeStreamOrLog(
+                stream,
+                EventsEvent,
+                `events subscription (${instance})`,
+              ),
+            Stream.scan(initial, (allEvents, event) => [
+              ...allEvents,
+              event.data,
+            ]),
+            Stream.ensuring(ws.unsubscribe(call)),
+          ),
         );
       }),
     ),

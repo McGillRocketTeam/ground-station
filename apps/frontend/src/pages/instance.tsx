@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
-function InstanceSelector({}: {}) {
+function InstanceSelector() {
   const [instance, setInstance] = useAtom(selectedInstanceAtom);
   const instancesResult = useAtomValue(
     YamcsAtomHttpClient.query("instances", "listInstances", {}),

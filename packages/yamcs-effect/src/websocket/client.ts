@@ -41,13 +41,14 @@ export class WebSocketClient extends ServiceMap.Service<
     this,
     Effect.gen(function* () {
       const yamcsUrl = yield* Config.url("YAMCS_URL");
-      yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
+      const websocketUrl = new URL("api/websocket", yamcsUrl);
+      websocketUrl.protocol = yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
       let id = SubscriptionId.makeUnsafe(1);
 
       // Socket will be automatically closed when the scope ends.
       const ws = yield* Effect.acquireRelease(
         Effect.try({
-          try: () => new WebSocket(`${yamcsUrl}api/websocket`),
+          try: () => new WebSocket(websocketUrl),
           catch: (cause) => new WebSocketError({ cause }),
         }),
         (ws) =>

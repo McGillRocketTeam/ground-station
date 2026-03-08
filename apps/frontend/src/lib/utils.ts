@@ -4,6 +4,17 @@ import { clsx, type ClassValue } from "clsx";
 import { DateTime } from "effect";
 import { twMerge } from "tailwind-merge";
 
+const utcDateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+  timeZone: "UTC",
+});
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -25,13 +36,20 @@ export function stringifyValue(value?: typeof Value.Type, fallback?: string) {
     case "UINT64":
     case "STRING":
     case "BOOLEAN":
-    case "TIMESTAMP":
       return value.value.toLocaleString();
+    case "TIMESTAMP":
+      return formatUtcDateTime(value.value);
     case "ENUMERATED":
     case "AGGREGATE":
     default:
       return fallback ?? "Unknown";
   }
+}
+
+export function formatUtcDateTime(date: Date | DateTime.DateTime) {
+  return date instanceof Date
+    ? utcDateTimeFormatter.format(date)
+    : DateTime.formatIntl(date, utcDateTimeFormatter);
 }
 
 export function displayValue(value: typeof Value.Type): Display {

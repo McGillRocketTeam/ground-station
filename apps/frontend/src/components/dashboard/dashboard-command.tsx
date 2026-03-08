@@ -19,8 +19,16 @@ import {
   CommandItem,
   CommandList,
   CommandShortcut,
+  CommandSeparator,
 } from "@/components/ui/command";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+
+import {
+  DashboardActionCommandGroup,
+  useDashboardDashboardActions,
+  useDashboardInstanceActions,
+  useDashboardViewActions,
+} from "./dashboard-actions";
 
 export const dashboardCommandMenuAtom = Atom.make(false);
 export const sendCommandMenuAtom = Atom.make(false);
@@ -44,7 +52,11 @@ export function DashboardCommandMenu() {
       <Suspense>
         <SwitchInstanceDialog />
       </Suspense>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        className="sm:max-w-130 w-full"
+        open={open}
+        onOpenChange={setOpen}
+      >
         <Command>
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>
@@ -178,33 +190,34 @@ function SwitchInstanceDialog() {
 }
 
 function InstanceCommandGroup() {
-  const setInstance = useAtomSet(selectedInstanceAtom);
-  const { instances } = useAtomSuspense(
-    YamcsAtomHttpClient.query("instances", "listInstances", {}),
-  ).value;
-
   const setOpen = useAtomSet(dashboardCommandMenuAtom);
   const setSwitchInstanceOpen = useAtomSet(switchInstanceMenuAtom);
-
-  const handleSelect = (value: string) => {
-    setInstance(value);
-    setSwitchInstanceOpen(false);
-    setOpen(false);
-  };
+  const dashboardActions = useDashboardDashboardActions();
+  const viewActions = useDashboardViewActions();
+  const instanceActions = useDashboardInstanceActions();
 
   return (
-    <CommandGroup heading="Open Instance">
-      {instances.map((instance, index) => (
-        <CommandItem
-          onSelect={handleSelect}
-          key={instance.name}
-          value={instance.name}
-        >
-          <span className="font-mono uppercase">{index + 1}</span>
-          <span className="font-mono uppercase">{instance.name}</span>
-          <CommandShortcut>{"O then I"}</CommandShortcut>
-        </CommandItem>
-      ))}
-    </CommandGroup>
+    <>
+      <DashboardActionCommandGroup
+        actions={dashboardActions}
+        heading="Dashboard"
+        onAction={() => setOpen(false)}
+      />
+      <CommandSeparator />
+      <DashboardActionCommandGroup
+        actions={viewActions}
+        heading="View"
+        onAction={() => setOpen(false)}
+      />
+      <CommandSeparator />
+      <DashboardActionCommandGroup
+        actions={instanceActions}
+        heading="Switch Instance"
+        onAction={() => {
+          setSwitchInstanceOpen(false);
+          setOpen(false);
+        }}
+      />
+    </>
   );
 }

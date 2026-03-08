@@ -54,7 +54,7 @@ export function InstanceProtectedPage(): ReactNode {
 
   if (!instance) {
     return (
-      <div className="grid h-screen w-full place-items-center px-4">
+      <div className="grid fixed inset-0 h-screen w-full place-items-center px-4">
         <div className="w-full max-w-sm">
           <InstanceSelector />
         </div>
@@ -62,9 +62,5 @@ export function InstanceProtectedPage(): ReactNode {
     );
   }
 
-  return (
-    <>
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 }

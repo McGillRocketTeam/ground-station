@@ -45,7 +45,7 @@ export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
       <Popover handle={linksPopover}>
         {({ payload }) =>
           payload && (
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-96">
               <LinkDetail link={payload} />
             </PopoverContent>
           )

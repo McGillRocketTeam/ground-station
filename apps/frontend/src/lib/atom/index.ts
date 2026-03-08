@@ -21,7 +21,6 @@ import {
 } from "@mrt/yamcs-effect";
 import {
   ConfigProvider,
-  DateTime,
   Effect,
   Exit,
   Logger,
@@ -97,11 +96,21 @@ frontendRuntimeFactory.addGlobalLayer(
 
 const subscriptionRuntime = frontendRuntimeFactory(WebSocketClient.layer);
 
+export const themeSchema = Schema.Literals(["dark", "light", "system"]);
+export type Theme = typeof themeSchema.Type;
+
 export const selectedInstanceAtom = Atom.kvs({
   runtime: localStorageRuntime,
   key: "mrt-selected-instance",
   schema: Schema.String,
   defaultValue: () => "",
+});
+
+export const themeAtom = Atom.kvs({
+  runtime: localStorageRuntime,
+  key: "vite-ui-theme",
+  schema: themeSchema,
+  defaultValue: () => "system" as Theme,
 });
 
 export class YamcsAtomHttpClient extends AtomHttpApi.Service<YamcsAtomHttpClient>()(

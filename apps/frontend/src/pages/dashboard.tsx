@@ -1,4 +1,4 @@
-import { useAtom, useAtomSuspense, useAtomValue } from "@effect/atom-react";
+import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { BrowserKeyValueStore } from "@effect/platform-browser";
 import {
   DockviewApi,
@@ -8,33 +8,17 @@ import {
   type SerializedDockview,
 } from "dockview-react";
 import { Schema } from "effect";
-import { AsyncResult, Atom } from "effect/unstable/reactivity";
+import { Atom } from "effect/unstable/reactivity";
 import { Suspense, useEffect, useState } from "react";
 
 import { DashboardCommandMenu } from "@/components/dashboard/dashboard-command";
 import { DashboardKeybinds } from "@/components/dashboard/dashboard-keybinds";
+import { DashboardMenuBar } from "@/components/dashboard/dashboard-menubar";
 import { DashboardPlus } from "@/components/dashboard/dashboard-plus";
 import { DashboardTab } from "@/components/dashboard/dashboard-tab";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 import "./dashboard.css";
-import {
-  selectedInstanceAtom,
-  timeSubscriptionAtom,
-  YamcsAtomHttpClient,
-} from "@/lib/atom";
+import { timeSubscriptionAtom } from "@/lib/atom";
 import { CardComponentMap } from "@/lib/cards";
 import { formatDate } from "@/lib/utils";
 
@@ -124,14 +108,18 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="fixed flex h-full w-full flex-col gap-1.25 p-1.25">
+    <div className="fixed flex h-full w-full flex-col p-1.25">
       <div className="flex flex-row justify-between">
-        <TitleMenu />
+        <div className="flex flex-col font-mono text-xs uppercase items-start">
+          <div className="text-mrt">McGill Rocket Team</div>
+          <div className="text-muted-foreground">Ground Station Controls</div>
+        </div>
         <MissionTime />
       </div>
       <DashboardCommandMenu />
       <DashboardKeybinds />
-      <div className="grow">
+      <DashboardMenuBar />
+      <div className="grow pt-1.25">
         <DockviewReact
           onReady={onReady}
           theme={{ ...themeAbyssSpaced, gap: 5 }}
@@ -141,78 +129,5 @@ export function DashboardPage() {
         />
       </div>
     </div>
-  );
-}
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
-
-export function DashboardSidebar() {
-  return (
-    <Sidebar>
-      <SidebarHeader />
-      <SidebarContent>
-        <SidebarGroup />
-        <SidebarGroup />
-      </SidebarContent>
-      <SidebarFooter />
-    </Sidebar>
-  );
-}
-
-function TitleMenu() {
-  const [selectedInstance, setSelectedInstance] = useAtom(selectedInstanceAtom);
-  const instancesResult = useAtomValue(
-    YamcsAtomHttpClient.query("instances", "listInstances", {}),
-  );
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <div className="flex flex-col font-mono text-xs uppercase items-start">
-          <div className="text-mrt">McGill Rocket Team</div>
-          <div className="text-muted-foreground">Ground Station Controls</div>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuGroup>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Instance</DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                {AsyncResult.builder(instancesResult)
-                  .onInitial(() => (
-                    <DropdownMenuItem className="animate-pulse">
-                      {selectedInstance}
-                    </DropdownMenuItem>
-                  ))
-                  .onSuccess(({ instances }) => (
-                    <DropdownMenuRadioGroup
-                      value={selectedInstance}
-                      onValueChange={setSelectedInstance}
-                    >
-                      {instances.map((instance) => (
-                        <DropdownMenuRadioItem
-                          closeOnClick
-                          key={instance.name}
-                          value={instance.name}
-                        >
-                          {instance.name}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  ))
-                  .render()}
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

@@ -1,73 +1,50 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
-type Theme = "dark" | "light" | "system";
+import { useAtom } from "@effect/atom-react";
+import { useEffect } from "react";
 
-type ThemeProviderProps = {
-  children: React.ReactNode;
-  defaultTheme?: Theme;
-  storageKey?: string;
-};
+import { themeAtom, type Theme } from "@/lib/atom";
 
-type ThemeProviderState = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-};
+export function resolveTheme(theme: Theme): Exclude<Theme, "system"> {
+  if (theme !== "system") {
+    return theme;
+  }
 
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-};
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
-
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "vite-ui-theme",
-  ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
-  );
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme] = useAtom(themeAtom);
 
   useEffect(() => {
     const root = window.document.documentElement;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
 
-    root.classList.remove("light", "dark");
+    const applyTheme = () => {
+      root.classList.remove("light", "dark");
+      root.classList.add(resolveTheme(theme));
+    };
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
+    applyTheme();
 
-      root.classList.add(systemTheme);
+    if (theme !== "system") {
       return;
     }
 
-    root.classList.add(theme);
+    media.addEventListener("change", applyTheme);
+
+    return () => {
+      media.removeEventListener("change", applyTheme);
+    };
   }, [theme]);
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    },
-  };
-
-  return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ThemeProviderContext.Provider>
-  );
+  return children;
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
+export function useTheme() {
+  const [theme, setTheme] = useAtom(themeAtom);
 
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider");
-
-  return context;
-};
+  return { theme, setTheme };
+}

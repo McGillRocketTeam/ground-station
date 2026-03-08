@@ -45,7 +45,7 @@ export const CommandButtonCard = makeCard({
         </div>
       ))
       .onFailure((cause) => (
-        <pre className="text-error col-span-full min-h-full text-center uppercase">
+        <pre className="text-error grid min-h-full w-full text-center place-items-center font-mono uppercase">
           {Cause.pretty(cause)}
         </pre>
       ))

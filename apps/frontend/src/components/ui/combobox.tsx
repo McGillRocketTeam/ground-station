@@ -11,9 +11,32 @@ import {
 } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 
-const Combobox = ComboboxPrimitive.Root;
+const Combobox: typeof ComboboxPrimitive.Root = function Combobox<
+  Value,
+  Multiple extends boolean | undefined = false,
+>({ ...props }: ComboboxPrimitive.Root.Props<Value, Multiple>) {
+  return <ComboboxPrimitive.Root {...props} />;
+};
 
-function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
+type ComboboxSelectedValue<
+  Value,
+  Multiple extends boolean | undefined = false,
+> = Multiple extends true ? Value[] : Value | null;
+
+type ComboboxValueProps<
+  Value,
+  Multiple extends boolean | undefined = false,
+> = Omit<ComboboxPrimitive.Value.Props, "children"> & {
+  children?:
+    | React.ReactNode
+    | ((
+        selectedValue: ComboboxSelectedValue<Value, Multiple>,
+      ) => React.ReactNode);
+};
+
+function ComboboxValue<Value, Multiple extends boolean | undefined = false>({
+  ...props
+}: ComboboxValueProps<Value, Multiple>) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />;
 }
 
@@ -132,11 +155,13 @@ function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
   );
 }
 
-function ComboboxItem({
+function ComboboxItem<Value>({
   className,
   children,
   ...props
-}: ComboboxPrimitive.Item.Props) {
+}: Omit<ComboboxPrimitive.Item.Props, "value"> & {
+  value?: Value;
+}) {
   return (
     <ComboboxPrimitive.Item
       data-slot="combobox-item"

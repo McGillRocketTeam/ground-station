@@ -1,13 +1,16 @@
 import type { IDockviewDefaultTabProps } from "dockview-react";
 
+import { formatForDisplay } from "@tanstack/react-hotkeys";
+
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
-import { editPanelDialogHandle } from "./edit-panel-dialog";
+import { editPanelDialogHandle } from "./form/edit-dialog";
 
 export function DashboardTab(props: IDockviewDefaultTabProps) {
   const panel = props.containerApi.getPanel(props.api.id);
@@ -32,6 +35,7 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
           }}
         >
           Edit
+          <ContextMenuShortcut>{formatForDisplay("Mod+E")}</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuItem variant="destructive" onClick={handleDelete}>
           Delete

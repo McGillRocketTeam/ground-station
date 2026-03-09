@@ -6,24 +6,24 @@ import { Suspense } from "react";
 
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
-import type {
-  DashboardAction,
-  DashboardActionGroup,
-} from "./dashboard-actions";
+import type { DashboardAction, DashboardActionGroup } from "./groups";
 
+import { switchInstanceMenuAtom } from "./command-menu";
 import {
   flattenDashboardActionGroups,
+  useDashboardCardActionGroups,
   useDashboardDashboardActionGroups,
   useDashboardViewActionGroups,
-} from "./dashboard-actions";
-import { switchInstanceMenuAtom } from "./dashboard-command";
+} from "./groups";
 
 export function DashboardKeybinds() {
   const dashboardGroups = useDashboardDashboardActionGroups();
   const viewGroups = useDashboardViewActionGroups();
+  const cardGroups = useDashboardCardActionGroups();
 
   return (
     <>
+      <DashboardActionKeybinds groups={cardGroups} />
       <DashboardActionKeybinds groups={dashboardGroups} />
       <DashboardActionKeybinds groups={viewGroups} />
       <Suspense>

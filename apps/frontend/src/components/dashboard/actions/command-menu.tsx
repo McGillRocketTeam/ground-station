@@ -25,10 +25,11 @@ import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
 import {
   DashboardActionCommandGroups,
+  useDashboardCardActionGroups,
   useDashboardDashboardActionGroups,
   useDashboardInstanceActionGroups,
   useDashboardViewActionGroups,
-} from "./dashboard-actions";
+} from "./groups";
 
 export const dashboardCommandMenuAtom = Atom.make(false);
 export const sendCommandMenuAtom = Atom.make(false);
@@ -206,9 +207,15 @@ function InstanceCommandGroup() {
   const dashboardGroups = useDashboardDashboardActionGroups();
   const viewGroups = useDashboardViewActionGroups();
   const instanceGroups = useDashboardInstanceActionGroups();
+  const cardGroups = useDashboardCardActionGroups();
 
   return (
     <>
+      <DashboardActionCommandGroups
+        groups={cardGroups}
+        onAction={() => setOpen(false)}
+      />
+      <CommandSeparator />
       <DashboardActionCommandGroups
         groups={dashboardGroups}
         onAction={() => setOpen(false)}

@@ -24,13 +24,15 @@ import {
 } from "@/components/ui/menubar";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
+import { editPanelDialogHandle } from "../form/edit-dialog";
 import {
+  activePanelAtom,
   dashboardDockviewApiAtom,
   dashboardLayoutHistoryAtom,
   dashboardRedoAtom,
   dashboardUndoAtom,
   initializeDashboardLayoutHistoryAtom,
-} from "./dashboard-layout";
+} from "./layout";
 
 export type DashboardAction = {
   id: string;
@@ -245,6 +247,31 @@ export function useDashboardViewActionGroups(): ReadonlyArray<DashboardActionGro
           shortcut: "D",
           run: () =>
             setTheme(resolveTheme(theme) === "dark" ? "light" : "dark"),
+        },
+      ],
+    },
+  ];
+}
+
+export function useDashboardCardActionGroups(): ReadonlyArray<DashboardActionGroup> {
+  const activePanel = useAtomValue(activePanelAtom);
+  return [
+    {
+      id: "view-actions",
+      heading: "View",
+      actions: [
+        {
+          id: "edit-card",
+          label: "Edit Card",
+          shortcut: "Mod+E",
+          disabled: !activePanel,
+          run: () => {
+            if (!activePanel) {
+              return;
+            }
+
+            editPanelDialogHandle.openWithPayload(activePanel);
+          },
         },
       ],
     },

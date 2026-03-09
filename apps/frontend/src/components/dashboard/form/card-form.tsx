@@ -1,16 +1,15 @@
-import type { AnyFieldApi } from "@tanstack/react-form";
-
 import { useForm } from "@tanstack/react-form";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Effect, Schema } from "effect";
 import { useMemo, useRef, useState } from "react";
 
 import { type CardId, CardSchemaMap } from "@/lib/cards";
-import { formTitle, formType } from "@/lib/form";
 
-import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
-import { Input } from "../ui/input";
+import { Field, FieldError, FieldGroup, FieldLabel } from "../../ui/field";
+import { Input } from "../../ui/input";
+import { DashboardCardField } from "./card-field";
 
-type EncodedFormValues = Record<string, string>;
+type EncodedFormValues = Record<string, unknown>;
 type DecodedFormValues = Record<string, unknown>;
 
 export function isCardId(value: string): value is CardId {
@@ -18,7 +17,7 @@ export function isCardId(value: string): value is CardId {
 }
 
 function decode(schema: Schema.Codec<DecodedFormValues, EncodedFormValues>) {
-  return function(value: unknown) {
+  return function (value: unknown) {
     return Schema.decodeUnknownEffect(schema)(value).pipe(
       Effect.mapError((error) => error.message),
       Effect.result,
@@ -39,31 +38,21 @@ function getDefaultFieldValue(value: unknown) {
   return "";
 }
 
-function getFieldPlaceholder(type: ReturnType<typeof formType>) {
-  switch (type) {
-    case "parameter":
-      return "Enter a parameter";
-    case "command":
-      return "Enter a command";
-    case "string":
-    case "unknown":
-      return "Enter a value";
+function encodeDefaultFieldValue(
+  fieldSchema: Schema.Schema<unknown>,
+  value: unknown,
+) {
+  if (value === undefined) {
+    return undefined;
   }
-}
 
-function getFieldErrors(field: AnyFieldApi) {
-  return field.state.meta.errors.map((error) => {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "message" in error &&
-      typeof error.message === "string"
-    ) {
-      return { message: error.message };
-    }
-
-    return { message: String(error) };
-  });
+  try {
+    return Schema.encodeUnknownSync(
+      fieldSchema as Schema.Top & { readonly EncodingServices: never },
+    )(value);
+  } catch {
+    return getDefaultFieldValue(value);
+  }
 }
 
 export function DashboardCardForm({
@@ -79,6 +68,10 @@ export function DashboardCardForm({
   initialTitle?: string;
   onSubmit: (value: { title: string; params: DecodedFormValues }) => void;
 }) {
+  useHotkey("Mod+S", () => {
+    form.handleSubmit();
+  });
+
   const schema = CardSchemaMap[cardId];
   const formSchema = schema as unknown as Schema.Codec<
     DecodedFormValues,
@@ -92,9 +85,11 @@ export function DashboardCardForm({
 
   const defaultValues = useMemo<EncodedFormValues>(() => {
     return Object.fromEntries(
-      Object.keys(schema.fields).map((fieldName) => [
+      Object.entries(
+        schema.fields as Record<string, Schema.Schema<unknown>>,
+      ).map(([fieldName, fieldSchema]) => [
         fieldName,
-        getDefaultFieldValue(initialParams?.[fieldName]),
+        encodeDefaultFieldValue(fieldSchema, initialParams?.[fieldName]),
       ]),
     );
   }, [initialParams, schema.fields]);
@@ -148,29 +143,10 @@ export function DashboardCardForm({
         {Object.entries(
           schema.fields as Record<string, Schema.Schema<unknown>>,
         ).map(([fieldName, fieldSchema]) => {
-          const type = formType(fieldSchema);
-
           return (
             <form.Field key={fieldName} name={fieldName}>
               {(field) => (
-                <Field
-                  data-invalid={
-                    field.state.meta.isTouched && !field.state.meta.isValid
-                  }
-                >
-                  <FieldLabel htmlFor={field.name}>{formTitle(fieldSchema)}</FieldLabel>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    placeholder={getFieldPlaceholder(type)}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                  />
-                  {field.state.meta.isTouched ? (
-                    <FieldError errors={getFieldErrors(field)} />
-                  ) : null}
-                </Field>
+                <DashboardCardField field={field} fieldSchema={fieldSchema} />
               )}
             </form.Field>
           );

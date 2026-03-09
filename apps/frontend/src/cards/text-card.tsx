@@ -1,18 +1,14 @@
 import { Schema } from "effect";
 
 import { makeCard } from "@/lib/cards";
+import { ParameterField } from "@/lib/dashboard-field-types";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
 export const TextCard = makeCard({
   id: "text-card",
   name: "Text Card",
   schema: Schema.Struct({
-    parameter: Schema.String.pipe(
-      Schema.annotate({
-        [FormTitleAnnotationId]: "Parameter Title",
-        [FormTypeAnnotationId]: "parameter",
-      }),
-    ),
+    parameter: ParameterField,
     command: Schema.String.pipe(
       Schema.annotate({
         [FormTitleAnnotationId]: "Command Title",

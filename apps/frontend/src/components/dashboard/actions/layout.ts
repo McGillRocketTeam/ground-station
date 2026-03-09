@@ -1,4 +1,8 @@
-import type { DockviewApi, SerializedDockview } from "dockview-react";
+import type {
+  DockviewApi,
+  IDockviewPanel,
+  SerializedDockview,
+} from "dockview-react";
 
 import { Atom } from "effect/unstable/reactivity";
 
@@ -122,3 +126,5 @@ export const dashboardRedoAtom: Atom.Writable<void, void> = Atom.writable(
     api.fromJSON(nextLayout);
   },
 ) as Atom.Writable<void, void>;
+
+export const activePanelAtom = Atom.make<IDockviewPanel | undefined>(undefined);

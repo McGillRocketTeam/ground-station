@@ -10,20 +10,21 @@ import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { useEffect } from "react";
 
-import { DashboardCommandMenu } from "@/components/dashboard/dashboard-command";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardKeybinds } from "@/components/dashboard/dashboard-keybinds";
+import { DashboardCommandMenu } from "@/components/dashboard/actions/command-menu";
+import { DashboardKeybinds } from "@/components/dashboard/actions/keybinds";
 import {
+  activePanelAtom,
   dashboardDockviewApiAtom,
   initializeDashboardLayoutHistoryAtom,
   pushDashboardLayoutHistoryAtom,
-} from "@/components/dashboard/dashboard-layout";
-import { DashboardMenuBar } from "@/components/dashboard/dashboard-menubar";
-import { DashboardPlus } from "@/components/dashboard/dashboard-plus";
+} from "@/components/dashboard/actions/layout";
+import { DashboardMenuBar } from "@/components/dashboard/actions/menu-bar";
+import { EditDialogPanel as EditPanelDialog } from "@/components/dashboard/form/edit-dialog";
+import { DashboardHeader } from "@/components/dashboard/header";
 
 import "./dashboard.css";
-import { DashboardTab } from "@/components/dashboard/dashboard-tab";
-import { EditDialogPanel as EditPanelDialog } from "@/components/dashboard/edit-panel-dialog";
+import { DashboardPlus } from "@/components/dashboard/plus";
+import { DashboardTab } from "@/components/dashboard/tab";
 import { CardComponentMap } from "@/lib/cards";
 
 const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
@@ -76,6 +77,7 @@ function readPersistedDashboardLayout() {
 
 export function DashboardPage() {
   const [api, setApi] = useAtom(dashboardDockviewApiAtom);
+  const setActivePanel = useAtomSet(activePanelAtom);
   const [layout, setLayout] = useAtom(dashboardLocalStorage);
   const initializeDashboardLayoutHistory = useAtomSet(
     initializeDashboardLayoutHistoryAtom,
@@ -106,6 +108,8 @@ export function DashboardPage() {
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+
+    event.api.onDidActivePanelChange(setActivePanel);
 
     const persistedLayout =
       readPersistedDashboardLayout() ??

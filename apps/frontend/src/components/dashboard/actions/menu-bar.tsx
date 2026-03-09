@@ -15,7 +15,7 @@ import {
   useDashboardDashboardActionGroups,
   useDashboardInstanceActionGroups,
   useDashboardViewActionGroups,
-} from "./dashboard-actions";
+} from "./groups";
 
 export function DashboardMenuBar() {
   return (

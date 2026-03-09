@@ -22,6 +22,7 @@
     "@fontsource-variable/public-sans": "^5.2.7",
     "@mrt/yamcs-effect": "workspace:*",
     "@tailwindcss/vite": "^4.1.17",
+    "@tanstack/react-form": "^1.28.4",
     "@tanstack/react-hotkeys": "^0.3.2",
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",

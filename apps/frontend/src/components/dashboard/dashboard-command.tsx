@@ -36,6 +36,7 @@ export const switchInstanceMenuAtom = Atom.make(false);
 
 export function DashboardCommandMenu() {
   const [open, setOpen] = useAtom(dashboardCommandMenuAtom);
+  const setSendCommandOpen = useAtomSet(sendCommandMenuAtom);
   useHotkey(
     "Mod+K",
     () => {
@@ -61,12 +62,19 @@ export function DashboardCommandMenu() {
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Commands">
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  setSendCommandOpen(true);
+                }}
+              >
+                Send Command
+              </CommandItem>
+            </CommandGroup>
             <Suspense>
               <InstanceCommandGroup />
             </Suspense>
-            <CommandGroup heading="Commands">
-              <CommandItem>Send Command</CommandItem>
-            </CommandGroup>
           </CommandList>
         </Command>
       </CommandDialog>

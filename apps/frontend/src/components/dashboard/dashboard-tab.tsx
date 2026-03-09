@@ -7,7 +7,6 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
-import { DialogTrigger } from "../ui/dialog";
 import { editPanelDialogHandle } from "./edit-panel-dialog";
 
 export function DashboardTab(props: IDockviewDefaultTabProps) {
@@ -22,12 +21,18 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
         {props.api.title ?? "New Tab"}
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <DialogTrigger
-          handle={editPanelDialogHandle}
-          payload={panel}
-          nativeButton={false}
-          render={<ContextMenuItem>Edit</ContextMenuItem>}
-        />
+        <ContextMenuItem
+          disabled={!panel}
+          onClick={() => {
+            if (!panel) {
+              return;
+            }
+
+            editPanelDialogHandle.openWithPayload(panel);
+          }}
+        >
+          Edit
+        </ContextMenuItem>
         <ContextMenuItem variant="destructive" onClick={handleDelete}>
           Delete
         </ContextMenuItem>

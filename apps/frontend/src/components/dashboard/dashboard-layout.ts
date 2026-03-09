@@ -14,6 +14,14 @@ const emptyDashboardLayoutHistory: DashboardLayoutHistory = {
   future: [],
 };
 
+const ignoredDashboardLayoutKeys = new Set(["activeGroup", "activeView"]);
+
+function serializeLayoutForHistory(layout: SerializedDockview | undefined) {
+  return JSON.stringify(layout, (key, value) =>
+    ignoredDashboardLayoutKeys.has(key) ? undefined : value,
+  );
+}
+
 function areLayoutsEqual(
   left: SerializedDockview | undefined,
   right: SerializedDockview | undefined,
@@ -26,7 +34,7 @@ function areLayoutsEqual(
     return false;
   }
 
-  return JSON.stringify(left) === JSON.stringify(right);
+  return serializeLayoutForHistory(left) === serializeLayoutForHistory(right);
 }
 
 export const dashboardDockviewApiAtom = Atom.make<DockviewApi | undefined>(

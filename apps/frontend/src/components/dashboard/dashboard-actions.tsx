@@ -1,3 +1,5 @@
+import type { SerializedDockview } from "dockview-react";
+
 import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import {
   formatForDisplay,
@@ -23,9 +25,11 @@ import {
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
 import {
+  dashboardDockviewApiAtom,
   dashboardLayoutHistoryAtom,
   dashboardRedoAtom,
   dashboardUndoAtom,
+  initializeDashboardLayoutHistoryAtom,
 } from "./dashboard-layout";
 
 export type DashboardAction = {
@@ -55,6 +59,72 @@ export const toggleFullscreenAtom = Atom.fn(() =>
   }),
 );
 
+function downloadDashboardLayout(layout: unknown) {
+  const blob = new Blob([JSON.stringify(layout, null, 2)], {
+    type: "application/json",
+  });
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const timestamp = new Date().toISOString().replaceAll(":", "-");
+
+  link.href = downloadUrl;
+  link.download = `dashboard-${timestamp}.json`;
+  link.click();
+
+  URL.revokeObjectURL(downloadUrl);
+}
+
+const dashboardStorageKey = "mrt-dashboard";
+
+function isSerializedDockviewLayout(
+  layout: unknown,
+): layout is SerializedDockview {
+  return (
+    typeof layout === "object" &&
+    layout !== null &&
+    Object.keys(layout).length > 0
+  );
+}
+
+function snapshotDashboardLayout(
+  layout: SerializedDockview,
+): SerializedDockview {
+  return structuredClone(layout);
+}
+
+function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+
+      if (!file) {
+        resolve(undefined);
+        return;
+      }
+
+      try {
+        const rawLayout = await file.text();
+        const layout = JSON.parse(rawLayout) as unknown;
+
+        resolve(
+          isSerializedDockviewLayout(layout)
+            ? snapshotDashboardLayout(layout)
+            : undefined,
+        );
+      } catch (err) {
+        console.error("Error importing dashboard layout", err);
+        resolve(undefined);
+      }
+    };
+
+    input.click();
+  });
+}
+
 export function flattenDashboardActionGroups(
   groups: ReadonlyArray<DashboardActionGroup>,
 ): ReadonlyArray<DashboardAction> {
@@ -64,7 +134,11 @@ export function flattenDashboardActionGroups(
 export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActionGroup> {
   const undo = useAtomSet(dashboardUndoAtom);
   const redo = useAtomSet(dashboardRedoAtom);
-  const { past, future } = useAtomValue(dashboardLayoutHistoryAtom);
+  const initializeDashboardLayoutHistory = useAtomSet(
+    initializeDashboardLayoutHistoryAtom,
+  );
+  const api = useAtomValue(dashboardDockviewApiAtom);
+  const { past, present, future } = useAtomValue(dashboardLayoutHistoryAtom);
 
   return [
     {
@@ -99,9 +173,49 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
           run: () => {},
         },
         {
-          id: "rename-page",
-          label: "Rename Page",
-          run: () => {},
+          id: "export-page",
+          label: "Export Page",
+          keywords: ["dashboard", "page", "export", "download", "json"],
+          disabled: !api && !present,
+          shortcut: "Mod+Shift+S",
+          run: () => {
+            const layout = api?.toJSON() ?? present;
+
+            if (!layout) {
+              return;
+            }
+
+            downloadDashboardLayout(layout);
+          },
+        },
+        {
+          id: "import-page",
+          label: "Import Page",
+          keywords: ["dashboard", "page", "import", "upload", "json"],
+          disabled: !api,
+          shortcut: "Mod+Shift+O",
+          run: () => {
+            if (!api) {
+              return;
+            }
+
+            void pickDashboardLayoutFile().then((layout) => {
+              if (!layout) {
+                return;
+              }
+
+              try {
+                api.fromJSON(layout);
+                window.localStorage.setItem(
+                  dashboardStorageKey,
+                  JSON.stringify(layout),
+                );
+                initializeDashboardLayoutHistory(layout);
+              } catch (err) {
+                console.error("Error loading imported dashboard layout", err);
+              }
+            });
+          },
         },
       ],
     },

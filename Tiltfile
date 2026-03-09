@@ -1,6 +1,7 @@
 config.define_bool('simulator')
 cfg = config.parse()
 simulator_enabled = cfg.get('simulator', True)
+open_frontend_cmd = os.name == 'nt' and "python -m webbrowser http://localhost:5173" or "python3 -m webbrowser http://localhost:5173"
 
 local_resource(
     'frontend',
@@ -10,7 +11,18 @@ local_resource(
 		},
 		labels=['mrt'],
 		links='http://localhost:5173',
-		resource_deps=['backend', 'yamcs-effect']
+		resource_deps=['backend', 'yamcs-effect'],
+		readiness_probe=probe(
+			period_secs=3,
+			http_get=http_get_action(port=5173, path="/")
+		)
+)
+
+local_resource(
+		'open-frontend',
+		cmd=open_frontend_cmd,
+		labels=['mrt'],
+		resource_deps=['frontend']
 )
 
 local_resource(

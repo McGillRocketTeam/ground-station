@@ -40,6 +40,7 @@ export type DashboardAction = {
   keywords?: ReadonlyArray<string>;
   shortcut?: Hotkey | ParsedHotkey;
   disabled?: boolean;
+  destructive?: boolean;
   run: () => void;
 };
 
@@ -257,8 +258,8 @@ export function useDashboardCardActionGroups(): ReadonlyArray<DashboardActionGro
   const activePanel = useAtomValue(activePanelAtom);
   return [
     {
-      id: "view-actions",
-      heading: "View",
+      id: "card-actions",
+      heading: "Card",
       actions: [
         {
           id: "edit-card",
@@ -271,6 +272,19 @@ export function useDashboardCardActionGroups(): ReadonlyArray<DashboardActionGro
             }
 
             editPanelDialogHandle.openWithPayload(activePanel);
+          },
+        },
+        {
+          id: "delete-card",
+          label: "Delete Card",
+          disabled: !activePanel,
+          destructive: true,
+          run: () => {
+            if (!activePanel) {
+              return;
+            }
+
+            activePanel.api.close();
           },
         },
       ],
@@ -290,7 +304,10 @@ export function useDashboardInstanceActionGroups(): ReadonlyArray<DashboardActio
       heading: "Switch Instance",
       actions: instances.map((instance, index) => ({
         id: `instance-${instance.name}`,
-        label: instance.name,
+        label: instance.name
+          .split("-")
+          .map((i) => i.charAt(0).toLocaleUpperCase() + i.substring(1))
+          .join(" "),
         keywords: ["instance", "switch", instance.name, String(index + 1)],
         shortcut: String(index + 1) as Hotkey,
         run: () => setInstance(instance.name),
@@ -313,6 +330,7 @@ export function DashboardActionMenubarGroups({
             key={action.id}
             disabled={action.disabled}
             onClick={action.run}
+            variant={action.destructive ? "destructive" : "default"}
           >
             {action.label}
             {action.shortcut ? (
@@ -340,6 +358,7 @@ export function DashboardActionCommandGroups({
         <CommandItem
           disabled={action.disabled}
           key={action.id}
+          variant={action.destructive ? "destructive" : "default"}
           value={[action.label, ...(action.keywords ?? [])].join(" ")}
           onSelect={() => {
             if (action.disabled) {

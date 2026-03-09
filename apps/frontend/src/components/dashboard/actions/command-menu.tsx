@@ -109,6 +109,12 @@ function SendCommandDialog() {
           <CommandGroup heading="Send Command">
             {commands.map((command) => (
               <CommandItem
+                variant={
+                  command.significance?.consequenceLevel === "SEVERE" ||
+                  command.significance?.consequenceLevel === "CRITICAL"
+                    ? "destructive"
+                    : "default"
+                }
                 key={command.shortDescription}
                 onSelect={() => {
                   setOpen(false);

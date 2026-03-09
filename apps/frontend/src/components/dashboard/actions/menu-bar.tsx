@@ -7,11 +7,15 @@ import {
   MenubarItem,
   MenubarMenu,
   MenubarSeparator,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
   MenubarTrigger,
 } from "@/components/ui/menubar";
 
 import {
   DashboardActionMenubarGroups,
+  useDashboardCardActionGroups,
   useDashboardDashboardActionGroups,
   useDashboardInstanceActionGroups,
   useDashboardViewActionGroups,
@@ -21,9 +25,7 @@ export function DashboardMenuBar() {
   return (
     <Menubar className="w-full border-0 border-b p-0">
       <DashboardMenuBarMenu />
-      <Suspense fallback={<InstanceMenuBarFallback />}>
-        <InstanceMenuBarMenu />
-      </Suspense>
+      <CardMenuBarMenu />
       <ViewMenuBarMenu />
     </Menubar>
   );
@@ -42,12 +44,12 @@ function DashboardMenuBarMenu() {
   );
 }
 
-function InstanceMenuBarMenu() {
-  const groups = useDashboardInstanceActionGroups();
+function CardMenuBarMenu() {
+  const groups = useDashboardCardActionGroups();
 
   return (
     <MenubarMenu>
-      <MenubarTrigger>Instance</MenubarTrigger>
+      <MenubarTrigger>Card</MenubarTrigger>
       <MenubarContent className="w-44">
         <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
@@ -55,16 +57,29 @@ function InstanceMenuBarMenu() {
   );
 }
 
-function InstanceMenuBarFallback() {
+function InstanceSubMenuBarMenu() {
+  const groups = useDashboardInstanceActionGroups();
+
   return (
-    <MenubarMenu>
-      <MenubarTrigger>Instance</MenubarTrigger>
-      <MenubarContent className="w-44">
+    <MenubarSub>
+      <MenubarSubTrigger>Instance</MenubarSubTrigger>
+      <MenubarSubContent>
+        <DashboardActionMenubarGroups groups={groups} />
+      </MenubarSubContent>
+    </MenubarSub>
+  );
+}
+
+function InstanceSubMenuBarFallback() {
+  return (
+    <MenubarSub>
+      <MenubarSubTrigger>Instance</MenubarSubTrigger>
+      <MenubarSubContent>
         <MenubarGroup>
           <MenubarItem disabled>Loading instances...</MenubarItem>
         </MenubarGroup>
-      </MenubarContent>
-    </MenubarMenu>
+      </MenubarSubContent>
+    </MenubarSub>
   );
 }
 
@@ -75,11 +90,14 @@ function ViewMenuBarMenu() {
     <MenubarMenu>
       <MenubarTrigger>View</MenubarTrigger>
       <MenubarContent className="w-44">
-        <DashboardActionMenubarGroups groups={groups} />
+        <Suspense fallback={<InstanceSubMenuBarFallback />}>
+          <InstanceSubMenuBarMenu />
+        </Suspense>
         <MenubarSeparator />
-        <MenubarGroup>
-          <MenubarItem>Hide Sidebar</MenubarItem>
-        </MenubarGroup>
+        <DashboardActionMenubarGroups groups={groups} />
+        {/* <MenubarGroup> */}
+        {/*   <MenubarItem>Hide Sidebar</MenubarItem> */}
+        {/* </MenubarGroup> */}
       </MenubarContent>
     </MenubarMenu>
   );

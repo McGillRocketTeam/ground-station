@@ -11,6 +11,12 @@ import { TooltipProvider } from "./components/ui/tooltip.tsx";
 
 Atom.runtime.addGlobalLayer(Logger.layer([Logger.consolePretty()]));
 
+if ("serviceWorker" in navigator) {
+  void window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js");
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>

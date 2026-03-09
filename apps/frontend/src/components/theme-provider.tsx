@@ -5,6 +5,26 @@ import { useEffect } from "react";
 
 import { themeAtom, type Theme } from "@/lib/atom";
 
+function syncThemeColor() {
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+  if (!(themeColorMeta instanceof HTMLMetaElement)) {
+    return;
+  }
+
+  const probe = document.createElement("div");
+
+  probe.style.position = "fixed";
+  probe.style.pointerEvents = "none";
+  probe.style.opacity = "0";
+  probe.style.color = "var(--background)";
+  document.body.append(probe);
+
+  themeColorMeta.content = getComputedStyle(probe).color;
+
+  probe.remove();
+}
+
 export function resolveTheme(theme: Theme): Exclude<Theme, "system"> {
   if (theme !== "system") {
     return theme;
@@ -25,6 +45,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const applyTheme = () => {
       root.classList.remove("light", "dark");
       root.classList.add(resolveTheme(theme));
+      syncThemeColor();
     };
 
     applyTheme();

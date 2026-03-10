@@ -187,8 +187,6 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
         AckStatus.PENDING);
 
     for (Target target : targetSelection.selectedTargets()) {
-      commandHistoryPublisher.publishAck(
-          preparedCommand.getCommandId(), target.uplinkAckKey(), missionTime, AckStatus.PENDING);
       if (target.expectsRadioAcks()) {
         commandHistoryPublisher.publishAck(
             preparedCommand.getCommandId(), target.radioTxAckKey(), missionTime, AckStatus.PENDING);
@@ -464,9 +462,6 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return;
     }
 
-    commandHistoryPublisher.publishAck(
-        dispatch.commandId(), target.uplinkAckKey(), timeService.getMissionTime(), AckStatus.OK);
-
     finalizeDispatchPublish(dispatch, progress);
   }
 
@@ -477,12 +472,6 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     String message = error.getMessage() == null ? error.toString() : error.getMessage();
-    commandHistoryPublisher.publishAck(
-        dispatch.commandId(),
-        target.uplinkAckKey(),
-        timeService.getMissionTime(),
-        AckStatus.NOK,
-        message);
     if (target.expectsRadioAcks()) {
       commandHistoryPublisher.publishAck(
           dispatch.commandId(),
@@ -606,7 +595,12 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
   private static String normalizeAckName(String name) {
     String normalized = name.toLowerCase().replaceAll("[^a-z0-9]+", "_");
-    return normalized.replaceAll("^_+|_+$", "");
+    normalized = normalized.replaceAll("^_+|_+$", "");
+    return switch (normalized) {
+      case "systema", "system_a" -> "a";
+      case "systemb", "system_b" -> "b";
+      default -> normalized;
+    };
   }
 
   private String radioAckTopicFromBase(String name, String baseTopic) {
@@ -633,10 +627,6 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       int ackFlagByteIndex,
       int ackFlagBitIndex,
       int ackIdByteIndex) {
-
-    String uplinkAckKey() {
-      return "uplink_" + ackName;
-    }
 
     String fcAckKey() {
       return "fc_" + ackName;

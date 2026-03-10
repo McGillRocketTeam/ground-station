@@ -1,7 +1,6 @@
-import { useAtomSuspense, useAtomValue } from "@effect/atom-react";
+import { useAtomSuspense } from "@effect/atom-react";
 import { NamedObjectId } from "@mrt/yamcs-effect";
 import { Schema } from "effect";
-import { Info, ListTree } from "lucide-react";
 import { Suspense } from "react";
 import { Fragment } from "react/jsx-runtime";
 

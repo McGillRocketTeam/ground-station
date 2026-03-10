@@ -3,13 +3,20 @@
   "steps": [
     {
       "type": "command",
-      "name": "/FlightComputer/arm_recovery",
+      "name": "/FlightComputer/reset_av",
       "comment": "19 Press and hold Recovery Arm on the GUI.",
       "extraOptions": [],
       "arguments": [],
       "advancement": {
         "acknowledgment": "Acknowledge_Sent"
       }
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/arm_recovery",
+      "comment": "19 Press and hold Recovery Arm on the GUI.",
+      "extraOptions": [],
+      "arguments": []
     },
     {
       "type": "verify",
@@ -47,10 +54,7 @@
       "name": "/FlightComputer/propulsion_on",
       "comment": "Press and hold Propulsion On on the GUI.",
       "extraOptions": [],
-      "arguments": [],
-      "advancement": {
-        "acknowledgment": "Acknowledge_Sent"
-      }
+      "arguments": []
     },
     {
       "type": "verify",
@@ -84,10 +88,7 @@
       "name": "/FlightComputer/mov_arming",
       "comment": "Press and hold MOV Arm on the GUI.",
       "extraOptions": [],
-      "arguments": [],
-      "advancement": {
-        "acknowledgment": "Acknowledge_Sent"
-      }
+      "arguments": []
     },
     {
       "type": "verify",
@@ -111,20 +112,14 @@
       "name": "/FlightComputer/umbilical_to_battery",
       "comment": "Press and hold `Umbilical Low` on the GUI.",
       "extraOptions": [],
-      "arguments": [],
-      "advancement": {
-        "acknowledgment": "CommandComplete"
-      }
+      "arguments": []
     },
     {
       "type": "command",
       "name": "/FlightComputer/launch",
       "comment": "Press and hold `Launch` on the GUI",
       "extraOptions": [],
-      "arguments": [],
-      "advancement": {
-        "acknowledgment": "Acknowledge_Sent"
-      }
+      "arguments": []
     },
     {
       "type": "verify",
@@ -145,7 +140,7 @@
     }
   ],
   "advancement": {
-    "acknowledgment": "Acknowledge_Sent",
+    "acknowledgment": "CommandComplete",
     "wait": 0
   }
 }

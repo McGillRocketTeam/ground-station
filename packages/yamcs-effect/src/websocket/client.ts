@@ -3,7 +3,7 @@ import {
   Data,
   Effect,
   Layer,
-  Queue,
+  PubSub,
   Schema,
   ServiceMap,
   Stream,
@@ -44,6 +44,10 @@ export class WebSocketClient extends ServiceMap.Service<
       const websocketUrl = new URL("api/websocket", yamcsUrl);
       websocketUrl.protocol = yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
       let id = SubscriptionId.makeUnsafe(1);
+      const messagePubSub = yield* Effect.acquireRelease(
+        PubSub.unbounded<typeof ServerMessages.Type>({ replay: 128 }),
+        PubSub.shutdown,
+      );
 
       // Socket will be automatically closed when the scope ends.
       const ws = yield* Effect.acquireRelease(
@@ -60,6 +64,18 @@ export class WebSocketClient extends ServiceMap.Service<
           }),
       );
 
+      ws.addEventListener("message", (event: MessageEvent) => {
+        const parsed = Schema.decodeUnknownOption(ServerMessages)(
+          JSON.parse(event.data as string),
+        );
+
+        if (parsed._tag === "Some") {
+          PubSub.publishUnsafe(messagePubSub, parsed.value);
+        }
+      });
+
+      const messages = Stream.fromPubSub(messagePubSub);
+
       // Wait for the open event
       yield* Effect.callback<void>((resume) => {
         ws.addEventListener("open", (_event) => {
@@ -69,22 +85,9 @@ export class WebSocketClient extends ServiceMap.Service<
         });
       });
 
-      const messages = Stream.callback<typeof ServerMessages.Type>((queue) =>
-        Effect.sync(() => {
-          ws.addEventListener("message", (event: MessageEvent) => {
-            const parsed = Schema.decodeUnknownOption(ServerMessages)(
-              JSON.parse(event.data as string),
-            );
-            if (parsed._tag === "Some") {
-              Queue.offerUnsafe(queue, parsed.value);
-            }
-          });
-        }),
-      );
-
       yield* messages.pipe(
         Stream.runForEach((message) =>
-          Effect.logDebug(`Websocket Message (${message.type})`, message),
+          Effect.logInfo(`Websocket Message (${message.type})`, message),
         ),
         Effect.forkScoped,
       );
@@ -117,6 +120,7 @@ export class WebSocketClient extends ServiceMap.Service<
             );
           }
 
+          yield* Effect.logInfo(`${reply.call}`);
           return reply.call!;
         });
 
@@ -133,6 +137,7 @@ export class WebSocketClient extends ServiceMap.Service<
         const stream = messages.pipe(
           Stream.filter(Schema.is(Events)),
           Stream.filter((s) => s.call === call),
+          Stream.tap(Effect.logWarning),
         );
 
         return { call, stream };

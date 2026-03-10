@@ -29,6 +29,7 @@ import {
   Stream,
   Tracer,
   type Layer,
+  Cause,
 } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 import { Atom, AtomHttpApi } from "effect/unstable/reactivity";
@@ -46,12 +47,7 @@ type DecodedMessage<A> = {
 };
 
 function logValidationFailure(label: string, error: unknown, raw: unknown) {
-  return Effect.sync(() => {
-    console.error(`[yamcs] Failed to decode ${label}`, {
-      error,
-      raw,
-    });
-  });
+  return Effect.logError(`[yamcs] Failed to decode ${label}\n${error}`, raw);
 }
 
 function isDecodedSuccess<A>(
@@ -74,7 +70,11 @@ function decodeStreamOrLog<A, E, R>(
     ),
     Stream.tap((message) =>
       Exit.isFailure(message.decoded)
-        ? logValidationFailure(label, message.decoded.cause, message.raw)
+        ? logValidationFailure(
+            label,
+            Cause.pretty(message.decoded.cause),
+            message.raw,
+          )
         : Effect.sync(() => undefined),
     ),
     Stream.map((message) =>
@@ -317,6 +317,7 @@ const parameterSubscriptionAtomForInstance = Atom.family(
 
           const mappingEvents = yield* eventStream.pipe(
             Stream.filter((event) => "mapping" in event),
+            Stream.tap(Effect.log),
             Stream.take(1),
             Stream.runCollect,
           );

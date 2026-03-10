@@ -42,7 +42,7 @@ if simulator_enabled:
 	local_resource(
 			'simulator',
 			serve_cmd="pnpm --filter @mrt/simulator dev",
-			serve_env={'YAMCS_INSTANCE': 'ground_station'},
+			serve_env={'YAMCS_INSTANCE': 'urrg'},
 			labels=['mrt'],
 			links='http://localhost:5173',
 			resource_deps=['backend', 'yamcs-effect']

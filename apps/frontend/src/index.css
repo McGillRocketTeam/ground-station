@@ -50,6 +50,7 @@
 
   --mrt: #9f1c22;
   --success: var(--color-green-700);
+  --warning: var(--color-yellow-700);
 }
 
 .dark {
@@ -98,6 +99,7 @@
 
   --mrt: #d21e26;
   --success: var(--color-green-500);
+  --warning: var(--color-yellow-500);
 }
 
 @theme inline {
@@ -154,6 +156,7 @@
   --color-selection-background: var(--selection-background);
   --color-error: #a1112c;
   --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-error-foreground: var(--color-white);
 }
 

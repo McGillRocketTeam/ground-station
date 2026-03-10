@@ -246,7 +246,7 @@ const Uint32Value = Schema.Struct({
 
 const Sint64Value = Schema.Struct({
   type: Schema.Literal("SINT64"),
-  value: Schema.Number,
+  value: Schema.NumberFromString,
 }).pipe(Schema.encodeKeys({ value: "sint64Value" }));
 
 const Uint64Value = Schema.Struct({

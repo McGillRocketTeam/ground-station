@@ -2,7 +2,7 @@ import { useAtomSuspense } from "@effect/atom-react";
 import { Suspense } from "react";
 
 import { timeSubscriptionAtom } from "@/lib/atom";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 function Time() {
   const { value: time } = useAtomSuspense(timeSubscriptionAtom).value;
@@ -26,9 +26,9 @@ function MissionTime() {
   );
 }
 
-export function DashboardHeader() {
+export function DashboardHeader({ className }: { className?: string }) {
   return (
-    <div className="flex flex-row justify-between">
+    <div className={cn("flex flex-row justify-between", className)}>
       <div className="flex flex-col font-mono text-xs uppercase items-start">
         <div className="text-mrt">McGill Rocket Team</div>
         <div className="text-muted-foreground">Ground Station Controls</div>

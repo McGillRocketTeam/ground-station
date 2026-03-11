@@ -12,10 +12,6 @@ import { DashboardCardField } from "./card-field";
 type EncodedFormValues = Record<string, unknown>;
 type DecodedFormValues = Record<string, unknown>;
 
-export function isCardId(value: string): value is CardId {
-  return value in CardSchemaMap;
-}
-
 function decode(schema: Schema.Codec<DecodedFormValues, EncodedFormValues>) {
   return function (value: unknown) {
     return Schema.decodeUnknownEffect(schema)(value).pipe(

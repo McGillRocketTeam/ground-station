@@ -9,9 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { isCardId } from "@/lib/cards";
 
 import { Button } from "../../ui/button";
-import { DashboardCardForm, isCardId } from "./card-form";
+import { DashboardCardForm } from "./card-form";
 
 export const editPanelDialogHandle = Dialog.createHandle<IDockviewPanel>();
 

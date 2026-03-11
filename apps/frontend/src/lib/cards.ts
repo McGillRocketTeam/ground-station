@@ -1,8 +1,10 @@
-import type { IDockviewPanelProps } from "dockview-react";
+import type { IDockviewPanel, IDockviewPanelProps } from "dockview-react";
 import type { ErrorInfo, ReactNode } from "react";
 
 import { Schema } from "effect";
 import { Component, createElement } from "react";
+
+import type { DashboardActionGroup } from "@/lib/dashboard-actions";
 
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
@@ -19,6 +21,7 @@ export interface CardDefinition<
   id: Id;
   name: string;
   schema: Schema.Struct<T>;
+  actions?: (panel: IDockviewPanel) => ReadonlyArray<DashboardActionGroup>;
   component: (
     props: IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>,
   ) => ReactNode;
@@ -92,6 +95,16 @@ type Cards = (typeof CardArray)[number];
 export type CardId = Cards["id"];
 type GetCard<Id extends CardId> = Extract<Cards, { id: Id }>;
 
+export const CardDefinitionMap = Object.fromEntries(
+  CardArray.map((card) => [card.id, card]),
+) as {
+  [K in CardId]: GetCard<K>;
+};
+
+export function isCardId(value: string): value is CardId {
+  return value in CardDefinitionMap;
+}
+
 export const CardSchemaMap = Object.fromEntries(
   CardArray.map((c) => [c.id, c.schema]),
 ) as {
@@ -103,6 +116,18 @@ export const CardComponentMap = Object.fromEntries(
 ) as {
   [K in CardId]: GetCard<K>["component"];
 };
+
+export function getCardActionsForPanel(
+  panel: IDockviewPanel | undefined,
+): ReadonlyArray<DashboardActionGroup> {
+  const componentId = panel?.view.contentComponent;
+
+  if (!componentId || !isCardId(componentId)) {
+    return [];
+  }
+
+  return CardDefinitionMap[componentId].actions?.(panel) ?? [];
+}
 
 // Get schema type for a specific card
 export type CardSchemaType<Id extends CardId> = Schema.Schema.Type<

@@ -14,6 +14,7 @@ import { DashboardCommandMenu } from "@/components/dashboard/actions/command-men
 import { DashboardKeybinds } from "@/components/dashboard/actions/keybinds";
 import {
   activePanelAtom,
+  currentCardActionsAtom,
   dashboardDockviewApiAtom,
   initializeDashboardLayoutHistoryAtom,
   pushDashboardLayoutHistoryAtom,
@@ -25,7 +26,7 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import "./dashboard.css";
 import { DashboardPlus } from "@/components/dashboard/plus";
 import { DashboardTab } from "@/components/dashboard/tab";
-import { CardComponentMap } from "@/lib/cards";
+import { CardComponentMap, getCardActionsForPanel } from "@/lib/cards";
 
 const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
 const dashboardStorageKey = "mrt-dashboard";
@@ -78,6 +79,7 @@ function readPersistedDashboardLayout() {
 export function DashboardPage() {
   const [api, setApi] = useAtom(dashboardDockviewApiAtom);
   const setActivePanel = useAtomSet(activePanelAtom);
+  const setCurrentCardActions = useAtomSet(currentCardActionsAtom);
   const [layout, setLayout] = useAtom(dashboardLocalStorage);
   const initializeDashboardLayoutHistory = useAtomSet(
     initializeDashboardLayoutHistoryAtom,
@@ -102,14 +104,19 @@ export function DashboardPage() {
   useEffect(
     () => () => {
       setApi(undefined);
+      setActivePanel(undefined);
+      setCurrentCardActions([]);
     },
-    [setApi],
+    [setActivePanel, setApi, setCurrentCardActions],
   );
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
-    event.api.onDidActivePanelChange(setActivePanel);
+    event.api.onDidActivePanelChange((panel) => {
+      setActivePanel(panel);
+      setCurrentCardActions(getCardActionsForPanel(panel));
+    });
 
     const persistedLayout =
       readPersistedDashboardLayout() ??

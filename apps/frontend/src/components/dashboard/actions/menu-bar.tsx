@@ -37,7 +37,7 @@ function DashboardMenuBarMenu() {
   return (
     <MenubarMenu>
       <MenubarTrigger>Dashboard</MenubarTrigger>
-      <MenubarContent className="w-44">
+      <MenubarContent className="min-w-44 w-full max-w-80">
         <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
@@ -50,7 +50,7 @@ function CardMenuBarMenu() {
   return (
     <MenubarMenu>
       <MenubarTrigger>Card</MenubarTrigger>
-      <MenubarContent className="w-44">
+      <MenubarContent className="min-w-44 w-full max-w-80">
         <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
@@ -89,7 +89,7 @@ function ViewMenuBarMenu() {
   return (
     <MenubarMenu>
       <MenubarTrigger>View</MenubarTrigger>
-      <MenubarContent className="w-44">
+      <MenubarContent className="min-w-44 w-full max-w-80">
         <Suspense fallback={<InstanceSubMenuBarFallback />}>
           <InstanceSubMenuBarMenu />
         </Suspense>

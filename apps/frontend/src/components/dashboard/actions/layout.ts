@@ -6,6 +6,8 @@ import type {
 
 import { Atom } from "effect/unstable/reactivity";
 
+import type { DashboardActionGroup } from "@/lib/dashboard-actions";
+
 type DashboardLayoutHistory = {
   past: ReadonlyArray<SerializedDockview>;
   present: SerializedDockview | undefined;
@@ -128,3 +130,7 @@ export const dashboardRedoAtom: Atom.Writable<void, void> = Atom.writable(
 ) as Atom.Writable<void, void>;
 
 export const activePanelAtom = Atom.make<IDockviewPanel | undefined>(undefined);
+
+export const currentCardActionsAtom = Atom.make<
+  ReadonlyArray<DashboardActionGroup>
+>([]);

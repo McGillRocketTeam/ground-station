@@ -3,12 +3,16 @@ import type { SerializedDockview } from "dockview-react";
 import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import {
   formatForDisplay,
-  type Hotkey,
-  type ParsedHotkey,
+  type RegisterableHotkey,
 } from "@tanstack/react-hotkeys";
 import { Effect } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { Fragment } from "react";
+
+import type {
+  DashboardAction,
+  DashboardActionGroup,
+} from "@/lib/dashboard-actions";
 
 import { resolveTheme, useTheme } from "@/components/theme-provider";
 import {
@@ -27,28 +31,13 @@ import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 import { editPanelDialogHandle } from "../form/edit-dialog";
 import {
   activePanelAtom,
+  currentCardActionsAtom,
   dashboardDockviewApiAtom,
   dashboardLayoutHistoryAtom,
   dashboardRedoAtom,
   dashboardUndoAtom,
   initializeDashboardLayoutHistoryAtom,
 } from "./layout";
-
-export type DashboardAction = {
-  id: string;
-  label: string;
-  keywords?: ReadonlyArray<string>;
-  shortcut?: Hotkey | ParsedHotkey;
-  disabled?: boolean;
-  destructive?: boolean;
-  run: () => void;
-};
-
-export type DashboardActionGroup = {
-  id: string;
-  heading: string;
-  actions: ReadonlyArray<DashboardAction>;
-};
 
 export const toggleFullscreenAtom = Atom.fn(() =>
   Effect.gen(function* () {
@@ -256,7 +245,10 @@ export function useDashboardViewActionGroups(): ReadonlyArray<DashboardActionGro
 
 export function useDashboardCardActionGroups(): ReadonlyArray<DashboardActionGroup> {
   const activePanel = useAtomValue(activePanelAtom);
-  return [
+  const currentCardActions = useAtomValue(currentCardActionsAtom);
+
+  const groups: ReadonlyArray<DashboardActionGroup> = [
+    ...currentCardActions,
     {
       id: "card-actions",
       heading: "Card",
@@ -290,6 +282,8 @@ export function useDashboardCardActionGroups(): ReadonlyArray<DashboardActionGro
       ],
     },
   ];
+
+  return groups.filter((group) => group.actions.length > 0);
 }
 
 export function useDashboardInstanceActionGroups(): ReadonlyArray<DashboardActionGroup> {
@@ -309,7 +303,7 @@ export function useDashboardInstanceActionGroups(): ReadonlyArray<DashboardActio
           .map((i) => i.charAt(0).toLocaleUpperCase() + i.substring(1))
           .join(" "),
         keywords: ["instance", "switch", instance.name, String(index + 1)],
-        shortcut: String(index + 1) as Hotkey,
+        shortcut: String(index + 1) as RegisterableHotkey,
         run: () => setInstance(instance.name),
       })),
     },
@@ -321,28 +315,33 @@ export function DashboardActionMenubarGroups({
 }: {
   groups: ReadonlyArray<DashboardActionGroup>;
 }) {
-  return groups.map((group, index) => (
-    <Fragment key={group.id}>
-      {index > 0 ? <MenubarSeparator /> : null}
-      <MenubarGroup>
-        {group.actions.map((action) => (
-          <MenubarItem
-            key={action.id}
-            disabled={action.disabled}
-            onClick={action.run}
-            variant={action.destructive ? "destructive" : "default"}
-          >
-            {action.label}
-            {action.shortcut ? (
-              <MenubarShortcut>
-                {formatForDisplay(action.shortcut)}
-              </MenubarShortcut>
-            ) : null}
-          </MenubarItem>
-        ))}
-      </MenubarGroup>
-    </Fragment>
-  ));
+  return groups
+    .filter((group) => group.actions.length > 0)
+    .map((group, index) => (
+      <Fragment key={group.id}>
+        {index > 0 ? <MenubarSeparator /> : null}
+        <MenubarGroup>
+          {group.actions.map((action) => (
+            <MenubarItem
+              key={action.id}
+              disabled={action.disabled}
+              onClick={action.run}
+              variant={action.destructive ? "destructive" : "default"}
+              className="text-nowrap"
+            >
+              {action.label}
+              {action.shortcut ? (
+                <MenubarShortcut>
+                  {formatForDisplay(
+                    action.shortcut as Parameters<typeof formatForDisplay>[0],
+                  )}
+                </MenubarShortcut>
+              ) : null}
+            </MenubarItem>
+          ))}
+        </MenubarGroup>
+      </Fragment>
+    ));
 }
 
 export function DashboardActionCommandGroups({
@@ -352,31 +351,35 @@ export function DashboardActionCommandGroups({
   groups: ReadonlyArray<DashboardActionGroup>;
   onAction?: () => void;
 }) {
-  return groups.map((group) => (
-    <CommandGroup heading={group.heading} key={group.id}>
-      {group.actions.map((action) => (
-        <CommandItem
-          disabled={action.disabled}
-          key={action.id}
-          variant={action.destructive ? "destructive" : "default"}
-          value={[action.label, ...(action.keywords ?? [])].join(" ")}
-          onSelect={() => {
-            if (action.disabled) {
-              return;
-            }
+  return groups
+    .filter((group) => group.actions.length > 0)
+    .map((group) => (
+      <CommandGroup heading={group.heading} key={group.id}>
+        {group.actions.map((action) => (
+          <CommandItem
+            disabled={action.disabled}
+            key={action.id}
+            variant={action.destructive ? "destructive" : "default"}
+            value={[action.label, ...(action.keywords ?? [])].join(" ")}
+            onSelect={() => {
+              if (action.disabled) {
+                return;
+              }
 
-            action.run();
-            onAction?.();
-          }}
-        >
-          {action.label}
-          {action.shortcut ? (
-            <CommandShortcut>
-              {formatForDisplay(action.shortcut)}
-            </CommandShortcut>
-          ) : null}
-        </CommandItem>
-      ))}
-    </CommandGroup>
-  ));
+              action.run();
+              onAction?.();
+            }}
+          >
+            {action.label}
+            {action.shortcut ? (
+              <CommandShortcut>
+                {formatForDisplay(
+                  action.shortcut as Parameters<typeof formatForDisplay>[0],
+                )}
+              </CommandShortcut>
+            ) : null}
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    ));
 }

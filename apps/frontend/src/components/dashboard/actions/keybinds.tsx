@@ -4,9 +4,12 @@ import { useAtomSet, useAtomSuspense } from "@effect/atom-react";
 import { useHotkey, useHotkeySequence } from "@tanstack/react-hotkeys";
 import { Suspense } from "react";
 
-import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import type {
+  DashboardAction,
+  DashboardActionGroup,
+} from "@/lib/dashboard-actions";
 
-import type { DashboardAction, DashboardActionGroup } from "./groups";
+import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
 import { switchInstanceMenuAtom } from "./command-menu";
 import {

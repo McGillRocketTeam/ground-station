@@ -10,7 +10,7 @@ See https://github.com/yamcs/pymdb
 	<TelemetryMetaData />
 	<CommandMetaData>
 		<MetaCommandSet>
-			<MetaCommand name="clear_queue" abstract="false" shortDescription="radio clear\n">
+			<MetaCommand name="clear_queue" abstract="false" shortDescription="radio clear">
 				<LongDescription>Clear Radio Command Queue</LongDescription>
 				<CommandContainer name="clear_queue">
 					<EntryList />

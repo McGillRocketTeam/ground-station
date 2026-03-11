@@ -121,7 +121,7 @@ streamConfig:
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
     - name: "system_b_fc_realtime"
-      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+      rootContainer: "/SystemB/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
 
     - name: "system_a_radio_realtime"

@@ -865,32 +865,32 @@ See https://github.com/yamcs/pymdb
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="flags_bool_lead_pad">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>37</FixedValue>
+              <FixedValue>32</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="states_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>36</FixedValue>
+              <FixedValue>39</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="prop_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>35</FixedValue>
+              <FixedValue>38</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="flight_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>34</FixedValue>
+              <FixedValue>37</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="radio_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>33</FixedValue>
+              <FixedValue>36</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="sd_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>32</FixedValue>
+              <FixedValue>35</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="flags_post_pad">
@@ -937,17 +937,17 @@ See https://github.com/yamcs/pymdb
         <EntryList>
           <ParameterRefEntry parameterRef="sd_atomic_bool_lead_pad">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>2</FixedValue>
+              <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="sd_card_file_open">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>1</FixedValue>
+              <FixedValue>7</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="sd_card_deletion_armed">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>0</FixedValue>
+              <FixedValue>6</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>

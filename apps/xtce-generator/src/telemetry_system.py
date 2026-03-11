@@ -192,9 +192,8 @@ class TelemetrySystem(FlightSystem):
         for group in TelemetrySystem.chunked(boolean_params, 8):
             group_size = len(group)
 
-            # If incomplete group (less than 8), add leading padding
+            # If incomplete group (less than 8), add leading padding.
             # Example: [A, B, C] -> (pad x 5) C B A
-            # Padding at higher bits, booleans at lower bits
             if group_size < 8:
                 padding_bits = 8 - group_size
                 pad_param = Y.IntegerParameter(
@@ -204,23 +203,15 @@ class TelemetrySystem(FlightSystem):
                     signed=False,
                     encoding=Y.IntegerEncoding(bits=padding_bits),
                 )
-                # Padding goes at higher bits (after the booleans in bit position)
-                # Booleans will be at current_bit_pos to current_bit_pos + group_size - 1
-                # Padding will be at current_bit_pos + group_size to current_bit_pos + 7
                 container.entries.append(
-                    Y.ParameterEntry(
-                        parameter=pad_param, bitpos=current_bit_pos + group_size
-                    )
+                    Y.ParameterEntry(parameter=pad_param, bitpos=current_bit_pos)
                 )
 
-            # Place booleans in reverse order within the byte
-            # Logical order: A, B, C, D, E, F, G, H
-            # Bits come into the backend little endian reversed so bit locations != logical order
-            # Bit positions: A=bit7, B=bit6, C=bit5, ..., H=bit0 (reversed)
-            # So reading the booleans correctly in the backend is like this H G F E D C B A
-            # So H will come first
+            # Place booleans in the byte to match the C++ little-endian packing.
+            # The first boolean lands in the last bit of the byte, so partial groups
+            # sit after their leading padding.
             for i, bool_param in enumerate(group):
-                bit_pos = current_bit_pos + group_size - 1 - i
+                bit_pos = current_bit_pos + 7 - i
                 entry = Y.ParameterEntry(parameter=bool_param, bitpos=bit_pos)
                 container.entries.append(entry)
             current_bit_pos += 8

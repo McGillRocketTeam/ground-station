@@ -49,12 +49,14 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   private String detailedStatus = "Not started.";
   private MqttAsyncClient client;
   private MqttConnectOptions connOpts;
+  private boolean commandCountingEnabled = true;
 
   private List<Target> targets = List.of();
   private Map<String, AckRoute> ackRouteByTopic = Map.of();
 
   private final AtomicInteger currentCommandId = new AtomicInteger(1);
   private final Map<Integer, DispatchState> dispatchBySequence = new ConcurrentHashMap<>();
+  private final Map<String, DispatchState> dispatchByTarget = new ConcurrentHashMap<>();
 
   @Override
   public void init(String yamcsInstance, String linkName, YConfiguration config)
@@ -64,12 +66,18 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     registerCommandOption();
     connOpts = MqttUtils.getConnectionOptions(config);
     client = MqttUtils.newClient(config);
+    commandCountingEnabled = config.getBoolean("commandCountingEnabled", true);
     targets = loadTargets(config);
 
     Map<String, AckRoute> ackRoutes = new LinkedHashMap<>();
     for (Target target : targets) {
-      registerAckRoute(ackRoutes, target.ackTopic(), target, AckChannel.FLIGHT_COMPUTER, "ackTopic");
-      registerAckRoute(ackRoutes, target.radioAckTopic(), target, AckChannel.RADIO, "radioAckTopic");
+      if (commandCountingEnabled) {
+        registerAckRoute(ackRoutes, target.ackTopic(), target, AckChannel.FLIGHT_COMPUTER, "ackTopic");
+        registerAckRoute(
+            ackRoutes, target.radioAckTopic(), target, AckChannel.RADIO, "radioAckTopic");
+      } else {
+        registerAckRoute(ackRoutes, target.statusAckTopic(), target, AckChannel.STATUS, "statusAckTopic");
+      }
     }
     ackRouteByTopic = Collections.unmodifiableMap(ackRoutes);
   }
@@ -78,6 +86,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   public Spec getSpec() {
     Spec spec = getDefaultSpec();
     MqttUtils.addConnectionOptionsToSpec(spec);
+    spec.addOption("commandCountingEnabled", OptionType.BOOLEAN).withDefault(true);
 
     Spec targetSpec = new Spec();
     targetSpec.addOption("name", OptionType.STRING).withRequired(true);
@@ -86,11 +95,12 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     targetSpec.addOption("commandTopic", OptionType.STRING).withRequired(false);
     targetSpec.addOption("ackTopic", OptionType.STRING).withRequired(false);
     targetSpec.addOption("radioAckTopic", OptionType.STRING).withRequired(false);
+    targetSpec.addOption("statusAckTopic", OptionType.STRING).withRequired(false);
     targetSpec.addOption("ackFlagByteIndex", OptionType.INTEGER).withDefault(DEFAULT_ACK_FLAG_BYTE_INDEX);
     targetSpec.addOption("ackFlagBitIndex", OptionType.INTEGER).withDefault(DEFAULT_ACK_FLAG_BIT_INDEX);
     targetSpec.addOption("ackIdByteIndex", OptionType.INTEGER).withDefault(DEFAULT_ACK_ID_BYTE_INDEX);
     targetSpec.requireOneOf("baseTopic", "commandTopic");
-    targetSpec.requireOneOf("baseTopic", "ackTopic");
+    targetSpec.requireOneOf("baseTopic", "ackTopic", "statusAckTopic");
 
     spec.addOption("targets", OptionType.LIST)
         .withElementType(OptionType.MAP)
@@ -105,7 +115,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     try {
       connectAndSubscribe();
 
-      detailedStatus = "Connected to MQTT broker and listening for FC and radio acks";
+      detailedStatus =
+          commandCountingEnabled
+              ? "Connected to MQTT broker and listening for FC and radio acks"
+              : "Connected to MQTT broker and listening for command acks";
       eventProducer.sendInfo(detailedStatus);
       notifyStarted();
     } catch (Exception e) {
@@ -159,19 +172,23 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return false;
     }
 
-    int sequence = nextSequence();
+    int sequence = commandCountingEnabled ? nextSequence() : 0;
     DispatchState dispatch =
-        new DispatchState(preparedCommand, sequence, targetSelection.selectedTargets());
-    DispatchState previous = dispatchBySequence.putIfAbsent(sequence, dispatch);
-    if (previous != null) {
-      failedCommand(
-          preparedCommand.getCommandId(),
-          "Sequence " + sequence + " is still in flight; refusing to overwrite dispatch state");
+        new DispatchState(
+            preparedCommand,
+            sequence,
+            targetSelection.selectedTargets(),
+            commandCountingEnabled ? AckTrackingMode.COUNTED : AckTrackingMode.STATUS);
+    String reservationError = registerDispatch(dispatch);
+    if (reservationError != null) {
+      failedCommand(preparedCommand.getCommandId(), reservationError);
       return false;
     }
 
     commandHistoryPublisher.publish(preparedCommand.getCommandId(), "Command_Id", commandCode);
-    commandHistoryPublisher.publish(preparedCommand.getCommandId(), "Sequence_Count", sequence);
+    if (commandCountingEnabled) {
+      commandHistoryPublisher.publish(preparedCommand.getCommandId(), "Sequence_Count", sequence);
+    }
     commandHistoryPublisher.publish(
         preparedCommand.getCommandId(),
         "TX_Targets",
@@ -186,18 +203,20 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
         missionTime,
         AckStatus.PENDING);
 
-    for (Target target : targetSelection.selectedTargets()) {
-      if (target.expectsRadioAcks()) {
+    if (commandCountingEnabled) {
+      for (Target target : targetSelection.selectedTargets()) {
+        if (target.expectsRadioAcks()) {
+          commandHistoryPublisher.publishAck(
+              preparedCommand.getCommandId(), target.radioTxAckKey(), missionTime, AckStatus.PENDING);
+          commandHistoryPublisher.publishAck(
+              preparedCommand.getCommandId(), target.radioRxAckKey(), missionTime, AckStatus.PENDING);
+        }
         commandHistoryPublisher.publishAck(
-            preparedCommand.getCommandId(), target.radioTxAckKey(), missionTime, AckStatus.PENDING);
-        commandHistoryPublisher.publishAck(
-            preparedCommand.getCommandId(), target.radioRxAckKey(), missionTime, AckStatus.PENDING);
+            preparedCommand.getCommandId(), target.fcAckKey(), missionTime, AckStatus.PENDING);
       }
-      commandHistoryPublisher.publishAck(
-          preparedCommand.getCommandId(), target.fcAckKey(), missionTime, AckStatus.PENDING);
     }
 
-    String payload = sequence + "," + commandCode;
+    String payload = commandCountingEnabled ? sequence + "," + commandCode : commandCode;
     MqttMessage message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
     int attemptedPublishes = 0;
 
@@ -227,7 +246,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     if (attemptedPublishes == 0) {
-      dispatchBySequence.remove(sequence, dispatch);
+      releaseDispatch(dispatch);
       failedCommand(preparedCommand.getCommandId(), "No command targets are configured");
       return false;
     }
@@ -252,6 +271,11 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
     if (ackRoute.channel() == AckChannel.RADIO) {
       handleRadioAck(ackRoute.target(), message);
+      return;
+    }
+
+    if (ackRoute.channel() == AckChannel.STATUS) {
+      handleStatusAck(ackRoute.target(), message);
       return;
     }
 
@@ -286,27 +310,18 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     if (dispatch.canRemove()) {
-      dispatchBySequence.remove(sequence, dispatch);
+      releaseDispatch(dispatch);
     }
   }
 
   private void handleRadioAck(Target target, MqttMessage message) {
-    AckDto ack;
-    try {
-      ack = GSON.fromJson(new String(message.getPayload(), StandardCharsets.UTF_8), AckDto.class);
-    } catch (Exception e) {
-      eventProducer.sendWarning(
-          "Error parsing radio ack JSON for " + target.name() + ": " + e.getMessage());
-      return;
-    }
-
+    AckDto ack = parseAck(target, message, "radio");
     if (ack == null) {
-      eventProducer.sendWarning("Received empty radio ack JSON for " + target.name());
       return;
     }
 
     try {
-      ack.validate();
+      ack.validateCounted();
     } catch (IllegalArgumentException e) {
       eventProducer.sendWarning(
           "Invalid radio ack JSON for " + target.name() + ": " + e.getMessage());
@@ -342,7 +357,59 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
         ackStatus == AckStatus.OK ? null : ack.status);
 
     if (dispatch.canRemove()) {
-      dispatchBySequence.remove(dispatch.sequence(), dispatch);
+      releaseDispatch(dispatch);
+    }
+  }
+
+  private void handleStatusAck(Target target, MqttMessage message) {
+    AckDto ack = parseAck(target, message, "command status");
+    if (ack == null) {
+      return;
+    }
+
+    try {
+      ack.validateStatusOnly();
+    } catch (IllegalArgumentException e) {
+      eventProducer.sendWarning(
+          "Invalid command status JSON for " + target.name() + ": " + e.getMessage());
+      return;
+    }
+
+    if (!isCommandStatus(ack.status)) {
+      log.debug("Ignoring unsupported command status {} from {}", ack.status, target.name());
+      return;
+    }
+
+    DispatchState dispatch = dispatchByTarget.get(target.name());
+    if (dispatch == null) {
+      log.debug("Ignoring command status {} from {} because no dispatch is in flight", ack.status, target.name());
+      return;
+    }
+
+    AckStatus ackStatus = toAckStatus(ack.status);
+    if (!dispatch.recordStatusAck(target, ackStatus, ack.status)) {
+      return;
+    }
+
+    if (!dispatch.isPublishResultsFinalized()) {
+      return;
+    }
+
+    if (dispatch.hasStatusFailure()) {
+      completeStatusFailure(dispatch);
+      return;
+    }
+
+    if (dispatch.shouldComplete()) {
+      commandHistoryPublisher.publishAck(
+          dispatch.commandId(),
+          CommandHistoryPublisher.CommandComplete_KEY,
+          timeService.getMissionTime(),
+          AckStatus.OK);
+    }
+
+    if (dispatch.canRemove()) {
+      releaseDispatch(dispatch);
     }
   }
 
@@ -384,7 +451,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     client.setCallback(this);
     client.connect(connOpts).waitForCompletion();
 
-    if (targets.isEmpty()) {
+    if (targets.isEmpty() || ackRouteByTopic.isEmpty()) {
       return;
     }
 
@@ -471,29 +538,41 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return;
     }
 
-    String message = error.getMessage() == null ? error.toString() : error.getMessage();
-    if (target.expectsRadioAcks()) {
+    if (commandCountingEnabled) {
+      if (target.expectsRadioAcks()) {
+        commandHistoryPublisher.publishAck(
+            dispatch.commandId(),
+            target.radioTxAckKey(),
+            timeService.getMissionTime(),
+            AckStatus.CANCELLED,
+            "Uplink failed");
+        commandHistoryPublisher.publishAck(
+            dispatch.commandId(),
+            target.radioRxAckKey(),
+            timeService.getMissionTime(),
+            AckStatus.CANCELLED,
+            "Uplink failed");
+      }
       commandHistoryPublisher.publishAck(
           dispatch.commandId(),
-          target.radioTxAckKey(),
-          timeService.getMissionTime(),
-          AckStatus.CANCELLED,
-          "Uplink failed");
-      commandHistoryPublisher.publishAck(
-          dispatch.commandId(),
-          target.radioRxAckKey(),
+          target.fcAckKey(),
           timeService.getMissionTime(),
           AckStatus.CANCELLED,
           "Uplink failed");
     }
-    commandHistoryPublisher.publishAck(
-        dispatch.commandId(),
-        target.fcAckKey(),
-        timeService.getMissionTime(),
-        AckStatus.CANCELLED,
-        "Uplink failed");
 
     finalizeDispatchPublish(dispatch, progress);
+  }
+
+  private void completeStatusFailure(DispatchState dispatch) {
+    failedCommand(dispatch.commandId(), dispatch.statusFailureMessage());
+    commandHistoryPublisher.publishAck(
+        dispatch.commandId(),
+        CommandHistoryPublisher.CommandComplete_KEY,
+        timeService.getMissionTime(),
+        dispatch.statusFailureAckStatus(),
+        dispatch.statusFailureDetail());
+    releaseDispatch(dispatch);
   }
 
   private void finalizeDispatchPublish(DispatchState dispatch, DispatchProgress progress) {
@@ -503,6 +582,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
     if (dispatch.failedTargets().isEmpty()) {
       ackCommand(dispatch.commandId());
+      if (dispatch.hasStatusFailure()) {
+        completeStatusFailure(dispatch);
+        return;
+      }
       if (dispatch.shouldComplete()) {
         commandHistoryPublisher.publishAck(
             dispatch.commandId(),
@@ -511,7 +594,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
             AckStatus.OK);
       }
       if (dispatch.canRemove()) {
-        dispatchBySequence.remove(dispatch.sequence(), dispatch);
+        releaseDispatch(dispatch);
       }
       return;
     }
@@ -527,8 +610,26 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
         failureMessage);
 
     if (dispatch.isFinished()) {
-      dispatchBySequence.remove(dispatch.sequence(), dispatch);
+      releaseDispatch(dispatch);
     }
+  }
+
+  private AckDto parseAck(Target target, MqttMessage message, String ackType) {
+    AckDto ack;
+    try {
+      ack = GSON.fromJson(new String(message.getPayload(), StandardCharsets.UTF_8), AckDto.class);
+    } catch (Exception e) {
+      eventProducer.sendWarning(
+          "Error parsing " + ackType + " ack JSON for " + target.name() + ": " + e.getMessage());
+      return null;
+    }
+
+    if (ack == null) {
+      eventProducer.sendWarning("Received empty " + ackType + " ack JSON for " + target.name());
+      return null;
+    }
+
+    return ack;
   }
 
   private void registerAckRoute(
@@ -561,6 +662,48 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     return sequence;
   }
 
+  private String registerDispatch(DispatchState dispatch) {
+    if (dispatch.ackTrackingMode() == AckTrackingMode.COUNTED) {
+      DispatchState previous = dispatchBySequence.putIfAbsent(dispatch.sequence(), dispatch);
+      if (previous == null) {
+        return null;
+      }
+
+      return "Sequence "
+          + dispatch.sequence()
+          + " is still in flight; refusing to overwrite dispatch state";
+    }
+
+    synchronized (dispatchByTarget) {
+      for (String targetName : dispatch.requestedTargetNames()) {
+        if (dispatchByTarget.containsKey(targetName)) {
+          return "Target "
+              + targetName
+              + " already has an in-flight command without sequence tracking";
+        }
+      }
+
+      for (String targetName : dispatch.requestedTargetNames()) {
+        dispatchByTarget.put(targetName, dispatch);
+      }
+    }
+
+    return null;
+  }
+
+  private void releaseDispatch(DispatchState dispatch) {
+    if (dispatch.ackTrackingMode() == AckTrackingMode.COUNTED) {
+      dispatchBySequence.remove(dispatch.sequence(), dispatch);
+      return;
+    }
+
+    synchronized (dispatchByTarget) {
+      for (String targetName : dispatch.requestedTargetNames()) {
+        dispatchByTarget.remove(targetName, dispatch);
+      }
+    }
+  }
+
   private List<Target> loadTargets(YConfiguration config) {
     List<Target> loadedTargets = new ArrayList<>();
     for (YConfiguration targetConfig : config.getConfigList("targets")) {
@@ -569,6 +712,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       String baseTopic = targetConfig.getString("baseTopic", null);
       String commandTopic = targetConfig.getString("commandTopic", topicFromBase(baseTopic, "commands"));
       String ackTopic = targetConfig.getString("ackTopic", topicFromBase(baseTopic, "telemetry"));
+      String statusAckTopic = targetConfig.getString("statusAckTopic", topicFromBase(baseTopic, "acks"));
       String radioAckTopic =
           targetConfig.getString("radioAckTopic", radioAckTopicFromBase(name, baseTopic));
 
@@ -578,6 +722,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
               ackName,
               commandTopic,
               ackTopic,
+              statusAckTopic,
               radioAckTopic,
               targetConfig.getInt("ackFlagByteIndex", DEFAULT_ACK_FLAG_BYTE_INDEX),
               targetConfig.getInt("ackFlagBitIndex", DEFAULT_ACK_FLAG_BIT_INDEX),
@@ -623,6 +768,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       String ackName,
       String commandTopic,
       String ackTopic,
+      String statusAckTopic,
       String radioAckTopic,
       int ackFlagByteIndex,
       int ackFlagBitIndex,
@@ -651,6 +797,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return radioAckTopic != null && !radioAckTopic.isBlank();
     }
 
+    boolean expectsStatusAcks() {
+      return statusAckTopic != null && !statusAckTopic.isBlank();
+    }
+
     boolean matches(String candidate) {
       return name.equalsIgnoreCase(candidate) || ackName.equalsIgnoreCase(candidate);
     }
@@ -660,7 +810,13 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
   private enum AckChannel {
     FLIGHT_COMPUTER,
-    RADIO
+    RADIO,
+    STATUS
+  }
+
+  private enum AckTrackingMode {
+    COUNTED,
+    STATUS
   }
 
   private enum RadioAckPhase {
@@ -689,23 +845,37 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   private static final class DispatchState {
     private final PreparedCommand preparedCommand;
     private final int sequence;
+    private final AckTrackingMode ackTrackingMode;
     private final Map<String, Target> requestedTargetsByName;
     private final Set<String> expectedRadioTargets = new HashSet<>();
+    private final Set<String> expectedStatusTargets = new HashSet<>();
     private final Set<String> publishedTargets = new HashSet<>();
     private final Map<String, String> failedTargets = new HashMap<>();
     private final Set<String> flightComputerAcks = new HashSet<>();
     private final Set<String> radioTxAcks = new HashSet<>();
     private final Set<String> radioRxAcks = new HashSet<>();
+    private final Set<String> statusAcks = new HashSet<>();
+    private String statusFailureTargetName;
+    private AckStatus statusFailureAckStatus;
+    private String statusFailureDetail;
     private boolean publishResultsFinalized;
 
-    private DispatchState(PreparedCommand preparedCommand, int sequence, Collection<Target> targets) {
+    private DispatchState(
+        PreparedCommand preparedCommand,
+        int sequence,
+        Collection<Target> targets,
+        AckTrackingMode ackTrackingMode) {
       this.preparedCommand = preparedCommand;
       this.sequence = sequence;
+      this.ackTrackingMode = ackTrackingMode;
       this.requestedTargetsByName = new LinkedHashMap<>();
       for (Target target : targets) {
         this.requestedTargetsByName.put(target.name(), target);
-        if (target.expectsRadioAcks()) {
+        if (ackTrackingMode == AckTrackingMode.COUNTED && target.expectsRadioAcks()) {
           expectedRadioTargets.add(target.name());
+        }
+        if (ackTrackingMode == AckTrackingMode.STATUS && target.expectsStatusAcks()) {
+          expectedStatusTargets.add(target.name());
         }
       }
     }
@@ -750,6 +920,23 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       };
     }
 
+    synchronized boolean recordStatusAck(Target target, AckStatus ackStatus, String message) {
+      if (!expectedStatusTargets.contains(target.name())
+          || failedTargets.containsKey(target.name())
+          || hasStatusFailure()) {
+        return false;
+      }
+
+      if (ackStatus == AckStatus.OK) {
+        return statusAcks.add(target.name());
+      }
+
+      statusFailureTargetName = target.name();
+      statusFailureAckStatus = ackStatus;
+      statusFailureDetail = message;
+      return true;
+    }
+
     synchronized boolean markPublishResultsFinalized() {
       if (publishResultsFinalized) {
         return false;
@@ -764,6 +951,13 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized boolean shouldComplete() {
+      if (ackTrackingMode == AckTrackingMode.STATUS) {
+        return publishResultsFinalized
+            && failedTargets.isEmpty()
+            && !hasStatusFailure()
+            && statusAcks.containsAll(expectedStatusTargets);
+      }
+
       return publishResultsFinalized
           && failedTargets.isEmpty()
           && flightComputerAcks.containsAll(requestedTargetsByName.keySet());
@@ -780,6 +974,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     synchronized boolean canRemove() {
       if (!publishResultsFinalized) {
         return false;
+      }
+
+      if (ackTrackingMode == AckTrackingMode.STATUS) {
+        return !failedTargets.isEmpty() || hasStatusFailure() || statusAcks.containsAll(expectedStatusTargets);
       }
 
       Set<String> expectedFlightTargets =
@@ -819,6 +1017,32 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return sequence;
     }
 
+    AckTrackingMode ackTrackingMode() {
+      return ackTrackingMode;
+    }
+
+    synchronized boolean isPublishResultsFinalized() {
+      return publishResultsFinalized;
+    }
+
+    synchronized boolean hasStatusFailure() {
+      return statusFailureAckStatus != null;
+    }
+
+    synchronized AckStatus statusFailureAckStatus() {
+      return statusFailureAckStatus;
+    }
+
+    synchronized String statusFailureDetail() {
+      return statusFailureDetail;
+    }
+
+    synchronized String statusFailureMessage() {
+      Target target = requestedTargetsByName.get(statusFailureTargetName);
+      String targetLabel = target == null ? statusFailureTargetName : target.ackName();
+      return "Command ack failed on " + targetLabel + ": " + statusFailureDetail;
+    }
+
     org.yamcs.protobuf.Commanding.CommandId commandId() {
       return preparedCommand.getCommandId();
     }
@@ -832,13 +1056,21 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     Integer cmd_id;
     String status;
 
-    void validate() {
+    void validateCounted() {
       if (cmd_id == null) {
         throw new IllegalArgumentException("Missing required field: cmd_id");
       }
+      validateStatusOnly();
+    }
+
+    void validateStatusOnly() {
       if (status == null) {
         throw new IllegalArgumentException("Missing required field: status");
       }
     }
+  }
+
+  private boolean isCommandStatus(String status) {
+    return status != null && status.startsWith("ACK_");
   }
 }

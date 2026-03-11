@@ -32,7 +32,7 @@ class TelemetrySystem(FlightSystem):
     def set_param_calibrator(row: dict[str, Any]):
         cal = row["Calibration Function f(x)"]
         if cal:
-            return Y.MathOperation(expression=cal)
+            return Y.calibrators.MathOperation(expression=cal)
         return None
 
     @staticmethod
@@ -220,7 +220,7 @@ class TelemetrySystem(FlightSystem):
             # So reading the booleans correctly in the backend is like this H G F E D C B A
             # So H will come first
             for i, bool_param in enumerate(group):
-                bit_pos = current_bit_pos + group_size - 1 - i
+                bit_pos = current_bit_pos + 7 - i
                 entry = Y.ParameterEntry(parameter=bool_param, bitpos=bit_pos)
                 container.entries.append(entry)
             current_bit_pos += 8
@@ -261,7 +261,7 @@ class TelemetrySystem(FlightSystem):
                 else:
                     if boolean_buffer:
                         current_bit_pos = self.process_booleans_group(
-                            container, boolean_buffer, current_bit_pos, name
+                            self.sys, container, boolean_buffer, current_bit_pos, name
                         )
                         boolean_buffer.clear()
 
@@ -273,13 +273,11 @@ class TelemetrySystem(FlightSystem):
                         and param.encoding
                         and hasattr(param.encoding, "bits")
                     ):
-                        bits = param.encoding.bits
-                        if bits is not None:
-                            current_bit_pos += bits
+                        current_bit_pos += param.encoding.bits
 
             if boolean_buffer:
                 current_bit_pos = self.process_booleans_group(
-                    container, boolean_buffer, current_bit_pos, name
+                    self.sys, container, boolean_buffer, current_bit_pos, name
                 )
 
             containers.append(
@@ -338,6 +336,7 @@ class TelemetrySystem(FlightSystem):
         )
         container.entries.append(Y.ParameterEntry(flags, offset=0))
 
+        num_empty_atomic_flags = 32 - len(atomic_params)
         pad = Y.IntegerParameter(
             system=self.sys,
             name="padding",
@@ -366,24 +365,36 @@ class TelemetrySystem(FlightSystem):
         # │└▶ Flag #7        │└▶ Flag #15
         # └▶ Flag #8         └▶ Flag #16
 
-        current_bit_pos = 32
-        current_bit_pos = self.process_booleans_group(
-            container,
-            list(atomic_params.values()),
-            current_bit_pos,
-            "flags",
-        )
+        if len(atomic_params) < 8:
+            # we need this if there is less than 32 atomic flags
+            pre_pad = Y.IntegerParameter(
+                system=self.sys,
+                name="flags_pre_pad",
+                short_description="Flag Padding",
+                long_description="A.S.T.R.A. Packet Padding",
+                signed=False,
+                encoding=Y.IntegerEncoding(
+                    bits=8 - len(atomic_params), little_endian=True
+                ),
+            )
+            container.entries.append(Y.ParameterEntry(pre_pad, offset=0))
 
-        if current_bit_pos < 64:
-            post_pad = Y.IntegerParameter(
+        for group in TelemetrySystem.chunked(atomic_params.values(), 8):
+            for atomic_flag_param in reversed(group):
+                entry = Y.ParameterEntry(parameter=atomic_flag_param, offset=0)
+                container.entries.append(entry)
+
+        if len(atomic_params) < 32:
+            # we need this if there is less than 32 atomic flags
+            pre_pad = Y.IntegerParameter(
                 system=self.sys,
                 name="flags_post_pad",
                 short_description="Flag Padding",
                 long_description="A.S.T.R.A. Packet Padding",
                 signed=False,
-                encoding=Y.IntegerEncoding(bits=64 - current_bit_pos, little_endian=True),
+                encoding=Y.IntegerEncoding(bits=24, little_endian=True),
             )
-            container.entries.append(Y.ParameterEntry(post_pad, bitpos=current_bit_pos))
+            container.entries.append(Y.ParameterEntry(pre_pad, offset=0))
 
         return (container, atomic_params)
 
@@ -407,9 +418,6 @@ class TelemetrySystem(FlightSystem):
             atomic_names=list(atomic_data.keys())
         )
         frame_container.entries.append(Y.ContainerEntry(header_container))
-
-        if self.param_dict is None:
-            raise ValueError("Parameters must be created before atomics.")
 
         atomic_containers = self.make_atomic_containers(
             atomic_Data=atomic_data,

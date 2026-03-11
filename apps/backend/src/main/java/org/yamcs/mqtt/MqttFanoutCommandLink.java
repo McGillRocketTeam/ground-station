@@ -56,7 +56,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
   private final AtomicInteger currentCommandId = new AtomicInteger(1);
   private final Map<Integer, DispatchState> dispatchBySequence = new ConcurrentHashMap<>();
-  private final Map<String, DispatchState> dispatchByTarget = new ConcurrentHashMap<>();
+  private volatile DispatchState uncountedDispatch;
 
   @Override
   public void init(String yamcsInstance, String linkName, YConfiguration config)
@@ -380,8 +380,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return;
     }
 
-    DispatchState dispatch = dispatchByTarget.get(target.name());
-    if (dispatch == null) {
+    DispatchState dispatch = uncountedDispatch;
+    if (dispatch == null || !dispatch.includesTarget(target)) {
       log.debug("Ignoring command status {} from {} because no dispatch is in flight", ack.status, target.name());
       return;
     }
@@ -615,18 +615,23 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   }
 
   private AckDto parseAck(Target target, MqttMessage message, String ackType) {
+    String payload = new String(message.getPayload(), StandardCharsets.UTF_8).trim();
     AckDto ack;
     try {
-      ack = GSON.fromJson(new String(message.getPayload(), StandardCharsets.UTF_8), AckDto.class);
+      ack = GSON.fromJson(payload, AckDto.class);
     } catch (Exception e) {
-      eventProducer.sendWarning(
-          "Error parsing " + ackType + " ack JSON for " + target.name() + ": " + e.getMessage());
-      return null;
+      ack = null;
     }
 
     if (ack == null) {
-      eventProducer.sendWarning("Received empty " + ackType + " ack JSON for " + target.name());
-      return null;
+      if (payload.isEmpty()) {
+        eventProducer.sendWarning("Received empty " + ackType + " ack payload for " + target.name());
+        return null;
+      }
+
+      AckDto simpleAck = new AckDto();
+      simpleAck.status = payload.replace("\"", "");
+      return simpleAck;
     }
 
     return ack;
@@ -674,18 +679,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
           + " is still in flight; refusing to overwrite dispatch state";
     }
 
-    synchronized (dispatchByTarget) {
-      for (String targetName : dispatch.requestedTargetNames()) {
-        if (dispatchByTarget.containsKey(targetName)) {
-          return "Target "
-              + targetName
-              + " already has an in-flight command without sequence tracking";
-        }
-      }
-
-      for (String targetName : dispatch.requestedTargetNames()) {
-        dispatchByTarget.put(targetName, dispatch);
-      }
+    synchronized (this) {
+      uncountedDispatch = dispatch;
     }
 
     return null;
@@ -697,9 +692,9 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return;
     }
 
-    synchronized (dispatchByTarget) {
-      for (String targetName : dispatch.requestedTargetNames()) {
-        dispatchByTarget.remove(targetName, dispatch);
+    synchronized (this) {
+      if (uncountedDispatch == dispatch) {
+        uncountedDispatch = null;
       }
     }
   }
@@ -848,13 +843,12 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     private final AckTrackingMode ackTrackingMode;
     private final Map<String, Target> requestedTargetsByName;
     private final Set<String> expectedRadioTargets = new HashSet<>();
-    private final Set<String> expectedStatusTargets = new HashSet<>();
     private final Set<String> publishedTargets = new HashSet<>();
     private final Map<String, String> failedTargets = new HashMap<>();
     private final Set<String> flightComputerAcks = new HashSet<>();
     private final Set<String> radioTxAcks = new HashSet<>();
     private final Set<String> radioRxAcks = new HashSet<>();
-    private final Set<String> statusAcks = new HashSet<>();
+    private boolean statusAckReceived;
     private String statusFailureTargetName;
     private AckStatus statusFailureAckStatus;
     private String statusFailureDetail;
@@ -873,9 +867,6 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
         this.requestedTargetsByName.put(target.name(), target);
         if (ackTrackingMode == AckTrackingMode.COUNTED && target.expectsRadioAcks()) {
           expectedRadioTargets.add(target.name());
-        }
-        if (ackTrackingMode == AckTrackingMode.STATUS && target.expectsStatusAcks()) {
-          expectedStatusTargets.add(target.name());
         }
       }
     }
@@ -921,14 +912,18 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized boolean recordStatusAck(Target target, AckStatus ackStatus, String message) {
-      if (!expectedStatusTargets.contains(target.name())
+      if (!requestedTargetsByName.containsKey(target.name())
           || failedTargets.containsKey(target.name())
           || hasStatusFailure()) {
         return false;
       }
 
       if (ackStatus == AckStatus.OK) {
-        return statusAcks.add(target.name());
+        if (statusAckReceived) {
+          return false;
+        }
+        statusAckReceived = true;
+        return true;
       }
 
       statusFailureTargetName = target.name();
@@ -955,7 +950,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
         return publishResultsFinalized
             && failedTargets.isEmpty()
             && !hasStatusFailure()
-            && statusAcks.containsAll(expectedStatusTargets);
+            && statusAckReceived;
       }
 
       return publishResultsFinalized
@@ -977,7 +972,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       }
 
       if (ackTrackingMode == AckTrackingMode.STATUS) {
-        return !failedTargets.isEmpty() || hasStatusFailure() || statusAcks.containsAll(expectedStatusTargets);
+        return !failedTargets.isEmpty() || hasStatusFailure() || statusAckReceived;
       }
 
       Set<String> expectedFlightTargets =
@@ -1019,6 +1014,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
     AckTrackingMode ackTrackingMode() {
       return ackTrackingMode;
+    }
+
+    synchronized boolean includesTarget(Target target) {
+      return requestedTargetsByName.containsKey(target.name());
     }
 
     synchronized boolean isPublishResultsFinalized() {

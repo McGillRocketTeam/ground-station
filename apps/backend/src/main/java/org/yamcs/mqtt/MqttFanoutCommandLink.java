@@ -263,30 +263,40 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
   @Override
   public void connectionLost(Throwable cause) {
-    detailedStatus = "MQTT connection lost: " + cause.getMessage();
+    String message = cause == null || cause.getMessage() == null ? "unknown cause" : cause.getMessage();
+    detailedStatus = "MQTT connection lost: " + message;
     eventProducer.sendWarning(detailedStatus);
   }
 
   @Override
   public void messageArrived(String topic, MqttMessage message) {
-    AckRoute ackRoute = ackRouteByTopic.get(topic);
-    if (ackRoute == null) {
-      return;
+    try {
+      AckRoute ackRoute = ackRouteByTopic.get(topic);
+      if (ackRoute == null) {
+        return;
+      }
+
+      dataIn(1, message.getPayload().length);
+
+      if (ackRoute.channel() == AckChannel.RADIO) {
+        handleRadioAck(ackRoute.target(), message);
+        return;
+      }
+
+      if (ackRoute.channel() == AckChannel.STATUS) {
+        handleStatusAck(ackRoute.target(), message);
+        return;
+      }
+
+      handleFlightComputerAck(ackRoute.target(), message.getPayload());
+    } catch (Exception e) {
+      log.warn("Error handling MQTT ack on topic {}", topic, e);
+      eventProducer.sendWarning(
+          "Error handling MQTT ack on "
+              + topic
+              + ": "
+              + (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage()));
     }
-
-    dataIn(1, message.getPayload().length);
-
-    if (ackRoute.channel() == AckChannel.RADIO) {
-      handleRadioAck(ackRoute.target(), message);
-      return;
-    }
-
-    if (ackRoute.channel() == AckChannel.STATUS) {
-      handleStatusAck(ackRoute.target(), message);
-      return;
-    }
-
-    handleFlightComputerAck(ackRoute.target(), message.getPayload());
   }
 
   private void handleFlightComputerAck(Target target, byte[] payload) {
@@ -534,7 +544,11 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   }
 
   private void handlePublishFailure(DispatchState dispatch, Target target, Throwable error) {
-    DispatchProgress progress = dispatch.recordPublishFailure(target, error.getMessage());
+    String errorMessage =
+        error == null || error.getMessage() == null
+            ? "Unknown publish failure"
+            : error.getMessage();
+    DispatchProgress progress = dispatch.recordPublishFailure(target, errorMessage);
     if (!progress.recorded()) {
       return;
     }

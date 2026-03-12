@@ -71,7 +71,7 @@ See https://github.com/yamcs/pymdb
         <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
-      <MetaCommand name="landed" abstract="false" shortDescription="ld">
+      <MetaCommand name="landed" abstract="false" shortDescription="el">
         <LongDescription>Landed</LongDescription>
         <CommandContainer name="landed">
           <EntryList/>

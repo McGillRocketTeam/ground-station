@@ -44,6 +44,11 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   private static final int DEFAULT_ACK_FLAG_BYTE_INDEX = 2;
   private static final int DEFAULT_ACK_FLAG_BIT_INDEX = 1;
   private static final int DEFAULT_ACK_ID_BYTE_INDEX = 3;
+  private static final int FIRST_SEQUENCE = 1;
+  private static final int MAX_SEQUENCE = 255;
+  private static final int RESET_AV_ACK_SEQUENCE = 0;
+  private static final String RESET_AV_COMMAND_NAME = "reset_av";
+  private static final String RESET_AV_COMMAND_CODE = "rs";
   private static final Gson GSON = new Gson();
 
   private String detailedStatus = "Not started.";
@@ -57,6 +62,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   private final AtomicInteger currentCommandId = new AtomicInteger(1);
   private final Map<Integer, DispatchState> dispatchBySequence = new ConcurrentHashMap<>();
   private volatile DispatchState uncountedDispatch;
+  private volatile DispatchState pendingResetAvDispatch;
 
   @Override
   public void init(String yamcsInstance, String linkName, YConfiguration config)
@@ -178,7 +184,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
             preparedCommand,
             sequence,
             targetSelection.selectedTargets(),
-            commandCountingEnabled ? AckTrackingMode.COUNTED : AckTrackingMode.STATUS);
+            commandCountingEnabled ? AckTrackingMode.COUNTED : AckTrackingMode.STATUS,
+            isResetAvCommand(preparedCommand));
     String reservationError = registerDispatch(dispatch);
     if (reservationError != null) {
       failedCommand(preparedCommand.getCommandId(), reservationError);
@@ -288,9 +295,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return;
     }
 
-    DispatchState dispatch = dispatchBySequence.get(sequence);
+    DispatchState dispatch = resolveDispatchForAck(target, sequence, "FC");
     if (dispatch == null) {
-      log.debug("Ignoring FC ack {} from {} because no dispatch is in flight", sequence, target.name());
       return;
     }
 
@@ -334,13 +340,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return;
     }
 
-    DispatchState dispatch = dispatchBySequence.get(ack.cmd_id);
+    DispatchState dispatch = resolveDispatchForAck(target, ack.cmd_id, "radio");
     if (dispatch == null) {
-      log.debug(
-          "Ignoring radio ack {} for sequence {} from {} because no dispatch is in flight",
-          ack.status,
-          ack.cmd_id,
-          target.name());
       return;
     }
 
@@ -663,20 +664,40 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   }
 
   private int nextSequence() {
-    int sequence = currentCommandId.getAndUpdate(value -> value >= 255 ? 1 : value + 1);
-    return sequence;
+    while (true) {
+      int current = currentCommandId.get();
+      int sequence = current;
+      if (sequence < FIRST_SEQUENCE || sequence > MAX_SEQUENCE) {
+        sequence = FIRST_SEQUENCE;
+      }
+
+      int next = sequence >= MAX_SEQUENCE ? FIRST_SEQUENCE : sequence + 1;
+      if (currentCommandId.compareAndSet(current, next)) {
+        return sequence;
+      }
+    }
   }
 
   private String registerDispatch(DispatchState dispatch) {
     if (dispatch.ackTrackingMode() == AckTrackingMode.COUNTED) {
-      DispatchState previous = dispatchBySequence.putIfAbsent(dispatch.sequence(), dispatch);
-      if (previous == null) {
+      synchronized (this) {
+        if (dispatch.isResetAv() && pendingResetAvDispatch != null) {
+          return "Reset AV command is still in flight; refusing to overwrite reserved ack sequence 0";
+        }
+
+        DispatchState previous = dispatchBySequence.putIfAbsent(dispatch.sequence(), dispatch);
+        if (previous != null) {
+          return "Sequence "
+              + dispatch.sequence()
+              + " is still in flight; refusing to overwrite dispatch state";
+        }
+
+        if (dispatch.isResetAv()) {
+          pendingResetAvDispatch = dispatch;
+        }
+
         return null;
       }
-
-      return "Sequence "
-          + dispatch.sequence()
-          + " is still in flight; refusing to overwrite dispatch state";
     }
 
     synchronized (this) {
@@ -688,7 +709,12 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
   private void releaseDispatch(DispatchState dispatch) {
     if (dispatch.ackTrackingMode() == AckTrackingMode.COUNTED) {
-      dispatchBySequence.remove(dispatch.sequence(), dispatch);
+      synchronized (this) {
+        dispatchBySequence.remove(dispatch.sequence(), dispatch);
+        if (pendingResetAvDispatch == dispatch) {
+          pendingResetAvDispatch = null;
+        }
+      }
       return;
     }
 
@@ -756,6 +782,41 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     return name + "/ControlStation/Radio/acks";
+  }
+
+  private boolean isResetAvCommand(PreparedCommand preparedCommand) {
+    String commandName = preparedCommand.getMetaCommand().getName();
+    if (RESET_AV_COMMAND_NAME.equalsIgnoreCase(commandName)) {
+      return true;
+    }
+
+    String commandCode = preparedCommand.getMetaCommand().getShortDescription();
+    return commandCode != null && RESET_AV_COMMAND_CODE.equalsIgnoreCase(commandCode);
+  }
+
+  private DispatchState resolveDispatchForAck(Target target, int sequence, String ackSource) {
+    DispatchState dispatch = dispatchBySequence.get(sequence);
+    if (dispatch != null) {
+      return dispatch;
+    }
+
+    if (sequence == RESET_AV_ACK_SEQUENCE) {
+      DispatchState resetDispatch = pendingResetAvDispatch;
+      if (resetDispatch != null && resetDispatch.includesTarget(target)) {
+        log.debug(
+            "Treating {} ack 0 from {} as the pending reset AV dispatch",
+            ackSource,
+            target.name());
+        return resetDispatch;
+      }
+    }
+
+    log.debug(
+        "Ignoring {} ack {} from {} because no matching dispatch is in flight",
+        ackSource,
+        sequence,
+        target.name());
+    return null;
   }
 
   private record Target(
@@ -841,6 +902,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     private final PreparedCommand preparedCommand;
     private final int sequence;
     private final AckTrackingMode ackTrackingMode;
+    private final boolean resetAv;
     private final Map<String, Target> requestedTargetsByName;
     private final Set<String> expectedRadioTargets = new HashSet<>();
     private final Set<String> publishedTargets = new HashSet<>();
@@ -858,10 +920,12 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
         PreparedCommand preparedCommand,
         int sequence,
         Collection<Target> targets,
-        AckTrackingMode ackTrackingMode) {
+        AckTrackingMode ackTrackingMode,
+        boolean resetAv) {
       this.preparedCommand = preparedCommand;
       this.sequence = sequence;
       this.ackTrackingMode = ackTrackingMode;
+      this.resetAv = resetAv;
       this.requestedTargetsByName = new LinkedHashMap<>();
       for (Target target : targets) {
         this.requestedTargetsByName.put(target.name(), target);
@@ -1014,6 +1078,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
     AckTrackingMode ackTrackingMode() {
       return ackTrackingMode;
+    }
+
+    boolean isResetAv() {
+      return resetAv;
     }
 
     synchronized boolean includesTarget(Target target) {

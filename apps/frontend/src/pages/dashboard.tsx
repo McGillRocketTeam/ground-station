@@ -157,6 +157,15 @@ export function DashboardPage() {
       id: crypto.randomUUID(),
     });
     event.api.addPanel({
+      title: "Map",
+      component: "map-card",
+      id: crypto.randomUUID(),
+      params: {
+        latitude: 45.5017,
+        longitude: -73.5673,
+      },
+    });
+    event.api.addPanel({
       title: "Command Buttons",
       component: "command-button",
       id: crypto.randomUUID(),

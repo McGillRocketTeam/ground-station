@@ -10,6 +10,7 @@ import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
 import { LinksCard } from "@/cards/links";
+import { MapCard } from "@/cards/map-card";
 import { ParameterChartCard } from "@/cards/parameter-chart";
 import { ParameterTable } from "@/cards/parameter-table";
 import { TextCard } from "@/cards/text-card";
@@ -86,6 +87,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   ParameterTable,
   CommandHistoryCard,
   ParameterChartCard,
+  MapCard,
   LinksCard,
   EventsCard,
   CommandButtonCard,

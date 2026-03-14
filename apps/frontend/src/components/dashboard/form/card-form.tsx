@@ -8,7 +8,6 @@ import { type CardId, CardSchemaMap } from "@/lib/cards";
 import { Field, FieldError, FieldGroup, FieldLabel } from "../../ui/field";
 import { Input } from "../../ui/input";
 import { DashboardCardField } from "./card-field";
-import { validateDashboardFieldValue } from "./card-field";
 
 type EncodedFormValues = Record<string, unknown>;
 type DecodedFormValues = Record<string, unknown>;
@@ -141,14 +140,7 @@ export function DashboardCardForm({
           schema.fields as Record<string, Schema.Schema<unknown>>,
         ).map(([fieldName, fieldSchema]) => {
           return (
-            <form.Field
-              key={fieldName}
-              name={fieldName}
-              validators={{
-                onChange: ({ value }) =>
-                  validateDashboardFieldValue(fieldSchema, value),
-              }}
-            >
+            <form.Field key={fieldName} name={fieldName}>
               {(field) => (
                 <DashboardCardField field={field} fieldSchema={fieldSchema} />
               )}

@@ -8,6 +8,7 @@ import {
 import { Effect } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { Fragment } from "react";
+import { useNavigate } from "react-router";
 
 import type {
   DashboardAction,
@@ -67,6 +68,10 @@ function downloadDashboardLayout(layout: unknown) {
 }
 
 const dashboardStorageKey = "mrt-dashboard";
+const mrtEnvironment =
+  import.meta.env.MRT_ENVIRONMENT === "development"
+    ? "development"
+    : "production";
 
 function isSerializedDockviewLayout(
   layout: unknown,
@@ -131,6 +136,7 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
   );
   const api = useAtomValue(dashboardDockviewApiAtom);
   const { past, present, future } = useAtomValue(dashboardLayoutHistoryAtom);
+  const navigate = useNavigate();
 
   return [
     {
@@ -211,6 +217,32 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
         },
       ],
     },
+    ...(mrtEnvironment === "development"
+      ? [
+          {
+            id: "dashboard-development",
+            heading: "Development",
+            actions: [
+              {
+                id: "dave-default-layout",
+                label: "Save Layout as Default",
+                keywords: ["dashboard", "layout", "default", "save"],
+                run: () => {
+                  if (!api) return;
+                  const layout = api.toJSON();
+                  console.log(layout);
+                },
+              },
+              {
+                id: "open-debug-page",
+                label: "Open Debug Page",
+                keywords: ["dashboard", "development", "debug"],
+                run: () => navigate("/debug"),
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 }
 

@@ -125,7 +125,7 @@ const EventRow = memo(function EventRow({
       data-state={isSelected && "selected"}
     >
       <div className="col-span-2 text-right">{severity}</div>
-      <div className="text-center">{source}</div>
+      <div className="text-left">{source}</div>
       <div className="line-clamp-2 text-ellipsis">{message}</div>
       <div className="text-right">{formatUtcDateTime(generationTime)}</div>
     </DataGridRow>

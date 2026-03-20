@@ -1,6 +1,12 @@
 config.define_bool('simulator')
+config.define_string('environment')
 cfg = config.parse()
 simulator_enabled = cfg.get('simulator', True)
+mrt_environment = cfg.get('environment', 'production')
+
+if mrt_environment != 'development' and mrt_environment != 'production':
+	fail("Tilt config 'environment' must be either 'development' or 'production'")
+
 open_frontend_cmd = os.name == 'nt' and "python -m webbrowser http://localhost:5173" or "python3 -m webbrowser http://localhost:5173"
 
 local_resource(
@@ -8,6 +14,7 @@ local_resource(
     serve_cmd="pnpm --filter @mrt/frontend dev",
 		serve_env={
 			'YAMCS_URL': 'http://localhost:8090',
+			'MRT_ENVIRONMENT': mrt_environment,
 		},
 		labels=['mrt'],
 		links='http://localhost:5173',

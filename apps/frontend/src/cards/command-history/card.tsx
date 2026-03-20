@@ -223,7 +223,7 @@ const SearchInput = memo(function SearchInput() {
 
 const Header = memo(function Header() {
   return (
-    <DataGridHeader className="sticky top-0 z-20 overscroll-none bg-background">
+    <DataGridHeader className="sticky top-0 z-20 bg-background">
       <DataGridHead className="grid place-items-center">
         <Search className="size-3 text-muted-foreground" />
       </DataGridHead>

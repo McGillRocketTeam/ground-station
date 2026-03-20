@@ -154,7 +154,7 @@ export function EventsTable({ events }: { events: Array<Event> }) {
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-[1.5rem_auto_auto_1fr_auto] gap-px">
-          <DataGridHeader className="sticky top-0 z-10 overscroll-none bg-background">
+          <DataGridHeader className="sticky top-0 z-10 bg-background">
             <DataGridHead className="grid place-items-center">
               <Search className="size-3 text-muted-foreground" />
             </DataGridHead>

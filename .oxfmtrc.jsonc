@@ -4,7 +4,7 @@
   "sortTailwindcss": {
     "stylesheet": "./apps/frontend/src/index.css",
     "functions": ["clsx", "cn"],
-    "preserveWhitespace": true,
+    "preserveWhitespace": false,
   },
   "sortImports": {
     "groups": [

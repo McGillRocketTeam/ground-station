@@ -16,12 +16,12 @@ export const LinksCard = makeCard({
 
     return AsyncResult.builder(links)
       .onInitial(() => (
-        <div className="text-muted-foreground grid min-h-full w-full animate-pulse place-items-center font-mono uppercase">
+        <div className="grid min-h-full w-full animate-pulse place-items-center font-mono text-muted-foreground uppercase">
           Awaiting Links
         </div>
       ))
       .onFailure((cause) => (
-        <pre className="text-error col-span-full min-h-full text-center uppercase">
+        <pre className="col-span-full min-h-full text-center text-error uppercase">
           {Cause.pretty(cause)}
         </pre>
       ))

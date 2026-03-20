@@ -21,7 +21,7 @@ function EditPanelDialogForm({ payload }: { payload: IDockviewPanel }) {
 
   if (!isCardId(componentId)) {
     return (
-      <div className="text-muted-foreground text-sm">
+      <div className="text-sm text-muted-foreground">
         No editable schema is registered for this card.
       </div>
     );

@@ -150,9 +150,9 @@ const procedures: Array<ProcedureStep> = [
 
 export function ProceduresPage() {
   return (
-    <div className="py-1.25 flex flex-col max-w-3xl mx-auto gap-2">
-      <DashboardHeader className="sticky overscroll-none top-0 pt-1.25 pb-2 bg-background border-b" />
-      <h1 className="font-mono uppercase text-base font-semibold">
+    <div className="mx-auto flex max-w-3xl flex-col gap-2 py-1.25">
+      <DashboardHeader className="sticky top-0 overscroll-none border-b bg-background pt-1.25 pb-2" />
+      <h1 className="font-mono text-base font-semibold uppercase">
         URRG Avionics Procedures
       </h1>
 
@@ -169,7 +169,7 @@ function ProcedureRow({ step, index }: { step: ProcedureStep; index: number }) {
   return (
     <button
       className={cn(
-        "grid grid-cols-subgrid col-span-full border-b gap-x-4 p-4 cursor-pointer text-left hover:bg-muted",
+        "col-span-full grid cursor-pointer grid-cols-subgrid gap-x-4 border-b p-4 text-left hover:bg-muted",
         step.danger === "WARNING" && "bg-warning/10 hover:bg-warning/30",
       )}
     >
@@ -214,7 +214,7 @@ function ProcedureRow({ step, index }: { step: ProcedureStep; index: number }) {
           <Fragment key={value.parameter.name}>
             <div />
             <div />
-            <div className="font-mono text-sm pt-2">
+            <div className="pt-2 font-mono text-sm">
               {value.parameter.name} {value.condition} {value.value}
             </div>
             <Suspense fallback={<div>...</div>}>

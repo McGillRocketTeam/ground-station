@@ -149,7 +149,7 @@ export function DashboardCardForm({
         })}
 
         {Object.keys(schema.fields).length === 0 ? (
-          <div className="text-muted-foreground text-sm">
+          <div className="text-sm text-muted-foreground">
             This card has no configurable fields yet.
           </div>
         ) : null}

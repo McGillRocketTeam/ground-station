@@ -55,7 +55,7 @@ export function DashboardCommandMenu() {
         <SwitchInstanceDialog />
       </Suspense>
       <CommandDialog
-        className="sm:max-w-130 w-full"
+        className="w-full sm:max-w-130"
         open={open}
         onOpenChange={setOpen}
       >

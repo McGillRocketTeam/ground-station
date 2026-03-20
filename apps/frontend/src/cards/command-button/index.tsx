@@ -71,7 +71,7 @@ function CommandButtonTable() {
   return (
     <div className="h-full overflow-auto">
       <div className="grid grid-cols-[1fr_auto] p-px">
-        <DataGridHeader className="bg-background sticky top-0 z-10">
+        <DataGridHeader className="bg-background sticky overscroll-none top-0 z-10">
           <DataGridHead className="flex items-center justify-between gap-3">
             <span>COMMAND</span>
             <label className="text-muted-foreground flex items-center gap-2 text-xs font-normal uppercase">

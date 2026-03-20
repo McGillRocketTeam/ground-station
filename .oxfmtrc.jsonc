@@ -1,6 +1,11 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "printWidth": 80,
+  "sortTailwindcss": {
+    "stylesheet": "./apps/frontend/src/index.css",
+    "functions": ["clsx", "cn"],
+    "preserveWhitespace": true,
+  },
   "sortImports": {
     "groups": [
       "type-import",

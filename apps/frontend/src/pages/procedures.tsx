@@ -151,7 +151,7 @@ const procedures: Array<ProcedureStep> = [
 export function ProceduresPage() {
   return (
     <div className="py-1.25 flex flex-col max-w-3xl mx-auto gap-2">
-      <DashboardHeader className="sticky top-0 pt-1.25 pb-2 bg-background border-b" />
+      <DashboardHeader className="sticky overscroll-none top-0 pt-1.25 pb-2 bg-background border-b" />
       <h1 className="font-mono uppercase text-base font-semibold">
         URRG Avionics Procedures
       </h1>

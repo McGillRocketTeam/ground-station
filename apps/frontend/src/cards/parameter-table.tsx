@@ -85,7 +85,7 @@ export const ParameterTable = makeCard({
 
 const TableHeader = memo(function TableHeader() {
   return (
-    <div className="text-white-text sticky top-0 z-10 col-span-full grid grid-cols-subgrid text-sm uppercase">
+    <div className="text-white-text sticky overscroll-none top-0 z-10 col-span-full grid grid-cols-subgrid text-sm uppercase">
       <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1" />
       <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
         Parameter

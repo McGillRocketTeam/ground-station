@@ -13,6 +13,7 @@ import { LinksCard } from "@/cards/links";
 import { ParameterChartCard } from "@/cards/parameter-chart";
 import { ParameterTable } from "@/cards/parameter-table";
 import { TextCard } from "@/cards/text-card";
+import { PIDCard } from "@/cards/pid";
 
 export interface CardDefinition<
   Id extends string,
@@ -89,6 +90,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   LinksCard,
   EventsCard,
   CommandButtonCard,
+  PIDCard,
 ] as const;
 
 type Cards = (typeof CardArray)[number];

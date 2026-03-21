@@ -161,6 +161,11 @@ export function DashboardPage() {
       component: "command-button",
       id: crypto.randomUUID(),
     });
+    event.api.addPanel({
+      title: "P&ID Card",
+      component: "pid",
+      id: crypto.randomUUID(),
+    })
 
     const initialLayout = snapshotDockviewLayout(event.api.toJSON());
     persistDashboardLayout(initialLayout);

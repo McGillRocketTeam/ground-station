@@ -1,4 +1,4 @@
-import { ReactComponent as Diagram } from "./diagram.svg";
+import Diagram from "./diagram.svg";
 
 export function PID() {
   return (

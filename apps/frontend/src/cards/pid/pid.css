@@ -1,0 +1,6 @@
+.selected-valve path,
+.selected-valve rect,
+.selected-valve circle {
+  stroke: rgb(43, 125, 43) !important;
+  stroke-width: 3 !important;
+}

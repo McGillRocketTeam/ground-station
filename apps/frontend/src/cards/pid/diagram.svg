@@ -512,7 +512,7 @@
                     <g transform="translate(0.5,0.5)">
                         <rect x="1422" y="694.5" width="40" height="40" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
                         <ellipse cx="1442" cy="714.5" rx="20" ry="20" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
-                        <path d="M 1422 714.5 L 1462 714.5" fill="none" stroke="#82b366" stroke-miterlimit="10" pointer-events="all" style="stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+                        <path d="M 1422 714.5 L 1462 714.5" fill="none" stroke="#b36699" stroke-miterlimit="10" pointer-events="all" style="stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
                     </g>
                     <g>
                         <g>

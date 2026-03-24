@@ -7,6 +7,10 @@ import { formTitle, formType } from "@/lib/form";
 import { Field, FieldError, FieldLabel } from "../../ui/field";
 import { Input } from "../../ui/input";
 import {
+  DashboardParameterArrayField,
+  type DashboardParameterArrayFieldApi,
+} from "./parameter-array-field";
+import {
   DashboardParameterField,
   type DashboardParameterFieldApi,
 } from "./parameter-field";
@@ -17,8 +21,7 @@ function getFieldPlaceholder(type: ReturnType<typeof formType>) {
       return "Select a parameter";
     case "command":
       return "Enter a command";
-    case "string":
-    case "unknown":
+    default:
       return "Enter a value";
   }
 }
@@ -72,11 +75,26 @@ export function DashboardCardField({
       data-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
     >
       <FieldLabel htmlFor={field.name}>{formTitle(fieldSchema)}</FieldLabel>
-      {type === "parameter" ? (
-        <DashboardParameterField field={field as DashboardParameterFieldApi} />
-      ) : (
-        <DashboardDefaultField field={field} placeholder={placeholder} />
-      )}
+      {(() => {
+        switch (type) {
+          case "parameter":
+            return (
+              <DashboardParameterField
+                field={field as DashboardParameterFieldApi}
+              />
+            );
+          case "parameterArray":
+            return (
+              <DashboardParameterArrayField
+                field={field as DashboardParameterArrayFieldApi}
+              />
+            );
+          default:
+            return (
+              <DashboardDefaultField field={field} placeholder={placeholder} />
+            );
+        }
+      })()}
       {field.state.meta.isTouched ? (
         <FieldError errors={getFieldErrors(field)} />
       ) : null}

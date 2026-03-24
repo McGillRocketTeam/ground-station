@@ -5,6 +5,7 @@ import { memo, useState, type ReactNode } from "react";
 
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
+import { ParameterArrayField } from "@/lib/dashboard-field-types";
 
 const SYSTEM_A_PREFIX = "SystemA/Rocket/FlightComputer";
 const SYSTEM_B_PREFIX = "SystemB/Rocket/FlightComputer";
@@ -64,7 +65,9 @@ const CardEntries = {
 export const ParameterTable = makeCard({
   id: "parameter-table",
   name: "Parameter Table",
-  schema: Schema.Struct({}),
+  schema: Schema.Struct({
+    parameters: ParameterArrayField,
+  }),
   component: () => {
     return (
       <div className="h-full overflow-auto">

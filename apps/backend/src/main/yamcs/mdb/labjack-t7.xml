@@ -116,6 +116,10 @@
                 <ParameterProperties dataSource="derived" readOnly="true">
                 </ParameterProperties>
             </Parameter>
+            <Parameter name="calibrated_ccpt_pressure_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
         </ParameterSet>
         <ContainerSet>
             <SequenceContainer name="LabJackPacket">
@@ -196,12 +200,24 @@
             </SequenceContainer>
         </ContainerSet>
         <AlgorithmSet>
+            <MathAlgorithm name="calibrated_ccpt_pressure_psi">
+                <MathOperation outputParameterRef="calibrated_ccpt_pressure_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN82"/>
+                    <ValueOperand>868</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>49.5</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN82"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
             <MathAlgorithm name="calibrated_fill_pressure_psi">
                 <MathOperation outputParameterRef="calibrated_fill_pressure_psi">
                     <ParameterInstanceRefOperand parameterRef="AIN88"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>490</ValueOperand>
+                    <ValueOperand>492</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN88"/>
@@ -213,7 +229,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN90"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>468</ValueOperand>
+                    <ValueOperand>464</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN90"/>
@@ -225,7 +241,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN121"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>497  </ValueOperand>
+                    <ValueOperand>497.5 </ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN121"/>
@@ -237,7 +253,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN122"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>504</ValueOperand>
+                    <ValueOperand>520</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN122"/>
@@ -247,9 +263,9 @@
             <MathAlgorithm name="calibrated_thrust_newtons">
                 <MathOperation outputParameterRef="calibrated_thrust_newtons">
                     <ParameterInstanceRefOperand parameterRef="AIN87"/>
-                    <ValueOperand>23236</ValueOperand>
+                    <ValueOperand>-2112</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>2324</ValueOperand>
+                    <ValueOperand>-162</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN87"/>

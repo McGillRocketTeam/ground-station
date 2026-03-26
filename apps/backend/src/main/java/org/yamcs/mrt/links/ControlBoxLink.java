@@ -37,6 +37,9 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private final Map<Integer, Long> lastCommandTime = new HashMap<>();
   private static final long DEBOUNCE_MS = 75;
 
+  // Debounce: track last time arming key was seen ON to hold armed state across brief bounces
+  private long lastArmingKeyOnTime = 0;
+
   private static final int YAMCS_HTTP_PORT = 8090;
   private static final int FILL_FIO = 1;
   private static final int DUMP_FIO = 3;
@@ -73,8 +76,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private static final Map<Integer, SwitchMapping> SWITCH_PIN_MAP =
       Map.ofEntries(
           Map.entry(0,  new SwitchMapping("panel_1_switch_estop",   -1)),            // E-stop: not mapped
-          Map.entry(1,  new SwitchMapping("panel_2_switch_launch",  RUN__FIO)),      // Launch
-          Map.entry(2,  new SwitchMapping("panel_3_switch_1",       MOV__FIO)),      // FIO6
+          Map.entry(1,  new SwitchMapping("panel_2_switch_launch",  MOV__FIO)),      // FIO6
+          Map.entry(2,  new SwitchMapping("panel_3_switch_1",       RUN__FIO)),      // FIO0
           Map.entry(3,  new SwitchMapping("panel_3_switch_2",       DUMP_FIO)),      // FIO3
           Map.entry(4,  new SwitchMapping("panel_4_switch_1",       VENT_FIO)),      // FIO7
           Map.entry(5,  new SwitchMapping("panel_4_switch_2",       FILL_FIO)),      // FIO1
@@ -98,7 +101,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   }
 
   /** Byte offset of the arming key switch in the telemetry packet. */
-  private static final int ARMING_KEY_OFFSET = 13;
+  private static final int ARMING_KEY_OFFSET = 14;
 
   /**
    * Switches that require the arming key to be ON before their commands are dispatched. Identified
@@ -107,8 +110,10 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    */
   private static final Set<Integer> ARMING_KEY_GUARDED_SWITCHES =
       Set.of(
-          12, // panel_8_switch_1
-          14  // panel_8_switch_2 (BLKT)
+          1,
+          2, 
+          11,
+          12
           );
 
   /** Byte offset of the emergency stop switch in the telemetry packet. */
@@ -212,8 +217,13 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     }
 
     int numSwitches = Math.min(currentPayload.length, previousSwitchStates.length);
-    boolean armingKeyOn =
+    long now = System.currentTimeMillis();
+    boolean rawArmingKeyOn =
         currentPayload.length > ARMING_KEY_OFFSET && currentPayload[ARMING_KEY_OFFSET] != 0;
+    if (rawArmingKeyOn) {
+      lastArmingKeyOnTime = now;
+    }
+    boolean armingKeyOn = rawArmingKeyOn || (now - lastArmingKeyOnTime) < DEBOUNCE_MS;
     boolean estopOn = currentPayload.length > ESTOP_OFFSET && currentPayload[ESTOP_OFFSET] != 0;
 
     // E-stop activation: on transition to ON, immediately set all mapped pins LOW
@@ -257,7 +267,6 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
           continue;
         }
 
-        long now = System.currentTimeMillis();
         Long last = lastCommandTime.get(i);
         if (last != null && (now - last) < DEBOUNCE_MS) {
           log.debug("Debounced rapid change for " + mapping.name());

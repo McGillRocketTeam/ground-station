@@ -6,6 +6,7 @@
     "functions": ["clsx", "cn"],
     "preserveWhitespace": false,
   },
+  "overrides": [{ "files": ["*.md"], "options": { "proseWrap": "always" } }],
   "sortImports": {
     "groups": [
       "type-import",

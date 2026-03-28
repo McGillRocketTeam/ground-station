@@ -38,18 +38,12 @@ const writeField = (
           ? buffer.writeFloatLE(value, byteOffset)
           : buffer.writeFloatBE(value, byteOffset);
       }
-      // Advance the stream index past the float
       stream.index = offset + encoding.sizeInBits;
       break;
     }
   }
 };
 
-/**
- * Takes a container definition and returns an Effect that,
- * each time it runs, produces a fresh binary packet with
- * generated values.
- */
 export const makePacketBuilder = (container: Container) =>
   Effect.gen(function* () {
     const gen = yield* DataGenerator;
@@ -72,16 +66,18 @@ export const makePacketBuilder = (container: Container) =>
 
     const totalBytes = Math.ceil(cursor / 8);
 
-    return Effect.gen(function* () {
-      const buffer = Buffer.alloc(totalBytes);
-      const view = new BitView(buffer);
-      const stream = new BitStream(view);
+    return yield* Effect.succeed(
+      Effect.gen(function* () {
+        const buffer = Buffer.alloc(totalBytes);
+        const view = new BitView(buffer);
+        const stream = new BitStream(view);
 
-      for (const field of fields) {
-        const value = yield* field.generator;
-        writeField(buffer, stream, field, value);
-      }
+        for (const field of fields) {
+          const value = yield* field.generator;
+          writeField(buffer, stream, field, value);
+        }
 
-      return buffer;
-    });
+        return buffer;
+      }),
+    );
   });

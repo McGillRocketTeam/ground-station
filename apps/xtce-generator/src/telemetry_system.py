@@ -47,7 +47,8 @@ class TelemetrySystem(FlightSystem):
     def make_param(self, row: dict[str, Any]) -> Y.Parameter:
         gui_type = str(row["GUI Type"])
 
-        variable_name = str(row["Variable Name"])
+        packet_variable_name = str(row["Packet Variable Name"])
+        gui_variable_name = str(row["GUI Variable Name"])
         ui_name = str(row["UI Name"])
         description = str(row["Description (optional)"])
         units_cal = str(row["Units"])
@@ -65,7 +66,7 @@ class TelemetrySystem(FlightSystem):
             case "Boolean":
                 param = Y.BooleanParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -78,13 +79,13 @@ class TelemetrySystem(FlightSystem):
                 size = FlightSystem.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create enumerated parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create enumerated parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
 
                 enum_metadata = str(row["Metadata/Notes"])
                 param = Y.EnumeratedParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -98,13 +99,13 @@ class TelemetrySystem(FlightSystem):
                 size = FlightSystem.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create float parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create float parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 calibrator = TelemetrySystem.set_param_calibrator(row)
                 if "float" in encoded_type:
                     param = Y.FloatParameter(
                         system=self.sys,
-                        name=variable_name,
+                        name=gui_variable_name,
                         short_description=ui_name,
                         long_description=description,
                         calibrated_units=units_cal,
@@ -121,7 +122,7 @@ class TelemetrySystem(FlightSystem):
                     )
                     param = Y.FloatParameter(
                         system=self.sys,
-                        name=variable_name,
+                        name=gui_variable_name,
                         short_description=ui_name,
                         long_description=description,
                         calibrated_units=units_cal,
@@ -137,7 +138,7 @@ class TelemetrySystem(FlightSystem):
                 size = FlightSystem.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create integer parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create integer parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 scheme = (
                     Y.IntegerEncodingScheme.UNSIGNED
@@ -147,7 +148,7 @@ class TelemetrySystem(FlightSystem):
                 calibrator = TelemetrySystem.set_param_calibrator(row)
                 param = Y.IntegerParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -161,11 +162,11 @@ class TelemetrySystem(FlightSystem):
                 size = self.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create string parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create string parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 param = Y.StringParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -372,7 +373,9 @@ class TelemetrySystem(FlightSystem):
                 short_description="Flag Padding",
                 long_description="A.S.T.R.A. Packet Padding",
                 signed=False,
-                encoding=Y.IntegerEncoding(bits=64 - current_bit_pos, little_endian=True),
+                encoding=Y.IntegerEncoding(
+                    bits=64 - current_bit_pos, little_endian=True
+                ),
             )
             container.entries.append(Y.ParameterEntry(post_pad, bitpos=current_bit_pos))
 
@@ -386,7 +389,8 @@ class TelemetrySystem(FlightSystem):
 
         for row in param_data:
             param = self.make_param(row)
-            param_dict[param.name] = param
+            packet_variable_name = str(row["Packet Variable Name"])
+            param_dict[packet_variable_name] = param
 
         return param_dict
 

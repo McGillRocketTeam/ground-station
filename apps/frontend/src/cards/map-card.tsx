@@ -1,5 +1,5 @@
-import { useAtomSuspense } from "@effect/atom-react";
-import { Schema } from "effect";
+import { useAtom, useAtomRefProp, useAtomSuspense } from "@effect/atom-react";
+import { Effect, Schema } from "effect";
 import { Suspense, useEffect, useState } from "react";
 import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
 
@@ -14,6 +14,8 @@ import {
   ParameterField,
 } from "@/lib/dashboard-field-types";
 import { FormTitleAnnotationId } from "@/lib/form";
+import { Atom, AtomRegistry } from "effect/unstable/reactivity";
+
 
 const MapCardConfiguration = Schema.Struct({
   longitude: CoordinateLongitudeField,
@@ -91,10 +93,44 @@ export function RocketMarker(props: { lat: string; long: string }) {
   }
 }
 
+type ViewState = {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+}
+const registry = AtomRegistry.make();
+const viewStateAtom = Atom.make<ViewState>({
+  longitude: -73.5673,
+  latitude: 45.5017,
+      zoom: 10,
+    })
+    
+
 export const MapCard = makeCard({
   id: "map-card",
   name: "Map Card",
   schema: MapCardConfiguration,
+  actions: (card) => [
+    {
+      id: "map-actions",
+      heading: "Map",
+      actions: [
+        {
+          id: "recenter-map",
+          label: "Recenter Map",
+          shortcut: "Mod+R",
+          run: () => {
+            console.log(card.params)
+              registry.update(viewStateAtom, () => ({
+                zoom: 10,
+                longitude: card.params?.longitude,
+                latitude: card.params?.latitude,
+              }))
+          },
+        },
+      ],
+    },
+  ],
   component: (props) => {
     const { theme } = useTheme();
     const longitude = Number(props.params.longitude);
@@ -104,11 +140,7 @@ export const MapCard = makeCard({
     );
 
     const [isCameraLocked, setIsCameraLocked] = useState(false);
-    const [viewState, setViewState] = useState({
-      longitude,
-      latitude,
-      zoom: 10,
-    });
+    const [viewState, setViewState] = useAtom(viewStateAtom);
 
     useEffect(() => {
       if (theme !== "system") {

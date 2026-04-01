@@ -40,12 +40,12 @@ export const CommandButtonCard = makeCard({
 
     return AsyncResult.builder(commandList)
       .onInitial(() => (
-        <div className="text-muted-foreground grid min-h-full w-full animate-pulse place-items-center font-mono uppercase">
+        <div className="grid min-h-full w-full animate-pulse place-items-center font-mono text-muted-foreground uppercase">
           Awaiting Links
         </div>
       ))
       .onFailure((cause) => (
-        <pre className="text-error grid min-h-full w-full text-center place-items-center font-mono uppercase">
+        <pre className="grid min-h-full w-full place-items-center text-center font-mono text-error uppercase">
           {Cause.pretty(cause)}
         </pre>
       ))
@@ -71,17 +71,17 @@ function CommandButtonTable() {
   return (
     <div className="h-full overflow-auto">
       <div className="grid grid-cols-[1fr_auto] p-px">
-        <DataGridHeader className="bg-background sticky top-0 z-10">
+        <DataGridHeader className="sticky top-0 z-10 bg-background">
           <DataGridHead className="flex items-center justify-between gap-3">
             <span>COMMAND</span>
-            <label className="text-muted-foreground flex items-center gap-2 text-xs font-normal uppercase">
+            <label className="flex items-center gap-2 text-xs font-normal text-muted-foreground uppercase">
               <span>Target</span>
               <select
                 value={target}
                 onChange={(event) =>
                   setTarget(event.target.value as TargetOption)
                 }
-                className="bg-background border-border text-foreground rounded border px-2 py-1 text-xs"
+                className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground"
               >
                 {TARGET_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -114,7 +114,7 @@ function CommandButtonTable() {
                     payload: extra ? { extra } : {},
                   });
                 }}
-                className="bg-background-secondary! hover:bg-background! text-white-text h-full w-full"
+                className="h-full w-full bg-background-secondary! text-white-text hover:bg-background!"
               >
                 SEND
               </button>

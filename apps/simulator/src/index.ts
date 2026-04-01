@@ -1,8 +1,7 @@
 import { NodeHttpClient, NodeRuntime } from "@effect/platform-node";
-import { Effect, Logger } from "effect";
+import { Effect, Layer, Logger } from "effect";
 
-import { FlightComputerSimulator } from "./devices/flight-computer.ts";
-import { RadioSimulator } from "./devices/radio.ts";
+import { makeSimulatorForInstance } from "./systems.ts";
 import { YAMCS_INSTANCE } from "./utils/Config.ts";
 import { DataGenerator } from "./utils/DataGenerator.ts";
 import { MqttConnection } from "./utils/MqttConnection.ts";
@@ -14,43 +13,19 @@ const logger = Logger.consolePretty({
   formatDate: (date) => date.toLocaleTimeString(undefined),
 });
 
-const urrgDevices = [
-  RadioSimulator("SystemA/ControlStation/Radio"),
-  FlightComputerSimulator("SystemA/Rocket/FlightComputer"),
-
-  RadioSimulator("SystemB/ControlStation/Radio"),
-  FlightComputerSimulator("SystemB/Rocket/FlightComputer"),
-];
-
-const launchCanadaDevices = [
-  RadioSimulator("SystemA/ControlStation/Radio"),
-  RadioSimulator("SystemA/Pad/Radio"),
-  FlightComputerSimulator("SystemA/Rocket/FlightComputer"),
-
-  RadioSimulator("SystemB/ControlStation/Radio"),
-  RadioSimulator("SystemB/Pad/Radio"),
-  FlightComputerSimulator("SystemB/Rocket/FlightComputer"),
-];
-
-const getDevices = Effect.gen(function* () {
-  const instance = yield* YAMCS_INSTANCE;
-  switch (instance) {
-    case "launch-canada":
-      return launchCanadaDevices;
-    default:
-      return urrgDevices;
-  }
-});
+const simulatorLayer = Layer.mergeAll(
+  MqttConnection.layer,
+  DataGenerator.layer,
+  NodeHttpClient.layerUndici,
+  Logger.layer([logger]),
+);
 
 const simulator = Effect.gen(function* () {
-  const devices = yield* getDevices;
-  yield* Effect.all(devices, { concurrency: "unbounded" });
+  const instance = yield* YAMCS_INSTANCE;
+  yield* makeSimulatorForInstance(instance);
 }).pipe(
-  Effect.provide(MqttConnection.layer),
-  Effect.provide(DataGenerator.layer),
-  Effect.provide(NodeHttpClient.layerUndici),
   Effect.catch((e) => Effect.logError(e.message)),
-  Effect.provide(Logger.layer([logger])),
+  Effect.provide(simulatorLayer),
   Effect.scoped,
 );
 

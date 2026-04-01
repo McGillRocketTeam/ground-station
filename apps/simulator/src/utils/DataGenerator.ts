@@ -15,33 +15,33 @@ const intRange = (enc: DataEncoding & { type: "INTEGER" }) => {
 };
 
 const makeIntField = (min: number, max: number, dataMode: string) =>
-  Effect.gen(function* () {
-    const range = max - min + 1;
-    const ref = yield* Ref.make(0);
+  Ref.make(0).pipe(
+    Effect.map((ref) => {
+      const range = max - min + 1;
 
-    return dataMode === "random"
-      ? Effect.sync(() => Math.floor(Math.random() * range) + min)
-      : Ref.getAndUpdate(ref, (n) => (n + 1) % range).pipe(
-          Effect.map((n) => n + min),
-        );
-  });
+      return dataMode === "random"
+        ? Effect.sync(() => Math.floor(Math.random() * range) + min)
+        : Ref.getAndUpdate(ref, (n) => (n + 1) % range).pipe(
+            Effect.map((n) => n + min),
+          );
+    }),
+  );
 
 const makeFloatField = (sizeInBits: number, dataMode: string) =>
-  Effect.gen(function* () {
-    const ref = yield* Ref.make(0);
+  Ref.make(0).pipe(
+    Effect.map((ref) => {
+      const min = sizeInBits === 64 ? -1e6 : -1e3;
+      const max = sizeInBits === 64 ? 1e6 : 1e3;
+      const step = sizeInBits === 64 ? 0.001 : 0.1;
+      const steps = Math.floor((max - min) / step);
 
-    // Sensible default ranges by size — adjust per domain as needed
-    const min = sizeInBits === 64 ? -1e6 : -1e3;
-    const max = sizeInBits === 64 ? 1e6 : 1e3;
-    const step = sizeInBits === 64 ? 0.001 : 0.1;
-    const steps = Math.floor((max - min) / step);
-
-    return dataMode === "random"
-      ? Effect.sync(() => Math.random() * (max - min) + min)
-      : Ref.getAndUpdate(ref, (n) => (n + 1) % steps).pipe(
-          Effect.map((n) => n * step + min),
-        );
-  });
+      return dataMode === "random"
+        ? Effect.sync(() => Math.random() * (max - min) + min)
+        : Ref.getAndUpdate(ref, (n) => (n + 1) % steps).pipe(
+            Effect.map((n) => n * step + min),
+          );
+    }),
+  );
 
 export class DataGenerator extends ServiceMap.Service<
   DataGenerator,

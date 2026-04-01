@@ -5,6 +5,7 @@ import { memo, useState, type ReactNode } from "react";
 
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
+import { ParameterArrayField } from "@/lib/dashboard-field-types";
 
 const SYSTEM_A_PREFIX = "SystemA/Rocket/FlightComputer";
 const SYSTEM_B_PREFIX = "SystemB/Rocket/FlightComputer";
@@ -64,7 +65,9 @@ const CardEntries = {
 export const ParameterTable = makeCard({
   id: "parameter-table",
   name: "Parameter Table",
-  schema: Schema.Struct({}),
+  schema: Schema.Struct({
+    parameters: ParameterArrayField,
+  }),
   component: () => {
     return (
       <div className="h-full overflow-auto">
@@ -85,15 +88,15 @@ export const ParameterTable = makeCard({
 
 const TableHeader = memo(function TableHeader() {
   return (
-    <div className="text-white-text sticky top-0 z-10 col-span-full grid grid-cols-subgrid text-sm uppercase">
-      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1" />
-      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
+    <div className="sticky top-0 z-10 col-span-full grid grid-cols-subgrid text-sm text-white-text uppercase">
+      <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1" />
+      <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1">
         Parameter
       </div>
-      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
+      <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1">
         SystemA
       </div>
-      <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1">
+      <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1">
         SystemB
       </div>
       {/* <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1"> */}
@@ -116,7 +119,7 @@ const TableGroup = memo(function TableGroup({
     <>
       <button
         onClick={() => setCollapse((prev) => !prev)}
-        className="text-white-text bg-background-secondary hover:bg-background-secondary-highlight border-t-background-secondary-highlight col-span-full border-t text-left text-sm"
+        className="col-span-full border-t border-t-background-secondary-highlight bg-background-secondary text-left text-sm text-white-text hover:bg-background-secondary-highlight"
       >
         <span
           data-collapsed={collapse}
@@ -128,7 +131,7 @@ const TableGroup = memo(function TableGroup({
       </button>
 
       {!collapse && (
-        <div className="text-orange-text bg-border col-span-full grid grid-cols-subgrid gap-px">
+        <div className="col-span-full grid grid-cols-subgrid gap-px bg-border text-orange-text">
           {children}
         </div>
       )}
@@ -138,7 +141,7 @@ const TableGroup = memo(function TableGroup({
 
 const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
   return (
-    <div className="*:bg-background hover:*:bg-selection-background col-span-full grid grid-cols-subgrid text-sm *:px-1">
+    <div className="col-span-full grid grid-cols-subgrid text-sm *:bg-background *:px-1 hover:*:bg-selection-background">
       <div />
       <div className="line-clamp-1 text-ellipsis">{parameter}</div>
       <Value name={`/${SYSTEM_A_PREFIX}/${parameter}`} />
@@ -154,11 +157,11 @@ const Value = memo(function Value({ name }: { name: string }) {
   return AsyncResult.match(result, {
     onInitial: () => (
       <>
-        <div className="text-muted-foreground text-right">Awaiting Value</div>
+        <div className="text-right text-muted-foreground">Awaiting Value</div>
       </>
     ),
     onFailure: ({ cause }) => (
-      <pre className="text-error col-span-full min-h-full text-center uppercase">
+      <pre className="col-span-full min-h-full text-center text-error uppercase">
         {Cause.pretty(cause)}
       </pre>
     ),

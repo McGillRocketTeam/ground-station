@@ -87,7 +87,7 @@ export class WebSocketClient extends ServiceMap.Service<
 
       yield* messages.pipe(
         Stream.runForEach((message) =>
-          Effect.logInfo(`Websocket Message (${message.type})`, message),
+          Effect.logDebug(`Websocket Message (${message.type})`, message),
         ),
         Effect.forkScoped,
       );
@@ -137,7 +137,6 @@ export class WebSocketClient extends ServiceMap.Service<
         const stream = messages.pipe(
           Stream.filter(Schema.is(Events)),
           Stream.filter((s) => s.call === call),
-          Stream.tap(Effect.logWarning),
         );
 
         return { call, stream };

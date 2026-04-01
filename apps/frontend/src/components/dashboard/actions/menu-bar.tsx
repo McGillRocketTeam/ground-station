@@ -16,6 +16,7 @@ import {
 import {
   DashboardActionMenubarGroups,
   useDashboardCardActionGroups,
+  useDashboardDataActionGroups,
   useDashboardDashboardActionGroups,
   useDashboardInstanceActionGroups,
   useDashboardViewActionGroups,
@@ -27,6 +28,7 @@ export function DashboardMenuBar() {
       <DashboardMenuBarMenu />
       <CardMenuBarMenu />
       <ViewMenuBarMenu />
+      <DataMenuBarMenu />
     </Menubar>
   );
 }
@@ -37,7 +39,7 @@ function DashboardMenuBarMenu() {
   return (
     <MenubarMenu>
       <MenubarTrigger>Dashboard</MenubarTrigger>
-      <MenubarContent className="min-w-44 w-full max-w-80">
+      <MenubarContent className="w-full max-w-80 min-w-44">
         <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
@@ -50,7 +52,7 @@ function CardMenuBarMenu() {
   return (
     <MenubarMenu>
       <MenubarTrigger>Card</MenubarTrigger>
-      <MenubarContent className="min-w-44 w-full max-w-80">
+      <MenubarContent className="w-full max-w-80 min-w-44">
         <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
@@ -89,7 +91,7 @@ function ViewMenuBarMenu() {
   return (
     <MenubarMenu>
       <MenubarTrigger>View</MenubarTrigger>
-      <MenubarContent className="min-w-44 w-full max-w-80">
+      <MenubarContent className="w-full max-w-80 min-w-44">
         <Suspense fallback={<InstanceSubMenuBarFallback />}>
           <InstanceSubMenuBarMenu />
         </Suspense>
@@ -98,6 +100,19 @@ function ViewMenuBarMenu() {
         {/* <MenubarGroup> */}
         {/*   <MenubarItem>Hide Sidebar</MenubarItem> */}
         {/* </MenubarGroup> */}
+      </MenubarContent>
+    </MenubarMenu>
+  );
+}
+
+function DataMenuBarMenu() {
+  const groups = useDashboardDataActionGroups();
+
+  return (
+    <MenubarMenu>
+      <MenubarTrigger>Data</MenubarTrigger>
+      <MenubarContent className="w-full max-w-80 min-w-44">
+        <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
   );

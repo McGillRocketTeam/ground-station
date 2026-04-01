@@ -142,7 +142,7 @@ const LinkRow = memo(function LinkRow({
 
           <div className="text-right">{link.dataOutCount.toLocaleString()}</div>
 
-          <button className="text-muted-foreground grid cursor-pointer place-items-center">
+          <button className="grid cursor-pointer place-items-center text-muted-foreground">
             <Ellipsis className="size-3" />
           </button>
         </DataGridRow>

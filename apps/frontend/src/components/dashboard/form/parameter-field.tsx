@@ -70,6 +70,7 @@ export function DashboardParameterField({
           name={field.name}
           onValueChange={(value) => {
             if (value) {
+              console.log(value);
               field.handleChange(value);
             }
           }}

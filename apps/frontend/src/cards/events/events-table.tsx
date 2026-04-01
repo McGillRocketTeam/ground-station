@@ -119,13 +119,13 @@ const EventRow = memo(function EventRow({
         severity === "WARNING" &&
           "text-orange-text *:bg-[color-mix(in_oklab,var(--color-orange-text)_8%,var(--background))]",
         (severity === "DISTRESS" || severity === "SEVERE") &&
-          "dark:text-error-foreground text-error dark:*:bg-error *:bg-[color-mix(in_oklab,var(--color-error)_15%,var(--background))]",
+          "text-error *:bg-[color-mix(in_oklab,var(--color-error)_15%,var(--background))] dark:text-error-foreground dark:*:bg-error",
         "hover:text-white-text",
       )}
       data-state={isSelected && "selected"}
     >
       <div className="col-span-2 text-right">{severity}</div>
-      <div className="text-center">{source}</div>
+      <div className="text-left">{source}</div>
       <div className="line-clamp-2 text-ellipsis">{message}</div>
       <div className="text-right">{formatUtcDateTime(generationTime)}</div>
     </DataGridRow>
@@ -154,9 +154,9 @@ export function EventsTable({ events }: { events: Array<Event> }) {
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-[1.5rem_auto_auto_1fr_auto] gap-px">
-          <DataGridHeader className="bg-background sticky top-0 z-10">
+          <DataGridHeader className="sticky top-0 z-10 bg-background">
             <DataGridHead className="grid place-items-center">
-              <Search className="text-muted-foreground size-3" />
+              <Search className="size-3 text-muted-foreground" />
             </DataGridHead>
 
             <DataGridSearch

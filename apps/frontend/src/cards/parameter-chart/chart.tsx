@@ -149,7 +149,7 @@ function ModeControls() {
   const fixedMode = !isDuration ? (mode as FixedWindowMode) : null;
 
   return (
-    <div className="bg-background/80 border-border absolute top-2 left-2 z-10 rounded border p-2 text-xs backdrop-blur-sm">
+    <div className="absolute top-2 left-2 z-10 rounded border border-border bg-background/80 p-2 text-xs backdrop-blur-sm">
       <div className="mb-2 flex gap-2">
         <button
           onClick={() =>
@@ -191,7 +191,7 @@ function ModeControls() {
               const mins = parseInt(e.target.value) || 1;
               setMode({ type: "duration", durationMs: mins * 60000 });
             }}
-            className="bg-background border-border w-16 rounded border px-1 py-0.5"
+            className="w-16 rounded border border-border bg-background px-1 py-0.5"
             min="1"
           />
           <span>min</span>
@@ -207,7 +207,7 @@ function ModeControls() {
                 const start = new Date(e.target.value);
                 setMode({ type: "fixed", start, end: fixedMode.end });
               }}
-              className="bg-background border-border rounded border px-1 py-0.5"
+              className="rounded border border-border bg-background px-1 py-0.5"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ function ModeControls() {
                 const end = new Date(e.target.value);
                 setMode({ type: "fixed", start: fixedMode.start, end });
               }}
-              className="bg-background border-border rounded border px-1 py-0.5"
+              className="rounded border border-border bg-background px-1 py-0.5"
             />
           </div>
         </div>

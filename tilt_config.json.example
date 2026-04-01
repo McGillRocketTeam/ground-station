@@ -1,3 +1,4 @@
 {
-  "simulator": false
+  "simulator": false,
+  "environment": "production"
 }

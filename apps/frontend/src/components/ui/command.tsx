@@ -157,7 +157,7 @@ function CommandItem({
       data-slot="command-item"
       data-variant={variant}
       className={cn(
-        "group/command-item relative flex min-h-7 cursor-default items-center gap-2 rounded-md px-2.5 py-1.5 text-xs/relaxed outline-hidden select-none in-data-[slot=dialog-content]:rounded-md data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-selected:bg-muted data-selected:text-foreground data-[variant=destructive]:text-destructive data-[variant=destructive]:data-selected:bg-destructive/10 data-[variant=destructive]:data-selected:text-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 data-selected:*:[svg]:text-foreground data-[variant=destructive]:data-selected:*:[svg]:text-destructive",
+        "group/command-item relative flex min-h-7 cursor-default items-center gap-2 rounded-md px-2.5 py-1.5 text-xs/relaxed outline-hidden select-none in-data-[slot=dialog-content]:rounded-md data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[variant=destructive]:text-destructive data-selected:bg-muted data-selected:text-foreground data-[variant=destructive]:data-selected:bg-destructive/10 data-[variant=destructive]:data-selected:text-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 data-selected:*:[svg]:text-foreground data-[variant=destructive]:data-selected:*:[svg]:text-destructive",
         className,
       )}
       {...props}
@@ -176,7 +176,7 @@ function CommandShortcut({
     <span
       data-slot="command-shortcut"
       className={cn(
-        "ml-auto text-[0.625rem] tracking-widest text-muted-foreground group-data-selected/command-item:text-foreground group-data-[variant=destructive]/command-item:text-destructive/70 group-data-[variant=destructive]/command-item:group-data-selected/command-item:text-destructive",
+        "ml-auto text-[0.625rem] tracking-widest text-muted-foreground group-data-[variant=destructive]/command-item:text-destructive/70 group-data-selected/command-item:text-foreground group-data-[variant=destructive]/command-item:group-data-selected/command-item:text-destructive",
         className,
       )}
       {...props}

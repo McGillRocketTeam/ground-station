@@ -45,12 +45,12 @@ export function CommandHistoryTable() {
 
           {AsyncResult.builder(commandHistory)
             .onInitial(() => (
-              <div className="text-muted-foreground col-span-full min-h-full animate-pulse text-center font-mono uppercase">
+              <div className="col-span-full min-h-full animate-pulse text-center font-mono text-muted-foreground uppercase">
                 Loading Command History
               </div>
             ))
             .onError((error) => (
-              <pre className="text-error col-span-full min-h-full text-center uppercase">
+              <pre className="col-span-full min-h-full text-center text-error uppercase">
                 {error.toString()}
               </pre>
             ))
@@ -100,7 +100,7 @@ const CommandRow = memo(function CommandRow({
             <div className="col-span-2 text-right">
               {formatDate(command.generationTime)}
             </div>
-            <div className="no-scrollbar line-clamp-1 overflow-x-scroll">
+            <div className="line-clamp-1 no-scrollbar overflow-x-scroll">
               {command.commandName}
             </div>
             <div className="text-center">
@@ -169,7 +169,7 @@ const IndexedTargetAckCell = memo(function IndexedTargetAckCell({
 
   if (!ack) {
     return (
-      <div className="text-muted-foreground grid place-items-center">-</div>
+      <div className="grid place-items-center text-muted-foreground">-</div>
     );
   }
 
@@ -223,9 +223,9 @@ const SearchInput = memo(function SearchInput() {
 
 const Header = memo(function Header() {
   return (
-    <DataGridHeader className="bg-background sticky top-0 z-20">
+    <DataGridHeader className="sticky top-0 z-20 bg-background">
       <DataGridHead className="grid place-items-center">
-        <Search className="text-muted-foreground size-3" />
+        <Search className="size-3 text-muted-foreground" />
       </DataGridHead>
       <SearchInput />
       <DataGridHead className="col-span-3 text-center">G.S.C.</DataGridHead>

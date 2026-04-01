@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import type { ComponentType } from "react";
 
 import { Schema, SchemaAST } from "effect";
 
@@ -12,9 +13,22 @@ import {
 import { Field, FieldError, FieldLabel } from "../../ui/field";
 import { Input } from "../../ui/input";
 import {
+  DashboardParameterArrayField,
+  type DashboardParameterArrayFieldApi,
+} from "./parameter-array-field";
+import {
   DashboardParameterField,
   type DashboardParameterFieldApi,
 } from "./parameter-field";
+
+const DashboardParameterFieldComponent =
+  DashboardParameterField as unknown as ComponentType<{
+    field: DashboardParameterFieldApi;
+  }>;
+const DashboardParameterArrayFieldComponent =
+  DashboardParameterArrayField as unknown as ComponentType<{
+    field: DashboardParameterArrayFieldApi;
+  }>;
 
 function getFieldPlaceholder(type: ReturnType<typeof formType>) {
   switch (type) {
@@ -24,8 +38,7 @@ function getFieldPlaceholder(type: ReturnType<typeof formType>) {
       return "Enter a command";
     case "coordinate":
       return "Enter coordinate";
-    case "string":
-    case "unknown":
+    default:
       return "Enter a value";
   }
 }
@@ -64,17 +77,6 @@ function getCoordinateRangeError(
 
   if (parsed < bounds.min || parsed > bounds.max) {
     return `Expected value between ${bounds.min} and ${bounds.max}, got ${parsed}`;
-  }
-
-  return undefined;
-}
-
-export function validateDashboardFieldValue(
-  fieldSchema: Schema.Schema<unknown>,
-  value: unknown,
-): string | undefined {
-  if (formType(fieldSchema) === "coordinate") {
-    return getCoordinateRangeError(fieldSchema, value);
   }
 
   return undefined;
@@ -152,9 +154,10 @@ export function DashboardCardField({
   const placeholder = getFieldPlaceholder(type);
   const coordinateError =
     type === "coordinate" && field.state.meta.isTouched
-      ? validateDashboardFieldValue(fieldSchema, field.state.value)
+      ? getCoordinateRangeError(fieldSchema, field.state.value)
       : undefined;
   const errors = getFieldErrors(field);
+
   if (coordinateError) {
     errors.push({ message: coordinateError });
   }
@@ -167,17 +170,34 @@ export function DashboardCardField({
       }
     >
       <FieldLabel htmlFor={field.name}>{formTitle(fieldSchema)}</FieldLabel>
-      {type === "parameter" ? (
-        <DashboardParameterField field={field as DashboardParameterFieldApi} />
-      ) : type === "coordinate" ? (
-        <DashboardCoordinateField
-          field={field}
-          fieldSchema={fieldSchema}
-          placeholder={placeholder}
-        />
-      ) : (
-        <DashboardDefaultField field={field} placeholder={placeholder} />
-      )}
+      {(() => {
+        switch (type) {
+          case "parameter":
+            return (
+              <DashboardParameterFieldComponent
+                field={field as DashboardParameterFieldApi}
+              />
+            );
+          case "parameterArray":
+            return (
+              <DashboardParameterArrayFieldComponent
+                field={field as DashboardParameterArrayFieldApi}
+              />
+            );
+          case "coordinate":
+            return (
+              <DashboardCoordinateField
+                field={field}
+                fieldSchema={fieldSchema}
+                placeholder={placeholder}
+              />
+            );
+          default:
+            return (
+              <DashboardDefaultField field={field} placeholder={placeholder} />
+            );
+        }
+      })()}
       {field.state.meta.isTouched ? <FieldError errors={errors} /> : null}
     </Field>
   );

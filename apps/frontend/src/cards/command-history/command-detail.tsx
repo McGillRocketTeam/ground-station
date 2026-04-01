@@ -170,13 +170,13 @@ function FCAckRow({
         {ack.label.toLocaleUpperCase()}
 
         {ack.time && (
-          <span className="text-muted-foreground ml-2 text-xs">
+          <span className="ml-2 text-xs text-muted-foreground">
             +{diffMs(command, ack)}ms
           </span>
         )}
       </div>
       {ack.message && (
-        <div className="border-error col-span-full max-w-80 border-l-2 py-1 pl-2 font-sans break-all">
+        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
           {ack.message}
         </div>
       )}
@@ -212,13 +212,13 @@ function AckRow({
           : ack.name.toLocaleUpperCase()}
 
         {ack.time && (
-          <span className="text-muted-foreground ml-2 text-xs">
+          <span className="ml-2 text-xs text-muted-foreground">
             +{diffMs(command, ack)}ms
           </span>
         )}
       </div>
       {ack.message && (
-        <div className="border-error col-span-full max-w-80 border-l-2 py-1 pl-2 font-sans break-all">
+        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
           {ack.message}
         </div>
       )}

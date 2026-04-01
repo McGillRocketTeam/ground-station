@@ -6,19 +6,28 @@ export const FormTypeAnnotationId: unique symbol = Symbol.for(
 export const FormTitleAnnotationId: unique symbol = Symbol.for(
   "mrt/form/title",
 ) as never;
+export const FormMinAnnotationId: unique symbol = Symbol.for(
+  "mrt/form/min",
+) as never;
+export const FormMaxAnnotationId: unique symbol = Symbol.for(
+  "mrt/form/max",
+) as never;
 
 export type FormType =
   | "unknown"
   | "string"
   | "parameter"
   | "parameterArray"
-  | "command";
+  | "command"
+  | "coordinate";
 
 declare module "effect/Schema" {
   namespace Annotations {
     interface Annotations {
       readonly [FormTypeAnnotationId]?: FormType | undefined;
       readonly [FormTitleAnnotationId]?: string | undefined;
+      readonly [FormMinAnnotationId]?: number | undefined;
+      readonly [FormMaxAnnotationId]?: number | undefined;
     }
   }
 }

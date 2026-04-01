@@ -1,5 +1,11 @@
 import type { IDockviewPanel } from "dockview-react";
 
+import { useAtomSet, useAtomValue } from "@effect/atom-react";
+
+import {
+  dashboardDockviewApiAtom,
+  pushDashboardLayoutHistoryAtom,
+} from "@/components/dashboard/actions/layout";
 import {
   Dialog,
   DialogClose,
@@ -10,6 +16,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { isCardId } from "@/lib/cards";
+import {
+  persistDashboardLayout,
+  snapshotDockviewLayout,
+} from "@/lib/dashboard-layout";
 
 import { Button } from "../../ui/button";
 import { DashboardCardForm } from "./card-form";
@@ -17,6 +27,8 @@ import { DashboardCardForm } from "./card-form";
 export const editPanelDialogHandle = Dialog.createHandle<IDockviewPanel>();
 
 function EditPanelDialogForm({ payload }: { payload: IDockviewPanel }) {
+  const api = useAtomValue(dashboardDockviewApiAtom);
+  const pushDashboardLayoutHistory = useAtomSet(pushDashboardLayoutHistoryAtom);
   const componentId = payload.view.contentComponent;
 
   if (!isCardId(componentId)) {
@@ -37,6 +49,13 @@ function EditPanelDialogForm({ payload }: { payload: IDockviewPanel }) {
       onSubmit={({ title, params }) => {
         payload.api.setTitle(title);
         payload.update({ params });
+
+        if (api) {
+          const layout = snapshotDockviewLayout(api.toJSON());
+          persistDashboardLayout(layout);
+          pushDashboardLayoutHistory(layout);
+        }
+
         editPanelDialogHandle.close();
       }}
     />

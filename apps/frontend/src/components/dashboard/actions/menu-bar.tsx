@@ -16,6 +16,7 @@ import {
 import {
   DashboardActionMenubarGroups,
   useDashboardCardActionGroups,
+  useDashboardDataActionGroups,
   useDashboardDashboardActionGroups,
   useDashboardInstanceActionGroups,
   useDashboardViewActionGroups,
@@ -27,6 +28,7 @@ export function DashboardMenuBar() {
       <DashboardMenuBarMenu />
       <CardMenuBarMenu />
       <ViewMenuBarMenu />
+      <DataMenuBarMenu />
     </Menubar>
   );
 }
@@ -98,6 +100,19 @@ function ViewMenuBarMenu() {
         {/* <MenubarGroup> */}
         {/*   <MenubarItem>Hide Sidebar</MenubarItem> */}
         {/* </MenubarGroup> */}
+      </MenubarContent>
+    </MenubarMenu>
+  );
+}
+
+function DataMenuBarMenu() {
+  const groups = useDashboardDataActionGroups();
+
+  return (
+    <MenubarMenu>
+      <MenubarTrigger>Data</MenubarTrigger>
+      <MenubarContent className="w-full max-w-80 min-w-44">
+        <DashboardActionMenubarGroups groups={groups} />
       </MenubarContent>
     </MenubarMenu>
   );

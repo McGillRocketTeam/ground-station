@@ -246,6 +246,25 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
   ];
 }
 
+export function useDashboardDataActionGroups(): ReadonlyArray<DashboardActionGroup> {
+  const navigate = useNavigate();
+
+  return [
+    {
+      id: "dashboard-data",
+      heading: "Data",
+      actions: [
+        {
+          id: "export-data",
+          label: "Export Data",
+          keywords: ["dashboard", "data", "export"],
+          run: () => navigate("/export"),
+        },
+      ],
+    },
+  ];
+}
+
 export function useDashboardViewActionGroups(): ReadonlyArray<DashboardActionGroup> {
   const toggleFullscreen = useAtomSet(toggleFullscreenAtom);
   const { theme, setTheme } = useTheme();

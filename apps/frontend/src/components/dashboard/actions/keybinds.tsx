@@ -15,6 +15,7 @@ import { switchInstanceMenuAtom } from "./command-menu";
 import {
   flattenDashboardActionGroups,
   useDashboardCardActionGroups,
+  useDashboardDataActionGroups,
   useDashboardDashboardActionGroups,
   useDashboardViewActionGroups,
 } from "./groups";
@@ -22,6 +23,7 @@ import {
 export function DashboardKeybinds() {
   const dashboardGroups = useDashboardDashboardActionGroups();
   const viewGroups = useDashboardViewActionGroups();
+  const dataGroups = useDashboardDataActionGroups();
   const cardGroups = useDashboardCardActionGroups();
 
   return (
@@ -29,6 +31,7 @@ export function DashboardKeybinds() {
       <DashboardActionKeybinds groups={cardGroups} />
       <DashboardActionKeybinds groups={dashboardGroups} />
       <DashboardActionKeybinds groups={viewGroups} />
+      <DashboardActionKeybinds groups={dataGroups} />
       <Suspense>
         <InstanceCommandKeybinds />
       </Suspense>

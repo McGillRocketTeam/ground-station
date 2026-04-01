@@ -20,8 +20,8 @@ const MapCardConfiguration = Schema.Struct({
   latitude: CoordinateLatitudeField,
   
   altitude: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Altitude"})),
-  rocketLat: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Latitude"})),
-  rocketLong: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Longitude"}))
+  rocketLong: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Longitude"})),
+  rocketLat: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Latitude"}))
 });
 
 const lightMapStyle = {
@@ -95,7 +95,7 @@ export const MapCard = makeCard({
     const [viewState, setViewState] = useState({
       longitude,
       latitude,
-      zoom: 12,
+      zoom: 10,
     });
 
     useEffect(() => {
@@ -149,7 +149,7 @@ export const MapCard = makeCard({
           </Button>
         </div>
         <Map
-          mapStyle={mapStyle}
+          mapStyle={theme === "dark" ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"}
           {...viewState}
           onMove={(event) => {
             if (isCameraLocked) {
@@ -170,6 +170,7 @@ export const MapCard = makeCard({
           touchZoomRotate
           keyboard
           style={{ width: "100%", height: "100%" }}
+          defaultZoom={10}
         >
           <NavigationControl position="top-left" />
           <Marker longitude={longitude} latitude={latitude} color="red" />

@@ -4,7 +4,6 @@ import {
   DockviewReact,
   themeAbyssSpaced,
   type DockviewReadyEvent,
-  type SerializedDockview,
 } from "dockview-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
@@ -27,9 +26,15 @@ import "./dashboard.css";
 import { DashboardPlus } from "@/components/dashboard/plus";
 import { DashboardTab } from "@/components/dashboard/tab";
 import { CardComponentMap, getCardActionsForPanel } from "@/lib/cards";
+import {
+  dashboardStorageKey,
+  isSerializedDockviewLayout,
+  persistDashboardLayout,
+  readPersistedDashboardLayout,
+  snapshotDockviewLayout,
+} from "@/lib/dashboard-layout";
 
 const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
-const dashboardStorageKey = "mrt-dashboard";
 
 const dashboardLocalStorage = Atom.kvs({
   runtime: runtime,
@@ -37,44 +42,6 @@ const dashboardLocalStorage = Atom.kvs({
   schema: Schema.ObjectKeyword,
   defaultValue: () => ({}),
 });
-
-function isSerializedDockviewLayout(
-  layout: unknown,
-): layout is SerializedDockview {
-  return (
-    typeof layout === "object" &&
-    layout !== null &&
-    Object.keys(layout).length > 0
-  );
-}
-
-function snapshotDockviewLayout(
-  layout: SerializedDockview,
-): SerializedDockview {
-  return structuredClone(layout);
-}
-
-function persistDashboardLayout(layout: SerializedDockview) {
-  window.localStorage.setItem(dashboardStorageKey, JSON.stringify(layout));
-}
-
-function readPersistedDashboardLayout() {
-  const rawLayout = window.localStorage.getItem(dashboardStorageKey);
-
-  if (!rawLayout) {
-    return undefined;
-  }
-
-  try {
-    const layout = JSON.parse(rawLayout) as unknown;
-    return isSerializedDockviewLayout(layout)
-      ? snapshotDockviewLayout(layout)
-      : undefined;
-  } catch (err) {
-    console.error("Error parsing persisted layout", err);
-    return undefined;
-  }
-}
 
 export function DashboardPage() {
   const [api, setApi] = useAtom(dashboardDockviewApiAtom);

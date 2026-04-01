@@ -28,6 +28,11 @@ import {
   MenubarShortcut,
 } from "@/components/ui/menubar";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import {
+  dashboardStorageKey,
+  isSerializedDockviewLayout,
+  snapshotDockviewLayout,
+} from "@/lib/dashboard-layout";
 
 import { editPanelDialogHandle } from "../form/edit-dialog";
 import {
@@ -67,27 +72,10 @@ function downloadDashboardLayout(layout: unknown) {
   URL.revokeObjectURL(downloadUrl);
 }
 
-const dashboardStorageKey = "mrt-dashboard";
 const mrtEnvironment =
   import.meta.env.MRT_ENVIRONMENT === "development"
     ? "development"
     : "production";
-
-function isSerializedDockviewLayout(
-  layout: unknown,
-): layout is SerializedDockview {
-  return (
-    typeof layout === "object" &&
-    layout !== null &&
-    Object.keys(layout).length > 0
-  );
-}
-
-function snapshotDashboardLayout(
-  layout: SerializedDockview,
-): SerializedDockview {
-  return structuredClone(layout);
-}
 
 function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
   return new Promise((resolve) => {
@@ -109,7 +97,7 @@ function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
 
         resolve(
           isSerializedDockviewLayout(layout)
-            ? snapshotDashboardLayout(layout)
+            ? snapshotDockviewLayout(layout)
             : undefined,
         );
       } catch (err) {

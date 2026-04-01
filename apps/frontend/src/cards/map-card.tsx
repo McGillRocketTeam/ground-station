@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
 
 import { resolveTheme, useTheme } from "@/components/theme-provider";
@@ -8,12 +8,20 @@ import { makeCard } from "@/lib/cards";
 import {
   CoordinateLatitudeField,
   CoordinateLongitudeField,
+  ParameterField,
 } from "@/lib/dashboard-field-types";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { FormTitleAnnotationId } from "@/lib/form";
+import { useAtomSuspense } from "@effect/atom-react";
+import { parameterSubscriptionAtom } from "@/lib/atom";
 
 const MapCardConfiguration = Schema.Struct({
   longitude: CoordinateLongitudeField,
   latitude: CoordinateLatitudeField,
+  
+  altitude: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Altitude"})),
+  rocketLat: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Latitude"})),
+  rocketLong: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Longitude"}))
 });
 
 const lightMapStyle = {
@@ -59,6 +67,17 @@ const darkMapStyle = {
     },
   ],
 } as const;
+
+export function RocketMarker(props: { lat: string; long: string }) {
+  const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value.engValue;
+  const longValue = useAtomSuspense(parameterSubscriptionAtom(props.long)).value.engValue;
+
+  if (latValue.type === "FLOAT" && longValue.type === "FLOAT") {
+    return <Marker longitude={Number(longValue)} latitude={Number(latValue.value)} color="blue" />;
+  }
+
+}
+
 
 export const MapCard = makeCard({
   id: "map-card",
@@ -154,6 +173,9 @@ export const MapCard = makeCard({
         >
           <NavigationControl position="top-left" />
           <Marker longitude={longitude} latitude={latitude} color="red" />
+          <Suspense>
+            <RocketMarker lat={props.params.rocketLat.qualifiedName} long={props.params.rocketLong.qualifiedName} />
+          </Suspense>
         </Map>
       </div>
     );

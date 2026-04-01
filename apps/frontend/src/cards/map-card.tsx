@@ -1,27 +1,33 @@
+import { useAtomSuspense } from "@effect/atom-react";
 import { Schema } from "effect";
 import { Suspense, useEffect, useState } from "react";
 import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
 
 import { resolveTheme, useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
+import { parameterSubscriptionAtom } from "@/lib/atom";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { makeCard } from "@/lib/cards";
 import {
   CoordinateLatitudeField,
   CoordinateLongitudeField,
   ParameterField,
 } from "@/lib/dashboard-field-types";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { FormTitleAnnotationId } from "@/lib/form";
-import { useAtomSuspense } from "@effect/atom-react";
-import { parameterSubscriptionAtom } from "@/lib/atom";
 
 const MapCardConfiguration = Schema.Struct({
   longitude: CoordinateLongitudeField,
   latitude: CoordinateLatitudeField,
-  
-  altitude: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Altitude"})),
-  rocketLong: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Longitude"})),
-  rocketLat: ParameterField.pipe(Schema.annotate({[FormTitleAnnotationId]: "Rocket Latitude"}))
+
+  altitude: ParameterField.pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" }),
+  ),
+  rocketLong: ParameterField.pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" }),
+  ),
+  rocketLat: ParameterField.pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" }),
+  ),
 });
 
 const lightMapStyle = {
@@ -69,15 +75,21 @@ const darkMapStyle = {
 } as const;
 
 export function RocketMarker(props: { lat: string; long: string }) {
-  const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value.engValue;
-  const longValue = useAtomSuspense(parameterSubscriptionAtom(props.long)).value.engValue;
+  const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value
+    .engValue;
+  const longValue = useAtomSuspense(parameterSubscriptionAtom(props.long)).value
+    .engValue;
 
   if (latValue.type === "FLOAT" && longValue.type === "FLOAT") {
-    return <Marker longitude={Number(longValue)} latitude={Number(latValue.value)} color="blue" />;
+    return (
+      <Marker
+        longitude={Number(longValue)}
+        latitude={Number(latValue.value)}
+        color="blue"
+      />
+    );
   }
-
 }
-
 
 export const MapCard = makeCard({
   id: "map-card",
@@ -90,7 +102,7 @@ export const MapCard = makeCard({
     const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
       resolveTheme(theme),
     );
-    const mapStyle = resolvedTheme === "dark" ? darkMapStyle : lightMapStyle;
+
     const [isCameraLocked, setIsCameraLocked] = useState(false);
     const [viewState, setViewState] = useState({
       longitude,
@@ -149,7 +161,11 @@ export const MapCard = makeCard({
           </Button>
         </div>
         <Map
-          mapStyle={theme === "dark" ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"}
+          mapStyle={
+            theme === "dark"
+              ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+              : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+          }
           {...viewState}
           onMove={(event) => {
             if (isCameraLocked) {
@@ -175,7 +191,10 @@ export const MapCard = makeCard({
           <NavigationControl position="top-left" />
           <Marker longitude={longitude} latitude={latitude} color="red" />
           <Suspense>
-            <RocketMarker lat={props.params.rocketLat.qualifiedName} long={props.params.rocketLong.qualifiedName} />
+            <RocketMarker
+              lat={props.params.rocketLat.qualifiedName}
+              long={props.params.rocketLong.qualifiedName}
+            />
           </Suspense>
         </Map>
       </div>

@@ -64,8 +64,9 @@ function AddCardDialog({
         <FieldGroup>
           <Field>
             <FieldLabel>Component</FieldLabel>
-            <Combobox
+            <Combobox<(typeof CardArray)[number]>
               autoHighlight
+              items={CardArray}
               value={selectedCard}
               itemToStringLabel={(item) => item.name}
               itemToStringValue={(item) => item.id}
@@ -76,11 +77,11 @@ function AddCardDialog({
               <ComboboxContent>
                 <ComboboxEmpty>No card component found.</ComboboxEmpty>
                 <ComboboxList>
-                  {CardArray.map((card) => (
+                  {(card: (typeof CardArray)[number]) => (
                     <ComboboxItem key={card.id} value={card}>
                       {card.name}
                     </ComboboxItem>
-                  ))}
+                  )}
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>

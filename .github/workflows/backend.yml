@@ -1,4 +1,4 @@
-name: Backend Maven Compile
+name: Build
 
 on:
   push:
@@ -9,7 +9,8 @@ on:
       - "apps/backend/**"
 
 jobs:
-  compile:
+  java:
+    name: Java
     runs-on: ubuntu-latest
 
     defaults:

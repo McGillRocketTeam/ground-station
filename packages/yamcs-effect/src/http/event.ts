@@ -1,26 +1,60 @@
+import { Schema } from "effect";
 import {
+  HttpApiGroup,
   HttpApiEndpoint,
   HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
-import { Schema } from "effect";
-import { CommandId, Event } from "../schema.js";
+} from "effect/unstable/httpapi";
 
-const instanceParam = HttpApiSchema.param("instance", Schema.String);
+import { Event } from "../schema.js";
 
-export const idParam = HttpApiSchema.param("id", CommandId);
+const ListEventsOptions = {
+  pos: Schema.optional(Schema.String),
+  limit: Schema.optional(Schema.String),
+  order: Schema.optional(Schema.Literals(["asc", "desc"])),
+  severity: Schema.optional(
+    Schema.Literals([
+      "info",
+      "watch",
+      "warning",
+      "distress",
+      "critical",
+      "severe",
+    ]),
+  ),
+  source: Schema.optional(Schema.String),
+  next: Schema.optional(Schema.String),
+  start: Schema.optional(Schema.String),
+  stop: Schema.optional(Schema.String),
+  q: Schema.optional(Schema.String),
+  filter: Schema.optional(Schema.String),
+};
+
+const ListEventsResponse = Schema.Struct({
+  event: Schema.optional(Schema.Array(Event)),
+  events: Schema.Array(Event),
+  continuationToken: Schema.optional(Schema.String),
+});
 
 export const eventGroup = HttpApiGroup.make("event")
   .add(
-    HttpApiEndpoint.get(
-      "listEvents",
-    )`/archive/${instanceParam}/events?source=ASTRA&limit=500&order=asc`.addSuccess(
-      Schema.Struct({
-        events: Schema.Array(Event),
-      }),
-    ),
+    HttpApiEndpoint.get("listEvents", "/archive/:instance/events", {
+      params: { instance: Schema.String },
+      query: ListEventsOptions,
+      success: ListEventsResponse,
+      error: [HttpApiError.NotFound],
+    }),
   )
-  .addError(HttpApiError.NotFound);
+  .add(
+    HttpApiEndpoint.post(
+      "listEventsWithPayload",
+      "/archive/:instance/events:list",
+      {
+        params: { instance: Schema.String },
+        payload: Schema.UndefinedOr(Schema.Struct(ListEventsOptions)),
+        success: ListEventsResponse,
+        error: [HttpApiError.NotFound],
+      },
+    ),
+  );
 
 export default eventGroup;

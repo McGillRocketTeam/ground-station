@@ -1,14 +1,15 @@
+import type { ParameterValue } from "@mrt/yamcs-effect";
+
 import {
-  Atom,
   useAtom,
   useAtomRefresh,
   useAtomSet,
   useAtomSubscribe,
   useAtomValue,
-} from "@effect-atom/atom-react";
-import { parameterSubscriptionAtom, YamcsAtomClient } from "@mrt/yamcs-atom";
+} from "@effect/atom-react";
 import Dygraph from "dygraphs";
-import { Effect } from "effect";
+import { DateTime, Effect } from "effect";
+import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import {
   useCallback,
   useEffect,
@@ -17,11 +18,18 @@ import {
   useRef,
 } from "react";
 
+import {
+  YamcsAtomHttpClient,
+  parameterSubscriptionAtom,
+  selectedInstanceAtom,
+} from "@/lib/atom";
+
 const isDurationMode = (mode: ChartMode): mode is DurationMode =>
   mode.type === "duration";
 
 const MAX_DATA_POINTS = 1000;
 const PARAMETER_NAME = "/FlightComputer/acceleration_x";
+const parameterLiveAtom = parameterSubscriptionAtom(PARAMETER_NAME);
 
 type DurationMode = {
   type: "duration";
@@ -73,26 +81,29 @@ type BandDataPoint = [Date, [number, number, number]];
 
 const chartHistoryAtom = Atom.make((get) =>
   Effect.gen(function* () {
+    const instance = get(selectedInstanceAtom);
     const { start, end } = get(timeRangeAtom);
 
-    const urlParams: { start: Date; stop?: Date } = { start };
+    const query: { start: string; stop?: string } = {
+      start: start.toISOString(),
+    };
     if (end.getTime() < Date.now()) {
-      urlParams.stop = end;
+      query.stop = end.toISOString();
     }
 
     const history = yield* get.resultOnce(
-      YamcsAtomClient.query("parameter", "getSamples", {
-        path: {
-          instance: import.meta.env.YAMCS_INSTANCE,
+      YamcsAtomHttpClient.query("parameter", "getSamples", {
+        params: {
+          instance,
           parameterName: PARAMETER_NAME,
         },
-        urlParams,
+        query,
       }),
     );
 
     // Map to [Date, [min, avg, max]] format for dygraphs customBars
     const data = history.sample.map((h) => [
-      h.time,
+      DateTime.toDate(h.time),
       [h.min ?? h.avg, h.avg, h.max ?? h.avg],
     ]) as BandDataPoint[];
     return data;
@@ -138,7 +149,7 @@ function ModeControls() {
   const fixedMode = !isDuration ? (mode as FixedWindowMode) : null;
 
   return (
-    <div className="bg-background/80 border-border absolute top-2 left-2 z-10 rounded border p-2 text-xs backdrop-blur-sm">
+    <div className="absolute top-2 left-2 z-10 rounded border border-border bg-background/80 p-2 text-xs backdrop-blur-sm">
       <div className="mb-2 flex gap-2">
         <button
           onClick={() =>
@@ -180,7 +191,7 @@ function ModeControls() {
               const mins = parseInt(e.target.value) || 1;
               setMode({ type: "duration", durationMs: mins * 60000 });
             }}
-            className="bg-background border-border w-16 rounded border px-1 py-0.5"
+            className="w-16 rounded border border-border bg-background px-1 py-0.5"
             min="1"
           />
           <span>min</span>
@@ -196,7 +207,7 @@ function ModeControls() {
                 const start = new Date(e.target.value);
                 setMode({ type: "fixed", start, end: fixedMode.end });
               }}
-              className="bg-background border-border rounded border px-1 py-0.5"
+              className="rounded border border-border bg-background px-1 py-0.5"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -208,7 +219,7 @@ function ModeControls() {
                 const end = new Date(e.target.value);
                 setMode({ type: "fixed", start: fixedMode.start, end });
               }}
-              className="bg-background border-border rounded border px-1 py-0.5"
+              className="rounded border border-border bg-background px-1 py-0.5"
             />
           </div>
         </div>
@@ -245,49 +256,52 @@ export function ParameterChart() {
   const setChartData = useAtomSet(chartDataWithSubscriptionAtom);
   const refreshChartData = useAtomRefresh(chartDataWithSubscriptionAtom);
 
-  // No 'immediate' option - prevents infinite loop from atom triggering its own update
-  useAtomSubscribe(parameterSubscriptionAtom(PARAMETER_NAME), (result) => {
-    if (!isLiveRef.current) return;
+  const handleParameterUpdate = useCallback(
+    (result: AsyncResult.AsyncResult<typeof ParameterValue.Type, unknown>) => {
+      if (!isLiveRef.current) return;
 
-    if (result._tag === "Success") {
-      const parameterValue = result.value;
-      const timestamp = new Date(parameterValue.generationTime);
-      let numericValue = 0;
+      if (result._tag === "Success") {
+        const parameterValue = result.value;
+        const timestamp = DateTime.toDate(parameterValue.generationTime);
+        let numericValue = 0;
 
-      if (parameterValue.engValue && "value" in parameterValue.engValue) {
-        numericValue = Number(parameterValue.engValue.value) || 0;
-      } else if (
-        parameterValue.rawValue &&
-        "value" in parameterValue.rawValue
-      ) {
-        numericValue = Number(parameterValue.rawValue.value) || 0;
-      }
-
-      const currentMode = modeRef.current;
-      const newPoint: BandDataPoint = [
-        timestamp,
-        [numericValue, numericValue, numericValue],
-      ];
-
-      if (currentMode.type === "duration") {
-        // Filter points outside the sliding window (creates scrolling effect)
-        const cutoffTime = timestamp.getTime() - currentMode.durationMs;
-        const currentData = dataRef.current;
-        const filtered = currentData.filter(
-          (point) => point[0].getTime() >= cutoffTime,
-        );
-        const newData: BandDataPoint[] = [...filtered, newPoint];
-        if (
-          newData.length !== currentData.length ||
-          filtered.length !== currentData.length
+        if (parameterValue.engValue && "value" in parameterValue.engValue) {
+          numericValue = Number(parameterValue.engValue.value) || 0;
+        } else if (
+          parameterValue.rawValue &&
+          "value" in parameterValue.rawValue
         ) {
-          setChartData(newData);
+          numericValue = Number(parameterValue.rawValue.value) || 0;
         }
-      } else {
-        setChartData(newPoint);
+
+        const currentMode = modeRef.current;
+        const newPoint: BandDataPoint = [
+          timestamp,
+          [numericValue, numericValue, numericValue],
+        ];
+
+        if (currentMode.type === "duration") {
+          const cutoffTime = timestamp.getTime() - currentMode.durationMs;
+          const currentData = dataRef.current;
+          const filtered = currentData.filter(
+            (point) => point[0].getTime() >= cutoffTime,
+          );
+          const newData: BandDataPoint[] = [...filtered, newPoint];
+          if (
+            newData.length !== currentData.length ||
+            filtered.length !== currentData.length
+          ) {
+            setChartData(newData);
+          }
+        } else {
+          setChartData(newPoint);
+        }
       }
-    }
-  });
+    },
+    [setChartData],
+  );
+
+  useAtomSubscribe(parameterLiveAtom, handleParameterUpdate);
 
   const handleZoom = useCallback(
     (minDate: number, maxDate: number) => {
@@ -322,22 +336,27 @@ export function ParameterChart() {
     [handleDoubleClick],
   );
 
-  useAtomValue(chartDataWithSubscriptionAtom, (data) => {
-    if (!chartRef.current && containerRef.current && data.length > 0) {
-      chartRef.current = new Dygraph(containerRef.current, data, {
+  useLayoutEffect(() => {
+    if (!containerRef.current || chartData.length === 0) {
+      return;
+    }
+
+    if (!chartRef.current) {
+      chartRef.current = new Dygraph(containerRef.current, chartData, {
         labels: ["Time", "Value"],
         legend: "never",
         connectSeparatedPoints: true,
         drawGapEdgePoints: true,
-        customBars: true, // Enable high/low bands using [min, avg, max] format
+        customBars: true,
         zoomCallback: handleZoom,
         interactionModel,
         strokeWidth: 2,
       });
-    } else if (data.length > 0) {
-      chartRef.current!.updateOptions({ file: data });
+      return;
     }
-  });
+
+    chartRef.current.updateOptions({ file: chartData });
+  }, [chartData, handleZoom, interactionModel]);
 
   // Only update zoomCallback since interactionModel is memoized
   useLayoutEffect(() => {
@@ -374,6 +393,7 @@ export function ParameterChart() {
 
   return (
     <div ref={parentRef} className="absolute inset-0 bottom-2 grid">
+      <ModeControls />
       <div ref={containerRef} />
     </div>
   );

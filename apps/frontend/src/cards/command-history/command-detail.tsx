@@ -1,6 +1,8 @@
-import { Separator } from "@/components/ui/separator";
-import { cn, stringifyValue } from "@/lib/utils";
 import { Fragment, type ReactNode } from "react";
+
+import { Separator } from "@/components/ui/separator";
+import { cn, formatUtcDateTime, stringifyValue } from "@/lib/utils";
+
 import { BrailleSpinner } from "./braile-spinner";
 import {
   collectAcks,
@@ -20,6 +22,17 @@ export function CommandDetail({ command }: { command: CommandHistoryEntry }) {
 
 function Label({ children }: { children: ReactNode }) {
   return <div className="font-sans text-xs font-semibold">{children}</div>;
+}
+
+function diffMs(command: CommandHistoryEntry, ack: Ack) {
+  if (!ack.time) {
+    return undefined;
+  }
+
+  return Math.abs(
+    new Date(command.generationTime.toString()).getTime() -
+      new Date(ack.time.toString()).getTime(),
+  );
 }
 
 function DetailTable({ command }: { command: CommandHistoryEntry }) {
@@ -61,13 +74,11 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
       </div>
       <div className="space-y-0.5">
         <Label>Generation Time</Label>
-        <div>{command.generationTime.toLocaleString()}</div>
+        <div>{formatUtcDateTime(command.generationTime)}</div>
       </div>
       <div className="space-y-0.5">
         <Label>Issuer</Label>
-        <div>
-          {`${stringifyValue(extractAttribute(command, "username"))} @${command.origin}`}
-        </div>
+        <div>{`${stringifyValue(extractAttribute(command, "username"))} @${command.origin}`}</div>
       </div>
       <div className="grid grid-cols-3">
         <div className="space-y-0.5">
@@ -85,6 +96,12 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
           </div>
         </div>
       </div>
+      <div className="space-y-0.5">
+        <Label>Targets</Label>
+        <div>
+          {stringifyValue(extractAttribute(command, "TX_Targets"), "-")}
+        </div>
+      </div>
       <Separator />
       {acks.groundStation.length > 0 && (
         <div className="space-y-0.5">
@@ -96,13 +113,13 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
           </div>
         </div>
       )}
-      {acks.radio.length > 0 && (
+      {acks.uplink.length > 0 && (
         <div className="space-y-0.5">
-          <Label>Radios Acknowledgements</Label>
+          <Label>Uplink Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
-            {acks.radio.map((ack) => (
+            {acks.uplink.map((ack) => (
               <AckRow
-                friendlyName={ack.name === "Radio_RX" ? "Receive" : "Transmit"}
+                friendlyName={ack.label}
                 key={ack.name}
                 ack={ack}
                 command={command}
@@ -135,30 +152,35 @@ function FCAckRow({
   if (ack.status === "??") return;
 
   return (
-    <div className="flex flex-row items-center">
+    <>
       <div
         className={cn(
           ack.status === "OK" && "text-success",
           ack.status === "NOK" && "bg-error text-error-foreground",
+          ack.status === "PENDING" && "w-[2ch] text-center",
           ack.status === "??" && "text-muted-foreground",
         )}
       >
         {ack.status === "OK" && "SUCCESS"}
+        {ack.status === "PENDING" && <BrailleSpinner />}
         {ack.status === "NOK" && "FAILURE"}
+        {ack.status === "CANCELLED" && "CANCELLED"}
       </div>
       <div>
+        {ack.label.toLocaleUpperCase()}
+
         {ack.time && (
-          <span className="text-muted-foreground ml-2 text-xs">
-            +
-            {Math.abs(
-              command.generationTime.getMilliseconds() -
-                ack.time.getMilliseconds(),
-            )}
-            ms
+          <span className="ml-2 text-xs text-muted-foreground">
+            +{diffMs(command, ack)}ms
           </span>
         )}
       </div>
-    </div>
+      {ack.message && (
+        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
+          {ack.message}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -190,18 +212,13 @@ function AckRow({
           : ack.name.toLocaleUpperCase()}
 
         {ack.time && (
-          <span className="text-muted-foreground ml-2 text-xs">
-            +
-            {Math.abs(
-              command.generationTime.getMilliseconds() -
-                ack.time.getMilliseconds(),
-            )}
-            ms
+          <span className="ml-2 text-xs text-muted-foreground">
+            +{diffMs(command, ack)}ms
           </span>
         )}
       </div>
       {ack.message && (
-        <div className="border-error col-span-full max-w-80 border-l-2 py-1 pl-2 font-sans break-all">
+        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
           {ack.message}
         </div>
       )}

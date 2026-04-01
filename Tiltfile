@@ -1,17 +1,35 @@
 config.define_bool('simulator')
+config.define_string('environment')
 cfg = config.parse()
 simulator_enabled = cfg.get('simulator', True)
+mrt_environment = cfg.get('environment', 'production')
+
+if mrt_environment != 'development' and mrt_environment != 'production':
+	fail("Tilt config 'environment' must be either 'development' or 'production'")
+
+open_frontend_cmd = os.name == 'nt' and "python -m webbrowser http://localhost:5173" or "python3 -m webbrowser http://localhost:5173"
 
 local_resource(
     'frontend',
     serve_cmd="pnpm --filter @mrt/frontend dev",
 		serve_env={
-			'YAMCS_INSTANCE': 'ground_station',
 			'YAMCS_URL': 'http://localhost:8090',
+			'MRT_ENVIRONMENT': mrt_environment,
 		},
 		labels=['mrt'],
 		links='http://localhost:5173',
-		resource_deps=['backend', 'yamcs-effect', 'yamcs-atom']
+		resource_deps=['backend', 'yamcs-effect'],
+		readiness_probe=probe(
+			period_secs=3,
+			http_get=http_get_action(port=5173, path="/")
+		)
+)
+
+local_resource(
+		'open-frontend',
+		cmd=open_frontend_cmd,
+		labels=['mrt'],
+		resource_deps=['frontend']
 )
 
 local_resource(
@@ -31,7 +49,7 @@ if simulator_enabled:
 	local_resource(
 			'simulator',
 			serve_cmd="pnpm --filter @mrt/simulator dev",
-			serve_env={'YAMCS_INSTANCE': 'ground_station'},
+			serve_env={'YAMCS_INSTANCE': 'urrg'},
 			labels=['mrt'],
 			links='http://localhost:5173',
 			resource_deps=['backend', 'yamcs-effect']
@@ -71,14 +89,7 @@ local_resource(
     'yamcs-effect',
     serve_cmd="pnpm turbo dev --filter @mrt/yamcs-effect",
 		labels=['packages'],
-		resource_deps=['backend']
-)
-
-local_resource(
-    'yamcs-atom',
-    serve_cmd="pnpm turbo dev --filter @mrt/yamcs-atom",
-		labels=['packages'],
-		resource_deps=['backend', 'yamcs-effect']
+		resource_deps=[]
 )
 
 docker_compose(

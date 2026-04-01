@@ -1,11 +1,12 @@
 import { Schema } from "effect";
+
 import { NamedObjectId } from "../schema.js";
 
 /*     Built-in Client Messages     */
 export const Cancel = Schema.Struct({
   type: Schema.Literal("cancel"),
   options: Schema.Struct({
-    call: Schema.NonNegativeInt,
+    call: Schema.Int,
   }),
 });
 
@@ -38,10 +39,10 @@ export const SubscribeEventsRequest = Schema.TaggedStruct("events", {
   instance: Schema.String,
 });
 
-export const SubscriptionRequest = Schema.Union(
+export const SubscriptionRequest = Schema.Union([
   SubscribeTimeRequest,
   SubscribeLinksRequest,
   SubscribeCommandsRequest,
   SubscribeParameterRequest,
   SubscribeEventsRequest,
-);
+]);

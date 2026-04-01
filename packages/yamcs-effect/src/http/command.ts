@@ -1,23 +1,15 @@
-import {
-  HttpApiEndpoint,
-  HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
 import { Schema } from "effect";
 import {
+  HttpApiGroup,
+  HttpApiEndpoint,
+  HttpApiError,
+} from "effect/unstable/httpapi";
+
+import {
   CommandHistoryEntry,
-  CommandId,
   IssueCommandRequest,
   IssueCommandResponse,
-  QualifiedName,
 } from "../schema.js";
-
-const processorParam = HttpApiSchema.param("processor", Schema.String);
-const instanceParam = HttpApiSchema.param("instance", Schema.String);
-const nameParam = HttpApiSchema.param("name", QualifiedName);
-
-export const idParam = HttpApiSchema.param("id", CommandId);
 
 const ListCommandsResponse = Schema.Struct({
   commands: Schema.Array(CommandHistoryEntry),
@@ -27,24 +19,37 @@ const ListCommandsResponse = Schema.Struct({
 
 export const commandGroup = HttpApiGroup.make("command")
   .add(
-    HttpApiEndpoint.get(
-      "listCommands",
-    )`/archive/${instanceParam}/commands`.addSuccess(ListCommandsResponse),
+    HttpApiEndpoint.get("listCommands", "/archive/:instance/commands", {
+      params: { instance: Schema.String },
+      success: ListCommandsResponse,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
-    HttpApiEndpoint.get(
-      "getCommand",
-    )`/archive/${instanceParam}/commands/${idParam}`.addSuccess(
-      CommandHistoryEntry,
-    ),
+    HttpApiEndpoint.get("getCommand", "/archive/:instance/commands/:id", {
+      params: {
+        instance: Schema.String,
+        id: Schema.String,
+      },
+      success: CommandHistoryEntry,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
     HttpApiEndpoint.post(
       "issueCommand",
-    )`/processors/${instanceParam}/${processorParam}/commands/${nameParam}`
-      .setPayload(IssueCommandRequest)
-      .addSuccess(IssueCommandResponse),
-  )
-  .addError(HttpApiError.NotFound);
+      "/processors/:instance/:processor/commands/:name",
+      {
+        payload: Schema.UndefinedOr(IssueCommandRequest),
+        params: {
+          instance: Schema.String,
+          processor: Schema.String,
+          name: Schema.String,
+        },
+        success: IssueCommandResponse,
+        error: [HttpApiError.NotFound],
+      },
+    ),
+  );
 
 export default commandGroup;

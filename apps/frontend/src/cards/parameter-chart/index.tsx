@@ -1,5 +1,7 @@
-import { makeCard } from "@/lib/cards";
 import { Schema } from "effect";
+
+import { makeCard } from "@/lib/cards";
+
 import { ParameterChart } from "./chart";
 
 export const ParameterChartCard = makeCard({

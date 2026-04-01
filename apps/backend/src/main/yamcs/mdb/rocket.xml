@@ -172,6 +172,8 @@ See https://github.com/yamcs/pymdb
               <ThisParameterOperand/>
               <ValueOperand>100</ValueOperand>
               <Operator>/</Operator>
+              <ValueOperand>40</ValueOperand>
+              <Operator>-</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -197,11 +199,11 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="flags" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
+      <IntegerParameterType name="flags_bool_lead_pad" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="3" encoding="unsigned"/>
+      </IntegerParameterType>
       <IntegerParameterType name="flags_post_pad" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="24" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="flags_pre_pad" signed="false" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="4" encoding="unsigned"/>
       </IntegerParameterType>
       <BooleanParameterType name="flight_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
@@ -210,9 +212,9 @@ See https://github.com/yamcs/pymdb
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
         <EnumerationList>
           <Enumeration value="99" label="Pre-Pad, error in initialization"/>
-          <Enumeration value="0" label="Pad, filling and readying for launch"/>
-          <Enumeration value="1" label="Ascent, climbing at high velocity"/>
-          <Enumeration value="2" label="Pre-Apogee, checking for ejection"/>
+          <Enumeration value="0" label="Pad"/>
+          <Enumeration value="1" label="Ascent"/>
+          <Enumeration value="2" label="Pre-Apogee"/>
           <Enumeration value="3" label="Drogue descent"/>
           <Enumeration value="4" label="Main descent"/>
           <Enumeration value="5" label="Landed"/>
@@ -326,10 +328,10 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="main_energized_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <BooleanParameterType name="mov_armed_HW" zeroStringValue="False" oneStringValue="True">
+      <BooleanParameterType name="mov_armed_electrical_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
-      <BooleanParameterType name="mov_armed_SW" zeroStringValue="False" oneStringValue="True">
+      <BooleanParameterType name="mov_armed_logical_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <BooleanParameterType name="mov_continuity_HW" zeroStringValue="False" oneStringValue="True">
@@ -357,6 +359,18 @@ See https://github.com/yamcs/pymdb
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <BooleanParameterType name="radio_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="sd_atomic_bool_lead_pad" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="6" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="sd_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="sd_card_deletion_armed" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="sd_card_file_open" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <IntegerParameterType name="seq" signed="false" sizeInBits="32">
@@ -506,11 +520,10 @@ See https://github.com/yamcs/pymdb
         <LongDescription>A.S.T.R.A. Packet Flags</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="flags_post_pad" parameterTypeRef="flags_post_pad" shortDescription="Flag Padding">
-        <LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
+      <Parameter name="flags_bool_lead_pad" parameterTypeRef="flags_bool_lead_pad" shortDescription="Boolean Leading Padding">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="flags_pre_pad" parameterTypeRef="flags_pre_pad" shortDescription="Flag Padding">
+      <Parameter name="flags_post_pad" parameterTypeRef="flags_post_pad" shortDescription="Flag Padding">
         <LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
@@ -560,10 +573,10 @@ See https://github.com/yamcs/pymdb
       <Parameter name="main_energized_SW" parameterTypeRef="main_energized_SW" shortDescription="main: logical energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="mov_armed_HW" parameterTypeRef="mov_armed_HW" shortDescription="MOV: Electrical Armed">
+      <Parameter name="mov_armed_electrical_HW" parameterTypeRef="mov_armed_electrical_HW" shortDescription="MOV: Electrical Armed">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="mov_armed_SW" parameterTypeRef="mov_armed_SW" shortDescription="MOV: Logical Armed">
+      <Parameter name="mov_armed_logical_SW" parameterTypeRef="mov_armed_logical_SW" shortDescription="MOV: Logical Armed">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="mov_continuity_HW" parameterTypeRef="mov_continuity_HW" shortDescription="MOV: Electrical Continuity">
@@ -593,6 +606,18 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="radio_atomic_flag" parameterTypeRef="radio_atomic_flag">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="sd_atomic_bool_lead_pad" parameterTypeRef="sd_atomic_bool_lead_pad" shortDescription="Boolean Leading Padding">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="sd_atomic_flag" parameterTypeRef="sd_atomic_flag">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="sd_card_deletion_armed" parameterTypeRef="sd_card_deletion_armed" shortDescription="SD Card Deletion Armed">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="sd_card_file_open" parameterTypeRef="sd_card_file_open" shortDescription="SD Card File Open">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="seq" parameterTypeRef="seq" shortDescription="Sequence Number">
@@ -692,6 +717,20 @@ See https://github.com/yamcs/pymdb
               <BooleanExpression>
                 <Condition>
                   <ParameterInstanceRef parameterRef="radio_atomic_flag" useCalibratedValue="true"/>
+                  <ComparisonOperator>==</ComparisonOperator>
+                  <Value>True</Value>
+                </Condition>
+              </BooleanExpression>
+            </IncludeCondition>
+          </ContainerRefEntry>
+          <ContainerRefEntry containerRef="sd_atomic">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <IncludeCondition>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="sd_atomic_flag" useCalibratedValue="true"/>
                   <ComparisonOperator>==</ComparisonOperator>
                   <Value>True</Value>
                 </Condition>
@@ -826,34 +865,39 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="flags_pre_pad">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="radio_atomic_flag">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="flight_atomic_flag">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="prop_atomic_flag">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
+          <ParameterRefEntry parameterRef="flags_bool_lead_pad">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>32</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="states_atomic_flag">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>39</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="prop_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>38</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="flight_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>37</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="radio_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>36</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="sd_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>35</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="flags_post_pad">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>40</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>
@@ -887,6 +931,25 @@ See https://github.com/yamcs/pymdb
           <ParameterRefEntry parameterRef="call_sign">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="sd_atomic" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="sd_atomic_bool_lead_pad">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="sd_card_file_open">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>7</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="sd_card_deletion_armed">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>6</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>
@@ -928,12 +991,12 @@ See https://github.com/yamcs/pymdb
               <FixedValue>1</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="mov_armed_SW">
+          <ParameterRefEntry parameterRef="mov_armed_logical_SW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="mov_armed_HW">
+          <ParameterRefEntry parameterRef="mov_armed_electrical_HW">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>15</FixedValue>
             </LocationInContainerInBits>

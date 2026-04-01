@@ -1,56 +1,90 @@
+import { useAtom, useAtomSet } from "@effect/atom-react";
+import { BrowserKeyValueStore } from "@effect/platform-browser";
 import {
-  DockviewApi,
   DockviewReact,
   themeAbyssSpaced,
   type DockviewReadyEvent,
   type SerializedDockview,
 } from "dockview-react";
-
-import { DashboardPlus } from "@/components/dashboard/dashboard-plus";
-import { DashboardTab } from "@/components/dashboard/dashboard-tab";
-import { CardComponentMap } from "@/lib/cards";
-import { formatDate } from "@/lib/utils";
-import { Atom, useAtom, useAtomSuspense } from "@effect-atom/atom-react";
-import { BrowserKeyValueStore } from "@effect/platform-browser";
-import { timeSubscriptionAtom } from "@mrt/yamcs-atom";
 import { Schema } from "effect";
-import { Suspense, useEffect, useState } from "react";
+import { Atom } from "effect/unstable/reactivity";
+import { useEffect } from "react";
+
+import { DashboardCommandMenu } from "@/components/dashboard/actions/command-menu";
+import { DashboardKeybinds } from "@/components/dashboard/actions/keybinds";
+import {
+  activePanelAtom,
+  currentCardActionsAtom,
+  dashboardDockviewApiAtom,
+  initializeDashboardLayoutHistoryAtom,
+  pushDashboardLayoutHistoryAtom,
+} from "@/components/dashboard/actions/layout";
+import { DashboardMenuBar } from "@/components/dashboard/actions/menu-bar";
+import { EditDialogPanel as EditPanelDialog } from "@/components/dashboard/form/edit-dialog";
+import { DashboardHeader } from "@/components/dashboard/header";
+
 import "./dashboard.css";
-
-function Time() {
-  const { value: time } = useAtomSuspense(timeSubscriptionAtom).value;
-
-  return formatDate(time);
-}
-
-function MissionTime() {
-  return (
-    <div className="flex flex-col border font-mono text-xs">
-      <div className="bg-border text-muted-foreground w-full text-center font-semibold">
-        MISSION TIME
-      </div>
-
-      <div className="text-orange-text w-[16.5ch] text-center text-xs">
-        <Suspense fallback="LOADING">
-          <Time />
-        </Suspense>
-      </div>
-    </div>
-  );
-}
+import { DashboardPlus } from "@/components/dashboard/plus";
+import { DashboardTab } from "@/components/dashboard/tab";
+import { CardComponentMap, getCardActionsForPanel } from "@/lib/cards";
 
 const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
+const dashboardStorageKey = "mrt-dashboard";
 
 const dashboardLocalStorage = Atom.kvs({
   runtime: runtime,
-  key: "mrt-dashboard",
-  schema: Schema.Object,
+  key: dashboardStorageKey,
+  schema: Schema.ObjectKeyword,
   defaultValue: () => ({}),
 });
 
+function isSerializedDockviewLayout(
+  layout: unknown,
+): layout is SerializedDockview {
+  return (
+    typeof layout === "object" &&
+    layout !== null &&
+    Object.keys(layout).length > 0
+  );
+}
+
+function snapshotDockviewLayout(
+  layout: SerializedDockview,
+): SerializedDockview {
+  return structuredClone(layout);
+}
+
+function persistDashboardLayout(layout: SerializedDockview) {
+  window.localStorage.setItem(dashboardStorageKey, JSON.stringify(layout));
+}
+
+function readPersistedDashboardLayout() {
+  const rawLayout = window.localStorage.getItem(dashboardStorageKey);
+
+  if (!rawLayout) {
+    return undefined;
+  }
+
+  try {
+    const layout = JSON.parse(rawLayout) as unknown;
+    return isSerializedDockviewLayout(layout)
+      ? snapshotDockviewLayout(layout)
+      : undefined;
+  } catch (err) {
+    console.error("Error parsing persisted layout", err);
+    return undefined;
+  }
+}
+
 export function DashboardPage() {
-  const [api, setApi] = useState<DockviewApi>();
+  const [api, setApi] = useAtom(dashboardDockviewApiAtom);
+  const setActivePanel = useAtomSet(activePanelAtom);
+  const setCurrentCardActions = useAtomSet(currentCardActionsAtom);
   const [layout, setLayout] = useAtom(dashboardLocalStorage);
+  const initializeDashboardLayoutHistory = useAtomSet(
+    initializeDashboardLayoutHistoryAtom,
+  );
+  const pushDashboardLayoutHistory = useAtomSet(pushDashboardLayoutHistoryAtom);
 
   useEffect(() => {
     if (!api) {
@@ -58,59 +92,87 @@ export function DashboardPage() {
     }
 
     const disposable = api.onDidLayoutChange(() => {
-      const layout: SerializedDockview = api.toJSON();
+      const layout = snapshotDockviewLayout(api.toJSON());
+      persistDashboardLayout(layout);
       setLayout(layout);
+      pushDashboardLayoutHistory(layout);
     });
 
     return () => disposable.dispose();
-  }, [api]);
+  }, [api, pushDashboardLayoutHistory, setLayout]);
+
+  useEffect(
+    () => () => {
+      setApi(undefined);
+      setActivePanel(undefined);
+      setCurrentCardActions([]);
+    },
+    [setActivePanel, setApi, setCurrentCardActions],
+  );
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
-    try {
-      event.api.fromJSON(layout as SerializedDockview);
-    } catch (err) {
-      console.error("Error loading layout", err);
+    event.api.onDidActivePanelChange((panel) => {
+      setActivePanel(panel);
+      setCurrentCardActions(getCardActionsForPanel(panel));
+    });
 
-      event.api.addPanel({
-        title: "Parameter Table",
-        component: "parameter-table",
-        id: crypto.randomUUID(),
-      });
-      event.api.addPanel({
-        title: "Command History",
-        component: "command-history",
-        id: crypto.randomUUID(),
-      });
-      event.api.addPanel({
-        title: "Events",
-        component: "events",
-        id: crypto.randomUUID(),
-      });
-      event.api.addPanel({
-        title: "Links",
-        component: "links",
-        id: crypto.randomUUID(),
-      });
-      event.api.addPanel({
-        title: "Command Buttons",
-        component: "command-button",
-        id: crypto.randomUUID(),
-      });
+    const persistedLayout =
+      readPersistedDashboardLayout() ??
+      (isSerializedDockviewLayout(layout)
+        ? snapshotDockviewLayout(layout)
+        : undefined);
+
+    if (persistedLayout) {
+      setLayout(persistedLayout);
+
+      try {
+        event.api.fromJSON(persistedLayout);
+        initializeDashboardLayoutHistory(persistedLayout);
+        return;
+      } catch (err) {
+        console.error("Error loading layout", err);
+      }
     }
+
+    event.api.addPanel({
+      title: "Parameter Table",
+      component: "parameter-table",
+      id: crypto.randomUUID(),
+    });
+    // event.api.addPanel({
+    //   title: "Command History",
+    //   component: "command-history",
+    //   id: crypto.randomUUID(),
+    // });
+    event.api.addPanel({
+      title: "Events",
+      component: "events",
+      id: crypto.randomUUID(),
+    });
+    event.api.addPanel({
+      title: "Links",
+      component: "links",
+      id: crypto.randomUUID(),
+    });
+    event.api.addPanel({
+      title: "Command Buttons",
+      component: "command-button",
+      id: crypto.randomUUID(),
+    });
+
+    const initialLayout = snapshotDockviewLayout(event.api.toJSON());
+    persistDashboardLayout(initialLayout);
+    setLayout(initialLayout);
+    initializeDashboardLayoutHistory(initialLayout);
   };
 
   return (
-    <div className="fixed flex h-full w-full flex-col gap-1.25 p-1.25">
-      <div className="flex flex-row justify-between">
-        <div className="flex flex-col font-mono text-xs uppercase">
-          <div className="text-mrt">McGill Rocket Team</div>
-          <div className="text-muted-foreground">Ground Station Controls</div>
-        </div>
-        <MissionTime />
-      </div>
-      <div className="grow">
+    <div className="fixed flex h-full w-full flex-col p-1.25">
+      <DashboardHeader />
+      <DashboardMenuBar />
+      <div className="grow pt-1.25">
         <DockviewReact
           onReady={onReady}
           theme={{ ...themeAbyssSpaced, gap: 5 }}
@@ -119,6 +181,10 @@ export function DashboardPage() {
           defaultTabComponent={DashboardTab}
         />
       </div>
+      {/* These are not visible components */}
+      <EditPanelDialog />
+      <DashboardCommandMenu />
+      <DashboardKeybinds />
     </div>
   );
 }

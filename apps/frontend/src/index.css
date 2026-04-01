@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/roboto";
+@import "@fontsource-variable/public-sans";
 @import "@fontsource-variable/jetbrains-mono";
 
 @custom-variant dark (&:is(.dark *));
@@ -50,6 +50,7 @@
 
   --mrt: #9f1c22;
   --success: var(--color-green-700);
+  --warning: var(--color-yellow-700);
 }
 
 .dark {
@@ -98,10 +99,11 @@
 
   --mrt: #d21e26;
   --success: var(--color-green-500);
+  --warning: var(--color-yellow-500);
 }
 
 @theme inline {
-  --font-sans: "Roboto Variable", sans-serif;
+  --font-sans: "Public Sans Variable", sans-serif;
   --font-mono: "JetBrains Mono Variable", monospace;
   --default-mono-font-family: "JetBrains Mono Variable", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -154,6 +156,7 @@
   --color-selection-background: var(--selection-background);
   --color-error: #a1112c;
   --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-error-foreground: var(--color-white);
 }
 

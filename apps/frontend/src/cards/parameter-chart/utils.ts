@@ -1,5 +1,6 @@
-import { stringifyValue } from "@/lib/utils";
 import type { CommandHistoryEvent } from "@mrt/yamcs-effect";
+
+import { stringifyValue } from "@/lib/utils";
 
 export type CommandHistoryEntry = (typeof CommandHistoryEvent.Type)["data"];
 

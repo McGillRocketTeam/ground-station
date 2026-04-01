@@ -3,12 +3,14 @@ services:
     args:
       cors:
         allowOrigin: "*"
-        allowCredentials: false
+        allowCredentials: true
 
 dataDir: yamcs-data
 
 instances:
-  - ground_station 
+  - urrg 
+  # - launch-canada 
+  # - testsite
 
 # Secret key unique to a particular Yamcs installation.
 # This is used to provide cryptographic signing.

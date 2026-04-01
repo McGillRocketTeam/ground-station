@@ -1,4 +1,14 @@
-import { Chunk, Config, Effect, Schema, Stream, StreamEmit } from "effect";
+import {
+  Config,
+  Data,
+  Effect,
+  Layer,
+  PubSub,
+  Schema,
+  ServiceMap,
+  Stream,
+} from "effect";
+
 import { Cancel, type SubscriptionRequest } from "./client-messages.js";
 import {
   Events,
@@ -7,22 +17,43 @@ import {
   SubscriptionId,
 } from "./server-messages.js";
 
-export class WebSocketClient extends Effect.Service<WebSocketClient>()(
-  "@mrt/yamcs-effect/WebSocketClient",
-  {
-    accessors: true,
-    dependencies: [],
-    scoped: Effect.gen(function* () {
+export interface WebSocketClientService {
+  readonly messages: Stream.Stream<typeof ServerMessages.Type>;
+  readonly send: (data: Record<string, any>) => Effect.Effect<SubscriptionId>;
+  readonly subscribe: (
+    request: typeof SubscriptionRequest.Type,
+  ) => Effect.Effect<{
+    call: SubscriptionId;
+    stream: Stream.Stream<typeof Events.Type>;
+  }>;
+  readonly unsubscribe: (call: SubscriptionId) => Effect.Effect<void>;
+}
+
+export class WebSocketError extends Data.TaggedError("WebSocketError")<{
+  readonly cause: unknown;
+}> {}
+
+export class WebSocketClient extends ServiceMap.Service<
+  WebSocketClient,
+  WebSocketClientService
+>()("@mrt/yamcs-effect/WebSocketClient") {
+  static readonly layer = Layer.effect(
+    this,
+    Effect.gen(function* () {
       const yamcsUrl = yield* Config.url("YAMCS_URL");
-      yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
-      let id = SubscriptionId.make(1);
+      const websocketUrl = new URL("api/websocket", yamcsUrl);
+      websocketUrl.protocol = yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
+      let id = SubscriptionId.makeUnsafe(1);
+      const messagePubSub = yield* Effect.acquireRelease(
+        PubSub.unbounded<typeof ServerMessages.Type>({ replay: 128 }),
+        PubSub.shutdown,
+      );
 
       // Socket will be automatically closed when the scope ends.
       const ws = yield* Effect.acquireRelease(
-        Effect.gen(function* () {
-          return yield* Effect.try(
-            () => new WebSocket(`${yamcsUrl}api/websocket`),
-          );
+        Effect.try({
+          try: () => new WebSocket(websocketUrl),
+          catch: (cause) => new WebSocketError({ cause }),
         }),
         (ws) =>
           Effect.gen(function* () {
@@ -33,35 +64,29 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
           }),
       );
 
+      ws.addEventListener("message", (event: MessageEvent) => {
+        const parsed = Schema.decodeUnknownOption(ServerMessages)(
+          JSON.parse(event.data as string),
+        );
+
+        if (parsed._tag === "Some") {
+          PubSub.publishUnsafe(messagePubSub, parsed.value);
+        }
+      });
+
+      const messages = Stream.fromPubSub(messagePubSub);
+
       // Wait for the open event
-      yield* Effect.async((resume) => {
-        ws.addEventListener("open", (event) => {
+      yield* Effect.callback<void>((resume) => {
+        ws.addEventListener("open", (_event) => {
           ws.send(JSON.stringify({ id, type: "status" }));
           id++;
-
-          resume(
-            Effect.gen(function* () {
-              yield* Effect.log("WebSocket Opened");
-              yield* Effect.succeed(event);
-            }),
-          );
+          resume(Effect.log("WebSocket Opened"));
         });
       });
 
-      const messages = Stream.async(
-        (emit: StreamEmit.Emit<never, never, string, void>) => {
-          ws.addEventListener("message", (event: MessageEvent) => {
-            emit(Effect.succeed(Chunk.of(event.data)));
-          });
-        },
-      ).pipe(
-        Stream.filterMap((m) =>
-          Schema.decodeOption(ServerMessages)(JSON.parse(m)),
-        ),
-      );
-
       yield* messages.pipe(
-        Stream.runForEachScoped((message) =>
+        Stream.runForEach((message) =>
           Effect.logDebug(`Websocket Message (${message.type})`, message),
         ),
         Effect.forkScoped,
@@ -86,7 +111,7 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
             Stream.runCollect,
           );
 
-          const reply = Chunk.toReadonlyArray(replyMessage)[0]!;
+          const reply = replyMessage[0]!;
 
           if (reply.data.exception) {
             yield* Effect.logError(
@@ -95,6 +120,7 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
             );
           }
 
+          yield* Effect.logInfo(`${reply.call}`);
           return reply.call!;
         });
 
@@ -120,7 +146,7 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
         yield* Effect.sync(() =>
           ws.send(
             JSON.stringify(
-              Cancel.make({
+              Cancel.makeUnsafe({
                 type: "cancel",
                 options: { call },
               }),
@@ -131,5 +157,5 @@ export class WebSocketClient extends Effect.Service<WebSocketClient>()(
 
       return { messages, send, subscribe, unsubscribe };
     }),
-  },
-) {}
+  );
+}

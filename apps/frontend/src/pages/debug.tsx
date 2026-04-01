@@ -1,4 +1,7 @@
-import { Form } from "@/components/form";
+import { useAtom, useAtomValue } from "@effect/atom-react";
+import { Atom } from "effect/unstable/reactivity";
+import { useState } from "react";
+
 import {
   Menubar,
   MenubarContent,
@@ -7,27 +10,15 @@ import {
   MenubarRadioItem,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import {
-  CardArray,
-  CardComponentMap,
-  CardSchemaMap,
-  type CardId,
-} from "@/lib/cards";
-import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react";
-import { useState } from "react";
+import { CardArray, CardComponentMap, type CardId } from "@/lib/cards";
 
 const selectedCardAtom = Atom.make<CardId>("parameter-table");
-const selectedSchemaAtom = Atom.map(
-  selectedCardAtom,
-  (id) => CardSchemaMap[id],
-);
 const selectedComponentAtom = Atom.map(
   selectedCardAtom,
   (id) => CardComponentMap[id],
 );
 
 export function DebugPage() {
-  const selectedSchema = useAtomValue(selectedSchemaAtom);
   const selectedComponent = useAtomValue(selectedComponentAtom);
 
   return (
@@ -36,15 +27,11 @@ export function DebugPage() {
 
       <div className="grid place-items-center p-4">
         {selectedComponent ? (
-          <div>{selectedComponent({ parameter: "/a/b", command: "asdf" })}</div>
+          <div>{selectedComponent({} as never)}</div>
         ) : (
           <div className="text-muted-foreground">No Card Selected</div>
         )}
       </div>
-
-      <aside className="border-l p-2">
-        {selectedSchema && <Form schemaAtom={selectedSchemaAtom} />}
-      </aside>
     </div>
   );
 }

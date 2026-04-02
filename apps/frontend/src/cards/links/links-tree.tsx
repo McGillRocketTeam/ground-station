@@ -94,7 +94,9 @@ const LinkRow = memo(function LinkRow({
         <DataGridRow
           className={cn(
             "cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
-            colorByStatus(link.status),
+            link.status === "FAILED"
+              ? "*:bg-error *:text-error-foreground hover:*:bg-error"
+              : colorByStatus(link.status),
           )}
         >
           <div className="grid place-items-center">

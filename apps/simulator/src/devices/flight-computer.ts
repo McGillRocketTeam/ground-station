@@ -33,6 +33,10 @@ export interface FlightComputerSimulation {
   readonly currentState: Effect.Effect<FlightComputerState>;
   readonly publishState: (publisher: AstraPublisher) => Effect.Effect<void>;
   readonly publishTelemetry: (publisher: AstraPublisher) => Effect.Effect<void>;
+  readonly publishTelemetryWithAck: (
+    publisher: AstraPublisher,
+    ackId: number,
+  ) => Effect.Effect<void>;
   readonly acceptCommand: (
     commandText: AstraCommandText,
   ) => Effect.Effect<void>;
@@ -123,11 +127,22 @@ const nextPhaseForCommand = (
   }
 };
 
+const injectAckIntoPacketHeader = (packet: Uint8Array, ackId: number) => {
+  const nextPacket = Buffer.from(packet);
+
+  if (nextPacket.length >= 4) {
+    nextPacket[2] = (nextPacket[2] ?? 0) | 0b10;
+    nextPacket[3] = ackId & 0xff;
+  }
+
+  return nextPacket;
+};
+
 export const makeFlightComputerSimulation = (baseTopic: string) =>
   Effect.gen(function* () {
     const endpoint = makeAstraEndpoint(baseTopic);
     const state = yield* Ref.make(initialState);
-    const container = yield* getContainer(baseTopic, "TelemetryPacket");
+    const container = yield* getContainer(baseTopic, "FCFrame");
     const buildPacket = yield* makePacketBuilder(container);
 
     const updateState = (
@@ -145,11 +160,16 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
         yield* publisher.publishDetail(endpoint, currentState.detail);
       });
 
-    const publishTelemetry = (publisher: AstraPublisher) =>
+    const publishTelemetryInternal = (
+      publisher: AstraPublisher,
+      ackId?: number,
+    ) =>
       Effect.gen(function* () {
         const packet = yield* buildPacket;
         const nextState = yield* updateState((currentState) => {
           if (
+            ackId !== undefined &&
+            currentState.pendingAckId === ackId &&
             currentState.pendingAckId !== null &&
             currentState.pendingAckCode !== null
           ) {
@@ -169,10 +189,23 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
           };
         });
 
-        yield* publisher.publishTelemetry(endpoint, packet);
+        yield* publisher.publishTelemetry(
+          endpoint,
+          ackId === undefined
+            ? packet
+            : injectAckIntoPacketHeader(packet, ackId),
+        );
         yield* publisher.publishStatus(endpoint, nextState.status);
         yield* publisher.publishDetail(endpoint, nextState.detail);
       });
+
+    const publishTelemetry = (publisher: AstraPublisher) =>
+      publishTelemetryInternal(publisher);
+
+    const publishTelemetryWithAck = (
+      publisher: AstraPublisher,
+      ackId: number,
+    ) => publishTelemetryInternal(publisher, ackId);
 
     const acceptCommand = (commandText: AstraCommandText) =>
       Effect.gen(function* () {
@@ -218,6 +251,7 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
       currentState: Ref.get(state),
       publishState,
       publishTelemetry,
+      publishTelemetryWithAck,
       acceptCommand,
     } satisfies FlightComputerSimulation;
   });

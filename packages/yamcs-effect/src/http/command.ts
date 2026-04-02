@@ -12,8 +12,8 @@ import {
 } from "../schema.js";
 
 const ListCommandsResponse = Schema.Struct({
-  commands: Schema.Array(CommandHistoryEntry),
-
+  commands: Schema.optional(Schema.Array(CommandHistoryEntry)),
+  entry: Schema.optional(Schema.Array(CommandHistoryEntry)),
   continuationToken: Schema.optional(Schema.String),
 });
 

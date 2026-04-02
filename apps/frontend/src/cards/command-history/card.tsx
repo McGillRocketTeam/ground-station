@@ -15,27 +15,55 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { commandsSubscriptionAtom } from "@/lib/atom";
+import {
+  YamcsAtomHttpClient,
+  commandsSubscriptionAtom,
+  selectedInstanceAtom,
+} from "@/lib/atom";
 import { cn, formatDate, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
 import { CommandDetail } from "./command-detail";
+import { makeCommandDisplayMap } from "./command-display";
 import {
-  collectAcks,
   extractAcknowledgement,
   extractAttribute,
+  hasNokAck,
   type CommandHistoryEntry,
 } from "./utils";
 
+const extraAckColumns = [
+  { group: "System A", header: "RX", name: "uplink_a_rx" },
+  { group: "System A", header: "TX", name: "uplink_a_tx" },
+  { group: "System A", header: "FC", name: "fc_a" },
+  { group: "System B", header: "RX", name: "uplink_b_rx" },
+  { group: "System B", header: "TX", name: "uplink_b_tx" },
+  { group: "System B", header: "FC", name: "fc_b" },
+] as const;
+
 export function CommandHistoryTable() {
+  const instance = useAtomValue(selectedInstanceAtom);
   const commandHistory = useAtomValue(commandsSubscriptionAtom);
+  const commandDefinitions = useAtomValue(
+    YamcsAtomHttpClient.query("mdb", "listCommands", {
+      params: { instance },
+      query: {},
+    }),
+  );
+  const commandDisplayMap = useMemo(
+    () =>
+      commandDefinitions._tag === "Success"
+        ? makeCommandDisplayMap(commandDefinitions.value.commands)
+        : new Map<string, string>(),
+    [commandDefinitions],
+  );
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex-1 overflow-auto">
         <div
           className={cn(
-            "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(5,1.5rem)_auto] gap-px rounded-none",
+            "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(9,2.125rem)_auto] gap-px rounded-none",
             (commandHistory._tag === "Initial" ||
               commandHistory._tag === "Failure") &&
               "min-h-full",
@@ -54,7 +82,9 @@ export function CommandHistoryTable() {
                 {error.toString()}
               </pre>
             ))
-            .onSuccess((commands) => <Body commands={commands} />)
+            .onSuccess((commands) => (
+              <Body commands={commands} commandDisplayMap={commandDisplayMap} />
+            ))
             .render()}
         </div>
       </div>
@@ -64,22 +94,39 @@ export function CommandHistoryTable() {
 
 const Body = memo(function Body({
   commands,
+  commandDisplayMap,
 }: {
   commands: CommandHistoryEntry[];
+  commandDisplayMap: ReadonlyMap<string, string>;
 }) {
   const commandSearchText = useAtomValue(commandSearchAtom);
   const filteredCommands = useMemo(
     () =>
-      commands.filter((cmd) =>
-        cmd.commandName.toLowerCase().includes(commandSearchText),
-      ),
-    [commands, commandSearchText],
+      commands.filter((cmd) => {
+        const label = commandDisplayMap.get(cmd.commandName) ?? cmd.commandName;
+        return label.toLowerCase().includes(commandSearchText.toLowerCase());
+      }),
+    [commands, commandDisplayMap, commandSearchText],
   );
 
   return (
     <DataGridBody className="text-sm">
+      {commands.length === 0 ? (
+        <div className="col-span-full grid min-h-full place-items-center font-mono text-muted-foreground uppercase">
+          No commands sent yet
+        </div>
+      ) : filteredCommands.length === 0 ? (
+        <div className="col-span-full grid min-h-full place-items-center font-mono text-muted-foreground uppercase">
+          No commands match the current search
+        </div>
+      ) : null}
+
       {filteredCommands.map((command) => (
-        <CommandRow key={command.id} command={command} />
+        <CommandRow
+          key={command.id}
+          command={command}
+          commandDisplayMap={commandDisplayMap}
+        />
       ))}
     </DataGridBody>
   );
@@ -87,21 +134,33 @@ const Body = memo(function Body({
 
 const CommandRow = memo(function CommandRow({
   command,
+  commandDisplayMap,
 }: {
   command: CommandHistoryEntry;
+  commandDisplayMap: ReadonlyMap<string, string>;
 }) {
+  const commandLabel =
+    commandDisplayMap.get(command.commandName) ?? command.commandName;
+  const rowHasNokAck = hasNokAck(command);
+
   return (
     <Popover>
       <PopoverTrigger
         payload={command}
         nativeButton={false}
         render={
-          <DataGridRow className="group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]">
+          <DataGridRow
+            className={cn(
+              "group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
+              rowHasNokAck &&
+                "*:bg-error *:text-error-foreground hover:*:bg-error data-popup-open:*:bg-error",
+            )}
+          >
             <div className="col-span-2 text-right">
               {formatDate(command.generationTime)}
             </div>
             <div className="line-clamp-1 no-scrollbar overflow-x-scroll">
-              {command.commandName}
+              {commandLabel}
             </div>
             <div className="text-center">
               {stringifyValue(extractAttribute(command, "Command_Id"), "")}
@@ -110,88 +169,61 @@ const CommandRow = memo(function CommandRow({
               {stringifyValue(extractAttribute(command, "Sequence_Count"), "")}
             </div>
 
-            <AckCell command={command} name="Queued" />
-            <AckCell command={command} name="Released" />
-            <AckCell command={command} name="Sent" />
-            <IndexedTargetAckCell command={command} index={0} />
-            <IndexedTargetAckCell command={command} index={1} />
-            <FCAckCell command={command} name="CommandComplete" />
+            <AckCell command={command} name="Queued" errorRow={rowHasNokAck} />
+            <AckCell
+              command={command}
+              name="Released"
+              errorRow={rowHasNokAck}
+            />
+            <AckCell command={command} name="Sent" errorRow={rowHasNokAck} />
+            {extraAckColumns.map((ack) => (
+              <AckCell
+                key={ack.name}
+                command={command}
+                name={ack.name}
+                errorRow={rowHasNokAck}
+              />
+            ))}
+            <AckCell
+              command={command}
+              name="CommandComplete"
+              customPrefix
+              errorRow={rowHasNokAck}
+            />
           </DataGridRow>
         }
       />
 
       <PopoverContent>
-        <CommandDetail command={command} />
+        <CommandDetail command={command} commandLabel={commandLabel} />
       </PopoverContent>
     </Popover>
   );
 });
 
-const FCAckCell = memo(function FCAckCell({
-  command,
-  name,
-}: {
-  command: CommandHistoryEntry;
-  name: string;
-}) {
-  const ack = extractAcknowledgement(command, name, true);
-  return (
-    <div
-      className={cn(
-        "grid place-items-center text-sm",
-        ack.status === "OK" && "text-success",
-        ack.status === "PENDING" && "text-muted-foreground",
-        ack.status === "??" && "text-muted-foreground",
-        ack.status !== "??" &&
-          ack.status !== "PENDING" &&
-          ack.status !== "OK" &&
-          "bg-error! text-error-foreground",
-      )}
-    >
-      {ack.status === "OK" && "SUCCESS"}
-      {ack.status === "PENDING" && <BrailleSpinner />}
-      {ack.status !== "OK" &&
-        ack.status !== "PENDING" &&
-        ack.status !== "??" &&
-        "FAILURE"}
-    </div>
-  );
-});
-
-const IndexedTargetAckCell = memo(function IndexedTargetAckCell({
-  command,
-  index,
-}: {
-  command: CommandHistoryEntry;
-  index: number;
-}) {
-  const ack = collectAcks(command).uplink[index];
-
-  if (!ack) {
-    return (
-      <div className="grid place-items-center text-muted-foreground">-</div>
-    );
-  }
-
-  return <AckCell command={command} name={ack.name} />;
-});
-
 const AckCell = memo(function AckCell({
   command,
   name,
+  customPrefix,
+  errorRow,
 }: {
   command: CommandHistoryEntry;
   name: string;
+  customPrefix?: boolean;
+  errorRow?: boolean;
 }) {
-  const ack = extractAcknowledgement(command, name);
+  const ack = extractAcknowledgement(command, name, customPrefix);
   return (
     <div
+      title={ack.label}
       className={cn(
-        "grid place-items-center",
-        ack.status === "OK" && "text-success",
-        ack.status === "??" ||
-          (ack.status === "PENDING" && "text-muted-foreground"),
-        ack.status !== "??" &&
+        "grid place-items-center !px-0",
+        !errorRow && ack.status === "OK" && "text-success",
+        !errorRow &&
+          (ack.status === "??" || ack.status === "PENDING") &&
+          "text-muted-foreground",
+        !errorRow &&
+          ack.status !== "??" &&
           ack.status !== "PENDING" &&
           ack.status !== "OK" &&
           "text-error",
@@ -202,6 +234,7 @@ const AckCell = memo(function AckCell({
       {ack.status !== "OK" &&
         ack.status !== "??" &&
         ack.status !== "PENDING" && <X className="size-4" />}
+      {ack.status === "??" && "-"}
     </div>
   );
 });
@@ -228,19 +261,23 @@ const Header = memo(function Header() {
         <Search className="size-3 text-muted-foreground" />
       </DataGridHead>
       <SearchInput />
-      <DataGridHead className="col-span-3 text-center">G.S.C.</DataGridHead>
-      <DataGridHead className="col-span-2 text-center">UPLINK</DataGridHead>
-      <DataGridHead className="text-center">FC</DataGridHead>
+      <DataGridHead className="col-span-3 text-center">Yamcs</DataGridHead>
+      <DataGridHead className="col-span-3 text-center">System A</DataGridHead>
+      <DataGridHead className="col-span-3 text-center">System B</DataGridHead>
+      <DataGridHead className="text-center">Done</DataGridHead>
       <DataGridHead className="col-span-2">Timestamp</DataGridHead>
       <DataGridHead>Command</DataGridHead>
       <DataGridHead className="text-center">ID</DataGridHead>
       <DataGridHead className="text-center">SEQ</DataGridHead>
-      <DataGridHead className="text-center">Q</DataGridHead>
-      <DataGridHead className="text-center">R</DataGridHead>
-      <DataGridHead className="text-center">S</DataGridHead>
-      <DataGridHead className="text-center">U1</DataGridHead>
-      <DataGridHead className="text-center">U2</DataGridHead>
-      <DataGridHead className="text-center">ACK</DataGridHead>
+      <DataGridHead className="!px-0 text-center">Q</DataGridHead>
+      <DataGridHead className="!px-0 text-center">R</DataGridHead>
+      <DataGridHead className="!px-0 text-center">S</DataGridHead>
+      {extraAckColumns.map((ack) => (
+        <DataGridHead key={ack.name} className="!px-0 text-center">
+          {ack.header}
+        </DataGridHead>
+      ))}
+      <DataGridHead className="!px-0 text-center">OK</DataGridHead>
     </DataGridHeader>
   );
 });

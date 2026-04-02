@@ -3,7 +3,82 @@ import { HttpClient } from "effect/unstable/http";
 
 import { YAMCS_URL, YAMCS_INSTANCE } from "./Config.ts";
 
-const DataSourceType = Schema.Literals([
+type DataSource =
+  | "TELEMETERED"
+  | "DERIVED"
+  | "CONSTANT"
+  | "LOCAL"
+  | "SYSTEM"
+  | "COMMAND"
+  | "COMMAND_HISTORY"
+  | "EXTERNAL1"
+  | "EXTERNAL2"
+  | "EXTERNAL3"
+  | "GROUND";
+
+export interface IntegerDataEncoding {
+  readonly littleEndian: boolean;
+  readonly sizeInBits: number;
+  readonly type: "INTEGER";
+  readonly encoding: "TWOS_COMPLEMENT" | "UNSIGNED";
+}
+
+export interface FloatDataEncoding {
+  readonly littleEndian: boolean;
+  readonly sizeInBits: number;
+  readonly type: "FLOAT";
+  readonly encoding: "IEEE754_1985";
+}
+
+export interface StringDataEncoding {
+  readonly littleEndian: boolean;
+  readonly sizeInBits: number;
+  readonly type: "STRING";
+  readonly encoding: string;
+}
+
+export type DataEncoding =
+  | IntegerDataEncoding
+  | FloatDataEncoding
+  | StringDataEncoding;
+
+interface EnumValue {
+  readonly value: string;
+  readonly label: string;
+}
+
+export interface ParameterType {
+  readonly engType: string;
+  readonly name?: string | undefined;
+  readonly qualifiedName?: string | undefined;
+  readonly dataEncoding: DataEncoding;
+  readonly sizeInBits?: number | undefined;
+  readonly enumValue?: ReadonlyArray<EnumValue> | undefined;
+  readonly enumValues?: ReadonlyArray<EnumValue> | undefined;
+}
+
+export interface Parameter {
+  readonly name: string;
+  readonly qualifiedName: string;
+  readonly shortDescription?: string | undefined;
+  readonly dataSource: DataSource;
+  readonly type: ParameterType;
+}
+
+export interface ContainerEntry {
+  readonly locationInBits: number;
+  readonly referenceLocation: "CONTAINER_START" | "PREVIOUS_ENTRY";
+  readonly parameter?: Parameter | undefined;
+  readonly container?: Container | undefined;
+}
+
+export interface Container {
+  readonly name: string;
+  readonly qualifiedName: string;
+  readonly entry: ReadonlyArray<ContainerEntry>;
+}
+
+const DataSourceType: Schema.Schema<DataSource> = Schema.Literals([
   "TELEMETERED",
   "DERIVED",
   "CONSTANT",
@@ -17,34 +92,49 @@ const DataSourceType = Schema.Literals([
   "GROUND",
 ]);
 
-const baseFields = {
+const IntegerDataEncoding: Schema.Schema<IntegerDataEncoding> = Schema.Struct({
   littleEndian: Schema.Boolean,
   sizeInBits: Schema.Int,
-};
-
-const IntegerDataEncoding = Schema.Struct({
-  ...baseFields,
   type: Schema.Literal("INTEGER"),
   encoding: Schema.Literals(["TWOS_COMPLEMENT", "UNSIGNED"]),
 });
 
-const FloatDataEncoding = Schema.Struct({
-  ...baseFields,
+const FloatDataEncoding: Schema.Schema<FloatDataEncoding> = Schema.Struct({
+  littleEndian: Schema.Boolean,
+  sizeInBits: Schema.Int,
   type: Schema.Literal("FLOAT"),
   encoding: Schema.Literal("IEEE754_1985"),
 });
 
-const DataEncodingInfo = Schema.Union([IntegerDataEncoding, FloatDataEncoding]);
-
-const ParameterTypeInfo = Schema.Struct({
-  engType: Schema.String,
-  name: Schema.String,
-  qualifiedName: Schema.String,
-  dataEncoding: DataEncodingInfo,
-  sizeInBits: Schema.Number,
+const StringDataEncoding: Schema.Schema<StringDataEncoding> = Schema.Struct({
+  littleEndian: Schema.Boolean,
+  sizeInBits: Schema.Int,
+  type: Schema.Literal("STRING"),
+  encoding: Schema.String,
 });
 
-const ParameterInfo = Schema.Struct({
+const DataEncodingInfo: Schema.Schema<DataEncoding> = Schema.Union([
+  IntegerDataEncoding,
+  FloatDataEncoding,
+  StringDataEncoding,
+]);
+
+const EnumValueInfo: Schema.Schema<EnumValue> = Schema.Struct({
+  value: Schema.String,
+  label: Schema.String,
+});
+
+const ParameterTypeInfo: Schema.Schema<ParameterType> = Schema.Struct({
+  engType: Schema.String,
+  name: Schema.optional(Schema.String),
+  qualifiedName: Schema.optional(Schema.String),
+  dataEncoding: DataEncodingInfo,
+  sizeInBits: Schema.optional(Schema.Number),
+  enumValue: Schema.optional(Schema.Array(EnumValueInfo)),
+  enumValues: Schema.optional(Schema.Array(EnumValueInfo)),
+});
+
+const ParameterInfo: Schema.Schema<Parameter> = Schema.Struct({
   name: Schema.String,
   qualifiedName: Schema.String,
   shortDescription: Schema.optional(Schema.String),
@@ -52,21 +142,20 @@ const ParameterInfo = Schema.Struct({
   type: ParameterTypeInfo,
 });
 
-const SequenceEntryInfo = Schema.Struct({
+const ContainerInfo: Schema.Schema<Container> = Schema.suspend(() =>
+  Schema.Struct({
+    name: Schema.String,
+    qualifiedName: Schema.String,
+    entry: Schema.Array(SequenceEntryInfo),
+  }),
+);
+
+const SequenceEntryInfo: Schema.Schema<ContainerEntry> = Schema.Struct({
   locationInBits: Schema.Number,
   referenceLocation: Schema.Literals(["CONTAINER_START", "PREVIOUS_ENTRY"]),
-  parameter: ParameterInfo,
+  parameter: Schema.optional(ParameterInfo),
+  container: Schema.optional(ContainerInfo),
 });
-
-const ContainerInfo = Schema.Struct({
-  name: Schema.String,
-  qualifiedName: Schema.String,
-  entry: Schema.Array(SequenceEntryInfo),
-});
-
-export type DataEncoding = typeof DataEncodingInfo.Type;
-export type Container = typeof ContainerInfo.Type;
-export type ContainerEntry = typeof SequenceEntryInfo.Type;
 
 export const getContainer = (basePath: string, containerName: string) =>
   Effect.gen(function* () {

@@ -29,6 +29,7 @@ import {
   Stream,
   Tracer,
   type Layer,
+  DateTime,
   Cause,
 } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
@@ -214,7 +215,7 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
     Stream.unwrap(
       Effect.gen(function* () {
         const ws = yield* WebSocketClient;
-        const { commands: priorCommands } = yield* Effect.orElseSucceed(
+        const priorCommandResult = yield* Effect.orElseSucceed(
           Effect.tapError(
             get.result(
               YamcsAtomHttpClient.query("command", "listCommands", {
@@ -232,6 +233,14 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
             commands: [] as ReadonlyArray<ArchivedCommandHistoryEntry>,
           }),
         );
+        const priorCommands =
+          ("commands" in priorCommandResult
+            ? priorCommandResult.commands
+            : undefined) ??
+          ("entry" in priorCommandResult
+            ? priorCommandResult.entry
+            : undefined) ??
+          [];
 
         const { call, stream } = yield* ws.subscribe(
           SubscribeCommandsRequest.makeUnsafe({
@@ -246,6 +255,12 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
             command as StreamingCommandHistoryEntry,
           ]),
         );
+        const sortCommands = (
+          state: Map<string, StreamingCommandHistoryEntry>,
+        ) =>
+          Array.from(state.values()).sort((a, b) =>
+            DateTime.Order(b.generationTime, a.generationTime),
+          );
 
         const dataStream = stream.pipe(
           (stream) =>
@@ -258,30 +273,28 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
           Stream.ensuring(ws.unsubscribe(call)),
         );
 
-        return dataStream.pipe(
-          Stream.scanEffect(
-            initial,
-            (state, commandEntry: StreamingCommandHistoryEntry) =>
-              Effect.sync(() => {
-                const current = state.get(commandEntry.id);
+        return Stream.concat(
+          Stream.succeed(sortCommands(initial)),
+          dataStream.pipe(
+            Stream.scanEffect(
+              initial,
+              (state, commandEntry: StreamingCommandHistoryEntry) =>
+                Effect.sync(() => {
+                  const current = state.get(commandEntry.id);
 
-                if (current) {
-                  state.set(
-                    commandEntry.id,
-                    mergeCommandEntries(current, commandEntry),
-                  );
-                } else {
-                  state.set(commandEntry.id, commandEntry);
-                }
+                  if (current) {
+                    state.set(
+                      commandEntry.id,
+                      mergeCommandEntries(current, commandEntry),
+                    );
+                  } else {
+                    state.set(commandEntry.id, commandEntry);
+                  }
 
-                return state;
-              }),
-          ),
-          Stream.map((state) =>
-            Array.from(state.values()).sort(
-              (a, b) =>
-                b.generationTime.epochMillis - a.generationTime.epochMillis,
+                  return state;
+                }),
             ),
+            Stream.map(sortCommands),
           ),
         );
       }),

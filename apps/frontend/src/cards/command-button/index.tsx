@@ -12,6 +12,8 @@ import {
 import { YamcsAtomHttpClient, selectedInstanceAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
+import { formatCommandDisplayName } from "../command-history/command-display";
+
 const TARGET_OPTIONS = ["BOTH", "SystemA", "SystemB"] as const;
 type TargetOption = (typeof TARGET_OPTIONS)[number];
 
@@ -33,15 +35,16 @@ export const CommandButtonCard = makeCard({
   component: () => {
     const instance = useAtomValue(selectedInstanceAtom);
     const commandList = useAtomValue(
-      YamcsAtomHttpClient.query("command", "listCommands", {
+      YamcsAtomHttpClient.query("mdb", "listCommands", {
         params: { instance },
+        query: {},
       }),
     );
 
     return AsyncResult.builder(commandList)
       .onInitial(() => (
         <div className="grid min-h-full w-full animate-pulse place-items-center font-mono text-muted-foreground uppercase">
-          Awaiting Links
+          Loading Commands
         </div>
       ))
       .onFailure((cause) => (
@@ -98,8 +101,7 @@ function CommandButtonTable() {
           {commands.map((command) => (
             <DataGridRow key={command.name}>
               <div>
-                {command.longDescription ?? command.qualifiedName}{" "}
-                {command.shortDescription && `(${command.shortDescription})`}
+                {formatCommandDisplayName(command.qualifiedName, command)}
               </div>
               <button
                 onClick={() => {

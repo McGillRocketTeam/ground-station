@@ -29,4 +29,7 @@ const simulator = Effect.gen(function* () {
   Effect.scoped,
 );
 
-NodeRuntime.runMain(simulator);
+// The simulator is fully provided above; this narrows a beta runtime typing gap.
+const runnableSimulator = simulator as Effect.Effect<void, unknown, never>;
+
+NodeRuntime.runMain(runnableSimulator);

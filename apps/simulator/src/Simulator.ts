@@ -36,6 +36,8 @@ export const AstraAckStatus = Schema.Literals([
   "TX_OK",
   "RX_FAIL",
   "TX_FAIL",
+  "RX_NOK",
+  "TX_NOK",
 ]);
 
 export type AstraAckStatus = typeof AstraAckStatus.Type;

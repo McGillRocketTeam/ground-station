@@ -1,3 +1,4 @@
+import { DateTime } from "effect";
 import { Fragment, type ReactNode } from "react";
 
 import { Separator } from "@/components/ui/separator";
@@ -11,10 +12,16 @@ import {
   type CommandHistoryEntry,
 } from "./utils";
 
-export function CommandDetail({ command }: { command: CommandHistoryEntry }) {
+export function CommandDetail({
+  command,
+  commandLabel,
+}: {
+  command: CommandHistoryEntry;
+  commandLabel?: string;
+}) {
   return (
     <div className="flex flex-row items-stretch gap-2 text-sm">
-      <DetailTable command={command} />
+      <DetailTable command={command} commandLabel={commandLabel} />
       {/* <Separator orientation="vertical" /> */}
     </div>
   );
@@ -30,12 +37,18 @@ function diffMs(command: CommandHistoryEntry, ack: Ack) {
   }
 
   return Math.abs(
-    new Date(command.generationTime.toString()).getTime() -
-      new Date(ack.time.toString()).getTime(),
+    DateTime.toDate(command.generationTime).getTime() -
+      DateTime.toDate(ack.time).getTime(),
   );
 }
 
-function DetailTable({ command }: { command: CommandHistoryEntry }) {
+function DetailTable({
+  command,
+  commandLabel,
+}: {
+  command: CommandHistoryEntry;
+  commandLabel?: string;
+}) {
   const acks = collectAcks(command);
 
   return (
@@ -43,7 +56,9 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
       <div className="space-y-0.5">
         <Label>Command</Label>
         <div className="grid grid-cols-2 gap-x-1">
-          <div className="col-span-2 font-medium">{command.commandName}</div>
+          <div className="col-span-2 font-medium">
+            {commandLabel ?? command.commandName}
+          </div>
 
           {command.assignments &&
             command.assignments.map((assignment, index) => {
@@ -103,21 +118,21 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
         </div>
       </div>
       <Separator />
-      {acks.groundStation.length > 0 && (
+      {acks.yamcs.length > 0 && (
         <div className="space-y-0.5">
-          <Label>G.S.C. Acknowledgements</Label>
+          <Label>Yamcs Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
-            {acks.groundStation.map((ack) => (
+            {acks.yamcs.map((ack) => (
               <AckRow key={ack.name} ack={ack} command={command} />
             ))}
           </div>
         </div>
       )}
-      {acks.uplink.length > 0 && (
+      {acks.systemA.length > 0 && (
         <div className="space-y-0.5">
-          <Label>Uplink Acknowledgements</Label>
+          <Label>System A Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
-            {acks.uplink.map((ack) => (
+            {acks.systemA.map((ack) => (
               <AckRow
                 friendlyName={ack.label}
                 key={ack.name}
@@ -128,13 +143,41 @@ function DetailTable({ command }: { command: CommandHistoryEntry }) {
           </div>
         </div>
       )}
-      {acks.flightComputer.length > 0 && (
+      {acks.systemB.length > 0 && (
         <div className="space-y-0.5">
-          <Label>FC Acknowledgements</Label>
+          <Label>System B Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
-            {acks.flightComputer.map((ack) => (
-              <FCAckRow key={ack.name} ack={ack} command={command} />
+            {acks.systemB.map((ack) => (
+              <AckRow
+                friendlyName={ack.label}
+                key={ack.name}
+                ack={ack}
+                command={command}
+              />
             ))}
+          </div>
+        </div>
+      )}
+      {acks.other.length > 0 && (
+        <div className="space-y-0.5">
+          <Label>Other Acknowledgements</Label>
+          <div className="grid grid-cols-[auto_1fr] gap-x-2">
+            {acks.other.map((ack) => (
+              <AckRow
+                friendlyName={ack.label}
+                key={ack.name}
+                ack={ack}
+                command={command}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {acks.completion && (
+        <div className="space-y-0.5">
+          <Label>Completion</Label>
+          <div className="grid grid-cols-[auto_1fr] gap-x-2">
+            <FCAckRow ack={acks.completion} command={command} />
           </div>
         </div>
       )}

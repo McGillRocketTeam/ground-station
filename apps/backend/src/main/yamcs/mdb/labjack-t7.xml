@@ -18,52 +18,23 @@
             </FloatParameterType>
         </ParameterTypeSet>
         <ParameterSet>
-            <Parameter name="AIN79" parameterTypeRef="float_32"/>
-            <Parameter name="AIN80" parameterTypeRef="float_32"/>
-            <Parameter name="AIN81" parameterTypeRef="float_32"/>
-            <Parameter name="AIN82" parameterTypeRef="float_32"/>
-            <Parameter name="AIN83" parameterTypeRef="float_32"/>
-            <Parameter name="AIN84" parameterTypeRef="float_32"/>
-            <Parameter name="AIN85" parameterTypeRef="float_32"/>
-            <Parameter name="AIN86" parameterTypeRef="float_32"/>
-            <Parameter name="AIN87" parameterTypeRef="float_32"/>
-            <Parameter name="AIN88" parameterTypeRef="float_32"/>
-            <Parameter name="AIN89" parameterTypeRef="float_32"/>
-            <Parameter name="AIN90" parameterTypeRef="float_32"/>
-            <Parameter name="AIN91" parameterTypeRef="float_32"/>
-            <Parameter name="AIN92" parameterTypeRef="float_32"/>
-            <Parameter name="AIN93" parameterTypeRef="float_32"/>
-            <Parameter name="AIN94" parameterTypeRef="float_32"/>
-            <Parameter name="AIN95" parameterTypeRef="float_32"/>
-            <Parameter name="AIN96" parameterTypeRef="float_32"/>
-            <Parameter name="AIN97" parameterTypeRef="float_32"/>
-            <Parameter name="AIN98" parameterTypeRef="float_32"/>
-            <Parameter name="AIN99" parameterTypeRef="float_32"/>
-            <Parameter name="AIN100" parameterTypeRef="float_32"/>
-            <Parameter name="AIN101" parameterTypeRef="float_32"/>
-            <Parameter name="AIN102" parameterTypeRef="float_32"/>
-            <Parameter name="AIN103" parameterTypeRef="float_32"/>
-            <Parameter name="AIN104" parameterTypeRef="float_32"/>
-            <Parameter name="AIN105" parameterTypeRef="float_32"/>
-            <Parameter name="AIN106" parameterTypeRef="float_32"/>
-            <Parameter name="AIN107" parameterTypeRef="float_32"/>
-            <Parameter name="AIN108" parameterTypeRef="float_32"/>
-            <Parameter name="AIN109" parameterTypeRef="float_32"/>
-            <Parameter name="AIN110" parameterTypeRef="float_32"/>
-            <Parameter name="AIN111" parameterTypeRef="float_32"/>
-            <Parameter name="AIN112" parameterTypeRef="float_32"/>
-            <Parameter name="AIN113" parameterTypeRef="float_32"/>
-            <Parameter name="AIN114" parameterTypeRef="float_32"/>
-            <Parameter name="AIN115" parameterTypeRef="float_32"/>
-            <Parameter name="AIN116" parameterTypeRef="float_32"/>
-            <Parameter name="AIN117" parameterTypeRef="float_32"/>
-            <Parameter name="AIN118" parameterTypeRef="float_32"/>
-            <Parameter name="AIN119" parameterTypeRef="float_32"/>
-            <Parameter name="AIN120" parameterTypeRef="float_32"/>
-            <Parameter name="AIN121" parameterTypeRef="float_32"/>
-            <Parameter name="AIN122" parameterTypeRef="float_32"/>
-            <Parameter name="AIN123" parameterTypeRef="float_32"/>
+            <!-- Raw AIN channels -->
+            <Parameter name="AIN0"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN1"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN2"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN3"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN4"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN5"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN6"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN7"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN8"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN9"  parameterTypeRef="float_32"/>
+            <Parameter name="AIN10" parameterTypeRef="float_32"/>
+            <Parameter name="AIN11" parameterTypeRef="float_32"/>
+            <Parameter name="AIN12" parameterTypeRef="float_32"/>
+            <Parameter name="AIN13" parameterTypeRef="float_32"/>
 
+            <!-- Digital pins -->
             <Parameter name="FIO0" parameterTypeRef="digital_pin_state"/>
             <Parameter name="FIO1" parameterTypeRef="digital_pin_state"/>
             <Parameter name="FIO2" parameterTypeRef="digital_pin_state"/>
@@ -91,84 +62,75 @@
             <Parameter name="MIO1" parameterTypeRef="digital_pin_state"/>
             <Parameter name="MIO2" parameterTypeRef="digital_pin_state"/>
 
-
-            <Parameter name="calibrated_fill_pressure_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true">
-                </ParameterProperties>
+            <!-- Calibrated derived parameters -->
+            <!-- AIN0: CC pressure,  y = 95.167*v - 79.167 -->
+            <Parameter name="calibrated_cc_pressure_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
             </Parameter>
-            <Parameter name="calibrated_purge_pressure_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true">
-                </ParameterProperties>
+            <!-- AIN1: identity (y = v) -->
+            <Parameter name="calibrated_ain1" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
             </Parameter>
-            <Parameter name="calibrated_tank_pressure_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true">
-                </ParameterProperties>
-            </Parameter>
-            <Parameter name="calibrated_run_pressure_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true">
-                </ParameterProperties>
-            </Parameter>
+            <!-- AIN2: thrust,  y = 868.62*v - 86.008 -->
             <Parameter name="calibrated_thrust_newtons" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true">
-                </ParameterProperties>
+                <ParameterProperties dataSource="derived" readOnly="true"/>
             </Parameter>
-            <Parameter name="calibrated_tank_mass" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true">
-                </ParameterProperties>
+            <!-- AIN3: weight,  y = 868.62*v - 86.008 -->
+            <Parameter name="calibrated_weight_newtons" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
             </Parameter>
-            <Parameter name="calibrated_ccpt_pressure_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true">
-                </ParameterProperties>
+            <!-- AIN4: identity (y = v) -->
+            <Parameter name="calibrated_ain4" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <!-- AIN5: identity (y = v) -->
+            <Parameter name="calibrated_ain5" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <!-- AIN6-10: Amazon pressure transducers,  y = 396.36*v - 172.71 -->
+            <Parameter name="calibrated_pressure_ain6_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <Parameter name="calibrated_pressure_ain7_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <Parameter name="calibrated_pressure_ain8_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <Parameter name="calibrated_pressure_ain9_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <Parameter name="calibrated_pressure_ain10_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <!-- AIN11-13: identity (y = v) -->
+            <Parameter name="calibrated_ain11" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <Parameter name="calibrated_ain12" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
+            </Parameter>
+            <Parameter name="calibrated_ain13" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true"/>
             </Parameter>
         </ParameterSet>
         <ContainerSet>
             <SequenceContainer name="LabJackPacket">
                 <EntryList>
-                    <ParameterRefEntry parameterRef="AIN79"/>
-                    <ParameterRefEntry parameterRef="AIN80"/>
-                    <ParameterRefEntry parameterRef="AIN81"/>
-                    <ParameterRefEntry parameterRef="AIN82"/>
-                    <ParameterRefEntry parameterRef="AIN83"/>
-                    <ParameterRefEntry parameterRef="AIN84"/>
-                    <ParameterRefEntry parameterRef="AIN85"/>
-                    <ParameterRefEntry parameterRef="AIN86"/>
-                    <ParameterRefEntry parameterRef="AIN87"/>
-                    <ParameterRefEntry parameterRef="AIN88"/>
-                    <ParameterRefEntry parameterRef="AIN89"/>
-                    <ParameterRefEntry parameterRef="AIN90"/>
-                    <ParameterRefEntry parameterRef="AIN91"/>
-                    <ParameterRefEntry parameterRef="AIN92"/>
-                    <ParameterRefEntry parameterRef="AIN93"/>
-                    <ParameterRefEntry parameterRef="AIN94"/>
-                    <ParameterRefEntry parameterRef="AIN95"/>
-                    <ParameterRefEntry parameterRef="AIN96"/>
-                    <ParameterRefEntry parameterRef="AIN97"/>
-                    <ParameterRefEntry parameterRef="AIN98"/>
-                    <ParameterRefEntry parameterRef="AIN99"/>
-                    <ParameterRefEntry parameterRef="AIN100"/>
-                    <ParameterRefEntry parameterRef="AIN101"/>
-                    <ParameterRefEntry parameterRef="AIN102"/>
-                    <ParameterRefEntry parameterRef="AIN103"/>
-                    <ParameterRefEntry parameterRef="AIN104"/>
-                    <ParameterRefEntry parameterRef="AIN105"/>
-                    <ParameterRefEntry parameterRef="AIN106"/>
-                    <ParameterRefEntry parameterRef="AIN107"/>
-                    <ParameterRefEntry parameterRef="AIN108"/>
-                    <ParameterRefEntry parameterRef="AIN109"/>
-                    <ParameterRefEntry parameterRef="AIN110"/>
-                    <ParameterRefEntry parameterRef="AIN111"/>
-                    <ParameterRefEntry parameterRef="AIN112"/>
-                    <ParameterRefEntry parameterRef="AIN113"/>
-                    <ParameterRefEntry parameterRef="AIN114"/>
-                    <ParameterRefEntry parameterRef="AIN115"/>
-                    <ParameterRefEntry parameterRef="AIN116"/>
-                    <ParameterRefEntry parameterRef="AIN117"/>
-                    <ParameterRefEntry parameterRef="AIN118"/>
-                    <ParameterRefEntry parameterRef="AIN119"/>
-                    <ParameterRefEntry parameterRef="AIN120"/>
-                    <ParameterRefEntry parameterRef="AIN121"/>
-                    <ParameterRefEntry parameterRef="AIN122"/>
-                    <ParameterRefEntry parameterRef="AIN123"/>
+                    <ParameterRefEntry parameterRef="AIN0"/>
+                    <ParameterRefEntry parameterRef="AIN1"/>
+                    <ParameterRefEntry parameterRef="AIN2"/>
+                    <ParameterRefEntry parameterRef="AIN3"/>
+                    <ParameterRefEntry parameterRef="AIN4"/>
+                    <ParameterRefEntry parameterRef="AIN5"/>
+                    <ParameterRefEntry parameterRef="AIN6"/>
+                    <ParameterRefEntry parameterRef="AIN7"/>
+                    <ParameterRefEntry parameterRef="AIN8"/>
+                    <ParameterRefEntry parameterRef="AIN9"/>
+                    <ParameterRefEntry parameterRef="AIN10"/>
+                    <ParameterRefEntry parameterRef="AIN11"/>
+                    <ParameterRefEntry parameterRef="AIN12"/>
+                    <ParameterRefEntry parameterRef="AIN13"/>
 
                     <ParameterRefEntry parameterRef="FIO0"/>
                     <ParameterRefEntry parameterRef="FIO1"/>
@@ -200,87 +162,179 @@
             </SequenceContainer>
         </ContainerSet>
         <AlgorithmSet>
-            <MathAlgorithm name="calibrated_ccpt_pressure_psi">
-                <MathOperation outputParameterRef="calibrated_ccpt_pressure_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN82"/>
-                    <ValueOperand>868</ValueOperand>
+            <!-- AIN0: CC pressure — y = 95.167*v - 79.167 -->
+            <MathAlgorithm name="calibrated_cc_pressure_psi">
+                <MathOperation outputParameterRef="calibrated_cc_pressure_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN0"/>
+                    <ValueOperand>95.167</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>49.5</ValueOperand>
+                    <ValueOperand>79.167</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN82"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN0"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
-            <MathAlgorithm name="calibrated_fill_pressure_psi">
-                <MathOperation outputParameterRef="calibrated_fill_pressure_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN88"/>
-                    <ValueOperand>611</ValueOperand>
+            <!-- AIN1: identity -->
+            <MathAlgorithm name="calibrated_ain1">
+                <MathOperation outputParameterRef="calibrated_ain1">
+                    <ParameterInstanceRefOperand parameterRef="AIN1"/>
+                    <ValueOperand>1</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>492</ValueOperand>
-                    <Operator>-</Operator>
+                    <ValueOperand>0</ValueOperand>
+                    <Operator>+</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN88"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN1"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
-            <MathAlgorithm name="calibrated_purge_pressure_psi">
-                <MathOperation outputParameterRef="calibrated_purge_pressure_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN90"/>
-                    <ValueOperand>611</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>464</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN90"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_tank_pressure_psi">
-                <MathOperation outputParameterRef="calibrated_tank_pressure_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN121"/>
-                    <ValueOperand>611</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>497.5 </ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN121"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_run_pressure_psi">
-                <MathOperation outputParameterRef="calibrated_run_pressure_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN122"/>
-                    <ValueOperand>611</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>520</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN122"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
+            <!-- AIN2: thrust — y = 868.62*v - 86.008 -->
             <MathAlgorithm name="calibrated_thrust_newtons">
                 <MathOperation outputParameterRef="calibrated_thrust_newtons">
-                    <ParameterInstanceRefOperand parameterRef="AIN87"/>
-                    <ValueOperand>-2112</ValueOperand>
+                    <ParameterInstanceRefOperand parameterRef="AIN2"/>
+                    <ValueOperand>868.62</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>-162</ValueOperand>
+                    <ValueOperand>86.008</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN87"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN2"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
-            <MathAlgorithm name="calibrated_tank_mass">
-                <MathOperation outputParameterRef="calibrated_tank_mass">
-                    <ParameterInstanceRefOperand parameterRef="AIN80"/>
-                    <ValueOperand>143.87</ValueOperand>
+            <!-- AIN3: weight — y = 868.62*v - 86.008 -->
+            <MathAlgorithm name="calibrated_weight_newtons">
+                <MathOperation outputParameterRef="calibrated_weight_newtons">
+                    <ParameterInstanceRefOperand parameterRef="AIN3"/>
+                    <ValueOperand>868.62</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>94.11</ValueOperand>
+                    <ValueOperand>86.008</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN80"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN3"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <!-- AIN4: identity -->
+            <MathAlgorithm name="calibrated_ain4">
+                <MathOperation outputParameterRef="calibrated_ain4">
+                    <ParameterInstanceRefOperand parameterRef="AIN4"/>
+                    <ValueOperand>1</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>0</ValueOperand>
+                    <Operator>+</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN4"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <!-- AIN5: identity -->
+            <MathAlgorithm name="calibrated_ain5">
+                <MathOperation outputParameterRef="calibrated_ain5">
+                    <ParameterInstanceRefOperand parameterRef="AIN5"/>
+                    <ValueOperand>1</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>0</ValueOperand>
+                    <Operator>+</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN5"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <!-- AIN6-10: Amazon pressure transducers — y = 396.36*v - 172.71 -->
+            <MathAlgorithm name="calibrated_pressure_ain6_psi">
+                <MathOperation outputParameterRef="calibrated_pressure_ain6_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN6"/>
+                    <ValueOperand>396.36</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>172.71</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN6"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_pressure_ain7_psi">
+                <MathOperation outputParameterRef="calibrated_pressure_ain7_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN7"/>
+                    <ValueOperand>396.36</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>172.71</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN7"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_pressure_ain8_psi">
+                <MathOperation outputParameterRef="calibrated_pressure_ain8_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN8"/>
+                    <ValueOperand>396.36</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>172.71</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN8"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_pressure_ain9_psi">
+                <MathOperation outputParameterRef="calibrated_pressure_ain9_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN9"/>
+                    <ValueOperand>396.36</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>172.71</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN9"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_pressure_ain10_psi">
+                <MathOperation outputParameterRef="calibrated_pressure_ain10_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN10"/>
+                    <ValueOperand>396.36</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>172.71</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN10"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <!-- AIN11-13: identity -->
+            <MathAlgorithm name="calibrated_ain11">
+                <MathOperation outputParameterRef="calibrated_ain11">
+                    <ParameterInstanceRefOperand parameterRef="AIN11"/>
+                    <ValueOperand>1</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>0</ValueOperand>
+                    <Operator>+</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN11"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_ain12">
+                <MathOperation outputParameterRef="calibrated_ain12">
+                    <ParameterInstanceRefOperand parameterRef="AIN12"/>
+                    <ValueOperand>1</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>0</ValueOperand>
+                    <Operator>+</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN12"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_ain13">
+                <MathOperation outputParameterRef="calibrated_ain13">
+                    <ParameterInstanceRefOperand parameterRef="AIN13"/>
+                    <ValueOperand>1</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>0</ValueOperand>
+                    <Operator>+</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN13"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>

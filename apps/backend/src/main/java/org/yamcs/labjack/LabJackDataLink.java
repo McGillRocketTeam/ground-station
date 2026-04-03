@@ -93,11 +93,15 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable{
             LJM.eWriteAddress(deviceHandle, WATCHDOG_DIO_ENABLE_DEFAULT, type, 1); //Re enable DIO
             LJM.eWriteAddress(deviceHandle, WATCHDOG_ENABLE_DEFAULT, type, 1); //Re-enable watchdog
 
-            // Set AIN79-AIN87 range to ±1V for higher resolution
-            for (int i = 79; i <= 87; i++) {
+            // AIN0-5: ±1V (load cells, CC pressure — high resolution)
+            for (int i = 0; i <= 5; i++) {
                 LJM.eWriteName(deviceHandle, "AIN" + i + "_RANGE", 1.0);
             }
-            log.info("Set AIN79-AIN87 range to ±1V");
+            // AIN6-13: ±10V (Amazon pressure transducers — full scale)
+            for (int i = 6; i <= 13; i++) {
+                LJM.eWriteName(deviceHandle, "AIN" + i + "_RANGE", 10.0);
+            }
+            log.info("Set AIN0-5 range to ±1V, AIN6-13 range to ±10V");
 
             LabJackUtil.startStream(deviceHandle);
             log.info("Stream started at " + LabJackUtil.SCAN_RATE + " scans/channel/second");

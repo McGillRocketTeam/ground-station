@@ -12,16 +12,16 @@ import org.yamcs.logging.Log;
  */
 public class LabJackUtil {
     //range of analog pins to poll on the LabJack (T7)
-    public static final int ANALOG_PIN_START = 79;
-    public static final int ANALOG_PIN_END = 123;
-    public static final int NUM_ANALOG_PINS = ANALOG_PIN_END - ANALOG_PIN_START + 1; // 45 pins
+    public static final int ANALOG_PIN_START = 0;
+    public static final int ANALOG_PIN_END = 13;
+    public static final int NUM_ANALOG_PINS = ANALOG_PIN_END - ANALOG_PIN_START + 1; // 14 pins
 
     //total number of digital pins on the LabJack (T7)
     public static final int NUM_DIGITAL_PINS = 23;
 
     // Stream mode configuration
-    public static final double SCAN_RATE = 25; // scans per channel per second (tune up if no SCAN_OVERLAP)
-    public static final int SCANS_PER_READ = 2; // scans per eStreamRead call (= 200ms of data at 25 Hz)
+    public static final double SCAN_RATE = 1000; // scans per channel per second
+    public static final int SCANS_PER_READ = 10; // scans per eStreamRead call (= 10ms of data at 1000 Hz)
     public static final int STREAM_SETTLING_US = 0;     // 0 = auto; increase if STREAM_SCAN_OVERLAP persists
     private static final Log log = new Log(LabJackUtil.class);
 
@@ -81,7 +81,7 @@ public class LabJackUtil {
     }
 
     /**
-     * Starts LabJack stream mode scanning AIN79-AIN123.
+     * Starts LabJack stream mode scanning AIN0-AIN13.
      * eStreamRead will block until SCANS_PER_READ complete scans are buffered.
      * @param deviceHandle device handle of the connected LabJack
      */

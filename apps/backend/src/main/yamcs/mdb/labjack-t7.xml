@@ -205,7 +205,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN82"/>
                     <ValueOperand>868</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>49.5</ValueOperand>
+                    <ValueOperand>50.5</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN82"/>
@@ -217,7 +217,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN88"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>492</ValueOperand>
+                    <ValueOperand>489</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN88"/>
@@ -229,7 +229,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN90"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>464</ValueOperand>
+                    <ValueOperand>460</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN90"/>
@@ -241,7 +241,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN121"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>497.5 </ValueOperand>
+                    <ValueOperand>496.5 </ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN121"/>
@@ -262,25 +262,25 @@
             </MathAlgorithm>
             <MathAlgorithm name="calibrated_thrust_newtons">
                 <MathOperation outputParameterRef="calibrated_thrust_newtons">
-                    <ParameterInstanceRefOperand parameterRef="AIN87"/>
+                    <ParameterInstanceRefOperand parameterRef="AIN85"/>
                     <ValueOperand>-2112</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>-162</ValueOperand>
-                    <Operator>-</Operator>
+                    <ValueOperand>9</ValueOperand>
+                    <Operator>+</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN87"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN85"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
             <MathAlgorithm name="calibrated_tank_mass">
                 <MathOperation outputParameterRef="calibrated_tank_mass">
-                    <ParameterInstanceRefOperand parameterRef="AIN80"/>
+                    <ParameterInstanceRefOperand parameterRef="AIN83"/>
                     <ValueOperand>143.87</ValueOperand>
                     <Operator>*</Operator>
                     <ValueOperand>94.11</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN80"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN83"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>

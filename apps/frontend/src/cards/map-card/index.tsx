@@ -1,7 +1,7 @@
 import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
 
 import { useTheme } from "@/components/theme-provider";
@@ -15,6 +15,8 @@ import {
   ParameterField,
 } from "@/lib/dashboard-field-types";
 import { FormTitleAnnotationId } from "@/lib/form";
+
+import { basicMapStyle, customMapStyle, hasLocalMapTiles } from "./style";
 
 const MapCardConfiguration = Schema.Struct({
   longitude: CoordinateLongitudeField,
@@ -94,18 +96,83 @@ export const MapCard = makeCard({
     const latitude = Number(props.params.latitude);
 
     const [viewState, setViewState] = useAtom(viewStateAtom);
+    const [useLocalTiles, setUseLocalTiles] = useState(false);
+    const lastLoggedZoom = useRef<number | null>(null);
+
+    const logMapState = (
+      label: string,
+      nextViewState: { longitude: number; latitude: number; zoom: number },
+      bounds?: {
+        west: number;
+        south: number;
+        east: number;
+        north: number;
+      },
+    ) => {
+      console.log(`[map-card] ${label}`, {
+        zoom: Number(nextViewState.zoom.toFixed(2)),
+        longitude: Number(nextViewState.longitude.toFixed(6)),
+        latitude: Number(nextViewState.latitude.toFixed(6)),
+        usingLocalTiles: useLocalTiles,
+        bounds:
+          bounds === undefined
+            ? undefined
+            : {
+                west: Number(bounds.west.toFixed(6)),
+                south: Number(bounds.south.toFixed(6)),
+                east: Number(bounds.east.toFixed(6)),
+                north: Number(bounds.north.toFixed(6)),
+              },
+      });
+    };
+
+    useEffect(() => {
+      let isMounted = true;
+
+      void hasLocalMapTiles().then((available) => {
+        if (isMounted) {
+          setUseLocalTiles(available);
+        }
+      });
+
+      return () => {
+        isMounted = false;
+      };
+    }, []);
 
     return (
       <div className="relative h-full min-h-60 w-full">
         <Map
-          mapStyle={
-            theme === "dark"
-              ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-              : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-          }
+          mapStyle={useLocalTiles ? customMapStyle : basicMapStyle(theme)}
           {...viewState}
           onMove={(event) => {
+            if (import.meta.env.DEV) {
+              const nextZoom = event.viewState.zoom;
+
+              if (
+                lastLoggedZoom.current === null ||
+                Math.abs(nextZoom - lastLoggedZoom.current) >= 0.05
+              ) {
+                logMapState("zoom", event.viewState);
+                lastLoggedZoom.current = nextZoom;
+              }
+            }
+
             setViewState(event.viewState);
+          }}
+          onMoveEnd={(event) => {
+            if (!import.meta.env.DEV) {
+              return;
+            }
+
+            const bounds = event.target.getBounds();
+
+            logMapState("moveend", event.viewState, {
+              west: bounds.getWest(),
+              south: bounds.getSouth(),
+              east: bounds.getEast(),
+              north: bounds.getNorth(),
+            });
           }}
           scrollZoom
           dragRotate

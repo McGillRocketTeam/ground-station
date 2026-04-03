@@ -14,7 +14,11 @@ yarn-error.log*
 
 dist
 
-docker/assets/
+docker/assets/*
+!docker/assets/maps/
+docker/assets/maps/*
+!docker/assets/maps/.gitkeep
+!docker/assets/maps/README.md
 
 # Runtime data
 pids

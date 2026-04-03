@@ -8,10 +8,12 @@ services:
     restart: always
   mbtileserver:
     image: ghcr.io/consbio/mbtileserver:latest
+    command:
+      - --enable-fs-watch
     ports:
       - "3001:8000"
     volumes:
-      - ./assets/maps:/data
+      - ./assets/maps:/tilesets
     restart: always
   # backend:
   #   image: ghcr.io/mcgillrocketteam/groundstation-backend-2026:main

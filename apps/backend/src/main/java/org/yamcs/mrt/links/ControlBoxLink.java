@@ -41,13 +41,15 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private long lastArmingKeyOnTime = 0;
 
   private static final int YAMCS_HTTP_PORT = 8090;
-  private static final int FILL_FIO = 1;
+  private static final int FILL_FIO = 2;
   private static final int DUMP_FIO = 3;
   private static final int PURG_FIO = 5;
-  private static final int MOV__FIO = 6;
+  private static final int MOV__FIO = 5;
   private static final int BLKT_FIO = 4;
-  private static final int VENT_FIO = 7;
+  private static final int VENT_FIO = 4;
   private static final int RUN__FIO = 0;
+  private static final int IGNP__MIO = 1;
+  private static final int IGNM__MIO = 0;
 
 
   private static final String YAMCS_INSTANCE = "ground_station";
@@ -86,8 +88,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
           Map.entry(8,  new SwitchMapping("panel_6_switch_1",       -1)),             // FIO6
           Map.entry(9,  new SwitchMapping("panel_6_switch_2",       -1)),             // FIO7
           Map.entry(10, new SwitchMapping("panel_7_switch_1",       -1)),             // DAC0
-          Map.entry(11, new SwitchMapping("panel_7_switch_2",       1,    true)),    // DAC1
-          Map.entry(12, new SwitchMapping("panel_8_switch_1",       0,    true)),    // DAC0
+          Map.entry(11, new SwitchMapping("panel_7_switch_2",       20+IGNM__MIO)),    // DAC1
+          Map.entry(12, new SwitchMapping("panel_8_switch_1",       20+IGNP__MIO)),    // DAC0
           Map.entry(14, new SwitchMapping("panel_9_switch_key",     -1)),            // Key: not mapped
           Map.entry(15, new SwitchMapping("panel_8_switch_2",       BLKT_FIO))      // FIO4
           );

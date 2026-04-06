@@ -87,7 +87,7 @@
             <Parameter name="calibrated_ain5" parameterTypeRef="float_32">
                 <ParameterProperties dataSource="derived" readOnly="true"/>
             </Parameter>
-            <!-- AIN6-10: Amazon pressure transducers,  y = 396.36*v - 172.71 -->
+            <!-- AIN6-10: Amazon pressure transducers,  y = 396.36*v - 182.71 -->
             <Parameter name="calibrated_pressure_ain6_psi" parameterTypeRef="float_32">
                 <ParameterProperties dataSource="derived" readOnly="true"/>
             </Parameter>
@@ -166,10 +166,10 @@
             <MathAlgorithm name="calibrated_cc_pressure_psi">
                 <MathOperation outputParameterRef="calibrated_cc_pressure_psi">
                     <ParameterInstanceRefOperand parameterRef="AIN0"/>
-                    <ValueOperand>95.167</ValueOperand>
+                    <ValueOperand>1389.7</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>79.167</ValueOperand>
-                    <Operator>-</Operator>
+                    <ValueOperand>13.78</ValueOperand>
+                    <Operator>+</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN0"/>
                     </TriggerSet>
@@ -188,29 +188,29 @@
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
-            <!-- AIN2: thrust — y = 868.62*v - 86.008 -->
+            <!-- AIN3: thrust -->
             <MathAlgorithm name="calibrated_thrust_newtons">
                 <MathOperation outputParameterRef="calibrated_thrust_newtons">
-                    <ParameterInstanceRefOperand parameterRef="AIN2"/>
-                    <ValueOperand>868.62</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>86.008</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN2"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN3: weight — y = 868.62*v - 86.008 -->
-            <MathAlgorithm name="calibrated_weight_newtons">
-                <MathOperation outputParameterRef="calibrated_weight_newtons">
                     <ParameterInstanceRefOperand parameterRef="AIN3"/>
-                    <ValueOperand>868.62</ValueOperand>
+                    <ValueOperand>8521.6</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>86.008</ValueOperand>
+                    <ValueOperand>300</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN3"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <!-- AIN2: weight -->
+            <MathAlgorithm name="calibrated_weight_newtons">
+                <MathOperation outputParameterRef="calibrated_weight_newtons">
+                    <ParameterInstanceRefOperand parameterRef="AIN2"/>
+                    <ValueOperand>26</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>1.73</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN2"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
@@ -240,13 +240,13 @@
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
-            <!-- AIN6-10: Amazon pressure transducers — y = 396.36*v - 172.71 -->
+            <!-- AIN6-10: Amazon pressure transducers — y = 396.36*v - 182.71 -->
             <MathAlgorithm name="calibrated_pressure_ain6_psi">
                 <MathOperation outputParameterRef="calibrated_pressure_ain6_psi">
                     <ParameterInstanceRefOperand parameterRef="AIN6"/>
                     <ValueOperand>396.36</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>172.71</ValueOperand>
+                    <ValueOperand>182.71</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN6"/>
@@ -258,7 +258,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN7"/>
                     <ValueOperand>396.36</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>172.71</ValueOperand>
+                    <ValueOperand>182.71</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN7"/>
@@ -270,7 +270,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN8"/>
                     <ValueOperand>396.36</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>172.71</ValueOperand>
+                    <ValueOperand>182.71</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN8"/>
@@ -282,7 +282,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN9"/>
                     <ValueOperand>396.36</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>172.71</ValueOperand>
+                    <ValueOperand>189.71</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN9"/>

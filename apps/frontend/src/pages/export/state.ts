@@ -92,6 +92,7 @@ export const exportPreviewModelAtom = Atom.make((get): CsvPreviewModel => {
     };
   }
 
+  console.log("CSV", csvResult);
   return parseCsvPreview(csvResult.value, header === "NONE");
 });
 

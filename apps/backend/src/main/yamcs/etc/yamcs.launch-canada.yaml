@@ -22,12 +22,6 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: simulator
-    class: org.yamcs.tctm.UdpParameterDataLink
-    stream: pp_realtime
-    port: 11016
-    json: true
-
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -78,10 +72,31 @@ dataLinks:
       - name: SystemB
         baseTopic: SystemB/Rocket/FlightComputer
 
+  - name: RadioCommands
+    class: org.yamcs.mqtt.MqttFanoutCommandLink
+    autoReconnect: true
+    brokers:
+      - tcp://localhost:1883
+    tcStream: tc_radio_realtime
+    targets:
+      - name: SystemA_ConrolStation
+        baseTopic: SystemA/ControlStation/Radio
+      - name: SystemB_ControlStation
+        baseTopic: SystemB/ControlStation/Radio
+      - name: SystemA_Pad
+        baseTopic: SystemA/Pad/Radio
+        radioAckTopic: SystemA/Pad/Radio/acks
+      - name: SystemB_Pad
+        baseTopic: SystemB/Pad/Radio
+        radioAckTopic: SystemB/Pad/Radio/acks
+
 mdb:
   - type: xtce
     args:
       file: mdb/commands.xml
+  - type: xtce
+    args:
+      file: mdb/radio-commands.xml
   - type: emptyNode
     spec: "SystemA"
     subLoaders:
@@ -158,3 +173,6 @@ streamConfig:
     - name: "tc_realtime"
       processor: "realtime"
       tcPatterns: ["/FlightComputer/.*"]
+    - name: "tc_radio_realtime"
+      processor: "realtime"
+      tcPatterns: ["/RadioCommands/.*"]

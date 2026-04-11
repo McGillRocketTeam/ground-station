@@ -61,18 +61,18 @@ dataLinks:
         baseTopic: SystemB/Rocket/FlightComputer
 
 
-  - name: RadioCommands
-    class: org.yamcs.mqtt.MqttFanoutCommandLink
-    autoReconnect: true
-    commandCountingEnabled: false
-    brokers:
-      - tcp://localhost:1883
-    tcStream: tc_radio_realtime
-    targets:
-      - name: SystemA
-        baseTopic: SystemA/ControlStation/Radio
-      - name: SystemB
-        baseTopic: SystemB/ControlStation/Radio
+  # - name: RadioCommands
+  #   class: org.yamcs.mqtt.MqttFanoutCommandLink
+  #   autoReconnect: true
+  #   commandCountingEnabled: false
+  #   brokers:
+  #     - tcp://localhost:1883
+  #   tcStream: tc_radio_realtime
+  #   targets:
+  #     - name: SystemA
+  #       baseTopic: SystemA/ControlStation/Radio
+  #     - name: SystemB
+  #       baseTopic: SystemB/ControlStation/Radio
 
 mdb:
   - type: xtce

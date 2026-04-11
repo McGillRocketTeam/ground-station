@@ -18,6 +18,22 @@ See https://github.com/yamcs/pymdb
 				<DefaultSignificance consequenceLevel="normal" />
 				<VerifierSet />
 			</MetaCommand>
+			<MetaCommand name="enable_tx" abstract="false" shortDescription="radio settx t">
+				<LongDescription>Clear Radio Command Queue</LongDescription>
+				<CommandContainer name="enable_tx">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
+			<MetaCommand name="disable_tx" abstract="false" shortDescription="radio settx f">
+				<LongDescription>Clear Radio Command Queue</LongDescription>
+				<CommandContainer name="disable_tx">
+					<EntryList />
+				</CommandContainer>
+				<DefaultSignificance consequenceLevel="normal" />
+				<VerifierSet />
+			</MetaCommand>
 		</MetaCommandSet>
 	</CommandMetaData>
 </SpaceSystem>

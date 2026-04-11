@@ -29,14 +29,16 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemA/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_a_controlstation_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_a_controlstation_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemA/Pad/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_a_pad_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_a_pad_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -48,14 +50,16 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemB/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_b_controlstation_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_b_controlstation_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemB/Pad/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_b_pad_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_b_pad_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -72,31 +76,10 @@ dataLinks:
       - name: SystemB
         baseTopic: SystemB/Rocket/FlightComputer
 
-  - name: RadioCommands
-    class: org.yamcs.mqtt.MqttFanoutCommandLink
-    autoReconnect: true
-    brokers:
-      - tcp://localhost:1883
-    tcStream: tc_radio_realtime
-    targets:
-      - name: SystemA_ConrolStation
-        baseTopic: SystemA/ControlStation/Radio
-      - name: SystemB_ControlStation
-        baseTopic: SystemB/ControlStation/Radio
-      - name: SystemA_Pad
-        baseTopic: SystemA/Pad/Radio
-        radioAckTopic: SystemA/Pad/Radio/acks
-      - name: SystemB_Pad
-        baseTopic: SystemB/Pad/Radio
-        radioAckTopic: SystemB/Pad/Radio/acks
-
 mdb:
   - type: xtce
     args:
       file: mdb/commands.xml
-  - type: xtce
-    args:
-      file: mdb/radio-commands.xml
   - type: emptyNode
     spec: "SystemA"
     subLoaders:
@@ -175,4 +158,4 @@ streamConfig:
       tcPatterns: ["/FlightComputer/.*"]
     - name: "tc_radio_realtime"
       processor: "realtime"
-      tcPatterns: ["/RadioCommands/.*"]
+      tcPatterns: [".*/Radio/.*"]

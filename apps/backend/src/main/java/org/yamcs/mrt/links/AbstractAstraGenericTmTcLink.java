@@ -97,7 +97,7 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
       String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
       status =
           switch (payload) {
-            case "OK" -> Status.OK;
+            case "OK", "RECEIVE" -> Status.OK;
             case "FAILED" -> Status.FAILED;
             case "DISABLED" -> Status.DISABLED;
             case "UNAVAIL" -> Status.UNAVAIL;
@@ -123,7 +123,7 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
   protected boolean publishCommandText(PreparedCommand preparedCommand, String commandText) {
     byte[] binary = postprocess(preparedCommand);
     if (binary == null) {
-      return true;
+      return false;
     }
     preparedCommand.setBinary(binary);
 
@@ -136,7 +136,7 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
     } catch (MqttException e) {
       log.warn("Failed to send command {}", preparedCommand, e);
       failedCommand(preparedCommand.getCommandId(), e.toString());
-      return true;
+      return false;
     }
   }
 }

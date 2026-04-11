@@ -94,7 +94,7 @@
 				<VerifierSet />
 			</MetaCommand>
 			<MetaCommand name="enable_tx" abstract="false" shortDescription="radio settx t">
-				<LongDescription>Clear Radio Command Queue</LongDescription>
+				<LongDescription>Enable TX</LongDescription>
 				<CommandContainer name="enable_tx">
 					<EntryList />
 				</CommandContainer>
@@ -102,7 +102,7 @@
 				<VerifierSet />
 			</MetaCommand>
 			<MetaCommand name="disable_tx" abstract="false" shortDescription="radio settx f">
-				<LongDescription>Clear Radio Command Queue</LongDescription>
+				<LongDescription>Disable TX</LongDescription>
 				<CommandContainer name="disable_tx">
 					<EntryList />
 				</CommandContainer>

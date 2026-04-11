@@ -69,12 +69,12 @@ const makeChoiceField = (
   );
 
 const getEnumerationValues = (parameter: Parameter): ReadonlyArray<number> =>
-  (parameter.type.enumValues ?? parameter.type.enumValue ?? []).flatMap(
-    ({ value }) => {
+  [...(parameter.type.enumValues ?? parameter.type.enumValue ?? [])]
+    .flatMap(({ value }) => {
       const parsed = Number.parseInt(value, 10);
       return Number.isInteger(parsed) ? [parsed] : [];
-    },
-  );
+    })
+    .sort((a, b) => a - b);
 
 const makeStringField = (
   label: string,
@@ -175,7 +175,7 @@ export class DataGenerator extends ServiceMap.Service<
 
         switch (parameter.type.engType) {
           case "boolean":
-            return makeChoiceField([0, 1], dataMode);
+            return makeChoiceField([1, 0], dataMode);
           case "enumeration": {
             const values = getEnumerationValues(parameter);
             if (values.length > 0) {

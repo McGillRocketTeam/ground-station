@@ -22,7 +22,7 @@ The application that users use to view live telemetry and issue commands. Comes 
 
 #### **`@mrt/simulator`** - Telemetry Data Simulator
 
-Generate random data for development of the frontend. Without the simulator, we would have no way of testing the frontend with data.
+Generate simulated telemetry for frontend development. The default mode produces linear, predictable values, and Tilt can switch it back to random when needed.
 
 ### Packages (`packages/`)
 
@@ -77,6 +77,12 @@ pnpm build
 ```bash
 # Start all services and applications
 tilt up
+```
+
+To switch the simulator back to random data generation:
+
+```bash
+tilt up -- --simulator_data_mode=random
 ```
 
 This will start:

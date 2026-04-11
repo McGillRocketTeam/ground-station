@@ -22,12 +22,6 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: simulator
-    class: org.yamcs.tctm.UdpParameterDataLink
-    stream: pp_realtime
-    port: 11016
-    json: true
-
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime

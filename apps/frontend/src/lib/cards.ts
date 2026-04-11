@@ -9,6 +9,7 @@ import type { DashboardActionGroup } from "@/lib/dashboard-actions";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
+import { FlightStageCard } from "@/cards/flight-stage";
 import { LinksCard } from "@/cards/links";
 import { MapCard } from "@/cards/map-card";
 import { ParameterChartCard } from "@/cards/parameter-chart";
@@ -91,6 +92,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   LinksCard,
   EventsCard,
   CommandButtonCard,
+  FlightStageCard,
 ] as const;
 
 type Cards = (typeof CardArray)[number];

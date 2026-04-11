@@ -13,6 +13,8 @@ import { LinksCard } from "@/cards/links";
 import { ParameterChartCard } from "@/cards/parameter-chart";
 import { ParameterTable } from "@/cards/parameter-table";
 import { TextCard } from "@/cards/text-card";
+import { FlightStageCard } from "@/cards/flight-stage-card";
+import { TestCard } from "@/cards/test";
 
 export interface CardDefinition<
   Id extends string,
@@ -89,6 +91,8 @@ export const CardArray: CardDefinition<string, any>[] = [
   LinksCard,
   EventsCard,
   CommandButtonCard,
+  FlightStageCard,
+  TestCard,
 ] as const;
 
 type Cards = (typeof CardArray)[number];

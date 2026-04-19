@@ -68,14 +68,18 @@ export const LinkEvent = Schema.Struct({
   }),
 });
 
-export const CommandHistoryEvent = Schema.Struct({
+const CommandHistoryEventSchema = Schema.Struct({
   type: Schema.Literal("commands"),
   call: SubscriptionId,
   seq: Schema.Int,
   data: StreamingCommandHisotryEntry,
 });
 
-export const ParameterValue = Schema.Struct({
+export type CommandHistoryEvent = typeof CommandHistoryEventSchema.Type;
+export const CommandHistoryEvent: Schema.Codec<CommandHistoryEvent, unknown> =
+  CommandHistoryEventSchema;
+
+const ParameterValueSchema = Schema.Struct({
   // id: NamedObjectId,
   rawValue: Schema.optional(Value),
   engValue: Value,
@@ -84,19 +88,31 @@ export const ParameterValue = Schema.Struct({
   numericId: Schema.Number,
 });
 
-export const PrameterDataEvent = Schema.Struct({
+export type ParameterValue = typeof ParameterValueSchema.Type;
+export const ParameterValue: Schema.Codec<ParameterValue, unknown> =
+  ParameterValueSchema;
+
+const PrameterDataEventSchema = Schema.Struct({
   values: Schema.Array(ParameterValue),
 });
+
+export type PrameterDataEvent = typeof PrameterDataEventSchema.Type;
+export const PrameterDataEvent: Schema.Codec<PrameterDataEvent, unknown> =
+  PrameterDataEventSchema;
 
 export const ParmeterInfoEvent = Schema.Struct({
   mapping: Schema.Record(Schema.String, NamedObjectId),
   // info: Schema.Record({ key: Schema.Number, value: ParameterInfo }),
 });
 
-export const ParameterEvent = Schema.Union([
+const ParameterEventSchema = Schema.Union([
   ParmeterInfoEvent,
   PrameterDataEvent,
 ]);
+
+export type ParameterEvent = typeof ParameterEventSchema.Type;
+export const ParameterEvent: Schema.Codec<ParameterEvent, unknown> =
+  ParameterEventSchema;
 
 export const EventsEvent = Schema.Struct({
   type: Schema.Literal("events"),

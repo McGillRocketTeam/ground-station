@@ -9,7 +9,6 @@ import type { DashboardActionGroup } from "@/lib/dashboard-actions";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
-import { FlightComputerOverviewCard } from "@/cards/flight-computer-overview";
 import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
 import { MapCard } from "@/cards/map-card";

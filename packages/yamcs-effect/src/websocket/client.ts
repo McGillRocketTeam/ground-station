@@ -5,7 +5,7 @@ import {
   Layer,
   PubSub,
   Schema,
-  ServiceMap,
+  Context,
   Stream,
 } from "effect";
 
@@ -33,7 +33,7 @@ export class WebSocketError extends Data.TaggedError("WebSocketError")<{
   readonly cause: unknown;
 }> {}
 
-export class WebSocketClient extends ServiceMap.Service<
+export class WebSocketClient extends Context.Service<
   WebSocketClient,
   WebSocketClientService
 >()("@mrt/yamcs-effect/WebSocketClient") {

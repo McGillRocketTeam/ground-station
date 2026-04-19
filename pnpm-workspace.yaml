@@ -4,9 +4,10 @@ packages:
 
 catalog:
   '@effect/language-service': ^0.83.1
-  '@effect/platform-browser': beta
+  '@effect/opentelemetry': beta 
+  '@effect/platform-browser': 4.0.0-beta.51
   '@effect/platform-node': beta
-  effect: beta
+  effect: 4.0.0-beta.51
   oxfmt: ^0.35.0
   oxlint: ^1.57.0
   typescript: 5.9.3

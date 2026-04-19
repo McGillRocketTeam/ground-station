@@ -1,4 +1,4 @@
-import { Effect, Layer, Ref, ServiceMap } from "effect";
+import { Effect, Layer, Ref, Context } from "effect";
 
 import type { DataEncoding, Parameter } from "./Container.ts";
 
@@ -139,7 +139,7 @@ const makeFloatField = (
     }),
   );
 
-export class DataGenerator extends ServiceMap.Service<
+export class DataGenerator extends Context.Service<
   DataGenerator,
   {
     /** Create a number generator derived from a parameter definition */

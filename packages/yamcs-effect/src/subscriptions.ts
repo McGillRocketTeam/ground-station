@@ -4,7 +4,7 @@ import {
   Effect,
   Layer,
   Schema,
-  ServiceMap,
+  Context,
   Stream,
 } from "effect";
 
@@ -71,7 +71,7 @@ export interface YamcsSubscriptionsService {
  * The `commands` and `events` streams also fetch prior data via HTTP,
  * requiring `HttpClient.HttpClient` in their context.
  */
-export class YamcsSubscriptions extends ServiceMap.Service<
+export class YamcsSubscriptions extends Context.Service<
   YamcsSubscriptions,
   YamcsSubscriptionsService
 >()("@mrt/yamcs-effect/YamcsSubscriptions", {

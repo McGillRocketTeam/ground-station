@@ -12,7 +12,7 @@
     "prepare": "effect-language-service patch"
   },
   "dependencies": {
-    "@effect/opentelemetry": "4.0.0-beta.21",
+    "@effect/opentelemetry": "catalog:",
     "@effect/platform-node": "catalog:",
     "@mrt/yamcs-effect": "workspace:*",
     "@opentelemetry/sdk-logs": "^0.212.0",

@@ -194,7 +194,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN3"/>
                     <ValueOperand>8521.6</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>300</ValueOperand>
+                    <ValueOperand>210</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN3"/>

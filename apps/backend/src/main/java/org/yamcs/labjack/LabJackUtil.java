@@ -20,7 +20,7 @@ public class LabJackUtil {
     public static final int NUM_DIGITAL_PINS = 23;
 
     // Stream mode configuration
-    public static final double SCAN_RATE = 300; // scans per channel per second
+    public static final double SCAN_RATE = 50; // scans per channel per second
     public static final int SCANS_PER_READ = 10; // scans per eStreamRead call (= 10ms of data at 1000 Hz)
     public static final int STREAM_SETTLING_US = 0;     // 0 = auto; increase if STREAM_SCAN_OVERLAP persists
     private static final Log log = new Log(LabJackUtil.class);

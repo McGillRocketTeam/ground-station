@@ -1,46 +1,59 @@
-import type { BuiltInEdge, Edge, Node, NodeProps } from "@xyflow/react";
-
-import { Background, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
 import { Schema } from "effect";
-import { useState } from "react";
 
+import { Popover, PopoverContent } from "@/components/ui/popover";
 import { makeCard } from "@/lib/cards";
 
-type RadioLinkNode = Node<{ qualifiedName: string }, "radioLink">;
-
-export default function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
-  return <div className="h-20 text-black">{data.qualifiedName}</div>;
-}
-
-const nodeTypes = {
-  radioLink: RadioLinkNode,
-};
-
-const initialNodes = [
-  {
-    type: "radioLink",
-    id: "n1",
-    position: { x: 0, y: 0 },
-    data: { qualifiedName: "Node 1" },
-  },
-];
-
-export type CustomNodeType = RadioLinkNode;
-export type CustomEdgeType = BuiltInEdge;
+import { LinkDetail } from "../links/link-detail";
+import {
+  edgeTypes,
+  linksPopover,
+  nodeTypes,
+  noopNodeClick,
+} from "./custom-elements";
+import { initialEdges, initialNodes } from "./data";
 
 export const LinksGraphCard = makeCard({
   id: "links-graph-card",
   name: "Links Graph",
   schema: Schema.Struct({}),
   component: () => {
-    const [nodes] = useState(initialNodes);
-    const [edges] = useState([]);
-
     return (
-      <div className="h-20 w-20">
-        <ReactFlow nodeTypes={nodeTypes} nodes={nodes} edges={edges} fitView>
-          <Background />
+      <div className="h-full w-full">
+        <Popover handle={linksPopover}>
+          {({ payload }) =>
+            payload && (
+              <PopoverContent className="w-96">
+                <LinkDetail link={payload} />
+              </PopoverContent>
+            )
+          }
+        </Popover>
+        <ReactFlow
+          proOptions={{ hideAttribution: true }}
+          attributionPosition={undefined}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          nodes={initialNodes}
+          edges={initialEdges}
+          onNodeClick={noopNodeClick}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          zoomOnScroll={false}
+          zoomOnPinch={false}
+          zoomOnDoubleClick={false}
+          panOnDrag={false}
+          panOnScroll={false}
+          preventScrolling={false}
+          fitView
+        >
+          <Background
+            color="var(--color-border)"
+            size={5}
+            variant={BackgroundVariant.Cross}
+          />
         </ReactFlow>
       </div>
     );

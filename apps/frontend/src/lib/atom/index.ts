@@ -33,7 +33,7 @@ import {
   Cause,
 } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
-import { Atom, AtomHttpApi } from "effect/unstable/reactivity";
+import { AsyncResult, Atom, AtomHttpApi } from "effect/unstable/reactivity";
 
 type ArchivedCommandHistoryEntry =
   typeof import("@mrt/yamcs-effect").CommandHistoryEntry.Type;
@@ -433,6 +433,15 @@ export const timeSubscriptionAtom = Atom.make((get) =>
 
 export const linksSubscriptionAtom = Atom.make((get) =>
   get(linksSubscriptionAtomForInstance(get(selectedInstanceAtom))),
+);
+
+export const singleLinkSubscriptionAtom = Atom.family((name: string) =>
+  Atom.make((get) =>
+    AsyncResult.map(
+      get(linksSubscriptionAtomForInstance(get(selectedInstanceAtom))),
+      (links) => links.find((link) => link.name === name),
+    ),
+  ),
 );
 
 export const commandsSubscriptionAtom = Atom.make((get) =>

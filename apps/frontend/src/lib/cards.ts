@@ -6,6 +6,7 @@ import { Component, createElement } from "react";
 
 import type { DashboardActionGroup } from "@/lib/dashboard-actions";
 
+import { ChartCardV2 } from "@/cards/chart-card-v2";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
@@ -28,6 +29,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   CommandButtonCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
+  ChartCardV2,
 ] as const;
 
 export interface CardDefinition<

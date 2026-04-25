@@ -33,6 +33,7 @@
     "date-fns": "^4.1.0",
     "dockview-react": "^4.13.1",
     "dygraphs": "^2.2.1",
+    "echarts": "^6.0.0",
     "effect": "catalog:",
     "lucide-react": "^0.563.0",
     "maplibre-gl": "^5.17.0",

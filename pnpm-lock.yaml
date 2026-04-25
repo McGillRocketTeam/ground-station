@@ -11,13 +11,13 @@ catalogs:
       version: 0.83.1
     '@effect/opentelemetry':
       specifier: beta
-      version: 4.0.0-beta.51
+      version: 4.0.0-beta.57
     '@effect/platform-browser':
       specifier: 4.0.0-beta.51
       version: 4.0.0-beta.51
     '@effect/platform-node':
       specifier: beta
-      version: 4.0.0-beta.51
+      version: 4.0.0-beta.57
     effect:
       specifier: 4.0.0-beta.51
       version: 4.0.0-beta.51
@@ -107,6 +107,9 @@ importers:
       dygraphs:
         specifier: ^2.2.1
         version: 2.2.1
+      echarts:
+        specifier: ^6.0.0
+        version: 6.0.0
       effect:
         specifier: 'catalog:'
         version: 4.0.0-beta.51
@@ -185,7 +188,7 @@ importers:
     dependencies:
       '@effect/platform-node':
         specifier: 'catalog:'
-        version: 4.0.0-beta.51(effect@4.0.0-beta.51)(ioredis@5.9.3)
+        version: 4.0.0-beta.57(effect@4.0.0-beta.51)(ioredis@5.9.3)
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../../packages/yamcs-effect
@@ -244,10 +247,10 @@ importers:
     dependencies:
       '@effect/opentelemetry':
         specifier: 'catalog:'
-        version: 4.0.0-beta.51(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)
+        version: 4.0.0-beta.57(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)
       '@effect/platform-node':
         specifier: 'catalog:'
-        version: 4.0.0-beta.51(effect@4.0.0-beta.51)(ioredis@5.9.3)
+        version: 4.0.0-beta.57(effect@4.0.0-beta.51)(ioredis@5.9.3)
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../yamcs-effect
@@ -480,8 +483,8 @@ packages:
     resolution: {integrity: sha512-cBQ7yg/P4+kAp+JFX+9Bk5bc1jG3UMVq8pgtW5VAWBl/yiTjWlCGMKC4UxX2KlpREvjTkvS8BKi1wYw0phWmAQ==}
     hasBin: true
 
-  '@effect/opentelemetry@4.0.0-beta.51':
-    resolution: {integrity: sha512-ViawVj1SdYwMijaQqvIU+HJbE7VVvG1YsOw7Fdd9aKGYg95UUIjftm3ZAOzOfexIhSlWEFaS97DtW2ZUg3E5Sw==}
+  '@effect/opentelemetry@4.0.0-beta.57':
+    resolution: {integrity: sha512-gdjZPEP0QQg4qmI1vd+443kheeQZKytrjJIzCJncy6ZEpyk/SfrqeStLqLXdTRcms3IB0ls0vOV7KNq7YmBRVA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@opentelemetry/api': ^1.9
@@ -492,7 +495,7 @@ packages:
       '@opentelemetry/sdk-trace-node': ^2.0.0
       '@opentelemetry/sdk-trace-web': ^2.0.0
       '@opentelemetry/semantic-conventions': ^1.33.0
-      effect: ^4.0.0-beta.51
+      effect: ^4.0.0-beta.57
     peerDependenciesMeta:
       '@opentelemetry/api':
         optional: true
@@ -514,17 +517,17 @@ packages:
     peerDependencies:
       effect: ^4.0.0-beta.51
 
-  '@effect/platform-node-shared@4.0.0-beta.51':
-    resolution: {integrity: sha512-Dy59kDf0UNiHImDN90edoNWbdpdbDqioVjjAPqKTOdebiVEHlD9bUSNTYsSnKrqa/6WU53AWOP0SYwJ1aKKk4Q==}
+  '@effect/platform-node-shared@4.0.0-beta.57':
+    resolution: {integrity: sha512-C976X6f+qHUtLSqcqImuCrjhAHnJV17NC2RvvybsAuDfkyIWU4MyiO2XwgiBeijeNupyr1M/KPKnyjtkNxV9Hw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.51
+      effect: ^4.0.0-beta.57
 
-  '@effect/platform-node@4.0.0-beta.51':
-    resolution: {integrity: sha512-ChkyABVJ35Eo2yQD3zSL6qvw9hTFZ/ikrGVoIm6rbAN3091XOs8hGMF8f1iyeUAXochjcTvz+tg+5jUNw7Ig8g==}
+  '@effect/platform-node@4.0.0-beta.57':
+    resolution: {integrity: sha512-la0xxPSAYOsY0d+uVxEBxok3jYB31iPQmIaZZRUj2SNWqcGGHJc6KorKtI8guqSLuv9FGZ255kBWXRbG6hMeeg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.51
+      effect: ^4.0.0-beta.57
       ioredis: ^5.7.0
 
   '@esbuild/aix-ppc64@0.27.2':
@@ -2111,6 +2114,9 @@ packages:
   earcut@3.0.2:
     resolution: {integrity: sha512-X7hshQbLyMJ/3RPhyObLARM2sNxxmRALLKx1+NVFFnQ9gKzmCrxm9+uLIAdBcvc8FNLpctqlQ2V6AE92Ol9UDQ==}
 
+  echarts@6.0.0:
+    resolution: {integrity: sha512-Tte/grDQRiETQP4xz3iZWSvoHrkCQtwqd6hs+mifXcjrCuo2iKWbajFObuLJVBlDIJlOzgQPd1hsaKt/3+OMkQ==}
+
   eciesjs@0.4.16:
     resolution: {integrity: sha512-dS5cbA9rA2VR4Ybuvhg6jvdmp46ubLn3E+px8cG/35aEDNclrqoCjg6mt0HYZ/M+OoESS3jSkCrqk1kWAEhWAw==}
     engines: {bun: '>=1', deno: '>=2', node: '>=16'}
@@ -3349,6 +3355,9 @@ packages:
     resolution: {integrity: sha512-NoZ4roiN7LnbKn9QqE1amc9DJfzvZXxF4xDavcOWt1BPkdx+m+0gJuPM+S0vCe7zTJMYUP0R8pO2XMr+Y8oLIg==}
     engines: {node: '>=6'}
 
+  tslib@2.3.0:
+    resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
+
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -3632,6 +3641,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zrender@6.0.0:
+    resolution: {integrity: sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==}
+
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
     engines: {node: '>=12.7.0'}
@@ -3907,7 +3919,7 @@ snapshots:
 
   '@effect/language-service@0.83.1': {}
 
-  '@effect/opentelemetry@4.0.0-beta.51(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)':
+  '@effect/opentelemetry@4.0.0-beta.57(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)':
     dependencies:
       '@opentelemetry/semantic-conventions': 1.40.0
       effect: 4.0.0-beta.51
@@ -3922,7 +3934,7 @@ snapshots:
       effect: 4.0.0-beta.51
       multipasta: 0.2.7
 
-  '@effect/platform-node-shared@4.0.0-beta.51(effect@4.0.0-beta.51)':
+  '@effect/platform-node-shared@4.0.0-beta.57(effect@4.0.0-beta.51)':
     dependencies:
       '@types/ws': 8.18.1
       effect: 4.0.0-beta.51
@@ -3931,9 +3943,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.51(effect@4.0.0-beta.51)(ioredis@5.9.3)':
+  '@effect/platform-node@4.0.0-beta.57(effect@4.0.0-beta.51)(ioredis@5.9.3)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.51(effect@4.0.0-beta.51)
+      '@effect/platform-node-shared': 4.0.0-beta.57(effect@4.0.0-beta.51)
       effect: 4.0.0-beta.51
       ioredis: 5.9.3
       mime: 4.1.0
@@ -5204,6 +5216,11 @@ snapshots:
   dygraphs@2.2.1: {}
 
   earcut@3.0.2: {}
+
+  echarts@6.0.0:
+    dependencies:
+      tslib: 2.3.0
+      zrender: 6.0.0
 
   eciesjs@0.4.16:
     dependencies:
@@ -6522,6 +6539,8 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
+  tslib@2.3.0: {}
+
   tslib@2.8.1: {}
 
   tsx@4.21.0:
@@ -6737,6 +6756,10 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zrender@6.0.0:
+    dependencies:
+      tslib: 2.3.0
 
   zustand@4.5.7(@types/react@19.2.9)(react@19.2.3):
     dependencies:

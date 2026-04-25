@@ -29,8 +29,9 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemA/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_a_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_a_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -42,8 +43,9 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemB/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_b_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_b_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -61,26 +63,10 @@ dataLinks:
         baseTopic: SystemB/Rocket/FlightComputer
 
 
-  - name: RadioCommands
-    class: org.yamcs.mqtt.MqttFanoutCommandLink
-    autoReconnect: true
-    commandCountingEnabled: false
-    brokers:
-      - tcp://localhost:1883
-    tcStream: tc_radio_realtime
-    targets:
-      - name: SystemA
-        baseTopic: SystemA/ControlStation/Radio
-      - name: SystemB
-        baseTopic: SystemB/ControlStation/Radio
-
 mdb:
   - type: xtce
     args:
       file: mdb/commands.xml
-  - type: xtce
-    args:
-      file: mdb/radio-commands.xml
   - type: emptyNode
     spec: "SystemA"
     subLoaders:
@@ -141,4 +127,4 @@ streamConfig:
       tcPatterns: ["/FlightComputer/.*"]
     - name: "tc_radio_realtime"
       processor: "realtime"
-      tcPatterns: ["/Radio/.*"]
+      tcPatterns: [".*/Radio/.*"]

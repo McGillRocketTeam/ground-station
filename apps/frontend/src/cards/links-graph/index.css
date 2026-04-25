@@ -1,0 +1,13 @@
+.links-graph__edge-path {
+  animation: links-graph-edge-flow 0.9s linear infinite;
+}
+
+@keyframes links-graph-edge-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: -10;
+  }
+}

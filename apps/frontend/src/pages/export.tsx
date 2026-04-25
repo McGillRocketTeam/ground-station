@@ -2,10 +2,10 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import React from "react";
 
 import { DashboardHeader } from "@/components/dashboard/header";
+import { Separator } from "@/components/ui/separator";
 import { selectedInstanceAtom } from "@/lib/atom";
 
-import { ExportPageForm } from "./export/form";
-import { ExportPreviewTable } from "./export/preview-table";
+import { ExportColumnSelector, ExportPageForm } from "./export/form";
 import {
   exportPreviewOptionsAtom,
   makeDefaultExportFormValues,
@@ -29,15 +29,15 @@ export function ExportPage() {
     <div className="grid h-screen grid-cols-[auto_1fr] grid-rows-[auto_1fr] p-1.25">
       <DashboardHeader className="col-span-full border-b" />
 
-      <aside className="min-w-80 space-y-4 border-r p-2">
+      <aside className="min-h-0 min-w-80 space-y-4 overflow-y-auto border-r p-2">
         <div className="font-mono text-lg font-semibold uppercase">
           Export Data
         </div>
         <ExportPageForm />
+        <Separator />
+        <ExportColumnSelector />
       </aside>
-      <main className="min-w-0 p-2">
-        <ExportPreviewTable />
-      </main>
+      <main className="min-h-0 min-w-0 overflow-y-auto p-2"></main>
     </div>
   );
 }

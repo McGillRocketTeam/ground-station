@@ -24,7 +24,9 @@ const simulator = Effect.gen(function* () {
   const instance = yield* YAMCS_INSTANCE;
   yield* makeSimulatorForInstance(instance);
 }).pipe(
-  Effect.catch((e) => Effect.logError(e.message)),
+  Effect.catch((e) =>
+    Effect.logError(e instanceof Error ? e.message : String(e)),
+  ),
   Effect.provide(simulatorLayer),
   Effect.scoped,
 );

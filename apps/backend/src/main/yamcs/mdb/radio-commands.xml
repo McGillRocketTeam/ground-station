@@ -1,23 +1,5 @@
-<?xml version="1.0"?>
-<!--
-This file was generated with Yamcs PyMDB.
-See https://github.com/yamcs/pymdb
--->
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
-	name="Radio">
-	<TelemetryMetaData />
-	<CommandMetaData>
-		<MetaCommandSet>
-			<MetaCommand name="clear_queue" abstract="false" shortDescription="radio clear">
-				<LongDescription>Clear Radio Command Queue</LongDescription>
-				<CommandContainer name="clear_queue">
-					<EntryList />
-				</CommandContainer>
-				<DefaultSignificance consequenceLevel="normal" />
-				<VerifierSet />
-			</MetaCommand>
-		</MetaCommandSet>
-	</CommandMetaData>
+	name="RadioCommands">
 </SpaceSystem>

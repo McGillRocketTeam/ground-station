@@ -87,7 +87,7 @@ export const CalibratorInfo = Schema.Struct({
               return yield* Effect.succeed(input.javaExpressionCalibrator!);
             case "MATH_OPERATION":
               return yield* Effect.succeed(
-                MathOperationCalibratorInfo.makeUnsafe({
+                MathOperationCalibratorInfo.make({
                   type: "MATH_OPERATION",
                 }),
               );
@@ -274,16 +274,23 @@ const BooleanValue = Schema.Struct({
   value: Schema.Boolean,
 }).pipe(Schema.encodeKeys({ value: "booleanValue" }));
 
-export const EnumeratedValue = Schema.Struct({
+const EnumeratedValueSchema = Schema.Struct({
   type: Schema.Literal("ENUMERATED"),
   value: Schema.String,
 }).pipe(Schema.encodeKeys({ value: "stringValue" }));
+
+export interface EnumeratedValue {
+  readonly type: "ENUMERATED";
+  readonly value: string;
+}
+export const EnumeratedValue: Schema.Codec<EnumeratedValue, unknown> =
+  EnumeratedValueSchema;
 
 export const AggregateValue = Schema.Struct({
   type: Schema.Literal("AGGREGATE"),
 });
 
-export const Value = Schema.Union([
+const ValueSchema = Schema.Union([
   FloatValue,
   DoubleValue,
   Sint32Value,
@@ -298,18 +305,43 @@ export const Value = Schema.Union([
   AggregateValue,
 ]);
 
-export const CommandHistoryAttribute = Schema.Struct({
+export type Value =
+  | { readonly type: "FLOAT"; readonly value: number }
+  | { readonly type: "DOUBLE"; readonly value: number }
+  | { readonly type: "SINT32"; readonly value: number }
+  | { readonly type: "UINT32"; readonly value: number }
+  | { readonly type: "SINT64"; readonly value: number }
+  | { readonly type: "UINT64"; readonly value: number }
+  | { readonly type: "BINARY"; readonly value: Uint8Array }
+  | { readonly type: "STRING"; readonly value: string }
+  | { readonly type: "TIMESTAMP"; readonly value: typeof YamcsDate.Type }
+  | { readonly type: "BOOLEAN"; readonly value: boolean }
+  | EnumeratedValue
+  | { readonly type: "AGGREGATE" };
+export const Value: Schema.Codec<Value, unknown> = ValueSchema;
+
+const CommandHistoryAttributeSchema = Schema.Struct({
   name: Schema.String,
   value: Value,
 });
 
-export const CommandAssignment = Schema.Struct({
+export type CommandHistoryAttribute = typeof CommandHistoryAttributeSchema.Type;
+export const CommandHistoryAttribute: Schema.Codec<
+  CommandHistoryAttribute,
+  unknown
+> = CommandHistoryAttributeSchema;
+
+const CommandAssignmentSchema = Schema.Struct({
   name: Schema.String,
   value: Value,
   userInput: Schema.Boolean,
 });
 
-export const CommandHistoryEntry = Schema.Struct({
+export type CommandAssignment = typeof CommandAssignmentSchema.Type;
+export const CommandAssignment: Schema.Codec<CommandAssignment, unknown> =
+  CommandAssignmentSchema;
+
+const CommandHistoryEntrySchema = Schema.Struct({
   id: CommandId,
   commandName: QualifiedName,
 
@@ -322,7 +354,11 @@ export const CommandHistoryEntry = Schema.Struct({
   assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
-export const StreamingCommandHisotryEntry = Schema.Struct({
+export type CommandHistoryEntry = typeof CommandHistoryEntrySchema.Type;
+export const CommandHistoryEntry: Schema.Codec<CommandHistoryEntry, unknown> =
+  CommandHistoryEntrySchema;
+
+const StreamingCommandHisotryEntrySchema = Schema.Struct({
   id: CommandId,
   commandName: QualifiedName,
 
@@ -334,6 +370,13 @@ export const StreamingCommandHisotryEntry = Schema.Struct({
   generationTime: YamcsDate,
   assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
+
+export type StreamingCommandHisotryEntry =
+  typeof StreamingCommandHisotryEntrySchema.Type;
+export const StreamingCommandHisotryEntry: Schema.Codec<
+  StreamingCommandHisotryEntry,
+  unknown
+> = StreamingCommandHisotryEntrySchema;
 
 /**
  * Represents a request to issue a command within the system.
@@ -375,7 +418,7 @@ export const IssueCommandRequest = Schema.Struct({
   stream: Schema.optional(Schema.String),
 });
 
-export const IssueCommandResponse = Schema.Struct({
+const IssueCommandResponseSchema = Schema.Struct({
   id: CommandId,
   generationTime: YamcsDate,
   origin: Schema.String,
@@ -387,6 +430,10 @@ export const IssueCommandResponse = Schema.Struct({
   username: Schema.String,
   queue: Schema.String,
 });
+
+export type IssueCommandResponse = typeof IssueCommandResponseSchema.Type;
+export const IssueCommandResponse: Schema.Codec<IssueCommandResponse, unknown> =
+  IssueCommandResponseSchema;
 
 export const ActionInfo = Schema.Struct({
   id: Schema.String,

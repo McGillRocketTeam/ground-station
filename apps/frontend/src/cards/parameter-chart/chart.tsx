@@ -28,7 +28,7 @@ const isDurationMode = (mode: ChartMode): mode is DurationMode =>
   mode.type === "duration";
 
 const MAX_DATA_POINTS = 1000;
-const PARAMETER_NAME = "/FlightComputer/acceleration_x";
+const PARAMETER_NAME = "/SystemA/Rocket/FlightComputer/acceleration_x";
 const parameterLiveAtom = parameterSubscriptionAtom(PARAMETER_NAME);
 
 type DurationMode = {
@@ -393,7 +393,7 @@ export function ParameterChart() {
 
   return (
     <div ref={parentRef} className="absolute inset-0 bottom-2 grid">
-      <ModeControls />
+      {/* <ModeControls /> */}
       <div ref={containerRef} />
     </div>
   );

@@ -4,7 +4,7 @@ import {
   Effect,
   Layer,
   Schema,
-  ServiceMap,
+  Context,
   Stream,
 } from "effect";
 
@@ -71,7 +71,7 @@ export interface YamcsSubscriptionsService {
  * The `commands` and `events` streams also fetch prior data via HTTP,
  * requiring `HttpClient.HttpClient` in their context.
  */
-export class YamcsSubscriptions extends ServiceMap.Service<
+export class YamcsSubscriptions extends Context.Service<
   YamcsSubscriptions,
   YamcsSubscriptionsService
 >()("@mrt/yamcs-effect/YamcsSubscriptions", {
@@ -86,7 +86,7 @@ export class YamcsSubscriptions extends ServiceMap.Service<
     const time = Stream.unwrap(
       Effect.gen(function* () {
         const { call, stream } = yield* ws.subscribe(
-          SubscribeTimeRequest.makeUnsafe({
+          SubscribeTimeRequest.make({
             instance,
             processor: "realtime",
           }),
@@ -107,7 +107,7 @@ export class YamcsSubscriptions extends ServiceMap.Service<
     const links = Stream.unwrap(
       Effect.gen(function* () {
         const { call, stream } = yield* ws.subscribe(
-          SubscribeLinksRequest.makeUnsafe({ instance }),
+          SubscribeLinksRequest.make({ instance }),
         );
 
         return stream.pipe(
@@ -132,7 +132,7 @@ export class YamcsSubscriptions extends ServiceMap.Service<
       Stream.unwrap(
         Effect.gen(function* () {
           const { call, stream } = yield* ws.subscribe(
-            SubscribeCommandsRequest.makeUnsafe({
+            SubscribeCommandsRequest.make({
               instance,
               processor: "realtime",
             }),
@@ -188,7 +188,7 @@ export class YamcsSubscriptions extends ServiceMap.Service<
       Stream.unwrap(
         Effect.gen(function* () {
           const { call, stream } = yield* ws.subscribe(
-            SubscribeParameterRequest.makeUnsafe({
+            SubscribeParameterRequest.make({
               instance,
               processor: "realtime",
               id: [{ name: qualifiedName }],
@@ -237,7 +237,7 @@ export class YamcsSubscriptions extends ServiceMap.Service<
       Stream.unwrap(
         Effect.gen(function* () {
           const { call, stream } = yield* ws.subscribe(
-            SubscribeEventsRequest.makeUnsafe({ instance }),
+            SubscribeEventsRequest.make({ instance }),
           );
 
           // priorEvents should be in chronological order (oldest first)

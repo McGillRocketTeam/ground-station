@@ -1,8 +1,8 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 
 export const Advancement = Schema.Struct({
   acknowledgment: Schema.String.pipe(
-    Schema.withDecodingDefault(() => "Acknowledge_Queued"),
+    Schema.withDecodingDefault(Effect.succeed("Acknowledge_Queued")),
   ),
   wait: Schema.optional(Schema.Number),
 });
@@ -41,7 +41,7 @@ export const VerifyStep = Schema.Struct({
   type: Schema.Literal("verify"),
   comment: Schema.optional(Schema.String),
   condition: Schema.Array(VerifyCondition),
-  delay: Schema.Int.pipe(Schema.withDecodingDefault(() => 0)),
+  delay: Schema.Int.pipe(Schema.withDecodingDefault(Effect.succeed(0))),
   timeout: Schema.optional(Schema.Int),
 });
 

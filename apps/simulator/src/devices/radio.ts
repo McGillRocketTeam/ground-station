@@ -78,7 +78,7 @@ export const makeRadioActor = (options: RadioActorOptions) =>
       initialState: initialStateForRole(options.role),
       make: (actor) => {
         const makeBehavior = Effect.gen(function* () {
-          const services = yield* Effect.services();
+          const services = yield* Effect.context();
           const runFork = Effect.runForkWith(services);
 
           const publishOwnState = Effect.gen(function* () {

@@ -33,7 +33,7 @@ import {
   Cause,
 } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
-import { Atom, AtomHttpApi } from "effect/unstable/reactivity";
+import { AsyncResult, Atom, AtomHttpApi } from "effect/unstable/reactivity";
 
 type ArchivedCommandHistoryEntry =
   typeof import("@mrt/yamcs-effect").CommandHistoryEntry.Type;
@@ -59,7 +59,7 @@ function isDecodedSuccess<A>(
 
 function decodeStreamOrLog<A, E, R>(
   stream: Stream.Stream<unknown, E, R>,
-  schema: Schema.Schema<A> & { readonly DecodingServices: never },
+  schema: Schema.Decoder<A>,
   label: string,
 ): Stream.Stream<A, E, R> {
   return stream.pipe(
@@ -145,7 +145,7 @@ const timeSubscriptionAtomForInstance = Atom.family((instance: string) =>
       Effect.gen(function* () {
         const ws = yield* WebSocketClient;
         const { call, stream } = yield* ws.subscribe(
-          SubscribeTimeRequest.makeUnsafe({
+          SubscribeTimeRequest.make({
             instance,
             processor: "realtime",
           }),
@@ -189,7 +189,7 @@ const linksSubscriptionAtomForInstance = Atom.family((instance: string) =>
         );
 
         const { call, stream } = yield* ws.subscribe(
-          SubscribeLinksRequest.makeUnsafe({ instance }),
+          SubscribeLinksRequest.make({ instance }),
         );
 
         return Stream.concat(
@@ -243,7 +243,7 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
           [];
 
         const { call, stream } = yield* ws.subscribe(
-          SubscribeCommandsRequest.makeUnsafe({
+          SubscribeCommandsRequest.make({
             instance,
             processor: "realtime",
           }),
@@ -315,7 +315,7 @@ const parameterSubscriptionAtomForInstance = Atom.family(
         Effect.gen(function* () {
           const ws = yield* WebSocketClient;
           const { call, stream } = yield* ws.subscribe(
-            SubscribeParameterRequest.makeUnsafe({
+            SubscribeParameterRequest.make({
               instance,
               processor: "realtime",
               id: [{ name: qualifiedName }],
@@ -401,7 +401,7 @@ const eventsSubscriptionAtomForInstance = Atom.family((instance: string) =>
         }
 
         const { call, stream } = yield* ws.subscribe(
-          SubscribeEventsRequest.makeUnsafe({ instance }),
+          SubscribeEventsRequest.make({ instance }),
         );
 
         const initial = [...priorEvents].reverse();
@@ -433,6 +433,15 @@ export const timeSubscriptionAtom = Atom.make((get) =>
 
 export const linksSubscriptionAtom = Atom.make((get) =>
   get(linksSubscriptionAtomForInstance(get(selectedInstanceAtom))),
+);
+
+export const singleLinkSubscriptionAtom = Atom.family((name: string) =>
+  Atom.make((get) =>
+    AsyncResult.map(
+      get(linksSubscriptionAtomForInstance(get(selectedInstanceAtom))),
+      (links) => links.find((link) => link.name === name),
+    ),
+  ),
 );
 
 export const commandsSubscriptionAtom = Atom.make((get) =>

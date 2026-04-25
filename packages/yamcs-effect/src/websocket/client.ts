@@ -5,7 +5,7 @@ import {
   Layer,
   PubSub,
   Schema,
-  ServiceMap,
+  Context,
   Stream,
 } from "effect";
 
@@ -33,7 +33,7 @@ export class WebSocketError extends Data.TaggedError("WebSocketError")<{
   readonly cause: unknown;
 }> {}
 
-export class WebSocketClient extends ServiceMap.Service<
+export class WebSocketClient extends Context.Service<
   WebSocketClient,
   WebSocketClientService
 >()("@mrt/yamcs-effect/WebSocketClient") {
@@ -43,7 +43,7 @@ export class WebSocketClient extends ServiceMap.Service<
       const yamcsUrl = yield* Config.url("YAMCS_URL");
       const websocketUrl = new URL("api/websocket", yamcsUrl);
       websocketUrl.protocol = yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
-      let id = SubscriptionId.makeUnsafe(1);
+      let id = SubscriptionId.make(1);
       const messagePubSub = yield* Effect.acquireRelease(
         PubSub.unbounded<typeof ServerMessages.Type>({ replay: 128 }),
         PubSub.shutdown,
@@ -146,7 +146,7 @@ export class WebSocketClient extends ServiceMap.Service<
         yield* Effect.sync(() =>
           ws.send(
             JSON.stringify(
-              Cancel.makeUnsafe({
+              Cancel.make({
                 type: "cancel",
                 options: { call },
               }),

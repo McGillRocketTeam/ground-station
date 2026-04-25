@@ -38,60 +38,60 @@ const ProcedureStep = Schema.Union([
 type ProcedureStep = typeof ProcedureStep.Type;
 
 const procedures: Array<ProcedureStep> = [
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Connect the COTS power harness to the COTS Battery",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Remove the pull pin to arm the Blue Raven and the RRC3.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Confirm that the Blue Raven is powered by an audible beep.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Confirm that the RRC3 is powered by an audible beep.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Insert the pull pin to disarm the Blue Raven and the RRC3.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     danger: "WARNING",
     role: "AVC",
     text: "COTS avionics system is validated for assembly procedures.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Connect the SRAD e-matches to both energize channels of FC-B.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Pass the SRAD e-matches through the hole in the avionics plate.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Cover the e-matches and the wires that pass through the hole with jeans.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Secure the jeans to the avionics plate with duct tape.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Connect the SRAD power harness to the SRAD Battery.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Remove the pull pin from the SRAD power harness to arm the SRAD system.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Confirm that the LEDs on the COTSplane, the FCs, and the GPS are ON, indicating that they are powered.",
   }),
-  ParameterProcedureStep.makeUnsafe({
+  ParameterProcedureStep.make({
     role: "GSC",
     text: "Confirm that telemetry packets are updating regularly from FC-A.",
     parameters: [
@@ -104,7 +104,7 @@ const procedures: Array<ProcedureStep> = [
       },
     ],
   }),
-  ParameterProcedureStep.makeUnsafe({
+  ParameterProcedureStep.make({
     role: "GSC",
     text: "Confirm that telemetry packets are updating regularly from FC-B.",
     parameters: [
@@ -117,15 +117,15 @@ const procedures: Array<ProcedureStep> = [
       },
     ],
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Bring the system outside to allow the GPS to lock.",
   }),
-  InformationProcedureStep.makeUnsafe({
+  InformationProcedureStep.make({
     role: "AVC",
     text: "Confirm that the Time pulse LED is flashing on both GPS.",
   }),
-  ParameterProcedureStep.makeUnsafe({
+  ParameterProcedureStep.make({
     role: "GSC",
     text: "Confirm that the latitude and longitude displayed on the GUI are correct.",
     parameters: [

@@ -22,12 +22,6 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: simulator
-    class: org.yamcs.tctm.UdpParameterDataLink
-    stream: pp_realtime
-    port: 11016
-    json: true
-
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -35,14 +29,16 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemA/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_a_controlstation_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_a_controlstation_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemA/Pad/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_a_pad_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_a_pad_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -54,14 +50,16 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemB/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_b_controlstation_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_b_controlstation_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemB/Pad/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_b_pad_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_b_pad_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -158,3 +156,6 @@ streamConfig:
     - name: "tc_realtime"
       processor: "realtime"
       tcPatterns: ["/FlightComputer/.*"]
+    - name: "tc_radio_realtime"
+      processor: "realtime"
+      tcPatterns: [".*/Radio/.*"]

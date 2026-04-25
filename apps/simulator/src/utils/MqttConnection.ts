@@ -1,4 +1,4 @@
-import { Effect, Layer, Schema, Scope, ServiceMap } from "effect";
+import { Effect, Layer, Schema, Scope, Context } from "effect";
 import mqtt from "mqtt";
 
 import { BROKER_URL } from "./Config.ts";
@@ -24,7 +24,7 @@ class MqttError extends Schema.TaggedErrorClass<MqttError>()("MqttError", {
   error: Schema.ErrorWithStack,
 }) {}
 
-export class MqttConnection extends ServiceMap.Service<
+export class MqttConnection extends Context.Service<
   MqttConnection,
   {
     readonly publish: (
@@ -40,7 +40,7 @@ export class MqttConnection extends ServiceMap.Service<
     Effect.gen(function* () {
       const brokerUrl = yield* BROKER_URL;
       const client = mqtt.connect(brokerUrl);
-      const services = yield* Effect.services();
+      const services = yield* Effect.context();
       const runFork = Effect.runForkWith(services);
 
       yield* Effect.callback<void>((resume) => {

@@ -12,7 +12,7 @@ import org.yamcs.logging.Log;
  */
 public class LabJackUtil {
     //range of analog pins to poll on the LabJack (T7)
-    public static final int ANALOG_PIN_START = 79;
+    public static final int ANALOG_PIN_START = 78;
     public static final int ANALOG_PIN_END = 123;
     public static final int NUM_ANALOG_PINS = ANALOG_PIN_END - ANALOG_PIN_START + 1; // 45 pins
 

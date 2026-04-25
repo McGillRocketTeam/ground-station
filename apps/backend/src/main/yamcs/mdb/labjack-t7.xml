@@ -18,6 +18,7 @@
             </FloatParameterType>
         </ParameterTypeSet>
         <ParameterSet>
+            <Parameter name="AIN78" parameterTypeRef="float_32"/>
             <Parameter name="AIN79" parameterTypeRef="float_32"/>
             <Parameter name="AIN80" parameterTypeRef="float_32"/>
             <Parameter name="AIN81" parameterTypeRef="float_32"/>
@@ -120,10 +121,15 @@
                 <ParameterProperties dataSource="derived" readOnly="true">
                 </ParameterProperties>
             </Parameter>
+            <Parameter name="calibrated_ain_78_pressure_psi" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
         </ParameterSet>
         <ContainerSet>
             <SequenceContainer name="LabJackPacket">
                 <EntryList>
+                    <ParameterRefEntry parameterRef="AIN78"/>
                     <ParameterRefEntry parameterRef="AIN79"/>
                     <ParameterRefEntry parameterRef="AIN80"/>
                     <ParameterRefEntry parameterRef="AIN81"/>
@@ -202,13 +208,13 @@
         <AlgorithmSet>
             <MathAlgorithm name="calibrated_ccpt_pressure_psi">
                 <MathOperation outputParameterRef="calibrated_ccpt_pressure_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN82"/>
+                    <ParameterInstanceRefOperand parameterRef="AIN86"/>
                     <ValueOperand>868</ValueOperand>
                     <Operator>*</Operator>
                     <ValueOperand>50.5</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN82"/>
+                        <OnParameterUpdateTrigger parameterRef="AIN86"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
@@ -281,6 +287,18 @@
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN83"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_ain_78_pressure_psi">
+                <MathOperation outputParameterRef="calibrated_ain_78_pressure_psi">
+                    <ParameterInstanceRefOperand parameterRef="AIN78"/>
+                    <ValueOperand>393.36</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>172.71</ValueOperand>
+                    <Operator>-</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN78"/>
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>

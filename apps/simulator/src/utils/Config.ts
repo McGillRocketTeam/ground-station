@@ -14,4 +14,5 @@ export const YAMCS_INSTANCE = Config.nonEmptyString("YAMCS_INSTANCE").pipe(
 
 export const DATA_MODE = Config.schema(
   Schema.Literals(["random", "sequential"]),
+  "DATA_MODE",
 ).pipe(Config.withDefault("sequential"));

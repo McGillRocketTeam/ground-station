@@ -1,4 +1,5 @@
 {
   "simulator": false,
-  "environment": "production"
+  "environment": "production",
+  "simulator_data_mode": "random"
 }

@@ -7,6 +7,20 @@ import {
 
 import { ParameterSample, QualifiedName } from "../schema.js";
 
+const ParameterSampleField = Schema.Literals([
+  "time",
+  "avg",
+  "min",
+  "max",
+  "n",
+  "minTime",
+  "maxTime",
+  "firstTime",
+  "lastTime",
+]);
+
+const SamplesSource = Schema.Literals(["ParameterArchive", "replay"]);
+
 const GetSamplesResponse = Schema.Struct({
   sample: Schema.Array(ParameterSample),
 });
@@ -14,7 +28,7 @@ const GetSamplesResponse = Schema.Struct({
 export const parameterGroup = HttpApiGroup.make("parameter").add(
   HttpApiEndpoint.get(
     "getSamples",
-    "/stream-archive/:instance/parameters/:parameterName/samples",
+    "/archive/:instance/parameters/:parameterName/samples",
     {
       params: {
         instance: Schema.String,
@@ -23,6 +37,11 @@ export const parameterGroup = HttpApiGroup.make("parameter").add(
       query: {
         start: Schema.String,
         stop: Schema.optional(Schema.String),
+        count: Schema.optional(Schema.NumberFromString),
+        fields: Schema.optional(Schema.Array(ParameterSampleField)),
+        gapTime: Schema.optional(Schema.NumberFromString),
+        source: Schema.optional(SamplesSource),
+        useRawValue: Schema.optional(Schema.Boolean),
       },
       success: GetSamplesResponse,
       error: [HttpApiError.NotFound],

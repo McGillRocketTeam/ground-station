@@ -21,6 +21,7 @@
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource-variable/public-sans": "^5.2.7",
     "@mrt/yamcs-effect": "workspace:*",
+    "@number-flow/react": "^0.6.0",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-form": "^1.28.4",
     "@tanstack/react-hotkeys": "^0.3.2",

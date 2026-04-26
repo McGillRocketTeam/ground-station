@@ -139,6 +139,28 @@ const makeFloatField = (
     }),
   );
 
+const makeIncrementingFloatField = (
+  min: number,
+  max: number,
+  step: number,
+  dataMode: string,
+): Effect.Effect<
+  Effect.Effect<GeneratedFieldValue, never, never>,
+  never,
+  never
+> =>
+  Ref.make(0).pipe(
+    Effect.map((ref) => {
+      const steps = Math.floor((max - min) / step) + 1;
+
+      return dataMode === "random"
+        ? Effect.sync(() => Math.random() * (max - min) + min)
+        : Ref.getAndUpdate(ref, (n) => (n + 1) % steps).pipe(
+            Effect.map((n) => Number((n * step + min).toFixed(2))),
+          );
+    }),
+  );
+
 export class DataGenerator extends Context.Service<
   DataGenerator,
   {
@@ -171,6 +193,14 @@ export class DataGenerator extends Context.Service<
       const forParameter = (parameter: Parameter) => {
         if (parameter.name.endsWith("_atomic_flag")) {
           return makeFixedField(1);
+        }
+
+        if (
+          parameter.name === "acceleration_x" ||
+          parameter.name === "acceleration_y" ||
+          parameter.name === "acceleration_z"
+        ) {
+          return makeIncrementingFloatField(-32_000, 32_000, 1_000, dataMode);
         }
 
         switch (parameter.type.engType) {

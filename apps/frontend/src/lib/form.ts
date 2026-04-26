@@ -18,6 +18,7 @@ export type FormType =
   | "string"
   | "parameter"
   | "parameterArray"
+  | "gaugeVisualRanges"
   | "command"
   | "coordinate";
 

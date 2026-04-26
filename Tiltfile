@@ -5,7 +5,7 @@ config.define_string('mqtt_broker_url')
 cfg = config.parse()
 simulator_enabled = cfg.get('simulator', True)
 mrt_environment = cfg.get('environment', 'production')
-simulator_data_mode = cfg.get('simulator_data_mode', 'sequential')
+simulator_data_mode = cfg.get('simulator_data_mode', 'incremental')
 mqtt_broker_url = cfg.get('mqtt_broker_url', '')
 use_external_mqtt_broker = mqtt_broker_url != ''
 backend_resource_deps = [] if use_external_mqtt_broker else ['mqtt_broker']
@@ -21,8 +21,8 @@ if use_external_mqtt_broker:
 if mrt_environment != 'development' and mrt_environment != 'production':
 	fail("Tilt config 'environment' must be either 'development' or 'production'")
 
-if simulator_data_mode != 'random' and simulator_data_mode != 'sequential':
-	fail("Tilt config 'simulator_data_mode' must be either 'random' or 'sequential'")
+if simulator_data_mode != 'random' and simulator_data_mode != 'incremental':
+	fail("Tilt config 'simulator_data_mode' must be either 'random' or 'incremental'")
 
 open_frontend_cmd = os.name == 'nt' and "python -m webbrowser http://localhost:5173" or "python3 -m webbrowser http://localhost:5173"
 

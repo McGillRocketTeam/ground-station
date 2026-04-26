@@ -1,6 +1,6 @@
 {
   "simulator": false,
   "environment": "production",
-  "simulator_data_mode": "random",
+  "simulator_data_mode": "incremental",
   "mqtt_broker_url": ""
 }

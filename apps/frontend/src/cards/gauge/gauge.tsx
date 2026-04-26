@@ -1,3 +1,5 @@
+import NumberFlow from "@number-flow/react";
+
 import type { GaugeVisualRange, GaugeVisualRangePattern } from "./config";
 
 type GaugeProps = {
@@ -118,6 +120,15 @@ function needlePath(angleDegrees: number): string {
   const baseDistance = 12;
   const baseHalfWidth = 4.5;
   const tip = polarToCartesian(GEOMETRY.radius - 7, angleDegrees);
+  const tipHalfWidth = 1.4;
+  const leftTip = {
+    x: tip.x + normal.x * tipHalfWidth,
+    y: tip.y + normal.y * tipHalfWidth,
+  };
+  const rightTip = {
+    x: tip.x - normal.x * tipHalfWidth,
+    y: tip.y - normal.y * tipHalfWidth,
+  };
   const baseCenter = {
     x: GEOMETRY.centerX - direction.x * baseDistance,
     y: GEOMETRY.centerY - direction.y * baseDistance,
@@ -132,9 +143,10 @@ function needlePath(angleDegrees: number): string {
   };
 
   return [
-    `M ${tip.x} ${tip.y}`,
+    `M ${leftTip.x} ${leftTip.y}`,
     `L ${leftBase.x} ${leftBase.y}`,
     `L ${rightBase.x} ${rightBase.y}`,
+    `L ${rightTip.x} ${rightTip.y}`,
     "Z",
   ].join(" ");
 }
@@ -315,7 +327,16 @@ export function Gauge({
         })}
       </g>
 
-      <path className="fill-primary" d={needlePath(angle)} />
+      <g
+        className="transition-transform duration-200 ease-out"
+        style={{
+          transform: `rotate(${angle}deg)`,
+          transformBox: "view-box",
+          transformOrigin: `${GEOMETRY.centerX}px ${GEOMETRY.centerY}px`,
+        }}
+      >
+        <path className="fill-primary" d={needlePath(0)} />
+      </g>
       <circle
         className="fill-foreground"
         cx={GEOMETRY.centerX}
@@ -323,20 +344,36 @@ export function Gauge({
         r="9"
       />
 
+      <g transform="translate(122 193)">
+        <text
+          className="fill-muted-foreground font-mono text-[20px]"
+          x="38"
+          y="24"
+          textAnchor="middle"
+        >
+          {label}
+        </text>
+      </g>
+
       <g transform="translate(92 232)">
         <rect
           className="fill-background stroke-border"
           width="136"
           height="42"
         />
-        <text
-          className="fill-foreground font-mono text-[25px]"
-          x="68"
-          y="29"
-          textAnchor="middle"
-        >
-          {Math.round(value)} {label}
-        </text>
+        <foreignObject width="136" height="42">
+          <div className="grid h-full place-items-center font-mono text-[25px] leading-none text-foreground">
+            <NumberFlow
+              format={{
+                minimumFractionDigits: 2,
+                minimumIntegerDigits: 2,
+                useGrouping: true,
+              }}
+              trend={0}
+              value={value}
+            />
+          </div>
+        </foreignObject>
       </g>
     </svg>
   );

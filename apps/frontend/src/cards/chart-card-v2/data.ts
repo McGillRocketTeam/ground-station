@@ -16,7 +16,7 @@ import { DEFAULT_SERIES_CONFIGS } from "./config";
 export const MAX_POINTS = 1000;
 export const LIVE_WINDOW_MS = 15 * 60 * 1000;
 
-const SAMPLE_COUNT = 6000;
+const SAMPLE_COUNT = 5200;
 
 const accelerationXSeries = DEFAULT_SERIES_CONFIGS[0]!;
 const accelerationYSeries = DEFAULT_SERIES_CONFIGS[1]!;
@@ -38,8 +38,12 @@ export const historyAtom = Atom.make((get) =>
   Effect.gen(function* () {
     const instance = get(selectedInstanceAtom);
     const viewport = get(viewportAtom);
-    const stop = new Date(viewport.end);
-    const start = new Date(viewport.start);
+    const samplePaddingMs = Math.max(
+      1,
+      (viewport.end - viewport.start) / SAMPLE_COUNT,
+    );
+    const stop = new Date(viewport.end + samplePaddingMs);
+    const start = new Date(viewport.start - samplePaddingMs);
 
     const querySamples = (
       parameterName: string,

@@ -54,7 +54,7 @@ const MIN_VIEWPORT_MS = 1_000;
 const MAX_VIEWPORT_MS = 30 * 24 * 60 * 60 * 1000;
 const ZOOM_IN_FACTOR = 0.92;
 const ZOOM_OUT_FACTOR = 1.08;
-const VIEWPORT_FETCH_DEBOUNCE_MS = 300;
+const VIEWPORT_FETCH_DEBOUNCE_MS = 150;
 const accelerationXSeries = DEFAULT_SERIES_CONFIGS[0]!;
 const accelerationYSeries = DEFAULT_SERIES_CONFIGS[1]!;
 

@@ -26,7 +26,7 @@ dataLinks:
     class: org.yamcs.mrt.AstraAggregateDataLink
     autoReconnect: true
     brokers:
-      - tcp://localhost:1883
+      - ${env.MQTT_BROKER_URL:tcp://localhost:1883}
     frequency: "435.00"
     tmStream: tm_433_realtime
 
@@ -34,7 +34,7 @@ dataLinks:
     class: org.yamcs.mrt.AstraAggregateDataLink
     autoReconnect: true
     brokers:
-      - tcp://localhost:1883
+      - ${env.MQTT_BROKER_URL:tcp://localhost:1883}
     frequency: "903.00"
     tmStream: tm_903_realtime
 
@@ -42,7 +42,7 @@ dataLinks:
     class: org.yamcs.mrt.AstraAggregateDataLink
     autoReconnect: true
     brokers:
-      - tcp://localhost:1883
+      - ${env.MQTT_BROKER_URL:tcp://localhost:1883}
     frequency: "N/A"
     tmStream: tm_daq_realtime
 
@@ -50,7 +50,7 @@ dataLinks:
     class: org.yamcs.mrt.AstraCommandLink
     autoReconnect: true
     brokers:
-      - tcp://localhost:1883
+      - ${env.MQTT_BROKER_URL:tcp://localhost:1883}
     tcStream: tc_realtime
 
   - name: LabJack

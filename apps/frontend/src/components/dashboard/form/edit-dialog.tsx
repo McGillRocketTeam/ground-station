@@ -64,10 +64,18 @@ function EditPanelDialogForm({ payload }: { payload: IDockviewPanel }) {
 
 export function EditDialogPanel() {
   return (
-    <Dialog handle={editPanelDialogHandle}>
+    <Dialog
+      disablePointerDismissal
+      handle={editPanelDialogHandle}
+      onOpenChange={(open, details) => {
+        if (!open && details.reason === "escape-key") {
+          details.cancel();
+        }
+      }}
+    >
       {({ payload }) =>
         payload && (
-          <DialogContent className="sm:max-w-xl">
+          <DialogContent className="sm:max-w-xl" showCloseButton={false}>
             <DialogHeader>
               <DialogTitle>Edit Card</DialogTitle>
               <DialogDescription>

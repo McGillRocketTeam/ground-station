@@ -13,6 +13,10 @@ import {
 import { Field, FieldError, FieldLabel } from "../../ui/field";
 import { Input } from "../../ui/input";
 import {
+  DashboardGaugeVisualRangesField,
+  type DashboardGaugeVisualRangesFieldApi,
+} from "./gauge-visual-ranges-field";
+import {
   DashboardParameterArrayField,
   type DashboardParameterArrayFieldApi,
 } from "./parameter-array-field";
@@ -28,6 +32,10 @@ const DashboardParameterFieldComponent =
 const DashboardParameterArrayFieldComponent =
   DashboardParameterArrayField as unknown as ComponentType<{
     field: DashboardParameterArrayFieldApi;
+  }>;
+const DashboardGaugeVisualRangesFieldComponent =
+  DashboardGaugeVisualRangesField as unknown as ComponentType<{
+    field: DashboardGaugeVisualRangesFieldApi;
   }>;
 
 function getFieldPlaceholder(type: ReturnType<typeof formType>) {
@@ -182,6 +190,12 @@ export function DashboardCardField({
             return (
               <DashboardParameterArrayFieldComponent
                 field={field as DashboardParameterArrayFieldApi}
+              />
+            );
+          case "gaugeVisualRanges":
+            return (
+              <DashboardGaugeVisualRangesFieldComponent
+                field={field as DashboardGaugeVisualRangesFieldApi}
               />
             );
           case "coordinate":

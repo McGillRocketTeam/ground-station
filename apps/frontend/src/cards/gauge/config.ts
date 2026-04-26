@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 
 import { ParameterField } from "@/lib/dashboard-field-types";
-import { FormTitleAnnotationId } from "@/lib/form";
+import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
 export const GaugeVisualRangePatternSchema = Schema.Literals([
   "success",
@@ -38,7 +38,10 @@ export const GaugeCardConfigSchema = Schema.Struct({
     Schema.annotate({ [FormTitleAnnotationId]: "Gauge Parameter" }),
   ),
   ranges: Schema.optional(Schema.Array(GaugeVisualRangeSchema)).pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Visual Ranges" }),
+    Schema.annotate({
+      [FormTitleAnnotationId]: "Visual Ranges",
+      [FormTypeAnnotationId]: "gaugeVisualRanges",
+    }),
   ),
 });
 

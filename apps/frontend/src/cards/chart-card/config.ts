@@ -9,13 +9,13 @@ export const ChartSeriesConfigSchema = Schema.Struct({
   parameter: Schema.String,
 });
 
-export const ChartCardV2ConfigSchema = Schema.Struct({
+export const ChartCardConfigSchema = Schema.Struct({
   series: Schema.optional(Schema.Array(ChartSeriesConfigSchema)),
 });
 
 export type ChartSeriesKey = typeof ChartSeriesKeySchema.Type;
 export type ChartSeriesConfig = typeof ChartSeriesConfigSchema.Type;
-export type ChartCardV2Config = typeof ChartCardV2ConfigSchema.Type;
+export type ChartCardConfig = typeof ChartCardConfigSchema.Type;
 
 export const DEFAULT_SERIES_CONFIGS: ReadonlyArray<ChartSeriesConfig> = [
   {

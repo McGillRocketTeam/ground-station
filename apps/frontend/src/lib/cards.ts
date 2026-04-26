@@ -6,14 +6,13 @@ import { Component, createElement } from "react";
 
 import type { DashboardActionGroup } from "@/lib/dashboard-actions";
 
-import { ChartCardV2 } from "@/cards/chart-card-v2";
+import { ChartCard } from "@/cards/chart-card";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
 import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
 import { MapCard } from "@/cards/map-card";
-import { ParameterChartCard } from "@/cards/parameter-chart";
 import { ParameterTable } from "@/cards/parameter-table";
 import { TextCard } from "@/cards/text-card";
 
@@ -22,14 +21,13 @@ export const CardArray: CardDefinition<string, any>[] = [
   TextCard,
   ParameterTable,
   CommandHistoryCard,
-  ParameterChartCard,
+  ChartCard,
   MapCard,
   LinksCard,
   EventsCard,
   CommandButtonCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
-  ChartCardV2,
 ] as const;
 
 export interface CardDefinition<

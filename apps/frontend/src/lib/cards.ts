@@ -10,6 +10,7 @@ import { ChartCard } from "@/cards/chart-card";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
+import { GaugeCard } from "@/cards/gauge";
 import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
 import { MapCard } from "@/cards/map-card";
@@ -26,6 +27,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   LinksCard,
   EventsCard,
   CommandButtonCard,
+  GaugeCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
 ] as const;

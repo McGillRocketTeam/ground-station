@@ -5,7 +5,13 @@ import { useAtomSet, useAtomSubscribe, useAtomValue } from "@effect/atom-react";
 import * as echarts from "echarts";
 import { graphic } from "echarts";
 import { DateTime } from "effect";
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import {
   ContextMenu,
@@ -14,6 +20,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
+import type { ChartSeriesConfig } from "./config";
 import type {
   ChartPoint,
   ChartSeriesData,
@@ -23,10 +30,9 @@ import type {
 
 import { DEFAULT_SERIES_CONFIGS } from "./config";
 import {
-  accelerationXLiveAtom,
-  accelerationYLiveAtom,
   extractNumericValue,
   historyAtom,
+  liveParameterAtom,
   LIVE_WINDOW_MS,
   mergePoints,
   viewportAtom,
@@ -55,8 +61,6 @@ const MAX_VIEWPORT_MS = 30 * 24 * 60 * 60 * 1000;
 const ZOOM_IN_FACTOR = 0.92;
 const ZOOM_OUT_FACTOR = 1.08;
 const VIEWPORT_FETCH_DEBOUNCE_MS = 150;
-const accelerationXSeries = DEFAULT_SERIES_CONFIGS[0]!;
-const accelerationYSeries = DEFAULT_SERIES_CONFIGS[1]!;
 
 function renderRangeItem(params: any, api: any) {
   const time = Number(api.value(0));
@@ -91,8 +95,9 @@ function renderRangeItem(params: any, api: any) {
 
 function getLatestPointTime(seriesData: ChartSeriesData) {
   return Math.max(
-    seriesData.x.at(-1)?.time ?? Number.NEGATIVE_INFINITY,
-    seriesData.y.at(-1)?.time ?? Number.NEGATIVE_INFINITY,
+    ...Object.values(seriesData).map(
+      (points) => points.at(-1)?.time ?? Number.NEGATIVE_INFINITY,
+    ),
   );
 }
 
@@ -110,7 +115,7 @@ function getLiveViewport(
 }
 
 function emptySeriesData(): ChartSeriesData {
-  return { x: [], y: [] };
+  return {};
 }
 
 function snapshotSeriesData(
@@ -118,10 +123,14 @@ function snapshotSeriesData(
   liveData: ChartSeriesData,
   viewport: ChartViewport | null,
 ): ChartSeriesData {
-  return {
-    x: snapshotSeries(archiveData.x, liveData.x, viewport),
-    y: snapshotSeries(archiveData.y, liveData.y, viewport),
-  };
+  const keys = new Set([...Object.keys(archiveData), ...Object.keys(liveData)]);
+
+  return Object.fromEntries(
+    Array.from(keys).map((key) => [
+      key,
+      snapshotSeries(archiveData[key] ?? [], liveData[key] ?? [], viewport),
+    ]),
+  );
 }
 
 function snapshotSeries(
@@ -143,7 +152,48 @@ function snapshotSeries(
   return mergePoints([...archiveBeforeLive, ...livePoints]);
 }
 
-export function LiveChart({ api }: { api: PanelApi }) {
+function LiveSeriesSubscription({
+  onPoint,
+  parameter,
+  seriesKey,
+}: {
+  onPoint: (seriesKey: string, point: ChartPoint) => void;
+  parameter: string;
+  seriesKey: string;
+}) {
+  const handleUpdate = useCallback(
+    (result: AsyncResult.AsyncResult<typeof ParameterValue.Type, unknown>) => {
+      if (result._tag !== "Success") return;
+
+      const parameterValue = result.value;
+      const numericValue = extractNumericValue(parameterValue);
+      if (numericValue === undefined) return;
+
+      onPoint(seriesKey, {
+        avg: numericValue,
+        max: numericValue,
+        min: numericValue,
+        time: DateTime.toDate(parameterValue.generationTime).getTime(),
+      });
+    },
+    [onPoint, seriesKey],
+  );
+
+  useAtomSubscribe(liveParameterAtom(parameter), handleUpdate);
+
+  return null;
+}
+
+export function LiveChart({
+  api,
+  seriesConfigs,
+}: {
+  api: PanelApi;
+  seriesConfigs?: ReadonlyArray<ChartSeriesConfig>;
+}) {
+  const normalizedSeriesConfigs = useMemo(() => {
+    return seriesConfigs?.length ? seriesConfigs : DEFAULT_SERIES_CONFIGS;
+  }, [seriesConfigs]);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
   const archivePointsRef = useRef<ChartSeriesData>(emptySeriesData());
@@ -155,7 +205,7 @@ export function LiveChart({ api }: { api: PanelApi }) {
     null,
   );
   const setHistoryViewport = useAtomSet(viewportAtom);
-  const historyResult = useAtomValue(historyAtom);
+  const historyResult = useAtomValue(historyAtom(normalizedSeriesConfigs));
 
   const renderSnapshot = useCallback(() => {
     visiblePointsRef.current = snapshotSeriesData(
@@ -163,8 +213,12 @@ export function LiveChart({ api }: { api: PanelApi }) {
       livePointsRef.current,
       viewportRef.current,
     );
-    updateChartData(chartRef.current, visiblePointsRef.current);
-  }, []);
+    updateChartData(
+      chartRef.current,
+      normalizedSeriesConfigs,
+      visiblePointsRef.current,
+    );
+  }, [normalizedSeriesConfigs]);
 
   const getLiveViewportFromAllPoints = useCallback(() => {
     return getLiveViewport(
@@ -210,7 +264,7 @@ export function LiveChart({ api }: { api: PanelApi }) {
     chart.setOption({
       animation: false,
       legend: {
-        data: [accelerationXSeries.label, accelerationYSeries.label],
+        data: normalizedSeriesConfigs.map((series) => series.label),
         top: 4,
       },
       grid: {
@@ -227,44 +281,26 @@ export function LiveChart({ api }: { api: PanelApi }) {
         scale: true,
         type: "value",
       },
-      series: [
+      series: normalizedSeriesConfigs.flatMap((series) => [
         {
           connectNulls: false,
           data: [],
-          itemStyle: { color: accelerationXSeries.color },
-          lineStyle: { color: accelerationXSeries.color },
-          name: accelerationXSeries.label,
+          itemStyle: { color: series.color },
+          lineStyle: { color: series.color },
+          name: series.label,
           showSymbol: false,
           type: "line",
         },
         {
           data: [],
-          itemStyle: { color: accelerationXSeries.color, opacity: 0.14 },
-          name: `${accelerationXSeries.label} Range`,
+          itemStyle: { color: series.color, opacity: 0.14 },
+          name: `${series.label} Range`,
           renderItem: renderRangeItem,
           silent: true,
           tooltip: { show: false },
           type: "custom",
         },
-        {
-          connectNulls: false,
-          data: [],
-          itemStyle: { color: accelerationYSeries.color },
-          lineStyle: { color: accelerationYSeries.color },
-          name: accelerationYSeries.label,
-          showSymbol: false,
-          type: "line",
-        },
-        {
-          data: [],
-          itemStyle: { color: accelerationYSeries.color, opacity: 0.14 },
-          name: `${accelerationYSeries.label} Range`,
-          renderItem: renderRangeItem,
-          silent: true,
-          tooltip: { show: false },
-          type: "custom",
-        },
-      ],
+      ]),
       tooltip: {
         trigger: "axis",
       },
@@ -274,7 +310,7 @@ export function LiveChart({ api }: { api: PanelApi }) {
       chart.dispose();
       chartRef.current = null;
     };
-  }, []);
+  }, [normalizedSeriesConfigs]);
 
   useLayoutEffect(() => {
     const chart = chartRef.current;
@@ -423,10 +459,13 @@ export function LiveChart({ api }: { api: PanelApi }) {
   }, [historyResult, renderSnapshot]);
 
   const applyLivePoint = useCallback(
-    (series: keyof ChartSeriesData, point: ChartPoint) => {
+    (series: string, point: ChartPoint) => {
       livePointsRef.current = {
         ...livePointsRef.current,
-        [series]: mergePoints([...livePointsRef.current[series], point]),
+        [series]: mergePoints([
+          ...(livePointsRef.current[series] ?? []),
+          point,
+        ]),
       };
 
       if (viewportRef.current?.mode === "paused") {
@@ -444,51 +483,16 @@ export function LiveChart({ api }: { api: PanelApi }) {
     [getLiveViewportFromAllPoints, renderSnapshot],
   );
 
-  const handleAccelerationXUpdate = useCallback(
-    (result: AsyncResult.AsyncResult<typeof ParameterValue.Type, unknown>) => {
-      if (result._tag !== "Success") return;
-
-      const parameterValue = result.value;
-      const numericValue = extractNumericValue(parameterValue);
-      if (numericValue === undefined) return;
-
-      const point: ChartPoint = {
-        avg: numericValue,
-        max: numericValue,
-        min: numericValue,
-        time: DateTime.toDate(parameterValue.generationTime).getTime(),
-      };
-
-      applyLivePoint("x", point);
-    },
-    [applyLivePoint],
-  );
-
-  const handleAccelerationYUpdate = useCallback(
-    (result: AsyncResult.AsyncResult<typeof ParameterValue.Type, unknown>) => {
-      if (result._tag !== "Success") return;
-
-      const parameterValue = result.value;
-      const numericValue = extractNumericValue(parameterValue);
-      if (numericValue === undefined) return;
-
-      const point: ChartPoint = {
-        avg: numericValue,
-        max: numericValue,
-        min: numericValue,
-        time: DateTime.toDate(parameterValue.generationTime).getTime(),
-      };
-
-      applyLivePoint("y", point);
-    },
-    [applyLivePoint],
-  );
-
-  useAtomSubscribe(accelerationXLiveAtom, handleAccelerationXUpdate);
-  useAtomSubscribe(accelerationYLiveAtom, handleAccelerationYUpdate);
-
   return (
     <ContextMenu>
+      {normalizedSeriesConfigs.map((series) => (
+        <LiveSeriesSubscription
+          key={series.parameter}
+          parameter={series.parameter}
+          seriesKey={series.parameter}
+          onPoint={applyLivePoint}
+        />
+      ))}
       <ContextMenuTrigger asChild>
         <div ref={containerRef} className="h-full w-full" />
       </ContextMenuTrigger>

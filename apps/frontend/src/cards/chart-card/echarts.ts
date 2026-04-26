@@ -1,8 +1,9 @@
 import type { ECharts } from "echarts";
 
+import type { ChartSeriesConfig } from "./config";
 import type { ChartSeriesData } from "./types";
 
-function toAvgData(points: ChartSeriesData["x"]) {
+function toAvgData(points: ChartSeriesData[string] = []) {
   const data: Array<[number, number | null]> = [];
 
   for (let index = 0; index < points.length; index++) {
@@ -27,7 +28,7 @@ function toAvgData(points: ChartSeriesData["x"]) {
   return data;
 }
 
-function getBucketWidth(points: ChartSeriesData["x"], index: number) {
+function getBucketWidth(points: ChartSeriesData[string] = [], index: number) {
   const point = points[index]!;
   const previous = points[index - 1];
   const next = points[index + 1];
@@ -41,7 +42,7 @@ function getBucketWidth(points: ChartSeriesData["x"], index: number) {
   return Math.max(1, previousGap ?? nextGap ?? 1);
 }
 
-function toRangeData(points: ChartSeriesData["x"]) {
+function toRangeData(points: ChartSeriesData[string] = []) {
   return points.map((point, index) => {
     const bucketWidth = getBucketWidth(points, index);
 
@@ -56,23 +57,18 @@ function toRangeData(points: ChartSeriesData["x"]) {
 
 export function updateChartData(
   chart: ECharts | null,
+  seriesConfigs: ReadonlyArray<ChartSeriesConfig>,
   seriesData: ChartSeriesData,
 ) {
   chart?.setOption({
-    series: [
+    series: seriesConfigs.flatMap((series) => [
       {
-        data: toAvgData(seriesData.x),
+        data: toAvgData(seriesData[series.parameter]),
       },
       {
-        data: toRangeData(seriesData.x),
+        data: toRangeData(seriesData[series.parameter]),
       },
-      {
-        data: toAvgData(seriesData.y),
-      },
-      {
-        data: toRangeData(seriesData.y),
-      },
-    ],
+    ]),
   });
 }
 

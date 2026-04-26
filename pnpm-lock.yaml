@@ -6,18 +6,9 @@ settings:
 
 catalogs:
   default:
-    '@effect/language-service':
-      specifier: ^0.83.1
-      version: 0.83.1
-    '@effect/opentelemetry':
-      specifier: beta
-      version: 4.0.0-beta.57
     '@effect/platform-browser':
       specifier: 4.0.0-beta.51
       version: 4.0.0-beta.51
-    '@effect/platform-node':
-      specifier: beta
-      version: 4.0.0-beta.57
     effect:
       specifier: 4.0.0-beta.51
       version: 4.0.0-beta.51
@@ -27,9 +18,6 @@ catalogs:
     oxlint:
       specifier: ^1.57.0
       version: 1.50.0
-    typescript:
-      specifier: 5.9.3
-      version: 5.9.3
 
 importers:
 
@@ -62,9 +50,6 @@ importers:
       '@effect/platform-browser':
         specifier: 'catalog:'
         version: 4.0.0-beta.51(effect@4.0.0-beta.51)
-      '@fontsource-variable/jetbrains-mono':
-        specifier: ^5.2.8
-        version: 5.2.8
       '@fontsource-variable/public-sans':
         specifier: ^5.2.7
         version: 5.2.7
@@ -703,9 +688,6 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
-
-  '@fontsource-variable/jetbrains-mono@5.2.8':
-    resolution: {integrity: sha512-WBA9elru6Jdp5df2mES55wuOO0WIrn3kpXnI4+W2ek5u3ZgLS9XS4gmIlcQhiZOWEKl95meYdvK7xI+ETLCq/Q==}
 
   '@fontsource-variable/public-sans@5.2.7':
     resolution: {integrity: sha512-4mvade2J3slKkvwRkS+p8T3szet/0vhWoSnuUJTVU81Uo2pRpSZY/Y8bSLRqpSwzIPxjVmRJ53oq6JKP/l/PSg==}
@@ -4063,8 +4045,6 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
 
   '@floating-ui/utils@0.2.10': {}
-
-  '@fontsource-variable/jetbrains-mono@5.2.8': {}
 
   '@fontsource-variable/public-sans@5.2.7': {}
 

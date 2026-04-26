@@ -32,6 +32,27 @@ export function DashboardParameterField({
 }: {
   field: DashboardParameterFieldApi;
 }) {
+  return (
+    <ParameterSelector
+      id={field.name}
+      name={field.name}
+      value={field.state.value ?? null}
+      onChange={field.handleChange}
+    />
+  );
+}
+
+export function ParameterSelector({
+  id,
+  name,
+  value,
+  onChange,
+}: {
+  id?: string;
+  name?: string;
+  value: DashboardParameterFieldValue | null;
+  onChange: (value: DashboardParameterFieldValue) => void;
+}) {
   const instance = useAtomValue(selectedInstanceAtom);
 
   const parametersResult = useAtomValue(
@@ -58,7 +79,7 @@ export function DashboardParameterField({
 
       return (
         <Combobox<DashboardParameterFieldValue>
-          id={field.name}
+          id={id}
           isItemEqualToValue={(item, value) =>
             item.qualifiedName === value.qualifiedName
           }
@@ -67,14 +88,13 @@ export function DashboardParameterField({
           }
           itemToStringValue={(item) => item.qualifiedName}
           items={parameterOptions}
-          name={field.name}
-          onValueChange={(value) => {
-            if (value) {
-              console.log(value);
-              field.handleChange(value);
+          name={name}
+          onValueChange={(nextValue) => {
+            if (nextValue) {
+              onChange(nextValue);
             }
           }}
-          value={field.state.value ?? null}
+          value={value}
         >
           <ComboboxInput placeholder="Select a parameter" />
           <ComboboxContent>

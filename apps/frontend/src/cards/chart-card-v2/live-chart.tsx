@@ -21,6 +21,7 @@ import type {
   PanelApi,
 } from "./types";
 
+import { DEFAULT_SERIES_CONFIGS } from "./config";
 import {
   accelerationXLiveAtom,
   accelerationYLiveAtom,
@@ -54,6 +55,8 @@ const MAX_VIEWPORT_MS = 30 * 24 * 60 * 60 * 1000;
 const ZOOM_IN_FACTOR = 0.92;
 const ZOOM_OUT_FACTOR = 1.08;
 const VIEWPORT_FETCH_DEBOUNCE_MS = 300;
+const accelerationXSeries = DEFAULT_SERIES_CONFIGS[0]!;
+const accelerationYSeries = DEFAULT_SERIES_CONFIGS[1]!;
 
 function renderRangeItem(params: any, api: any) {
   const time = Number(api.value(0));
@@ -207,7 +210,7 @@ export function LiveChart({ api }: { api: PanelApi }) {
     chart.setOption({
       animation: false,
       legend: {
-        data: ["Acceleration X", "Acceleration Y"],
+        data: [accelerationXSeries.label, accelerationYSeries.label],
         top: 4,
       },
       grid: {
@@ -228,14 +231,16 @@ export function LiveChart({ api }: { api: PanelApi }) {
         {
           connectNulls: false,
           data: [],
-          name: "Acceleration X",
+          itemStyle: { color: accelerationXSeries.color },
+          lineStyle: { color: accelerationXSeries.color },
+          name: accelerationXSeries.label,
           showSymbol: false,
           type: "line",
         },
         {
           data: [],
-          itemStyle: { opacity: 0.14 },
-          name: "Acceleration X Range",
+          itemStyle: { color: accelerationXSeries.color, opacity: 0.14 },
+          name: `${accelerationXSeries.label} Range`,
           renderItem: renderRangeItem,
           silent: true,
           tooltip: { show: false },
@@ -244,14 +249,16 @@ export function LiveChart({ api }: { api: PanelApi }) {
         {
           connectNulls: false,
           data: [],
-          name: "Acceleration Y",
+          itemStyle: { color: accelerationYSeries.color },
+          lineStyle: { color: accelerationYSeries.color },
+          name: accelerationYSeries.label,
           showSymbol: false,
           type: "line",
         },
         {
           data: [],
-          itemStyle: { opacity: 0.14 },
-          name: "Acceleration Y Range",
+          itemStyle: { color: accelerationYSeries.color, opacity: 0.14 },
+          name: `${accelerationYSeries.label} Range`,
           renderItem: renderRangeItem,
           silent: true,
           tooltip: { show: false },

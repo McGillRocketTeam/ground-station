@@ -11,15 +11,22 @@ import {
 
 import type { ChartPoint, ChartViewport } from "./types";
 
-export const ACCELERATION_X = "/SystemA/Rocket/FlightComputer/acceleration_x";
-export const ACCELERATION_Y = "/SystemA/Rocket/FlightComputer/acceleration_y";
+import { DEFAULT_SERIES_CONFIGS } from "./config";
+
 export const MAX_POINTS = 1000;
 export const LIVE_WINDOW_MS = 15 * 60 * 1000;
 
 const SAMPLE_COUNT = 6000;
 
-export const accelerationXLiveAtom = parameterSubscriptionAtom(ACCELERATION_X);
-export const accelerationYLiveAtom = parameterSubscriptionAtom(ACCELERATION_Y);
+const accelerationXSeries = DEFAULT_SERIES_CONFIGS[0]!;
+const accelerationYSeries = DEFAULT_SERIES_CONFIGS[1]!;
+
+export const accelerationXLiveAtom = parameterSubscriptionAtom(
+  accelerationXSeries.parameter,
+);
+export const accelerationYLiveAtom = parameterSubscriptionAtom(
+  accelerationYSeries.parameter,
+);
 
 export const viewportAtom = Atom.make<ChartViewport>({
   end: Date.now(),
@@ -80,8 +87,8 @@ export const historyAtom = Atom.make((get) =>
         });
       });
 
-    const x = yield* getHistory(ACCELERATION_X);
-    const y = yield* getHistory(ACCELERATION_Y);
+    const x = yield* getHistory(accelerationXSeries.parameter);
+    const y = yield* getHistory(accelerationYSeries.parameter);
 
     return { x, y };
   }),

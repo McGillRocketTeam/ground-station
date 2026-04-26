@@ -1,3 +1,5 @@
+import type { ChartSeriesKey } from "./config";
+
 export type ChartPoint = {
   time: number;
   avg: number;
@@ -5,10 +7,7 @@ export type ChartPoint = {
   max: number;
 };
 
-export type ChartSeriesData = {
-  x: ChartPoint[];
-  y: ChartPoint[];
-};
+export type ChartSeriesData = Record<ChartSeriesKey, ChartPoint[]>;
 
 export type ChartViewport = {
   mode: "live" | "paused";

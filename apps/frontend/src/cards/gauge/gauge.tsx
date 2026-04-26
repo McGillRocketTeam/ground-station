@@ -335,7 +335,10 @@ export function Gauge({
           transformOrigin: `${GEOMETRY.centerX}px ${GEOMETRY.centerY}px`,
         }}
       >
-        <path className="fill-primary" d={needlePath(0)} />
+        <path
+          className="fill-muted-foreground dark:fill-primary"
+          d={needlePath(0)}
+        />
       </g>
       <circle
         className="fill-foreground"

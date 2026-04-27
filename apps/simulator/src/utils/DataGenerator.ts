@@ -203,6 +203,30 @@ export class DataGenerator extends Context.Service<
           return makeIncrementingFloatField(-32_000, 32_000, 1_000, dataMode);
         }
 
+        if (parameter.name.toLowerCase().includes("gps")) {
+          const name = parameter.name.toLowerCase();
+
+          if (name.includes("latitude") || name.includes("lat")) {
+            return makeIncrementingFloatField(
+              -90_000_000,
+              90_000_000,
+              10_000_000,
+              dataMode,
+            );
+          }
+
+          if (name.includes("longitude") || name.includes("long")) {
+            return makeIncrementingFloatField(
+              -180_000_000,
+              180_000_000,
+              10_000_000,
+              dataMode,
+            );
+          }
+
+          return makeIncrementingFloatField(0, 10_000_000, 10_000, dataMode);
+        }
+
         switch (parameter.type.engType) {
           case "boolean":
             return makeChoiceField([0, 1], dataMode);

@@ -30,6 +30,7 @@ import type {
 
 import { DEFAULT_SERIES_CONFIGS } from "./config";
 import {
+  applySeriesOffset,
   extractNumericValue,
   historyAtom,
   liveParameterAtom,
@@ -155,10 +156,12 @@ function snapshotSeries(
 function LiveSeriesSubscription({
   onPoint,
   parameter,
+  series,
   seriesKey,
 }: {
   onPoint: (seriesKey: string, point: ChartPoint) => void;
   parameter: string;
+  series: ChartSeriesConfig;
   seriesKey: string;
 }) {
   const handleUpdate = useCallback(
@@ -169,14 +172,16 @@ function LiveSeriesSubscription({
       const numericValue = extractNumericValue(parameterValue);
       if (numericValue === undefined) return;
 
+      const offsetValue = applySeriesOffset(numericValue, series);
+
       onPoint(seriesKey, {
-        avg: numericValue,
-        max: numericValue,
-        min: numericValue,
+        avg: offsetValue,
+        max: offsetValue,
+        min: offsetValue,
         time: DateTime.toDate(parameterValue.generationTime).getTime(),
       });
     },
-    [onPoint, seriesKey],
+    [onPoint, series, seriesKey],
   );
 
   useAtomSubscribe(liveParameterAtom(parameter), handleUpdate);
@@ -489,6 +494,7 @@ export function LiveChart({
         <LiveSeriesSubscription
           key={series.parameter}
           parameter={series.parameter}
+          series={series}
           seriesKey={series.parameter}
           onPoint={applyLivePoint}
         />

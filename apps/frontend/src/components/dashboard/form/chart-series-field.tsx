@@ -7,11 +7,15 @@ import { Input } from "@/components/ui/input";
 import { FormTable } from "./form-table";
 import { ParameterSelector } from "./parameter-field";
 
+type ChartSeriesFieldValue = Omit<ChartSeriesConfig, "offset"> & {
+  offset?: number | string;
+};
+
 export type DashboardChartSeriesFieldApi = AnyFieldApi & {
   state: AnyFieldApi["state"] & {
     value: ReadonlyArray<ChartSeriesConfig> | undefined;
   };
-  handleChange: (value: ReadonlyArray<ChartSeriesConfig>) => void;
+  handleChange: (value: ReadonlyArray<ChartSeriesFieldValue>) => void;
 };
 
 export function DashboardChartSeriesField({
@@ -20,7 +24,7 @@ export function DashboardChartSeriesField({
   field: DashboardChartSeriesFieldApi;
 }) {
   return (
-    <FormTable<ChartSeriesConfig>
+    <FormTable<ChartSeriesFieldValue>
       addLabel="Add series"
       columns={[
         {
@@ -42,6 +46,23 @@ export function DashboardChartSeriesField({
               value={row.label}
               onChange={(event) =>
                 updateRow({ ...row, label: event.target.value })
+              }
+            />
+          ),
+        },
+        {
+          className: "w-28",
+          header: "Offset",
+          render: ({ row, updateRow }) => (
+            <Input
+              type="number"
+              step="any"
+              value={row.offset ?? ""}
+              onChange={(event) =>
+                updateRow({
+                  ...row,
+                  offset: event.target.value,
+                })
               }
             />
           ),

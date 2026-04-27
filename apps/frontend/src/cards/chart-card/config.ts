@@ -9,6 +9,9 @@ export const ChartSeriesConfigSchema = Schema.Struct({
   label: Schema.String.pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Label" }),
   ),
+  offset: Schema.optional(Schema.NumberFromString).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Offset" }),
+  ),
   parameter: Schema.String.pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Parameter" }),
   ),
@@ -30,11 +33,13 @@ export const DEFAULT_SERIES_CONFIGS: ReadonlyArray<ChartSeriesConfig> = [
   {
     color: "#2563eb",
     label: "Acceleration X",
+    offset: 0,
     parameter: "/SystemA/Rocket/FlightComputer/acceleration_x",
   },
   {
     color: "#f97316",
     label: "Acceleration Y",
+    offset: 0,
     parameter: "/SystemA/Rocket/FlightComputer/acceleration_y",
   },
 ];

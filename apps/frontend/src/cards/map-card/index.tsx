@@ -33,6 +33,17 @@ const MapCardConfiguration = Schema.Struct({
   ),
 });
 
+function isValidCoordinate(latitude: number, longitude: number) {
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+}
+
 export function RocketMarker(props: { lat: string; long: string }) {
   const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value
     .engValue;
@@ -40,13 +51,14 @@ export function RocketMarker(props: { lat: string; long: string }) {
     .engValue;
 
   if (latValue.type === "FLOAT" && longValue.type === "FLOAT") {
-    return (
-      <Marker
-        longitude={Number(longValue)}
-        latitude={Number(latValue.value)}
-        color="blue"
-      />
-    );
+    const latitude = Number(latValue.value);
+    const longitude = Number(longValue.value);
+
+    if (!isValidCoordinate(latitude, longitude)) {
+      return null;
+    }
+
+    return <Marker longitude={longitude} latitude={latitude} color="blue" />;
   }
 }
 
@@ -94,6 +106,9 @@ export const MapCard = makeCard({
     const { theme } = useTheme();
     const longitude = Number(props.params.longitude);
     const latitude = Number(props.params.latitude);
+    const padCoordinate = isValidCoordinate(latitude, longitude)
+      ? { latitude, longitude }
+      : undefined;
 
     const [viewState, setViewState] = useAtom(viewStateAtom);
     const [useLocalTiles, setUseLocalTiles] = useState(false);
@@ -182,7 +197,13 @@ export const MapCard = makeCard({
           style={{ width: "100%", height: "100%" }}
         >
           <NavigationControl position="top-left" />
-          <Marker longitude={longitude} latitude={latitude} color="red" />
+          {padCoordinate ? (
+            <Marker
+              longitude={padCoordinate.longitude}
+              latitude={padCoordinate.latitude}
+              color="red"
+            />
+          ) : null}
           <Suspense>
             <RocketMarker
               lat={props.params.rocketLat.qualifiedName}

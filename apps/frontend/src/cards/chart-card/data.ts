@@ -19,6 +19,11 @@ const SAMPLE_COUNT = 5200;
 
 export const liveParameterAtom = parameterSubscriptionAtom;
 
+export function applySeriesOffset(value: number, series: ChartSeriesConfig) {
+  const offset = Number(series.offset ?? 0);
+  return value + (Number.isFinite(offset) ? offset : 0);
+}
+
 export const viewportAtom = Atom.make<ChartViewport>({
   end: Date.now(),
   mode: "live",
@@ -59,25 +64,25 @@ export const historyAtom = Atom.family(
             }),
           );
 
-        const getHistory = (parameterName: string) =>
+        const getHistory = (series: ChartSeriesConfig) =>
           Effect.gen(function* () {
             const archiveHistory = yield* querySamples(
-              parameterName,
+              series.parameter,
               "ParameterArchive",
             );
             const history =
               archiveHistory.sample.length > 0
                 ? archiveHistory
-                : yield* querySamples(parameterName, "replay");
+                : yield* querySamples(series.parameter, "replay");
 
             return history.sample.flatMap((sample): ChartPoint[] => {
               if (sample.avg === undefined) return [];
 
               return [
                 {
-                  avg: sample.avg,
-                  max: sample.max ?? sample.avg,
-                  min: sample.min ?? sample.avg,
+                  avg: applySeriesOffset(sample.avg, series),
+                  max: applySeriesOffset(sample.max ?? sample.avg, series),
+                  min: applySeriesOffset(sample.min ?? sample.avg, series),
                   time: DateTime.toDate(sample.time).getTime(),
                 },
               ];
@@ -87,7 +92,7 @@ export const historyAtom = Atom.family(
         const entries = yield* Effect.all(
           seriesConfigs.map((series) =>
             Effect.map(
-              getHistory(series.parameter),
+              getHistory(series),
               (points) => [series.parameter, points] as const,
             ),
           ),

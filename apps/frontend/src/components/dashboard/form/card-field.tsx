@@ -13,6 +13,14 @@ import {
 import { Field, FieldError, FieldLabel } from "../../ui/field";
 import { Input } from "../../ui/input";
 import {
+  DashboardChartSeriesField,
+  type DashboardChartSeriesFieldApi,
+} from "./chart-series-field";
+import {
+  DashboardGaugeVisualRangesField,
+  type DashboardGaugeVisualRangesFieldApi,
+} from "./gauge-visual-ranges-field";
+import {
   DashboardParameterArrayField,
   type DashboardParameterArrayFieldApi,
 } from "./parameter-array-field";
@@ -20,6 +28,10 @@ import {
   DashboardParameterField,
   type DashboardParameterFieldApi,
 } from "./parameter-field";
+import {
+  DashboardParameterTableSectionsField,
+  type DashboardParameterTableSectionsFieldApi,
+} from "./parameter-table-sections-field";
 
 const DashboardParameterFieldComponent =
   DashboardParameterField as unknown as ComponentType<{
@@ -28,6 +40,18 @@ const DashboardParameterFieldComponent =
 const DashboardParameterArrayFieldComponent =
   DashboardParameterArrayField as unknown as ComponentType<{
     field: DashboardParameterArrayFieldApi;
+  }>;
+const DashboardGaugeVisualRangesFieldComponent =
+  DashboardGaugeVisualRangesField as unknown as ComponentType<{
+    field: DashboardGaugeVisualRangesFieldApi;
+  }>;
+const DashboardChartSeriesFieldComponent =
+  DashboardChartSeriesField as unknown as ComponentType<{
+    field: DashboardChartSeriesFieldApi;
+  }>;
+const DashboardParameterTableSectionsFieldComponent =
+  DashboardParameterTableSectionsField as unknown as ComponentType<{
+    field: DashboardParameterTableSectionsFieldApi;
   }>;
 
 function getFieldPlaceholder(type: ReturnType<typeof formType>) {
@@ -97,6 +121,10 @@ function getFieldErrors(field: AnyFieldApi) {
   });
 }
 
+function isOptionalField(schema: Schema.Schema<unknown>) {
+  return SchemaAST.isOptional(schema.ast);
+}
+
 function DashboardDefaultField({
   field,
   placeholder,
@@ -151,6 +179,7 @@ export function DashboardCardField({
   fieldSchema: Schema.Schema<unknown>;
 }) {
   const type = formType(fieldSchema);
+  const optional = isOptionalField(fieldSchema);
   const placeholder = getFieldPlaceholder(type);
   const coordinateError =
     type === "coordinate" && field.state.meta.isTouched
@@ -169,7 +198,12 @@ export function DashboardCardField({
         (!field.state.meta.isValid || Boolean(coordinateError))
       }
     >
-      <FieldLabel htmlFor={field.name}>{formTitle(fieldSchema)}</FieldLabel>
+      <FieldLabel htmlFor={field.name}>
+        {formTitle(fieldSchema)}
+        {optional ? (
+          <span className="ml-1 text-muted-foreground">(optional)</span>
+        ) : null}
+      </FieldLabel>
       {(() => {
         switch (type) {
           case "parameter":
@@ -182,6 +216,24 @@ export function DashboardCardField({
             return (
               <DashboardParameterArrayFieldComponent
                 field={field as DashboardParameterArrayFieldApi}
+              />
+            );
+          case "gaugeVisualRanges":
+            return (
+              <DashboardGaugeVisualRangesFieldComponent
+                field={field as DashboardGaugeVisualRangesFieldApi}
+              />
+            );
+          case "chartSeries":
+            return (
+              <DashboardChartSeriesFieldComponent
+                field={field as DashboardChartSeriesFieldApi}
+              />
+            );
+          case "parameterTableSections":
+            return (
+              <DashboardParameterTableSectionsFieldComponent
+                field={field as DashboardParameterTableSectionsFieldApi}
               />
             );
           case "coordinate":

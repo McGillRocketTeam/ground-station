@@ -124,10 +124,9 @@ function LinkEdge({
           style={{
             position: "absolute",
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            color: "black",
             background: edgeColor,
           }}
-          className="pointer-events-none px-1 font-mono text-xs uppercase"
+          className="pointer-events-none px-1 font-mono text-xs text-background uppercase"
         >
           {dataInRate.toLocaleString()}/s
         </div>

@@ -64,10 +64,10 @@ function EditPanelDialogForm({ payload }: { payload: IDockviewPanel }) {
 
 export function EditDialogPanel() {
   return (
-    <Dialog handle={editPanelDialogHandle}>
+    <Dialog disablePointerDismissal handle={editPanelDialogHandle}>
       {({ payload }) =>
         payload && (
-          <DialogContent className="sm:max-w-xl">
+          <DialogContent className="sm:max-w-4xl" showCloseButton={false}>
             <DialogHeader>
               <DialogTitle>Edit Card</DialogTitle>
               <DialogDescription>

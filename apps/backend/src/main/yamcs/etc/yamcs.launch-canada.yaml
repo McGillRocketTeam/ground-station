@@ -68,7 +68,7 @@ dataLinks:
     class: org.yamcs.mqtt.MqttFanoutCommandLink
     autoReconnect: true
     brokers:
-      - tcp://localhost:1883
+      - ${env.MQTT_BROKER_URL:tcp://localhost:1883}
     tcStream: tc_realtime
     targets:
       - name: SystemA

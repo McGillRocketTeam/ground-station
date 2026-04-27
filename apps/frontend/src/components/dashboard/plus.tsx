@@ -52,8 +52,8 @@ function AddCardDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+    <Dialog disablePointerDismissal open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-4xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Add Card</DialogTitle>
           <DialogDescription>

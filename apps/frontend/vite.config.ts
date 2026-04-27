@@ -21,5 +21,5 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  envPrefix: ["VITE_", "YAMCS_", "MRT_"],
+  envPrefix: ["VITE_", "YAMCS_", "MRT_", "MQTT_"],
 });

@@ -460,14 +460,14 @@ export const LinkInfo = Schema.Struct({
 
 export const ParameterSample = Schema.Struct({
   time: YamcsDate,
-  avg: Schema.Number,
-  min: Schema.Number,
-  max: Schema.Number,
-  n: Schema.Number,
-  minTime: YamcsDate,
-  maxTime: YamcsDate,
-  firstTime: YamcsDate,
-  lastTime: YamcsDate,
+  avg: Schema.optional(Schema.Number),
+  min: Schema.optional(Schema.Number),
+  max: Schema.optional(Schema.Number),
+  n: Schema.optional(Schema.Number),
+  minTime: Schema.optional(YamcsDate),
+  maxTime: Schema.optional(YamcsDate),
+  firstTime: Schema.optional(YamcsDate),
+  lastTime: Schema.optional(YamcsDate),
 });
 
 export const EventSeverity = Schema.Literals([

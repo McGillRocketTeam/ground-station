@@ -106,7 +106,7 @@ export function DashboardGaugeVisualRangesField({
           ),
         },
       ]}
-      createRow={() => ({ start: "0", end: "0", pattern: "red-chevron" })}
+      createRow={() => ({ start: "", end: "", pattern: "red-chevron" })}
       emptyMessage="No visual ranges configured."
       value={field.state.value ?? []}
       onChange={field.handleChange}

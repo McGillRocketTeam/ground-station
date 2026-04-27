@@ -20,6 +20,7 @@ export type FormType =
   | "parameterArray"
   | "gaugeVisualRanges"
   | "chartSeries"
+  | "parameterTableSections"
   | "command"
   | "coordinate";
 

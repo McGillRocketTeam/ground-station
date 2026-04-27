@@ -28,6 +28,10 @@ import {
   DashboardParameterField,
   type DashboardParameterFieldApi,
 } from "./parameter-field";
+import {
+  DashboardParameterTableSectionsField,
+  type DashboardParameterTableSectionsFieldApi,
+} from "./parameter-table-sections-field";
 
 const DashboardParameterFieldComponent =
   DashboardParameterField as unknown as ComponentType<{
@@ -44,6 +48,10 @@ const DashboardGaugeVisualRangesFieldComponent =
 const DashboardChartSeriesFieldComponent =
   DashboardChartSeriesField as unknown as ComponentType<{
     field: DashboardChartSeriesFieldApi;
+  }>;
+const DashboardParameterTableSectionsFieldComponent =
+  DashboardParameterTableSectionsField as unknown as ComponentType<{
+    field: DashboardParameterTableSectionsFieldApi;
   }>;
 
 function getFieldPlaceholder(type: ReturnType<typeof formType>) {
@@ -210,6 +218,12 @@ export function DashboardCardField({
             return (
               <DashboardChartSeriesFieldComponent
                 field={field as DashboardChartSeriesFieldApi}
+              />
+            );
+          case "parameterTableSections":
+            return (
+              <DashboardParameterTableSectionsFieldComponent
+                field={field as DashboardParameterTableSectionsFieldApi}
               />
             );
           case "coordinate":

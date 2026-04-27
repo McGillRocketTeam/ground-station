@@ -5,10 +5,9 @@ import { memo, useState, type ReactNode } from "react";
 
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
-import { ParameterArrayField } from "@/lib/dashboard-field-types";
+import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
 const SYSTEM_A_PREFIX = "SystemA/Rocket/FlightComputer";
-const SYSTEM_B_PREFIX = "SystemB/Rocket/FlightComputer";
 
 const CardEntries = {
   "FLIGHT ATOMIC": [
@@ -63,20 +62,46 @@ const CardEntries = {
   ],
 };
 
+const ParameterTableSectionSchema = Schema.Struct({
+  parameters: Schema.Array(Schema.String).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Parameters" }),
+  ),
+  title: Schema.String.pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Section Title" }),
+  ),
+});
+
+export type ParameterTableSection = typeof ParameterTableSectionSchema.Type;
+
+export const DEFAULT_PARAMETER_TABLE_SECTIONS: ReadonlyArray<ParameterTableSection> =
+  Object.entries(CardEntries).map(([title, parameters]) => ({
+    title,
+    parameters: parameters.map(
+      (parameter) => `/${SYSTEM_A_PREFIX}/${parameter}`,
+    ),
+  }));
+
 export const ParameterTable = makeCard({
   id: "parameter-table",
   name: "Parameter Table",
   schema: Schema.Struct({
-    parameters: ParameterArrayField,
+    sections: Schema.optional(Schema.Array(ParameterTableSectionSchema)).pipe(
+      Schema.annotate({
+        [FormTitleAnnotationId]: "Sections",
+        [FormTypeAnnotationId]: "parameterTableSections",
+      }),
+    ),
   }),
-  component: () => {
+  component: (props) => {
+    const sections = props.params.sections ?? DEFAULT_PARAMETER_TABLE_SECTIONS;
+
     return (
       <div className="h-full overflow-auto">
-        <div className="grid grid-cols-[1.5rem_auto_1fr_1fr] gap-px font-mono">
+        <div className="grid grid-cols-[1.5rem_minmax(12rem,1fr)_minmax(8rem,0.7fr)] gap-px font-mono">
           <TableHeader />
-          {Object.entries(CardEntries).map(([title, parameters]) => (
-            <TableGroup key={title} name={title}>
-              {parameters.map((parameter) => (
+          {sections.map((section) => (
+            <TableGroup key={section.title} name={section.title}>
+              {section.parameters.map((parameter) => (
                 <TableRow key={parameter} parameter={parameter} />
               ))}
             </TableGroup>
@@ -95,10 +120,7 @@ const TableHeader = memo(function TableHeader() {
         Parameter
       </div>
       <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1">
-        SystemA
-      </div>
-      <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1">
-        SystemB
+        Value
       </div>
       {/* <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1"> */}
       {/*   Unit */}
@@ -141,12 +163,15 @@ const TableGroup = memo(function TableGroup({
 });
 
 const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
+  const label = parameter.split("/").at(-1) ?? parameter;
+
   return (
     <div className="col-span-full grid grid-cols-subgrid text-sm *:bg-background *:px-1 hover:*:bg-selection-background">
       <div />
-      <div className="line-clamp-1 text-ellipsis">{parameter}</div>
-      <Value name={`/${SYSTEM_A_PREFIX}/${parameter}`} />
-      <Value name={`/${SYSTEM_B_PREFIX}/${parameter}`} />
+      <div className="line-clamp-1 text-ellipsis" title={parameter}>
+        {label}
+      </div>
+      <Value name={parameter} />
       {/* <div /> */}
     </div>
   );

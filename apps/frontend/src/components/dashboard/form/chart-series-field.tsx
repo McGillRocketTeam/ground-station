@@ -2,7 +2,6 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 
 import type { ChartSeriesConfig } from "@/cards/chart-card/config";
 
-import { DEFAULT_SERIES_CONFIGS } from "@/cards/chart-card/config";
 import { Input } from "@/components/ui/input";
 
 import { FormTable } from "./form-table";
@@ -14,16 +13,6 @@ export type DashboardChartSeriesFieldApi = AnyFieldApi & {
   };
   handleChange: (value: ReadonlyArray<ChartSeriesConfig>) => void;
 };
-
-function createSeriesRow(index: number): ChartSeriesConfig {
-  return (
-    DEFAULT_SERIES_CONFIGS[index] ?? {
-      color: "#2563eb",
-      label: "Series",
-      parameter: "",
-    }
-  );
-}
 
 export function DashboardChartSeriesField({
   field,
@@ -80,7 +69,7 @@ export function DashboardChartSeriesField({
           ),
         },
       ]}
-      createRow={() => createSeriesRow(field.state.value?.length ?? 0)}
+      createRow={() => ({ color: "#2563eb", label: "", parameter: "" })}
       emptyMessage="No series configured."
       value={field.state.value ?? []}
       onChange={field.handleChange}

@@ -147,7 +147,7 @@ export function FormTable<T>({
   return (
     <div className="space-y-2" onKeyDownCapture={handleKeyDownCapture}>
       <div className="rounded-md border border-border">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
@@ -155,7 +155,9 @@ export function FormTable<T>({
                   {column.header}
                 </TableHead>
               ))}
-              <TableHead className="w-12 text-right">Actions</TableHead>
+              <TableHead className="w-24 px-3 text-right align-middle">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -184,7 +186,7 @@ export function FormTable<T>({
                       })}
                     </TableCell>
                   ))}
-                  <TableCell className="text-right">
+                  <TableCell className="w-24 px-3 text-right align-top">
                     <Button
                       aria-label="Remove row"
                       size="icon-sm"

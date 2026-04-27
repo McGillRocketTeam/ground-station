@@ -10,6 +10,7 @@ mqtt_broker_url = cfg.get('mqtt_broker_url', '')
 use_external_mqtt_broker = mqtt_broker_url != ''
 backend_resource_deps = [] if use_external_mqtt_broker else ['mqtt_broker']
 backend_env = {'MQTT_BROKER_URL': mqtt_broker_url} if use_external_mqtt_broker else {}
+frontend_mqtt_broker_url = mqtt_broker_url if use_external_mqtt_broker else 'ws://localhost:9001'
 simulator_env = {
 	'YAMCS_INSTANCE': 'urrg',
 	'DATA_MODE': simulator_data_mode,
@@ -32,6 +33,7 @@ local_resource(
 		serve_env={
 			'YAMCS_URL': 'http://localhost:8090',
 			'MRT_ENVIRONMENT': mrt_environment,
+			'MQTT_BROKER_URL': frontend_mqtt_broker_url,
 		},
 		labels=['mrt'],
 		links='http://localhost:5173',

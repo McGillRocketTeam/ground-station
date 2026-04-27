@@ -14,6 +14,7 @@ import { GaugeCard } from "@/cards/gauge";
 import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
 import { MapCard } from "@/cards/map-card";
+import { MqttExplorerCard } from "@/cards/mqtt-explorer";
 import { ParameterTable } from "@/cards/parameter-table";
 import { TextCard } from "@/cards/text-card";
 
@@ -28,6 +29,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   EventsCard,
   CommandButtonCard,
   GaugeCard,
+  MqttExplorerCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
 ] as const;

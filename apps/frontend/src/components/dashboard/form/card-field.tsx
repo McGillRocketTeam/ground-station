@@ -121,6 +121,10 @@ function getFieldErrors(field: AnyFieldApi) {
   });
 }
 
+function isOptionalField(schema: Schema.Schema<unknown>) {
+  return SchemaAST.isOptional(schema.ast);
+}
+
 function DashboardDefaultField({
   field,
   placeholder,
@@ -175,6 +179,7 @@ export function DashboardCardField({
   fieldSchema: Schema.Schema<unknown>;
 }) {
   const type = formType(fieldSchema);
+  const optional = isOptionalField(fieldSchema);
   const placeholder = getFieldPlaceholder(type);
   const coordinateError =
     type === "coordinate" && field.state.meta.isTouched
@@ -193,7 +198,12 @@ export function DashboardCardField({
         (!field.state.meta.isValid || Boolean(coordinateError))
       }
     >
-      <FieldLabel htmlFor={field.name}>{formTitle(fieldSchema)}</FieldLabel>
+      <FieldLabel htmlFor={field.name}>
+        {formTitle(fieldSchema)}
+        {optional ? (
+          <span className="ml-1 text-muted-foreground">(optional)</span>
+        ) : null}
+      </FieldLabel>
       {(() => {
         switch (type) {
           case "parameter":

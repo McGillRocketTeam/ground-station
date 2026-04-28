@@ -209,10 +209,10 @@
             <MathAlgorithm name="calibrated_ccpt_pressure_psi">
                 <MathOperation outputParameterRef="calibrated_ccpt_pressure_psi">
                     <ParameterInstanceRefOperand parameterRef="AIN86"/>
-                    <ValueOperand>868</ValueOperand>
+                    <ValueOperand>-868</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>50.5</ValueOperand>
-                    <Operator>-</Operator>
+                    <ValueOperand>38</ValueOperand>
+                    <Operator>+</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN86"/>
                     </TriggerSet>
@@ -223,7 +223,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN88"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>489</ValueOperand>
+                    <ValueOperand>492</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN88"/>
@@ -235,7 +235,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN90"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>460</ValueOperand>
+                    <ValueOperand>474</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN90"/>
@@ -259,7 +259,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN122"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>520</ValueOperand>
+                    <ValueOperand>519</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN122"/>
@@ -271,7 +271,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN85"/>
                     <ValueOperand>-2112</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>9</ValueOperand>
+                    <ValueOperand>4</ValueOperand>
                     <Operator>+</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN85"/>
@@ -281,9 +281,9 @@
             <MathAlgorithm name="calibrated_tank_mass">
                 <MathOperation outputParameterRef="calibrated_tank_mass">
                     <ParameterInstanceRefOperand parameterRef="AIN83"/>
-                    <ValueOperand>143.87</ValueOperand>
+                    <ValueOperand>36.64</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>94.11</ValueOperand>
+                    <ValueOperand>10.61</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN83"/>

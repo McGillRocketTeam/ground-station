@@ -109,7 +109,11 @@
                 <ParameterProperties dataSource="derived" readOnly="true">
                 </ParameterProperties>
             </Parameter>
-            <Parameter name="calibrated_thrust_newtons" parameterTypeRef="float_32">
+            <Parameter name="calibrated_thrust_newtons_v1" parameterTypeRef="float_32">
+                <ParameterProperties dataSource="derived" readOnly="true">
+                </ParameterProperties>
+            </Parameter>
+            <Parameter name="calibrated_thrust_newtons_v2" parameterTypeRef="float_32">
                 <ParameterProperties dataSource="derived" readOnly="true">
                 </ParameterProperties>
             </Parameter>
@@ -266,13 +270,25 @@
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
-            <MathAlgorithm name="calibrated_thrust_newtons">
-                <MathOperation outputParameterRef="calibrated_thrust_newtons">
+            <MathAlgorithm name="calibrated_thrust_newtons_v1">
+                <MathOperation outputParameterRef="calibrated_thrust_newtons_v1">
                     <ParameterInstanceRefOperand parameterRef="AIN85"/>
                     <ValueOperand>-2112</ValueOperand>
                     <Operator>*</Operator>
                     <ValueOperand>4</ValueOperand>
                     <Operator>+</Operator>
+                    <TriggerSet>
+                        <OnParameterUpdateTrigger parameterRef="AIN85"/>
+                    </TriggerSet>
+                </MathOperation>
+            </MathAlgorithm>
+            <MathAlgorithm name="calibrated_thrust_newtons_v2">
+                <MathOperation outputParameterRef="calibrated_thrust_newtons_v2">
+                    <ParameterInstanceRefOperand parameterRef="AIN85"/>
+                    <ValueOperand>22956</ValueOperand>
+                    <Operator>*</Operator>
+                    <ValueOperand>2.5</ValueOperand>
+                    <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN85"/>
                     </TriggerSet>

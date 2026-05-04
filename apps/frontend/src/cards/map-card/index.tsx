@@ -2,7 +2,7 @@ import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
+import { Map, Marker } from "react-map-gl/maplibre";
 
 import { useTheme } from "@/components/theme-provider";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -158,6 +158,7 @@ export const MapCard = makeCard({
     return (
       <div className="relative h-full min-h-60 w-full">
         <Map
+          attributionControl={false}
           mapStyle={useLocalTiles ? customMapStyle : basicMapStyle(theme)}
           {...viewState}
           onMove={(event) => {
@@ -196,7 +197,6 @@ export const MapCard = makeCard({
           keyboard
           style={{ width: "100%", height: "100%" }}
         >
-          <NavigationControl position="top-left" />
           {padCoordinate ? (
             <Marker
               longitude={padCoordinate.longitude}

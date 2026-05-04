@@ -21,12 +21,16 @@ import type { Link } from "../links/utils";
 import "./index.css";
 import type { GroundStationNode, RadioLinkNode } from "./data";
 
-import { colorByStatus } from "../links/utils";
+import { colorByStatus, isLinkTransmitting } from "../links/utils";
 
-function colorValueByStatus(linkStatus: string) {
-  return linkStatus === "OK"
+function colorValueByStatus(link: Link) {
+  if (link.status === "OK" && !isLinkTransmitting(link)) {
+    return "var(--color-blue-500)";
+  }
+
+  return link.status === "OK"
     ? "var(--color-success)"
-    : linkStatus === "DISABLED"
+    : link.status === "DISABLED"
       ? "var(--color-muted-foreground)"
       : "var(--color-error)";
 }
@@ -105,7 +109,7 @@ function LinkEdge({
     targetPosition,
     borderRadius: 0,
   });
-  const edgeColor = colorValueByStatus(linkResult.value.status);
+  const edgeColor = colorValueByStatus(linkResult.value);
 
   return (
     <>
@@ -142,7 +146,7 @@ function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
   const nodeClass =
     linkResult._tag === "Success"
       ? linkResult.value
-        ? colorByStatus(linkResult.value.status)
+        ? colorByStatus(linkResult.value.status, linkResult.value)
         : "text-muted-foreground"
       : linkResult._tag === "Failure"
         ? "text-error"

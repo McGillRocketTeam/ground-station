@@ -35,6 +35,10 @@ const GEOMETRY: GaugeGeometry = {
   viewBoxWidth: 320,
 };
 
+const ANIMATION_DURATION_MS = 300;
+const NUMBER_FLOW_EASING =
+  "linear(0,.005,.019,.039,.066,.096,.129,.165,.202,.24,.278,.316,.354,.39,.426,.461,.494,.526,.557,.586,.614,.64,.665,.689,.711,.731,.751,.769,.786,.802,.817,.831,.844,.856,.867,.877,.887,.896,.904,.912,.919,.925,.931,.937,.942,.947,.951,.955,.959,.962,.965,.968,.971,.973,.976,.978,.98,.981,.983,.984,.986,.987,.988,.989,.99,.991,.992,.992,.993,.994,.994,.995,.995,.996,.996,.9963,.9967,.9969,.9972,.9975,.9977,.9979,.9981,.9982,.9984,.9985,.9987,.9988,.9989,1)";
+
 function polarToCartesian(radius: number, angleDegrees: number): Point {
   const angleRadians = ((angleDegrees - 90) * Math.PI) / 180;
 
@@ -83,7 +87,7 @@ function niceStep(range: number, targetTicks: number) {
 
 function tickValues(min: number, max: number) {
   const majorStep = niceStep(max - min, 5);
-  const minorStep = majorStep / 5;
+  const minorStep = majorStep / 8;
   const majorTicks: number[] = [];
   const minorTicks: number[] = [];
   const firstMajor = Math.ceil(min / majorStep) * majorStep;
@@ -312,7 +316,7 @@ export function Gauge({
       <g textAnchor="middle">
         {majorTicks.map((tickValue) => {
           const tickAngle = valueToAngle(tickValue, min, max);
-          const position = polarToCartesian(GEOMETRY.radius - 34, tickAngle);
+          const position = polarToCartesian(GEOMETRY.radius - 42, tickAngle);
 
           return (
             <text
@@ -328,11 +332,12 @@ export function Gauge({
       </g>
 
       <g
-        className="transition-transform duration-200 ease-out"
+        className="transition-transform duration-300"
         style={{
           transform: `rotate(${angle}deg)`,
           transformBox: "view-box",
           transformOrigin: `${GEOMETRY.centerX}px ${GEOMETRY.centerY}px`,
+          transitionTimingFunction: NUMBER_FLOW_EASING,
         }}
       >
         <path
@@ -360,7 +365,7 @@ export function Gauge({
 
       <g transform="translate(92 232)">
         <rect
-          className="fill-background stroke-border"
+          className="fill-background stroke-primary"
           width="136"
           height="42"
         />
@@ -373,6 +378,10 @@ export function Gauge({
                 useGrouping: true,
               }}
               trend={0}
+              transformTiming={{
+                duration: ANIMATION_DURATION_MS,
+                easing: NUMBER_FLOW_EASING,
+              }}
               value={value}
             />
           </div>

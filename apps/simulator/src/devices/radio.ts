@@ -1,4 +1,4 @@
-import { Effect, Schedule } from "effect";
+import { Duration, Effect, Schedule } from "effect";
 
 import {
   makeAstraActor,
@@ -19,6 +19,9 @@ import {
 type RadioMode = "OFF" | "IDLE" | "TRANSMIT";
 type RadioRole = "Pad" | "ControlStation";
 type RadioCommand = "CLEAR" | "POWER_ON" | "POWER_OFF" | "UNKNOWN";
+
+const TELEMETRY_INTERVAL = Duration.millis(2_000 / 3);
+const STATE_INTERVAL = Duration.millis(5_000 / 3);
 
 interface RadioState {
   readonly role: RadioRole;
@@ -310,19 +313,19 @@ export const makeRadioActor = (options: RadioActorOptions) =>
               yield* publishOwnState;
               yield* publishLinkedFlightComputerState;
               yield* publishOwnTelemetry.pipe(
-                Effect.repeat(Schedule.spaced("2 seconds")),
+                Effect.repeat(Schedule.spaced(TELEMETRY_INTERVAL)),
                 Effect.forkScoped,
               );
               yield* publishLinkedFlightComputer.pipe(
-                Effect.repeat(Schedule.spaced("2 seconds")),
+                Effect.repeat(Schedule.spaced(TELEMETRY_INTERVAL)),
                 Effect.forkScoped,
               );
               yield* publishOwnState.pipe(
-                Effect.repeat(Schedule.spaced("5 seconds")),
+                Effect.repeat(Schedule.spaced(STATE_INTERVAL)),
                 Effect.forkScoped,
               );
               yield* publishLinkedFlightComputerState.pipe(
-                Effect.repeat(Schedule.spaced("5 seconds")),
+                Effect.repeat(Schedule.spaced(STATE_INTERVAL)),
                 Effect.forkScoped,
               );
             }),

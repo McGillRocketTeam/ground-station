@@ -23,10 +23,23 @@ export function LinkDetail({ link }: { link: Link }) {
   const resetCounterAction = useAtomSet(
     YamcsAtomHttpClient.mutation("link", "resetCounters"),
   );
+  const issueCommand = useAtomSet(
+    YamcsAtomHttpClient.mutation("command", "issueCommand"),
+  );
 
   const params = {
     instance,
     link: link.name,
+  };
+  const issueRadioCommand = (name: "enable_tx" | "disable_tx") => {
+    issueCommand({
+      params: {
+        instance,
+        processor: "realtime",
+        name: `/${link.name}/${name}`,
+      },
+      payload: {},
+    });
   };
 
   return (
@@ -79,6 +92,18 @@ export function LinkDetail({ link }: { link: Link }) {
               onClick={() => resetCounterAction({ params })}
             >
               Reset Counters
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => issueRadioCommand("enable_tx")}
+            >
+              Enable TX
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => issueRadioCommand("disable_tx")}
+            >
+              Disable TX
             </Button>
           </div>
         </>

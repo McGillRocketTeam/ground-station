@@ -111,6 +111,22 @@ See https://github.com/yamcs/pymdb
         <DefaultSignificance consequenceLevel="vital"/>
         <VerifierSet/>
       </MetaCommand>
+      <MetaCommand name="payload_reset" abstract="false" shortDescription="br">
+        <LongDescription>Reset Payload</LongDescription>
+        <CommandContainer name="payload_reset">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="payload_toggle" abstract="false" shortDescription="bt">
+        <LongDescription>Toggle Payload Sampling</LongDescription>
+        <CommandContainer name="payload_toggle">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
       <MetaCommand name="propulsion_off" abstract="false" shortDescription="po">
         <LongDescription>Propulsion Off</LongDescription>
         <CommandContainer name="propulsion_off">

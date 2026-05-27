@@ -1,0 +1,24 @@
+{
+  "name": "@mrt/tui",
+  "private": true,
+  "type": "module",
+  "module": "src/index.tsx",
+  "scripts": {
+    "dev": "bun run --watch src/index.tsx"
+  },
+  "dependencies": {
+    "@effect/atom-react": "catalog:",
+    "@mrt/yamcs-effect": "workspace:",
+    "@opentui/core": "^0.2.1",
+    "@opentui/react": "^0.2.1",
+    "effect": "catalog:",
+    "react": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

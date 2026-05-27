@@ -6,18 +6,21 @@ settings:
 
 catalogs:
   default:
+    '@effect/atom-react':
+      specifier: 4.0.0-beta.51
+      version: 4.0.0-beta.51
     '@effect/language-service':
       specifier: ^0.83.1
       version: 0.83.1
     '@effect/opentelemetry':
-      specifier: beta
-      version: 4.0.0-beta.57
+      specifier: 4.0.0-beta.51
+      version: 4.0.0-beta.51
     '@effect/platform-browser':
       specifier: 4.0.0-beta.51
       version: 4.0.0-beta.51
     '@effect/platform-node':
-      specifier: beta
-      version: 4.0.0-beta.57
+      specifier: 4.0.0-beta.51
+      version: 4.0.0-beta.51
     effect:
       specifier: 4.0.0-beta.51
       version: 4.0.0-beta.51
@@ -57,8 +60,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@types/react@19.2.9)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@effect/atom-react':
-        specifier: 4.0.0-beta.28
-        version: 4.0.0-beta.28(effect@4.0.0-beta.51)(react@19.2.3)(scheduler@0.27.0)
+        specifier: 'catalog:'
+        version: 4.0.0-beta.51(effect@4.0.0-beta.51)(react@19.2.3)(scheduler@0.27.0)
       '@effect/platform-browser':
         specifier: 'catalog:'
         version: 4.0.0-beta.51(effect@4.0.0-beta.51)
@@ -191,7 +194,7 @@ importers:
     dependencies:
       '@effect/platform-node':
         specifier: 'catalog:'
-        version: 4.0.0-beta.57(effect@4.0.0-beta.51)(ioredis@5.9.3)
+        version: 4.0.0-beta.51(effect@4.0.0-beta.51)(ioredis@5.9.3)
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../../packages/yamcs-effect
@@ -220,6 +223,37 @@ importers:
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
+
+  apps/tui:
+    dependencies:
+      '@effect/atom-react':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.51(effect@4.0.0-beta.51)(react@19.2.5)(scheduler@0.27.0)
+      '@mrt/yamcs-effect':
+        specifier: 'workspace:'
+        version: link:../../packages/yamcs-effect
+      '@opentui/core':
+        specifier: ^0.2.1
+        version: 0.2.2(typescript@5.9.3)(web-tree-sitter@0.25.10)
+      '@opentui/react':
+        specifier: ^0.2.1
+        version: 0.2.2(react-devtools-core@7.0.1)(react@19.2.5)(typescript@5.9.3)(web-tree-sitter@0.25.10)(ws@8.20.0)
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-beta.51
+      react:
+        specifier: ^19.2.4
+        version: 19.2.5
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+    devDependencies:
+      '@types/bun':
+        specifier: latest
+        version: 1.3.13
+      '@types/react':
+        specifier: ^19.2.5
+        version: 19.2.9
 
   packages/yamcs-effect:
     dependencies:
@@ -250,10 +284,10 @@ importers:
     dependencies:
       '@effect/opentelemetry':
         specifier: 'catalog:'
-        version: 4.0.0-beta.57(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)
+        version: 4.0.0-beta.51(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)
       '@effect/platform-node':
         specifier: 'catalog:'
-        version: 4.0.0-beta.57(effect@4.0.0-beta.51)(ioredis@5.9.3)
+        version: 4.0.0-beta.51(effect@4.0.0-beta.51)(ioredis@5.9.3)
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../yamcs-effect
@@ -471,10 +505,10 @@ packages:
     peerDependencies:
       '@noble/ciphers': ^1.0.0
 
-  '@effect/atom-react@4.0.0-beta.28':
-    resolution: {integrity: sha512-LxtdCqULjusyofiVHwvqetZZvzbcVDchJy2bdz3MuXqyjLYU7GzQgVIOmBEEi9J+FoqgYwKWl+qmo00CYu0jMg==}
+  '@effect/atom-react@4.0.0-beta.51':
+    resolution: {integrity: sha512-+ANsdwDDQekYojibIUa2NawTLbBZ/7mnxn2Z3SwnJVWX5QvQpyf5OM9wx8GI1LIslHtgYzlqFFBVLCqk7l3QCA==}
     peerDependencies:
-      effect: ^4.0.0-beta.28
+      effect: ^4.0.0-beta.51
       react: ^19.2.4
       scheduler: '*'
 
@@ -486,8 +520,8 @@ packages:
     resolution: {integrity: sha512-cBQ7yg/P4+kAp+JFX+9Bk5bc1jG3UMVq8pgtW5VAWBl/yiTjWlCGMKC4UxX2KlpREvjTkvS8BKi1wYw0phWmAQ==}
     hasBin: true
 
-  '@effect/opentelemetry@4.0.0-beta.57':
-    resolution: {integrity: sha512-gdjZPEP0QQg4qmI1vd+443kheeQZKytrjJIzCJncy6ZEpyk/SfrqeStLqLXdTRcms3IB0ls0vOV7KNq7YmBRVA==}
+  '@effect/opentelemetry@4.0.0-beta.51':
+    resolution: {integrity: sha512-ViawVj1SdYwMijaQqvIU+HJbE7VVvG1YsOw7Fdd9aKGYg95UUIjftm3ZAOzOfexIhSlWEFaS97DtW2ZUg3E5Sw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@opentelemetry/api': ^1.9
@@ -498,7 +532,7 @@ packages:
       '@opentelemetry/sdk-trace-node': ^2.0.0
       '@opentelemetry/sdk-trace-web': ^2.0.0
       '@opentelemetry/semantic-conventions': ^1.33.0
-      effect: ^4.0.0-beta.57
+      effect: ^4.0.0-beta.51
     peerDependenciesMeta:
       '@opentelemetry/api':
         optional: true
@@ -526,11 +560,11 @@ packages:
     peerDependencies:
       effect: ^4.0.0-beta.57
 
-  '@effect/platform-node@4.0.0-beta.57':
-    resolution: {integrity: sha512-la0xxPSAYOsY0d+uVxEBxok3jYB31iPQmIaZZRUj2SNWqcGGHJc6KorKtI8guqSLuv9FGZ255kBWXRbG6hMeeg==}
+  '@effect/platform-node@4.0.0-beta.51':
+    resolution: {integrity: sha512-ChkyABVJ35Eo2yQD3zSL6qvw9hTFZ/ikrGVoIm6rbAN3091XOs8hGMF8f1iyeUAXochjcTvz+tg+5jUNw7Ig8g==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.57
+      effect: ^4.0.0-beta.51
       ioredis: ^5.7.0
 
   '@esbuild/aix-ppc64@0.27.2':
@@ -933,6 +967,48 @@ packages:
   '@opentelemetry/semantic-conventions@1.40.0':
     resolution: {integrity: sha512-cifvXDhcqMwwTlTK04GBNeIe7yyo28Mfby85QXFe1Yk8nmi36Ab/5UQwptOx84SsoGNRg+EVSjwzfSZMy6pmlw==}
     engines: {node: '>=14'}
+
+  '@opentui/core-darwin-arm64@0.2.2':
+    resolution: {integrity: sha512-tY5n3ZRQx+b0kyhQJJLsyJMeZ+0w4FV37YZc/Qqv3qvOqE9kZPw/7adR77FYwWDm/7fax94mLMrR8Y5bKUkDmw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@opentui/core-darwin-x64@0.2.2':
+    resolution: {integrity: sha512-W/R7OnqY30FXcTG0tiP2JkQFmgtYbIte5afQ5PC12TliRoee1RqG3iCG6kY1jxW+3Vg6jge88uiSjUEDpeV2gA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@opentui/core-linux-arm64@0.2.2':
+    resolution: {integrity: sha512-1pzTYFEZauYuw6AGycw2TYGtAlZVGjuUtSdxH1fP51kBPS3oVWduUY2j7GKREz3SU5NulvO2Wc6HWsm3feMqwQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@opentui/core-linux-x64@0.2.2':
+    resolution: {integrity: sha512-ucVwUtUYeOYGVFPBLbPoxzbrPdhD0PDyKNQ2X4n1AJ9jlQX4gqBZRcXMEF8hiXDjFxsikZwef7De0ciCcWvAMg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@opentui/core-win32-arm64@0.2.2':
+    resolution: {integrity: sha512-MPhYdJNdxmC5Bqsq6sis/+VkjRgkEjm+bQ1Tl++NSKLuiTU32Re0ImcZlgHbe+LZtZoGMZHVSgZlkGd3oYXO2g==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@opentui/core-win32-x64@0.2.2':
+    resolution: {integrity: sha512-19BroLfn2h0RDYfJS5o96Fc8kYCDhRBcseIXtHIkoKIsKMxx62KiDLo/byVye6rp+yQRRB7Xkd2uWqsbdiWo9w==}
+    cpu: [x64]
+    os: [win32]
+
+  '@opentui/core@0.2.2':
+    resolution: {integrity: sha512-wxg1CD58SVrowu+WgbhZNi3UP/wWxPio2Kj2IeTjomoIE+6EXLxR8eCCxHYVuQUd9E4fknrKkY5HmiSsp6oPow==}
+    peerDependencies:
+      web-tree-sitter: 0.25.10
+
+  '@opentui/react@0.2.2':
+    resolution: {integrity: sha512-29Lkyb6gZYccrGJG7swKe3VUXhPW1UpTiBBV0EZpRcbw1+rSaVGgWp4/xcF9V9zaYAxeB2LxQ1PN5QXAmUrfAw==}
+    peerDependencies:
+      react: '>=19.0.0'
+      react-devtools-core: ^7.0.1
+      ws: ^8.18.0
 
   '@oxfmt/binding-android-arm-eabi@0.35.0':
     resolution: {integrity: sha512-BaRKlM3DyG81y/xWTsE6gZiv89F/3pHe2BqX2H4JbiB8HNVlWWtplzgATAE5IDSdwChdeuWLDTQzJ92Lglw3ZA==}
@@ -1662,6 +1738,9 @@ packages:
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
 
+  '@types/bun@1.3.13':
+    resolution: {integrity: sha512-9fqXWk5YIHGGnUau9TEi+qdlTYDAnOj+xLCmSTwXfAIqXr2x4tytJb43E9uCvt09zJURKXwAtkoH4nLQfzeTXw==}
+
   '@types/d3-color@3.1.3':
     resolution: {integrity: sha512-iO90scth9WAbmgv7ogoq57O9YpKmFBbmoEoCHDB2xMBY0+/KVrqAaCDyCE16dUspeOvIxFFRI+0sEtqDqy2b4A==}
 
@@ -1852,6 +1931,14 @@ packages:
 
   buffer@6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
+
+  bun-ffi-structs@0.2.2:
+    resolution: {integrity: sha512-N/ZWtyN0piZlrXQT7TO0V+q952orYqkfhXRXM1Hcbb+R3QSiBH4vLnib187Mrs1H7pWIYECAmPeapGYDOMCl+w==}
+    peerDependencies:
+      typescript: ^5
+
+  bun-types@1.3.13:
+    resolution: {integrity: sha512-QXKeHLlOLqQX9LgYaHJfzdBaV21T63HhFJnvuRCcjZiaUDpbs5ED1MgxbMra71CsryN/1dAoXuJJJwIv/2drVA==}
 
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
@@ -2093,6 +2180,10 @@ packages:
 
   diff@8.0.3:
     resolution: {integrity: sha512-qejHi7bcSD4hQAZE0tNAawRK1ZtafHDmMTMkrrIGgSLl7hTnQHmKCeB45xAcbfTqK2zowkM3j3bHt/4b/ARbYQ==}
+    engines: {node: '>=0.3.1'}
+
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
     engines: {node: '>=0.3.1'}
 
   dockview-core@4.13.1:
@@ -2705,6 +2796,11 @@ packages:
     resolution: {integrity: sha512-zto1RTnFkOpOO1bm93ElCXF1huey2N4LvXaGLMFcYAu9txh0OhGIdX1q3LZLkrMKgMxMeYduaQo+DVNzg098fg==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
 
+  marked@17.0.1:
+    resolution: {integrity: sha512-boeBdiS0ghpWcSwoNm/jJBwdpFaMnZWRzjA6SkUMYb40SVaN1x7mmfGKp0jvexGcx+7y2La5zRZsYFZI6Qpypg==}
+    engines: {node: '>= 20'}
+    hasBin: true
+
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
@@ -3005,6 +3101,9 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
 
+  react-devtools-core@7.0.1:
+    resolution: {integrity: sha512-C3yNvRHaizlpiASzy7b9vbnBGLrhvdhl1CbdU6EnZgxPNbai60szdLtl+VL76UNOt5bOoVTOz5rNWZxgGt+Gsw==}
+
   react-dom@19.2.3:
     resolution: {integrity: sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg==}
     peerDependencies:
@@ -3022,6 +3121,12 @@ packages:
         optional: true
       maplibre-gl:
         optional: true
+
+  react-reconciler@0.32.0:
+    resolution: {integrity: sha512-2NPMOzgTlG0ZWdIf3qG+dcbLSoAc/uLfOwckc3ofy5sSK0pLJqnQLpUFxvGcN2rlXSjnVtGeeFLNimCQEj5gOQ==}
+    engines: {node: '>=0.10.0'}
+    peerDependencies:
+      react: ^19.1.0
 
   react-refresh@0.18.0:
     resolution: {integrity: sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw==}
@@ -3069,6 +3174,10 @@ packages:
 
   react@19.2.3:
     resolution: {integrity: sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA==}
+    engines: {node: '>=0.10.0'}
+
+  react@19.2.5:
+    resolution: {integrity: sha512-llUJLzz1zTUBrskt2pwZgLq59AemifIftw4aB7JxOqf1HY2FDaGDxgwpAPVzHU1kdWabH7FauP4i1oEeer2WCA==}
     engines: {node: '>=0.10.0'}
 
   readable-stream@3.6.2:
@@ -3151,6 +3260,9 @@ packages:
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
+  scheduler@0.26.0:
+    resolution: {integrity: sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA==}
+
   scheduler@0.27.0:
     resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
 
@@ -3187,6 +3299,10 @@ packages:
   shebang-regex@3.0.0:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
+
+  shell-quote@1.8.3:
+    resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
+    engines: {node: '>= 0.4'}
 
   side-channel-list@1.0.0:
     resolution: {integrity: sha512-FCLHtRD/gnpCiCHEiJLOwdmFP+wzCmDEkc9y7NsYxeF4u7Btsn1ZuwgwJGxImImHicJArLP4R0yX4c2KCrMrTA==}
@@ -3556,6 +3672,14 @@ packages:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
 
+  web-tree-sitter@0.25.10:
+    resolution: {integrity: sha512-Y09sF44/13XvgVKgO2cNDw5rGk6s26MgoZPXLESvMXeefBf7i6/73eFurre0IsTW6E14Y0ArIzhUMmjoc7xyzA==}
+    peerDependencies:
+      '@types/emscripten': ^1.40.0
+    peerDependenciesMeta:
+      '@types/emscripten':
+        optional: true
+
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
@@ -3588,6 +3712,18 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+
+  ws@7.5.10:
+    resolution: {integrity: sha512-+dbF1tHwZpXcbOJdVOkzLDxZP1ailvSxM6ZweXTegylPny803bFhA+vqBYw4s31NSAk4S2Qz+AKXK9a4wkdjcQ==}
+    engines: {node: '>=8.3.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
 
   ws@8.20.0:
     resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
@@ -3632,6 +3768,9 @@ packages:
   yoctocolors@2.1.2:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
+
+  yoga-layout@3.2.1:
+    resolution: {integrity: sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ==}
 
   zod-to-json-schema@3.25.1:
     resolution: {integrity: sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==}
@@ -3909,17 +4048,23 @@ snapshots:
     dependencies:
       '@noble/ciphers': 1.3.0
 
-  '@effect/atom-react@4.0.0-beta.28(effect@4.0.0-beta.51)(react@19.2.3)(scheduler@0.27.0)':
+  '@effect/atom-react@4.0.0-beta.51(effect@4.0.0-beta.51)(react@19.2.3)(scheduler@0.27.0)':
     dependencies:
       effect: 4.0.0-beta.51
       react: 19.2.3
+      scheduler: 0.27.0
+
+  '@effect/atom-react@4.0.0-beta.51(effect@4.0.0-beta.51)(react@19.2.5)(scheduler@0.27.0)':
+    dependencies:
+      effect: 4.0.0-beta.51
+      react: 19.2.5
       scheduler: 0.27.0
 
   '@effect/language-service@0.72.0': {}
 
   '@effect/language-service@0.83.1': {}
 
-  '@effect/opentelemetry@4.0.0-beta.57(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)':
+  '@effect/opentelemetry@4.0.0-beta.51(@opentelemetry/api@1.9.0)(@opentelemetry/resources@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.212.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.40.0)(effect@4.0.0-beta.51)':
     dependencies:
       '@opentelemetry/semantic-conventions': 1.40.0
       effect: 4.0.0-beta.51
@@ -3943,7 +4088,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.57(effect@4.0.0-beta.51)(ioredis@5.9.3)':
+  '@effect/platform-node@4.0.0-beta.51(effect@4.0.0-beta.51)(ioredis@5.9.3)':
     dependencies:
       '@effect/platform-node-shared': 4.0.0-beta.57(effect@4.0.0-beta.51)
       effect: 4.0.0-beta.51
@@ -4282,6 +4427,54 @@ snapshots:
       '@opentelemetry/semantic-conventions': 1.40.0
 
   '@opentelemetry/semantic-conventions@1.40.0': {}
+
+  '@opentui/core-darwin-arm64@0.2.2':
+    optional: true
+
+  '@opentui/core-darwin-x64@0.2.2':
+    optional: true
+
+  '@opentui/core-linux-arm64@0.2.2':
+    optional: true
+
+  '@opentui/core-linux-x64@0.2.2':
+    optional: true
+
+  '@opentui/core-win32-arm64@0.2.2':
+    optional: true
+
+  '@opentui/core-win32-x64@0.2.2':
+    optional: true
+
+  '@opentui/core@0.2.2(typescript@5.9.3)(web-tree-sitter@0.25.10)':
+    dependencies:
+      bun-ffi-structs: 0.2.2(typescript@5.9.3)
+      diff: 9.0.0
+      marked: 17.0.1
+      string-width: 7.2.0
+      strip-ansi: 7.1.2
+      web-tree-sitter: 0.25.10
+      yoga-layout: 3.2.1
+    optionalDependencies:
+      '@opentui/core-darwin-arm64': 0.2.2
+      '@opentui/core-darwin-x64': 0.2.2
+      '@opentui/core-linux-arm64': 0.2.2
+      '@opentui/core-linux-x64': 0.2.2
+      '@opentui/core-win32-arm64': 0.2.2
+      '@opentui/core-win32-x64': 0.2.2
+    transitivePeerDependencies:
+      - typescript
+
+  '@opentui/react@0.2.2(react-devtools-core@7.0.1)(react@19.2.5)(typescript@5.9.3)(web-tree-sitter@0.25.10)(ws@8.20.0)':
+    dependencies:
+      '@opentui/core': 0.2.2(typescript@5.9.3)(web-tree-sitter@0.25.10)
+      react: 19.2.5
+      react-devtools-core: 7.0.1
+      react-reconciler: 0.32.0(react@19.2.5)
+      ws: 8.20.0
+    transitivePeerDependencies:
+      - typescript
+      - web-tree-sitter
 
   '@oxfmt/binding-android-arm-eabi@0.35.0':
     optional: true
@@ -4790,6 +4983,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.28.6
 
+  '@types/bun@1.3.13':
+    dependencies:
+      bun-types: 1.3.13
+
   '@types/d3-color@3.1.3': {}
 
   '@types/d3-drag@3.0.7':
@@ -5004,6 +5201,14 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
+  bun-ffi-structs@0.2.2(typescript@5.9.3):
+    dependencies:
+      typescript: 5.9.3
+
+  bun-types@1.3.13:
+    dependencies:
+      '@types/node': 25.6.0
+
   bundle-name@4.1.0:
     dependencies:
       run-applescript: 7.1.0
@@ -5196,6 +5401,8 @@ snapshots:
   detect-node-es@1.1.0: {}
 
   diff@8.0.3: {}
+
+  diff@9.0.0: {}
 
   dockview-core@4.13.1: {}
 
@@ -5793,6 +6000,8 @@ snapshots:
       quickselect: 3.0.0
       tinyqueue: 3.0.0
 
+  marked@17.0.1: {}
+
   math-intrinsics@1.1.0: {}
 
   media-typer@1.1.0: {}
@@ -6137,6 +6346,14 @@ snapshots:
       date-fns-jalali: 4.1.0-0
       react: 19.2.3
 
+  react-devtools-core@7.0.1:
+    dependencies:
+      shell-quote: 1.8.3
+      ws: 7.5.10
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   react-dom@19.2.3(react@19.2.3):
     dependencies:
       react: 19.2.3
@@ -6150,6 +6367,11 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
     optionalDependencies:
       maplibre-gl: 5.21.1
+
+  react-reconciler@0.32.0(react@19.2.5):
+    dependencies:
+      react: 19.2.5
+      scheduler: 0.26.0
 
   react-refresh@0.18.0: {}
 
@@ -6189,6 +6411,8 @@ snapshots:
       '@types/react': 19.2.9
 
   react@19.2.3: {}
+
+  react@19.2.5: {}
 
   readable-stream@3.6.2:
     dependencies:
@@ -6296,6 +6520,8 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
+  scheduler@0.26.0: {}
+
   scheduler@0.27.0: {}
 
   semver@6.3.1: {}
@@ -6385,6 +6611,8 @@ snapshots:
       shebang-regex: 3.0.0
 
   shebang-regex@3.0.0: {}
+
+  shell-quote@1.8.3: {}
 
   side-channel-list@1.0.0:
     dependencies:
@@ -6682,6 +6910,8 @@ snapshots:
 
   web-streams-polyfill@3.3.3: {}
 
+  web-tree-sitter@0.25.10: {}
+
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
@@ -6731,6 +6961,8 @@ snapshots:
 
   wrappy@1.0.2: {}
 
+  ws@7.5.10: {}
+
   ws@8.20.0: {}
 
   wsl-utils@0.3.1:
@@ -6759,6 +6991,8 @@ snapshots:
   yoctocolors-cjs@2.1.3: {}
 
   yoctocolors@2.1.2: {}
+
+  yoga-layout@3.2.1: {}
 
   zod-to-json-schema@3.25.1(zod@3.25.76):
     dependencies:

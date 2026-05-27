@@ -155,7 +155,7 @@ function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
   const text = (
     <div
       className={cn(
-        "flex h-[3lh] max-w-[15ch] flex-col font-mono whitespace-pre-line uppercase",
+        "flex h-[3lh] max-w-[20ch] flex-col font-mono whitespace-pre-line uppercase",
         data.textPosition === "bottom" ? "justify-start" : "justify-end",
       )}
     >
@@ -166,7 +166,7 @@ function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
   return (
     <PopoverTrigger
       className={cn(
-        "group flex w-[15ch] flex-col items-center gap-2 rounded-none outline-none focus-visible:outline-none",
+        "group flex w-[20ch] flex-col items-center gap-2 rounded-none outline-none focus-visible:outline-none",
         nodeClass,
       )}
       payload={linkResult._tag === "Success" ? linkResult.value : undefined}
@@ -196,7 +196,7 @@ function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
 
 function GroundStationNode(_: NodeProps<GroundStationNode>) {
   return (
-    <div className="flex w-[15ch] flex-col items-center gap-2 text-muted-foreground">
+    <div className="flex w-[20ch] flex-col items-center gap-2 text-muted-foreground">
       <div className="relative grid aspect-square place-items-center border-[1.5px] border-current bg-current/15 p-2">
         <Handle
           type="target"

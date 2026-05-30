@@ -4,10 +4,7 @@ export function isLinkTransmitting(link: Pick<Link, "detailedStatus">) {
   return link.detailedStatus.trimStart().startsWith("true");
 }
 
-export function colorByStatus(
-  linkStatus: string,
-  link?: Pick<Link, "detailedStatus">,
-) {
+export function colorByStatus(linkStatus: string, link?: Pick<Link, "detailedStatus">) {
   if (linkStatus === "OK" && link && !isLinkTransmitting(link)) {
     return "text-blue-500";
   }

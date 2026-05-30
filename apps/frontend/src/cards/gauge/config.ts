@@ -13,30 +13,22 @@ export const GaugeVisualRangePatternSchema = Schema.Literals([
 ]);
 
 export const GaugeVisualRangeSchema = Schema.Struct({
-  end: Schema.NumberFromString.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Range End" }),
-  ),
+  end: Schema.NumberFromString.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Range End" })),
   pattern: GaugeVisualRangePatternSchema.pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Range Pattern" }),
   ),
-  start: Schema.NumberFromString.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Range Start" }),
-  ),
+  start: Schema.NumberFromString.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Range Start" })),
 });
 
 export const GaugeCardConfigSchema = Schema.Struct({
-  label: Schema.optional(Schema.String).pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Label" }),
-  ),
+  label: Schema.optional(Schema.String).pipe(Schema.annotate({ [FormTitleAnnotationId]: "Label" })),
   max: Schema.optional(Schema.NumberFromString).pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Maximum Value" }),
   ),
   min: Schema.optional(Schema.NumberFromString).pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Minimum Value" }),
   ),
-  parameter: ParameterField.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Gauge Parameter" }),
-  ),
+  parameter: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Gauge Parameter" })),
   ranges: Schema.optional(Schema.Array(GaugeVisualRangeSchema)).pipe(
     Schema.annotate({
       [FormTitleAnnotationId]: "Visual Ranges",
@@ -54,5 +46,4 @@ export const DEFAULT_VISUAL_RANGES: ReadonlyArray<GaugeVisualRange> = [
   { pattern: "red-chevron", start: 24, end: 32 },
 ];
 
-export const DEFAULT_GAUGE_PARAMETER =
-  "/SystemA/Rocket/FlightComputer/acceleration_x";
+export const DEFAULT_GAUGE_PARAMETER = "/SystemA/Rocket/FlightComputer/acceleration_x";

@@ -91,9 +91,7 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
         <ContextMenuItem disabled={!panel} onClick={handleCopy}>
           Copy
         </ContextMenuItem>
-        {copied ? (
-          <ContextMenuItem onClick={handlePaste}>Paste</ContextMenuItem>
-        ) : null}
+        {copied ? <ContextMenuItem onClick={handlePaste}>Paste</ContextMenuItem> : null}
         <ContextMenuSeparator />
         <ContextMenuItem
           disabled={!panel}

@@ -72,11 +72,7 @@ export function updateChartData(
   });
 }
 
-export function setChartViewport(
-  chart: ECharts | null,
-  start: number,
-  end: number,
-) {
+export function setChartViewport(chart: ECharts | null, start: number, end: number) {
   chart?.setOption({
     xAxis: {
       max: end,
@@ -85,10 +81,7 @@ export function setChartViewport(
   });
 }
 
-export function resizeChart(
-  chart: ECharts | null,
-  size?: { height: number; width: number },
-) {
+export function resizeChart(chart: ECharts | null, size?: { height: number; width: number }) {
   requestAnimationFrame(() => {
     if (size) {
       chart?.resize(size);

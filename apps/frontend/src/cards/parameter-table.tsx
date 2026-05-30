@@ -66,9 +66,7 @@ const ParameterTableSectionSchema = Schema.Struct({
   parameters: Schema.Array(Schema.String).pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Parameters" }),
   ),
-  title: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Section Title" }),
-  ),
+  title: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Section Title" })),
 });
 
 export type ParameterTableSection = typeof ParameterTableSectionSchema.Type;
@@ -76,9 +74,7 @@ export type ParameterTableSection = typeof ParameterTableSectionSchema.Type;
 export const DEFAULT_PARAMETER_TABLE_SECTIONS: ReadonlyArray<ParameterTableSection> =
   Object.entries(CardEntries).map(([title, parameters]) => ({
     title,
-    parameters: parameters.map(
-      (parameter) => `/${SYSTEM_A_PREFIX}/${parameter}`,
-    ),
+    parameters: parameters.map((parameter) => `/${SYSTEM_A_PREFIX}/${parameter}`),
   }));
 
 export const ParameterTable = makeCard({
@@ -194,9 +190,7 @@ const Value = memo(function Value({ name }: { name: string }) {
     onSuccess: ({ value }) => (
       <>
         <div className="line-clamp-1 text-right text-ellipsis">
-          {"value" in value.engValue
-            ? value.engValue.value.toLocaleString()
-            : "Unknown Value Type"}
+          {"value" in value.engValue ? value.engValue.value.toLocaleString() : "Unknown Value Type"}
         </div>
       </>
     ),

@@ -1,26 +1,16 @@
 import type { SerializedDockview } from "dockview-react";
 
 import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
-import {
-  formatForDisplay,
-  type RegisterableHotkey,
-} from "@tanstack/react-hotkeys";
+import { formatForDisplay, type RegisterableHotkey } from "@tanstack/react-hotkeys";
 import { Effect } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { Fragment } from "react";
 import { useNavigate } from "react-router";
 
-import type {
-  DashboardAction,
-  DashboardActionGroup,
-} from "@/lib/dashboard-actions";
+import type { DashboardAction, DashboardActionGroup } from "@/lib/dashboard-actions";
 
 import { resolveTheme, useTheme } from "@/components/theme-provider";
-import {
-  CommandGroup,
-  CommandItem,
-  CommandShortcut,
-} from "@/components/ui/command";
+import { CommandGroup, CommandItem, CommandShortcut } from "@/components/ui/command";
 import {
   MenubarGroup,
   MenubarItem,
@@ -51,9 +41,7 @@ export const toggleFullscreenAtom = Atom.fn(() =>
       return yield* Effect.promise(() => document.exitFullscreen());
     }
 
-    return yield* Effect.promise(() =>
-      document.documentElement.requestFullscreen(),
-    );
+    return yield* Effect.promise(() => document.documentElement.requestFullscreen());
   }),
 );
 
@@ -73,9 +61,7 @@ function downloadDashboardLayout(layout: unknown) {
 }
 
 const mrtEnvironment =
-  import.meta.env.MRT_ENVIRONMENT === "development"
-    ? "development"
-    : "production";
+  import.meta.env.MRT_ENVIRONMENT === "development" ? "development" : "production";
 
 function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
   return new Promise((resolve) => {
@@ -95,11 +81,7 @@ function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
         const rawLayout = await file.text();
         const layout = JSON.parse(rawLayout) as unknown;
 
-        resolve(
-          isSerializedDockviewLayout(layout)
-            ? snapshotDockviewLayout(layout)
-            : undefined,
-        );
+        resolve(isSerializedDockviewLayout(layout) ? snapshotDockviewLayout(layout) : undefined);
       } catch (err) {
         console.error("Error importing dashboard layout", err);
         resolve(undefined);
@@ -119,9 +101,7 @@ export function flattenDashboardActionGroups(
 export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActionGroup> {
   const undo = useAtomSet(dashboardUndoAtom);
   const redo = useAtomSet(dashboardRedoAtom);
-  const initializeDashboardLayoutHistory = useAtomSet(
-    initializeDashboardLayoutHistoryAtom,
-  );
+  const initializeDashboardLayoutHistory = useAtomSet(initializeDashboardLayoutHistoryAtom);
   const api = useAtomValue(dashboardDockviewApiAtom);
   const { past, present, future } = useAtomValue(dashboardLayoutHistoryAtom);
   const navigate = useNavigate();
@@ -192,10 +172,7 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
 
               try {
                 api.fromJSON(layout);
-                window.localStorage.setItem(
-                  dashboardStorageKey,
-                  JSON.stringify(layout),
-                );
+                window.localStorage.setItem(dashboardStorageKey, JSON.stringify(layout));
                 initializeDashboardLayoutHistory(layout);
               } catch (err) {
                 console.error("Error loading imported dashboard layout", err);
@@ -274,8 +251,7 @@ export function useDashboardViewActionGroups(): ReadonlyArray<DashboardActionGro
           label: "Toggle Theme",
           keywords: ["view", "appearance", "theme", "dark", "light"],
           shortcut: "D",
-          run: () =>
-            setTheme(resolveTheme(theme) === "dark" ? "light" : "dark"),
+          run: () => setTheme(resolveTheme(theme) === "dark" ? "light" : "dark"),
         },
       ],
     },
@@ -371,9 +347,7 @@ export function DashboardActionMenubarGroups({
               {action.label}
               {action.shortcut ? (
                 <MenubarShortcut>
-                  {formatForDisplay(
-                    action.shortcut as Parameters<typeof formatForDisplay>[0],
-                  )}
+                  {formatForDisplay(action.shortcut as Parameters<typeof formatForDisplay>[0])}
                 </MenubarShortcut>
               ) : null}
             </MenubarItem>
@@ -412,9 +386,7 @@ export function DashboardActionCommandGroups({
             {action.label}
             {action.shortcut ? (
               <CommandShortcut>
-                {formatForDisplay(
-                  action.shortcut as Parameters<typeof formatForDisplay>[0],
-                )}
+                {formatForDisplay(action.shortcut as Parameters<typeof formatForDisplay>[0])}
               </CommandShortcut>
             ) : null}
           </CommandItem>

@@ -24,25 +24,15 @@ type ExportColumnTreeNode = {
 };
 
 export function ExportPageForm() {
-  const instancesResult = useAtomValue(
-    YamcsAtomHttpClient.query("instances", "listInstances", {}),
-  );
+  const instancesResult = useAtomValue(YamcsAtomHttpClient.query("instances", "listInstances", {}));
 
   const [exportOptions, setExportOptions] = useAtom(exportPreviewOptionsAtom);
 
   return (
     <div className="space-y-4">
       {AsyncResult.builder(instancesResult)
-        .onInitial(() => (
-          <div className="text-sm text-muted-foreground">
-            Loading instances...
-          </div>
-        ))
-        .onFailure(() => (
-          <div className="text-sm text-destructive">
-            Unable to load instances.
-          </div>
-        ))
+        .onInitial(() => <div className="text-sm text-muted-foreground">Loading instances...</div>)
+        .onFailure(() => <div className="text-sm text-destructive">Unable to load instances.</div>)
         .onSuccess(({ instances }) => (
           <FieldGroup className="gap-2">
             <FieldLabel>Instance</FieldLabel>
@@ -58,9 +48,8 @@ export function ExportPageForm() {
             >
               <SelectTrigger className="w-full">
                 <SelectValue>
-                  {instances.find(
-                    (instance) => instance.name === exportOptions.instance,
-                  )?.name ?? "Select an instance"}
+                  {instances.find((instance) => instance.name === exportOptions.instance)?.name ??
+                    "Select an instance"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -111,9 +100,7 @@ function TreeRow({ node }: { node: ExportColumnTreeNode }) {
   );
 }
 
-function buildExportColumnTree(
-  columns: ReadonlyArray<string>,
-): Array<ExportColumnTreeNode> {
+function buildExportColumnTree(columns: ReadonlyArray<string>): Array<ExportColumnTreeNode> {
   const roots: Array<ExportColumnTreeNode> = [];
   const nodeByPath = new Map<string, ExportColumnTreeNode>();
 

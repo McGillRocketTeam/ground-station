@@ -46,9 +46,7 @@ export function DashboardParameterTableSectionsField({
             <div className="grid gap-2">
               <Input
                 value={row.title}
-                onChange={(event) =>
-                  updateRow({ ...row, title: event.target.value })
-                }
+                onChange={(event) => updateRow({ ...row, title: event.target.value })}
               />
               <div className="flex gap-1">
                 <Button
@@ -56,11 +54,7 @@ export function DashboardParameterTableSectionsField({
                   size="icon-sm"
                   type="button"
                   variant="ghost"
-                  onClick={() =>
-                    field.handleChange(
-                      moveItem(sections, rowIndex, rowIndex - 1),
-                    )
-                  }
+                  onClick={() => field.handleChange(moveItem(sections, rowIndex, rowIndex - 1))}
                 >
                   <ChevronUpIcon />
                   <span className="sr-only">Move section up</span>
@@ -70,11 +64,7 @@ export function DashboardParameterTableSectionsField({
                   size="icon-sm"
                   type="button"
                   variant="ghost"
-                  onClick={() =>
-                    field.handleChange(
-                      moveItem(sections, rowIndex, rowIndex + 1),
-                    )
-                  }
+                  onClick={() => field.handleChange(moveItem(sections, rowIndex, rowIndex + 1))}
                 >
                   <ChevronDownIcon />
                   <span className="sr-only">Move section down</span>
@@ -103,9 +93,7 @@ export function DashboardParameterTableSectionsField({
                   }}
                 />
                 {row.parameters.length === 0 ? (
-                  <div className="text-muted-foreground">
-                    No parameters added.
-                  </div>
+                  <div className="text-muted-foreground">No parameters added.</div>
                 ) : (
                   <div className="grid max-h-64 gap-1 overflow-y-auto pr-2">
                     {row.parameters.map((parameter, parameterIndex) => (
@@ -136,9 +124,7 @@ export function DashboardParameterTableSectionsField({
                           <span className="sr-only">Move parameter up</span>
                         </Button>
                         <Button
-                          disabled={
-                            parameterIndex === row.parameters.length - 1
-                          }
+                          disabled={parameterIndex === row.parameters.length - 1}
                           size="icon-xs"
                           type="button"
                           variant="ghost"
@@ -163,9 +149,7 @@ export function DashboardParameterTableSectionsField({
                           onClick={() =>
                             updateRow({
                               ...row,
-                              parameters: row.parameters.filter(
-                                (item) => item !== parameter,
-                              ),
+                              parameters: row.parameters.filter((item) => item !== parameter),
                             })
                           }
                         >

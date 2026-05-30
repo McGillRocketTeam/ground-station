@@ -7,20 +7,12 @@ import {
   type Row,
   type Table,
 } from "@tanstack/react-table";
-import {
-  useVirtualizer,
-  type VirtualItem,
-  type Virtualizer,
-} from "@tanstack/react-virtual";
+import { useVirtualizer, type VirtualItem, type Virtualizer } from "@tanstack/react-virtual";
 import { Cause } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 import React, { useMemo } from "react";
 
-import {
-  exportPreviewCsvAtom,
-  exportPreviewModelAtom,
-  exportPreviewUrlAtom,
-} from "./state";
+import { exportPreviewCsvAtom, exportPreviewModelAtom, exportPreviewUrlAtom } from "./state";
 
 type CsvPreviewRow = {
   id: number;
@@ -116,19 +108,13 @@ export function ExportPreviewTable() {
                       >
                         {header.isPlaceholder
                           ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                          : flexRender(header.column.columnDef.header, header.getContext())}
                       </th>
                     ))}
                   </tr>
                 ))}
               </thead>
-              <VirtualizedTableBody
-                table={table}
-                tableContainerRef={tableContainerRef}
-              />
+              <VirtualizedTableBody table={table} tableContainerRef={tableContainerRef} />
             </table>
           </div>
         </div>
@@ -154,10 +140,7 @@ function VirtualizedTableBody({
   });
 
   return (
-    <tbody
-      className="relative grid"
-      style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-    >
+    <tbody className="relative grid" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
       {rowVirtualizer.getVirtualItems().map((virtualRow) => {
         const row = rows[virtualRow.index];
 

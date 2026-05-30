@@ -5,11 +5,7 @@ import { AsyncResult } from "effect/unstable/reactivity";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
-import {
-  DEFAULT_GAUGE_PARAMETER,
-  DEFAULT_VISUAL_RANGES,
-  GaugeCardConfigSchema,
-} from "./config";
+import { DEFAULT_GAUGE_PARAMETER, DEFAULT_VISUAL_RANGES, GaugeCardConfigSchema } from "./config";
 import { Gauge } from "./gauge";
 
 function extractNumericValue(value: unknown) {
@@ -33,9 +29,7 @@ function GaugeParameter({
   const result = useAtomValue(parameterSubscriptionAtom(parameter));
 
   return AsyncResult.match(result, {
-    onInitial: () => (
-      <Gauge label={label} max={max} min={min} ranges={ranges} value={0} />
-    ),
+    onInitial: () => <Gauge label={label} max={max} min={min} ranges={ranges} value={0} />,
     onFailure: ({ cause }) => (
       <pre className="p-4 text-center font-mono text-xs text-error uppercase">
         {Cause.pretty(cause)}
@@ -69,8 +63,7 @@ export const GaugeCard = makeCard({
   component: (props) => {
     const min = props.params.min ?? -32;
     const max = props.params.max ?? 32;
-    const parameter =
-      props.params.parameter?.qualifiedName ?? DEFAULT_GAUGE_PARAMETER;
+    const parameter = props.params.parameter?.qualifiedName ?? DEFAULT_GAUGE_PARAMETER;
 
     return (
       <div className="relative grid h-full w-full place-items-center">

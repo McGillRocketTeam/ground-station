@@ -2,7 +2,7 @@ import { Schema } from "effect";
 
 import { makeCard } from "@/lib/cards";
 
-export const TextCard = makeCard({
+export const ProceduresCard = makeCard({
   id: "procedures-card",
   name: "Procedures Card",
   schema: Schema.Struct({}),

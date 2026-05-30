@@ -14,18 +14,10 @@ function Label({ children }: { children: ReactNode }) {
 
 export function LinkDetail({ link }: { link: Link }) {
   const instance = useAtomValue(selectedInstanceAtom);
-  const enableLinkAction = useAtomSet(
-    YamcsAtomHttpClient.mutation("link", "enableLink"),
-  );
-  const disableLinkAction = useAtomSet(
-    YamcsAtomHttpClient.mutation("link", "disableLink"),
-  );
-  const resetCounterAction = useAtomSet(
-    YamcsAtomHttpClient.mutation("link", "resetCounters"),
-  );
-  const issueCommand = useAtomSet(
-    YamcsAtomHttpClient.mutation("command", "issueCommand"),
-  );
+  const enableLinkAction = useAtomSet(YamcsAtomHttpClient.mutation("link", "enableLink"));
+  const disableLinkAction = useAtomSet(YamcsAtomHttpClient.mutation("link", "disableLink"));
+  const resetCounterAction = useAtomSet(YamcsAtomHttpClient.mutation("link", "resetCounters"));
+  const issueCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
 
   const params = {
     instance,
@@ -76,33 +68,19 @@ export function LinkDetail({ link }: { link: Link }) {
           <Separator />
           <div className="grid grid-cols-2 gap-1 font-sans">
             {link.disabled ? (
-              <Button onClick={() => enableLinkAction({ params })}>
-                Enable Link
-              </Button>
+              <Button onClick={() => enableLinkAction({ params })}>Enable Link</Button>
             ) : (
-              <Button
-                variant="destructive"
-                onClick={() => disableLinkAction({ params })}
-              >
+              <Button variant="destructive" onClick={() => disableLinkAction({ params })}>
                 Disable Link
               </Button>
             )}
-            <Button
-              variant="secondary"
-              onClick={() => resetCounterAction({ params })}
-            >
+            <Button variant="secondary" onClick={() => resetCounterAction({ params })}>
               Reset Counters
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => issueRadioCommand("enable_tx")}
-            >
+            <Button variant="secondary" onClick={() => issueRadioCommand("enable_tx")}>
               Enable TX
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => issueRadioCommand("disable_tx")}
-            >
+            <Button variant="secondary" onClick={() => issueRadioCommand("disable_tx")}>
               Disable TX
             </Button>
           </div>

@@ -3,12 +3,7 @@ import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 import { useState } from "react";
 
-import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-} from "@/components/ui/data-grid";
+import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
 import { YamcsAtomHttpClient, selectedInstanceAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
@@ -60,9 +55,7 @@ export const CommandButtonCard = makeCard({
 function CommandButtonTable() {
   const instance = useAtomValue(selectedInstanceAtom);
   const [target, setTarget] = useState<TargetOption>("BOTH");
-  const sendCommand = useAtomSet(
-    YamcsAtomHttpClient.mutation("command", "issueCommand"),
-  );
+  const sendCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
 
   const { commands } = useAtomSuspense(
     YamcsAtomHttpClient.query("mdb", "listCommands", {
@@ -81,9 +74,7 @@ function CommandButtonTable() {
               <span>Target</span>
               <select
                 value={target}
-                onChange={(event) =>
-                  setTarget(event.target.value as TargetOption)
-                }
+                onChange={(event) => setTarget(event.target.value as TargetOption)}
                 className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground"
               >
                 {TARGET_OPTIONS.map((option) => (
@@ -100,9 +91,7 @@ function CommandButtonTable() {
         <DataGridBody>
           {commands.map((command) => (
             <DataGridRow key={command.name}>
-              <div>
-                {formatCommandDisplayName(command.qualifiedName, command)}
-              </div>
+              <div>{formatCommandDisplayName(command.qualifiedName, command)}</div>
               <button
                 onClick={() => {
                   const extra = targetExtra(target);

@@ -15,11 +15,7 @@ import { createId } from "@/lib/utils";
 export type FormTableColumn<T> = {
   header: string;
   className?: string;
-  render: (props: {
-    row: T;
-    rowIndex: number;
-    updateRow: (next: T) => void;
-  }) => ReactNode;
+  render: (props: { row: T; rowIndex: number; updateRow: (next: T) => void }) => ReactNode;
 };
 
 type FormTableHistory<T> = {
@@ -60,9 +56,7 @@ export function FormTable<T>({
   });
 
   if (rowIdsRef.current.length !== value.length) {
-    rowIdsRef.current = value.map(
-      (_, index) => rowIdsRef.current[index] ?? createId(),
-    );
+    rowIdsRef.current = value.map((_, index) => rowIdsRef.current[index] ?? createId());
   }
 
   const changeValue = (next: ReadonlyArray<T>) => {
@@ -78,9 +72,7 @@ export function FormTable<T>({
   };
 
   const removeRow = (rowIndex: number) => {
-    rowIdsRef.current = rowIdsRef.current.filter(
-      (_, index) => index !== rowIndex,
-    );
+    rowIdsRef.current = rowIdsRef.current.filter((_, index) => index !== rowIndex);
     changeValue(value.filter((_, index) => index !== rowIndex));
   };
 
@@ -154,9 +146,7 @@ export function FormTable<T>({
                   {column.header}
                 </TableHead>
               ))}
-              <TableHead className="w-24 px-3 text-right align-middle">
-                Actions
-              </TableHead>
+              <TableHead className="w-24 px-3 text-right align-middle">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -171,11 +161,7 @@ export function FormTable<T>({
               </TableRow>
             ) : (
               value.map((row, rowIndex) => (
-                <TableRow
-                  key={
-                    getRowKey?.(row, rowIndex) ?? rowIdsRef.current[rowIndex]
-                  }
-                >
+                <TableRow key={getRowKey?.(row, rowIndex) ?? rowIdsRef.current[rowIndex]}>
                   {columns.map((column) => (
                     <TableCell key={column.header} className={column.className}>
                       {column.render({

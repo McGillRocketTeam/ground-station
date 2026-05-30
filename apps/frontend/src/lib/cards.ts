@@ -34,17 +34,12 @@ export const CardArray: CardDefinition<string, any>[] = [
   LinksGraphCard,
 ] as const;
 
-export interface CardDefinition<
-  Id extends string,
-  T extends Schema.Struct.Fields,
-> {
+export interface CardDefinition<Id extends string, T extends Schema.Struct.Fields> {
   id: Id;
   name: string;
   schema: Schema.Struct<T>;
   actions?: (panel: IDockviewPanel) => ReadonlyArray<DashboardActionGroup>;
-  component: ComponentType<
-    IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>
-  >;
+  component: ComponentType<IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>>;
 }
 
 class CardErrorBoundary extends Component<
@@ -74,8 +69,7 @@ class CardErrorBoundary extends Component<
       return createElement(
         "div",
         {
-          className:
-            "text-error grid h-full place-items-center p-4 font-mono text-xs uppercase",
+          className: "text-error grid h-full place-items-center p-4 font-mono text-xs uppercase",
         },
         `${this.props.cardName} failed to render: ${this.state.error.message}`,
       );
@@ -85,10 +79,9 @@ class CardErrorBoundary extends Component<
   }
 }
 
-export function makeCard<
-  const Id extends string,
-  T extends Schema.Struct.Fields,
->(props: CardDefinition<Id, T>): CardDefinition<Id, T> {
+export function makeCard<const Id extends string, T extends Schema.Struct.Fields>(
+  props: CardDefinition<Id, T>,
+): CardDefinition<Id, T> {
   const CardComponent = props.component;
 
   return {
@@ -106,9 +99,7 @@ type Cards = (typeof CardArray)[number];
 export type CardId = Cards["id"];
 type GetCard<Id extends CardId> = Extract<Cards, { id: Id }>;
 
-export const CardDefinitionMap = Object.fromEntries(
-  CardArray.map((card) => [card.id, card]),
-) as {
+export const CardDefinitionMap = Object.fromEntries(CardArray.map((card) => [card.id, card])) as {
   [K in CardId]: GetCard<K>;
 };
 
@@ -116,15 +107,11 @@ export function isCardId(value: string): value is CardId {
   return value in CardDefinitionMap;
 }
 
-export const CardSchemaMap = Object.fromEntries(
-  CardArray.map((c) => [c.id, c.schema]),
-) as {
+export const CardSchemaMap = Object.fromEntries(CardArray.map((c) => [c.id, c.schema])) as {
   [K in CardId]: GetCard<K>["schema"];
 };
 
-export const CardComponentMap = Object.fromEntries(
-  CardArray.map((c) => [c.id, c.component]),
-) as {
+export const CardComponentMap = Object.fromEntries(CardArray.map((c) => [c.id, c.component])) as {
   [K in CardId]: GetCard<K>["component"];
 };
 
@@ -141,11 +128,7 @@ export function getCardActionsForPanel(
 }
 
 // Get schema type for a specific card
-export type CardSchemaType<Id extends CardId> = Schema.Schema.Type<
-  GetCard<Id>["schema"]
->;
+export type CardSchemaType<Id extends CardId> = Schema.Schema.Type<GetCard<Id>["schema"]>;
 
 // Get props type for a specific card's component
-export type CardProps<Id extends CardId> = Parameters<
-  GetCard<Id>["component"]
->[0];
+export type CardProps<Id extends CardId> = Parameters<GetCard<Id>["component"]>[0];

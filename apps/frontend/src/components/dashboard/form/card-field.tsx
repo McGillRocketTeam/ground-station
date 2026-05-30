@@ -3,19 +3,11 @@ import type { ComponentType } from "react";
 
 import { Schema, SchemaAST } from "effect";
 
-import {
-  FormMaxAnnotationId,
-  FormMinAnnotationId,
-  formTitle,
-  formType,
-} from "@/lib/form";
+import { FormMaxAnnotationId, FormMinAnnotationId, formTitle, formType } from "@/lib/form";
 
 import { Field, FieldError, FieldLabel } from "../../ui/field";
 import { Input } from "../../ui/input";
-import {
-  DashboardChartSeriesField,
-  type DashboardChartSeriesFieldApi,
-} from "./chart-series-field";
+import { DashboardChartSeriesField, type DashboardChartSeriesFieldApi } from "./chart-series-field";
 import {
   DashboardGaugeVisualRangesField,
   type DashboardGaugeVisualRangesFieldApi,
@@ -24,19 +16,15 @@ import {
   DashboardParameterArrayField,
   type DashboardParameterArrayFieldApi,
 } from "./parameter-array-field";
-import {
-  DashboardParameterField,
-  type DashboardParameterFieldApi,
-} from "./parameter-field";
+import { DashboardParameterField, type DashboardParameterFieldApi } from "./parameter-field";
 import {
   DashboardParameterTableSectionsField,
   type DashboardParameterTableSectionsFieldApi,
 } from "./parameter-table-sections-field";
 
-const DashboardParameterFieldComponent =
-  DashboardParameterField as unknown as ComponentType<{
-    field: DashboardParameterFieldApi;
-  }>;
+const DashboardParameterFieldComponent = DashboardParameterField as unknown as ComponentType<{
+  field: DashboardParameterFieldApi;
+}>;
 const DashboardParameterArrayFieldComponent =
   DashboardParameterArrayField as unknown as ComponentType<{
     field: DashboardParameterArrayFieldApi;
@@ -45,10 +33,9 @@ const DashboardGaugeVisualRangesFieldComponent =
   DashboardGaugeVisualRangesField as unknown as ComponentType<{
     field: DashboardGaugeVisualRangesFieldApi;
   }>;
-const DashboardChartSeriesFieldComponent =
-  DashboardChartSeriesField as unknown as ComponentType<{
-    field: DashboardChartSeriesFieldApi;
-  }>;
+const DashboardChartSeriesFieldComponent = DashboardChartSeriesField as unknown as ComponentType<{
+  field: DashboardChartSeriesFieldApi;
+}>;
 const DashboardParameterTableSectionsFieldComponent =
   DashboardParameterTableSectionsField as unknown as ComponentType<{
     field: DashboardParameterTableSectionsFieldApi;
@@ -194,24 +181,17 @@ export function DashboardCardField({
   return (
     <Field
       data-invalid={
-        field.state.meta.isTouched &&
-        (!field.state.meta.isValid || Boolean(coordinateError))
+        field.state.meta.isTouched && (!field.state.meta.isValid || Boolean(coordinateError))
       }
     >
       <FieldLabel htmlFor={field.name}>
         {formTitle(fieldSchema)}
-        {optional ? (
-          <span className="ml-1 text-muted-foreground">(optional)</span>
-        ) : null}
+        {optional ? <span className="ml-1 text-muted-foreground">(optional)</span> : null}
       </FieldLabel>
       {(() => {
         switch (type) {
           case "parameter":
-            return (
-              <DashboardParameterFieldComponent
-                field={field as DashboardParameterFieldApi}
-              />
-            );
+            return <DashboardParameterFieldComponent field={field as DashboardParameterFieldApi} />;
           case "parameterArray":
             return (
               <DashboardParameterArrayFieldComponent
@@ -226,9 +206,7 @@ export function DashboardCardField({
             );
           case "chartSeries":
             return (
-              <DashboardChartSeriesFieldComponent
-                field={field as DashboardChartSeriesFieldApi}
-              />
+              <DashboardChartSeriesFieldComponent field={field as DashboardChartSeriesFieldApi} />
             );
           case "parameterTableSections":
             return (
@@ -245,9 +223,7 @@ export function DashboardCardField({
               />
             );
           default:
-            return (
-              <DashboardDefaultField field={field} placeholder={placeholder} />
-            );
+            return <DashboardDefaultField field={field} placeholder={placeholder} />;
         }
       })()}
       {field.state.meta.isTouched ? <FieldError errors={errors} /> : null}

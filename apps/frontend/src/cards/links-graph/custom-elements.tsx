@@ -2,13 +2,7 @@ import type { EdgeProps, NodeProps } from "@xyflow/react";
 
 import { Popover as PopoverPrimitive } from "@base-ui/react";
 import { useAtomValue } from "@effect/atom-react";
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  Handle,
-  Position,
-  getSmoothStepPath,
-} from "@xyflow/react";
+import { BaseEdge, EdgeLabelRenderer, Handle, Position, getSmoothStepPath } from "@xyflow/react";
 import { RadioTower, Server } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -57,17 +51,13 @@ function useSlidingWindowRate(count: number | undefined) {
     }
 
     previousCountRef.current = count;
-    deltasRef.current = deltasRef.current.filter(
-      (sample) => now - sample.time <= 1000,
-    );
+    deltasRef.current = deltasRef.current.filter((sample) => now - sample.time <= 1000);
     setRate(deltasRef.current.reduce((sum, sample) => sum + sample.delta, 0));
 
     const interval = window.setInterval(() => {
       const tick = Date.now();
 
-      deltasRef.current = deltasRef.current.filter(
-        (sample) => tick - sample.time <= 1000,
-      );
+      deltasRef.current = deltasRef.current.filter((sample) => tick - sample.time <= 1000);
       setRate(deltasRef.current.reduce((sum, sample) => sum + sample.delta, 0));
     }, 100);
 
@@ -140,9 +130,7 @@ function LinkEdge({
 }
 
 function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
-  const linkResult = useAtomValue(
-    singleLinkSubscriptionAtom(data.qualifiedName),
-  );
+  const linkResult = useAtomValue(singleLinkSubscriptionAtom(data.qualifiedName));
   const nodeClass =
     linkResult._tag === "Success"
       ? linkResult.value

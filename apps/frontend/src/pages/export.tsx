@@ -6,10 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { selectedInstanceAtom } from "@/lib/atom";
 
 import { ExportColumnSelector, ExportPageForm } from "./export/form";
-import {
-  exportPreviewOptionsAtom,
-  makeDefaultExportFormValues,
-} from "./export/state";
+import { exportPreviewOptionsAtom, makeDefaultExportFormValues } from "./export/state";
 
 export function ExportPage() {
   const selectedInstance = useAtomValue(selectedInstanceAtom);
@@ -30,9 +27,7 @@ export function ExportPage() {
       <DashboardHeader className="col-span-full border-b" />
 
       <aside className="min-h-0 min-w-80 space-y-4 overflow-y-auto border-r p-2">
-        <div className="font-mono text-lg font-semibold uppercase">
-          Export Data
-        </div>
+        <div className="font-mono text-lg font-semibold uppercase">Export Data</div>
         <ExportPageForm />
         <Separator />
         <ExportColumnSelector />

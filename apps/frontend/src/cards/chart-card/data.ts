@@ -3,11 +3,7 @@ import type { ParameterValue } from "@mrt/yamcs-effect";
 import { DateTime, Effect } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
-import {
-  parameterSubscriptionAtom,
-  selectedInstanceAtom,
-  YamcsAtomHttpClient,
-} from "@/lib/atom";
+import { parameterSubscriptionAtom, selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
 import type { ChartSeriesConfig } from "./config";
 import type { ChartPoint, ChartViewport } from "./types";
@@ -30,82 +26,67 @@ export const viewportAtom = Atom.make<ChartViewport>({
   start: Date.now() - LIVE_WINDOW_MS,
 });
 
-export const historyAtom = Atom.family(
-  (seriesConfigs: ReadonlyArray<ChartSeriesConfig>) =>
-    Atom.make((get) =>
-      Effect.gen(function* () {
-        const instance = get(selectedInstanceAtom);
-        const viewport = get(viewportAtom);
-        const samplePaddingMs = Math.max(
-          1,
-          (viewport.end - viewport.start) / SAMPLE_COUNT,
+export const historyAtom = Atom.family((seriesConfigs: ReadonlyArray<ChartSeriesConfig>) =>
+  Atom.make((get) =>
+    Effect.gen(function* () {
+      const instance = get(selectedInstanceAtom);
+      const viewport = get(viewportAtom);
+      const samplePaddingMs = Math.max(1, (viewport.end - viewport.start) / SAMPLE_COUNT);
+      const stop = new Date(viewport.end + samplePaddingMs);
+      const start = new Date(viewport.start - samplePaddingMs);
+
+      const querySamples = (parameterName: string, source: "ParameterArchive" | "replay") =>
+        get.resultOnce(
+          YamcsAtomHttpClient.query("parameter", "getSamples", {
+            params: {
+              instance,
+              parameterName,
+            },
+            query: {
+              count: SAMPLE_COUNT,
+              gapTime: 300000,
+              source,
+              start: start.toISOString(),
+              stop: stop.toISOString(),
+              useRawValue: false,
+            },
+          }),
         );
-        const stop = new Date(viewport.end + samplePaddingMs);
-        const start = new Date(viewport.start - samplePaddingMs);
 
-        const querySamples = (
-          parameterName: string,
-          source: "ParameterArchive" | "replay",
-        ) =>
-          get.resultOnce(
-            YamcsAtomHttpClient.query("parameter", "getSamples", {
-              params: {
-                instance,
-                parameterName,
+      const getHistory = (series: ChartSeriesConfig) =>
+        Effect.gen(function* () {
+          const archiveHistory = yield* querySamples(series.parameter, "ParameterArchive");
+          const history =
+            archiveHistory.sample.length > 0
+              ? archiveHistory
+              : yield* querySamples(series.parameter, "replay");
+
+          return history.sample.flatMap((sample): ChartPoint[] => {
+            if (sample.avg === undefined) return [];
+
+            return [
+              {
+                avg: applySeriesOffset(sample.avg, series),
+                max: applySeriesOffset(sample.max ?? sample.avg, series),
+                min: applySeriesOffset(sample.min ?? sample.avg, series),
+                time: DateTime.toDate(sample.time).getTime(),
               },
-              query: {
-                count: SAMPLE_COUNT,
-                gapTime: 300000,
-                source,
-                start: start.toISOString(),
-                stop: stop.toISOString(),
-                useRawValue: false,
-              },
-            }),
-          );
-
-        const getHistory = (series: ChartSeriesConfig) =>
-          Effect.gen(function* () {
-            const archiveHistory = yield* querySamples(
-              series.parameter,
-              "ParameterArchive",
-            );
-            const history =
-              archiveHistory.sample.length > 0
-                ? archiveHistory
-                : yield* querySamples(series.parameter, "replay");
-
-            return history.sample.flatMap((sample): ChartPoint[] => {
-              if (sample.avg === undefined) return [];
-
-              return [
-                {
-                  avg: applySeriesOffset(sample.avg, series),
-                  max: applySeriesOffset(sample.max ?? sample.avg, series),
-                  min: applySeriesOffset(sample.min ?? sample.avg, series),
-                  time: DateTime.toDate(sample.time).getTime(),
-                },
-              ];
-            });
+            ];
           });
+        });
 
-        const entries = yield* Effect.all(
-          seriesConfigs.map((series) =>
-            Effect.map(
-              getHistory(series),
-              (points) => [series.parameter, points] as const,
-            ),
-          ),
-        );
+      const entries = yield* Effect.all(
+        seriesConfigs.map((series) =>
+          Effect.map(getHistory(series), (points) => [series.parameter, points] as const),
+        ),
+      );
 
-        return Object.fromEntries(entries);
-      }),
-    ),
+      return Object.fromEntries(entries);
+    }),
+  ),
 );
 
-export function extractNumericValue(
-  parameterValue: typeof ParameterValue.Type,
-) {
+export function extractNumericValue(parameterValue: typeof ParameterValue.Type) {
   const value =
     parameterValue.engValue && "value" in parameterValue.engValue
       ? parameterValue.engValue.value

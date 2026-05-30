@@ -13,10 +13,7 @@ import {
 import { CardArray, CardComponentMap, type CardId } from "@/lib/cards";
 
 const selectedCardAtom = Atom.make<CardId>("parameter-table");
-const selectedComponentAtom = Atom.map(
-  selectedCardAtom,
-  (id) => CardComponentMap[id],
-);
+const selectedComponentAtom = Atom.map(selectedCardAtom, (id) => CardComponentMap[id]);
 
 export function DebugPage() {
   const selectedComponent = useAtomValue(selectedComponentAtom);

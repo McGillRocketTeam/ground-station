@@ -3,26 +3,12 @@ import { Ellipsis } from "lucide-react";
 import { memo, useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
 
-import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-} from "@/components/ui/data-grid";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 import { LinkDetail } from "./link-detail";
-import {
-  buildLinkTree,
-  colorByStatus,
-  type Link,
-  type LinkNode,
-} from "./utils";
+import { buildLinkTree, colorByStatus, type Link, type LinkNode } from "./utils";
 
 const linksPopover = PopoverPrimitive.createHandle<Link>();
 export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
@@ -68,9 +54,7 @@ export const LinkRows = memo(function LinkRows({
     return (
       <Fragment key={link.name}>
         <LinkRow link={link} depth={depth} isLast={isLast} />
-        {link.children.length > 0 && (
-          <LinkRows links={link.children} depth={depth + 1} />
-        )}
+        {link.children.length > 0 && <LinkRows links={link.children} depth={depth + 1} />}
       </Fragment>
     );
   });
@@ -107,10 +91,7 @@ const LinkRow = memo(function LinkRow({
             {/* Vertical continuation line */}
             {depth > 0 && (
               <span
-                className={cn(
-                  "absolute top-0 left-0 w-px bg-current",
-                  isLast ? "h-1/2" : "h-full",
-                )}
+                className={cn("absolute top-0 left-0 w-px bg-current", isLast ? "h-1/2" : "h-full")}
                 style={{ left: depth * 16 - 8 }}
               />
             )}
@@ -135,8 +116,7 @@ const LinkRow = memo(function LinkRow({
           </div>
 
           <div className="line-clamp-1 text-ellipsis">
-            {!link.detailedStatus?.startsWith(link.status) &&
-              link.status + ", "}
+            {!link.detailedStatus?.startsWith(link.status) && link.status + ", "}
             {link.detailedStatus}
           </div>
 

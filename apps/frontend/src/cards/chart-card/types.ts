@@ -16,7 +16,7 @@ export type ChartViewport = {
 export type PanelApi = {
   height: number;
   width: number;
-  onDidDimensionsChange: (
-    listener: (event: { height: number; width: number }) => void,
-  ) => { dispose: () => void };
+  onDidDimensionsChange: (listener: (event: { height: number; width: number }) => void) => {
+    dispose: () => void;
+  };
 };

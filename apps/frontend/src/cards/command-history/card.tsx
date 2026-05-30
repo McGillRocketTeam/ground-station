@@ -10,16 +10,8 @@ import {
   DataGridRow,
   DataGridSearch,
 } from "@/components/ui/data-grid";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  YamcsAtomHttpClient,
-  commandsSubscriptionAtom,
-  selectedInstanceAtom,
-} from "@/lib/atom";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { YamcsAtomHttpClient, commandsSubscriptionAtom, selectedInstanceAtom } from "@/lib/atom";
 import { cn, formatDate, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
@@ -64,8 +56,7 @@ export function CommandHistoryTable() {
         <div
           className={cn(
             "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(9,2.125rem)_auto] gap-px rounded-none",
-            (commandHistory._tag === "Initial" ||
-              commandHistory._tag === "Failure") &&
+            (commandHistory._tag === "Initial" || commandHistory._tag === "Failure") &&
               "min-h-full",
           )}
         >
@@ -122,11 +113,7 @@ const Body = memo(function Body({
       ) : null}
 
       {filteredCommands.map((command) => (
-        <CommandRow
-          key={command.id}
-          command={command}
-          commandDisplayMap={commandDisplayMap}
-        />
+        <CommandRow key={command.id} command={command} commandDisplayMap={commandDisplayMap} />
       ))}
     </DataGridBody>
   );
@@ -139,8 +126,7 @@ const CommandRow = memo(function CommandRow({
   command: CommandHistoryEntry;
   commandDisplayMap: ReadonlyMap<string, string>;
 }) {
-  const commandLabel =
-    commandDisplayMap.get(command.commandName) ?? command.commandName;
+  const commandLabel = commandDisplayMap.get(command.commandName) ?? command.commandName;
   const rowHasNokAck = hasNokAck(command);
 
   return (
@@ -156,12 +142,8 @@ const CommandRow = memo(function CommandRow({
                 "*:bg-error *:text-error-foreground hover:*:bg-error data-popup-open:*:bg-error",
             )}
           >
-            <div className="col-span-2 text-right">
-              {formatDate(command.generationTime)}
-            </div>
-            <div className="line-clamp-1 no-scrollbar overflow-x-scroll">
-              {commandLabel}
-            </div>
+            <div className="col-span-2 text-right">{formatDate(command.generationTime)}</div>
+            <div className="line-clamp-1 no-scrollbar overflow-x-scroll">{commandLabel}</div>
             <div className="text-center">
               {stringifyValue(extractAttribute(command, "Command_Id"), "")}
             </div>
@@ -170,19 +152,10 @@ const CommandRow = memo(function CommandRow({
             </div>
 
             <AckCell command={command} name="Queued" errorRow={rowHasNokAck} />
-            <AckCell
-              command={command}
-              name="Released"
-              errorRow={rowHasNokAck}
-            />
+            <AckCell command={command} name="Released" errorRow={rowHasNokAck} />
             <AckCell command={command} name="Sent" errorRow={rowHasNokAck} />
             {extraAckColumns.map((ack) => (
-              <AckCell
-                key={ack.name}
-                command={command}
-                name={ack.name}
-                errorRow={rowHasNokAck}
-              />
+              <AckCell key={ack.name} command={command} name={ack.name} errorRow={rowHasNokAck} />
             ))}
             <AckCell
               command={command}
@@ -219,9 +192,7 @@ const AckCell = memo(function AckCell({
       className={cn(
         "grid place-items-center !px-0",
         !errorRow && ack.status === "OK" && "text-success",
-        !errorRow &&
-          (ack.status === "??" || ack.status === "PENDING") &&
-          "text-muted-foreground",
+        !errorRow && (ack.status === "??" || ack.status === "PENDING") && "text-muted-foreground",
         !errorRow &&
           ack.status !== "??" &&
           ack.status !== "PENDING" &&
@@ -231,9 +202,9 @@ const AckCell = memo(function AckCell({
     >
       {ack.status === "OK" && <Check className="size-3.5" />}
       {ack.status === "PENDING" && <BrailleSpinner />}
-      {ack.status !== "OK" &&
-        ack.status !== "??" &&
-        ack.status !== "PENDING" && <X className="size-4" />}
+      {ack.status !== "OK" && ack.status !== "??" && ack.status !== "PENDING" && (
+        <X className="size-4" />
+      )}
       {ack.status === "??" && "-"}
     </div>
   );

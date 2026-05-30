@@ -1,10 +1,6 @@
 import { useAtom, useAtomSet } from "@effect/atom-react";
 import { BrowserKeyValueStore } from "@effect/platform-browser";
-import {
-  DockviewReact,
-  themeAbyssSpaced,
-  type DockviewReadyEvent,
-} from "dockview-react";
+import { DockviewReact, themeAbyssSpaced, type DockviewReadyEvent } from "dockview-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { useEffect } from "react";
@@ -49,9 +45,7 @@ export function DashboardPage() {
   const setActivePanel = useAtomSet(activePanelAtom);
   const setCurrentCardActions = useAtomSet(currentCardActionsAtom);
   const [layout, setLayout] = useAtom(dashboardLocalStorage);
-  const initializeDashboardLayoutHistory = useAtomSet(
-    initializeDashboardLayoutHistoryAtom,
-  );
+  const initializeDashboardLayoutHistory = useAtomSet(initializeDashboardLayoutHistoryAtom);
   const pushDashboardLayoutHistory = useAtomSet(pushDashboardLayoutHistoryAtom);
 
   useEffect(() => {
@@ -88,9 +82,7 @@ export function DashboardPage() {
 
     const persistedLayout =
       readPersistedDashboardLayout() ??
-      (isSerializedDockviewLayout(layout)
-        ? snapshotDockviewLayout(layout)
-        : undefined);
+      (isSerializedDockviewLayout(layout) ? snapshotDockviewLayout(layout) : undefined);
 
     if (persistedLayout) {
       setLayout(persistedLayout);

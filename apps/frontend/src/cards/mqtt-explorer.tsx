@@ -27,8 +27,7 @@ type TopicNode = {
   value?: TopicEntry;
 };
 
-const DEFAULT_MQTT_URL =
-  import.meta.env.MQTT_BROKER_URL ?? "ws://localhost:9001";
+const DEFAULT_MQTT_URL = import.meta.env.MQTT_BROKER_URL ?? "ws://localhost:9001";
 
 const MqttExplorerCardConfigSchema = Schema.Struct({
   brokerUrl: Schema.optional(Schema.String).pipe(
@@ -143,9 +142,7 @@ const TopicTreeNode = memo(function TopicTreeNode({
   const [expanded, setExpanded] = useState(depth < 2);
   const [highlighted, setHighlighted] = useState(false);
   const hasChildren = node.children.size > 0;
-  const children = Array.from(node.children.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
+  const children = Array.from(node.children.values()).sort((a, b) => a.name.localeCompare(b.name));
 
   useEffect(() => {
     if (!node.value) return;
@@ -185,10 +182,7 @@ const TopicTreeNode = memo(function TopicTreeNode({
           style={{ paddingLeft: `${(depth + 1) * 14 + 20}px` }}
         >
           <span className="">value =</span>
-          <span
-            className="font-sans whitespace-pre"
-            title={node.value.lastPayload}
-          >
+          <span className="font-sans whitespace-pre" title={node.value.lastPayload}>
             {node.value.lastPayload}
           </span>
         </div>
@@ -206,12 +200,8 @@ function MqttExplorer({ brokerUrl }: { brokerUrl: string }) {
   const result = useAtomValue(mqttExplorerAtom(brokerUrl));
 
   return AsyncResult.match(result, {
-    onInitial: () => (
-      <div className="p-2 text-muted-foreground">Connecting...</div>
-    ),
-    onFailure: ({ cause }) => (
-      <pre className="p-2 text-error">{Cause.pretty(cause)}</pre>
-    ),
+    onInitial: () => <div className="p-2 text-muted-foreground">Connecting...</div>,
+    onFailure: ({ cause }) => <pre className="p-2 text-error">{Cause.pretty(cause)}</pre>,
     onSuccess: ({ value }) => {
       const root = buildTree(value.topics);
       const children = Array.from(root.children.values()).sort((a, b) =>
@@ -225,13 +215,9 @@ function MqttExplorer({ brokerUrl }: { brokerUrl: string }) {
           </div>
           <div className="w-max min-w-full px-1 pb-1">
             {children.length === 0 ? (
-              <div className="p-2 text-muted-foreground">
-                No topics received.
-              </div>
+              <div className="p-2 text-muted-foreground">No topics received.</div>
             ) : (
-              children.map((child) => (
-                <TopicTreeNode key={child.topic} depth={0} node={child} />
-              ))
+              children.map((child) => <TopicTreeNode key={child.topic} depth={0} node={child} />)
             )}
           </div>
         </div>
@@ -244,7 +230,5 @@ export const MqttExplorerCard = makeCard({
   id: "mqtt-explorer",
   name: "MQTT Explorer",
   schema: MqttExplorerCardConfigSchema,
-  component: (props) => (
-    <MqttExplorer brokerUrl={props.params.brokerUrl ?? DEFAULT_MQTT_URL} />
-  ),
+  component: (props) => <MqttExplorer brokerUrl={props.params.brokerUrl ?? DEFAULT_MQTT_URL} />,
 });

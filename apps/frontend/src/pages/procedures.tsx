@@ -31,10 +31,7 @@ const ParameterProcedureStep = Schema.TaggedStruct("Parameter", {
   ),
 });
 
-const ProcedureStep = Schema.Union([
-  InformationProcedureStep,
-  ParameterProcedureStep,
-]);
+const ProcedureStep = Schema.Union([InformationProcedureStep, ParameterProcedureStep]);
 type ProcedureStep = typeof ProcedureStep.Type;
 
 const procedures: Array<ProcedureStep> = [
@@ -152,9 +149,7 @@ export function ProceduresPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-2 py-1.25">
       <DashboardHeader className="sticky top-0 border-b bg-background pt-1.25 pb-2" />
-      <h1 className="font-mono text-base font-semibold uppercase">
-        URRG Avionics Procedures
-      </h1>
+      <h1 className="font-mono text-base font-semibold uppercase">URRG Avionics Procedures</h1>
 
       <div className="grid grid-cols-[auto_auto_1fr_auto]">
         {procedures.map((step, index) => (
@@ -199,12 +194,7 @@ function ProcedureRow({ step, index }: { step: ProcedureStep; index: number }) {
       {/*   {step._tag === "Parameter" && <ListTree className="h-lh w-4" />} */}
       {/*   {step._tag} */}
       {/* </div> */}
-      <div
-        className={cn(
-          "text-pretty",
-          step.danger === "WARNING" && "text-warning",
-        )}
-      >
+      <div className={cn("text-pretty", step.danger === "WARNING" && "text-warning")}>
         {step.text}
       </div>
       <div>1.</div>
@@ -229,10 +219,7 @@ function ProcedureRow({ step, index }: { step: ProcedureStep; index: number }) {
 function Value({ parameter }: { parameter: typeof NamedObjectId.Type }) {
   return (
     <div>
-      {stringifyValue(
-        useAtomSuspense(parameterSubscriptionAtom(parameter.name)).value
-          .engValue,
-      )}
+      {stringifyValue(useAtomSuspense(parameterSubscriptionAtom(parameter.name)).value.engValue)}
     </div>
   );
 }

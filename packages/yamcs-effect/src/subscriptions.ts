@@ -1,12 +1,4 @@
-import {
-  Config,
-  DateTime,
-  Effect,
-  Layer,
-  Schema,
-  Context,
-  Stream,
-} from "effect";
+import { Config, DateTime, Effect, Layer, Schema, Context, Stream } from "effect";
 
 import type { QualifiedName } from "./schema.js";
 
@@ -30,18 +22,10 @@ import {
 } from "./websocket/server-messages.js";
 
 export interface YamcsSubscriptionsService {
-  readonly time: Stream.Stream<
-    (typeof TimeEvent.Type)["data"],
-    Schema.SchemaError
-  >;
-  readonly links: Stream.Stream<
-    (typeof LinkEvent.Type)["data"]["links"],
-    Schema.SchemaError
-  >;
+  readonly time: Stream.Stream<(typeof TimeEvent.Type)["data"], Schema.SchemaError>;
+  readonly links: Stream.Stream<(typeof LinkEvent.Type)["data"]["links"], Schema.SchemaError>;
   readonly commands: (
-    priorCommands: ReadonlyArray<
-      typeof import("./schema.js").CommandHistoryEntry.Type
-    >,
+    priorCommands: ReadonlyArray<typeof import("./schema.js").CommandHistoryEntry.Type>,
   ) => Stream.Stream<
     Array<typeof import("./schema.js").StreamingCommandHisotryEntry.Type>,
     Schema.SchemaError
@@ -51,15 +35,10 @@ export interface YamcsSubscriptionsService {
   ) => Stream.Stream<typeof ParameterValue.Type, Schema.SchemaError>;
   readonly events: (
     priorEvents: ReadonlyArray<typeof import("./schema.js").Event.Type>,
-  ) => Stream.Stream<
-    Array<(typeof EventsEvent.Type)["data"]>,
-    Schema.SchemaError
-  >;
+  ) => Stream.Stream<Array<(typeof EventsEvent.Type)["data"]>, Schema.SchemaError>;
   readonly websocket: (
     type: typeof SubscriptionRequest.Type,
-  ) => Stream.Stream<
-    typeof import("./websocket/server-messages.js").Events.Type
-  >;
+  ) => Stream.Stream<typeof import("./websocket/server-messages.js").Events.Type>;
 }
 
 /**
@@ -106,9 +85,7 @@ export class YamcsSubscriptions extends Context.Service<
      */
     const links = Stream.unwrap(
       Effect.gen(function* () {
-        const { call, stream } = yield* ws.subscribe(
-          SubscribeLinksRequest.make({ instance }),
-        );
+        const { call, stream } = yield* ws.subscribe(SubscribeLinksRequest.make({ instance }));
 
         return stream.pipe(
           Stream.mapEffect((m) => Schema.decodeUnknownEffect(LinkEvent)(m)),
@@ -125,9 +102,7 @@ export class YamcsSubscriptions extends Context.Service<
      * entries by ID and emits sorted arrays (newest first).
      */
     const commands = (
-      priorCommands: ReadonlyArray<
-        typeof import("./schema.js").CommandHistoryEntry.Type
-      >,
+      priorCommands: ReadonlyArray<typeof import("./schema.js").CommandHistoryEntry.Type>,
     ) =>
       Stream.unwrap(
         Effect.gen(function* () {
@@ -146,9 +121,7 @@ export class YamcsSubscriptions extends Context.Service<
           );
 
           const dataStream = stream.pipe(
-            Stream.mapEffect((m) =>
-              Schema.decodeUnknownEffect(CommandHistoryEvent)(m),
-            ),
+            Stream.mapEffect((m) => Schema.decodeUnknownEffect(CommandHistoryEvent)(m)),
             Stream.map((m) => m.data),
             Stream.ensuring(ws.unsubscribe(call)),
           );
@@ -196,9 +169,7 @@ export class YamcsSubscriptions extends Context.Service<
           );
 
           const eventStream = stream.pipe(
-            Stream.mapEffect((m) =>
-              Schema.decodeUnknownEffect(ParameterEvent)(m.data),
-            ),
+            Stream.mapEffect((m) => Schema.decodeUnknownEffect(ParameterEvent)(m.data)),
           );
 
           // Wait for the mapping message (numeric ID -> parameter name)
@@ -231,24 +202,17 @@ export class YamcsSubscriptions extends Context.Service<
      * Fetches prior events from the REST API, then subscribes to
      * real-time events via WebSocket and accumulates them.
      */
-    const events = (
-      priorEvents: ReadonlyArray<typeof import("./schema.js").Event.Type>,
-    ) =>
+    const events = (priorEvents: ReadonlyArray<typeof import("./schema.js").Event.Type>) =>
       Stream.unwrap(
         Effect.gen(function* () {
-          const { call, stream } = yield* ws.subscribe(
-            SubscribeEventsRequest.make({ instance }),
-          );
+          const { call, stream } = yield* ws.subscribe(SubscribeEventsRequest.make({ instance }));
 
           // priorEvents should be in chronological order (oldest first)
           const initial = [...priorEvents];
 
           return stream.pipe(
             Stream.mapEffect((m) => Schema.decodeUnknownEffect(EventsEvent)(m)),
-            Stream.scan(initial, (allEvents, event) => [
-              ...allEvents,
-              event.data,
-            ]),
+            Stream.scan(initial, (allEvents, event) => [...allEvents, event.data]),
             Stream.ensuring(ws.unsubscribe(call)),
           );
         }),

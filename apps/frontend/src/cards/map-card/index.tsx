@@ -22,15 +22,9 @@ const MapCardConfiguration = Schema.Struct({
   longitude: CoordinateLongitudeField,
   latitude: CoordinateLatitudeField,
 
-  altitude: ParameterField.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" }),
-  ),
-  rocketLong: ParameterField.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" }),
-  ),
-  rocketLat: ParameterField.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" }),
-  ),
+  altitude: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" })),
+  rocketLong: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" })),
+  rocketLat: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" })),
 });
 
 function isValidCoordinate(latitude: number, longitude: number) {
@@ -45,10 +39,8 @@ function isValidCoordinate(latitude: number, longitude: number) {
 }
 
 export function RocketMarker(props: { lat: string; long: string }) {
-  const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value
-    .engValue;
-  const longValue = useAtomSuspense(parameterSubscriptionAtom(props.long)).value
-    .engValue;
+  const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value.engValue;
+  const longValue = useAtomSuspense(parameterSubscriptionAtom(props.long)).value.engValue;
 
   if (latValue.type === "FLOAT" && longValue.type === "FLOAT") {
     const latitude = Number(latValue.value);

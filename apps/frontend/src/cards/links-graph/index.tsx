@@ -1,10 +1,5 @@
 import "@xyflow/react/dist/style.css";
-import {
-  Background,
-  BackgroundVariant,
-  ReactFlow,
-  type ReactFlowInstance,
-} from "@xyflow/react";
+import { Background, BackgroundVariant, ReactFlow, type ReactFlowInstance } from "@xyflow/react";
 import { Schema } from "effect";
 import { useEffect, useRef } from "react";
 
@@ -12,12 +7,7 @@ import { Popover, PopoverContent } from "@/components/ui/popover";
 import { makeCard } from "@/lib/cards";
 
 import { LinkDetail } from "../links/link-detail";
-import {
-  edgeTypes,
-  linksPopover,
-  nodeTypes,
-  noopNodeClick,
-} from "./custom-elements";
+import { edgeTypes, linksPopover, nodeTypes, noopNodeClick } from "./custom-elements";
 import { initialEdges, initialNodes } from "./data";
 
 export const LinksGraphCard = makeCard({
@@ -70,11 +60,7 @@ export const LinksGraphCard = makeCard({
           preventScrolling={false}
           fitView
         >
-          <Background
-            color="var(--color-border)"
-            size={5}
-            variant={BackgroundVariant.Cross}
-          />
+          <Background color="var(--color-border)" size={5} variant={BackgroundVariant.Cross} />
         </ReactFlow>
       </div>
     );

@@ -3,18 +3,12 @@ import { Schema } from "effect";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
 export const ChartSeriesConfigSchema = Schema.Struct({
-  color: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Color" }),
-  ),
-  label: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Label" }),
-  ),
+  color: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Color" })),
+  label: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Label" })),
   offset: Schema.optional(Schema.NumberFromString).pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Offset" }),
   ),
-  parameter: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Parameter" }),
-  ),
+  parameter: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Parameter" })),
 });
 
 export const ChartCardConfigSchema = Schema.Struct({

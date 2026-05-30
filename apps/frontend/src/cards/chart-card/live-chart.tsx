@@ -5,13 +5,7 @@ import { useAtomSet, useAtomSubscribe, useAtomValue } from "@effect/atom-react";
 import * as echarts from "echarts";
 import { graphic } from "echarts";
 import { DateTime } from "effect";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
 import {
   ContextMenu,
@@ -21,12 +15,7 @@ import {
 } from "@/components/ui/context-menu";
 
 import type { ChartSeriesConfig } from "./config";
-import type {
-  ChartPoint,
-  ChartSeriesData,
-  ChartViewport,
-  PanelApi,
-} from "./types";
+import type { ChartPoint, ChartSeriesData, ChartViewport, PanelApi } from "./types";
 
 import { DEFAULT_SERIES_CONFIGS } from "./config";
 import {
@@ -96,15 +85,11 @@ function renderRangeItem(params: any, api: any) {
 
 function getLatestPointTime(seriesData: ChartSeriesData) {
   return Math.max(
-    ...Object.values(seriesData).map(
-      (points) => points.at(-1)?.time ?? Number.NEGATIVE_INFINITY,
-    ),
+    ...Object.values(seriesData).map((points) => points.at(-1)?.time ?? Number.NEGATIVE_INFINITY),
   );
 }
 
-function getLiveViewport(
-  seriesData: ChartSeriesData,
-): ChartViewport | undefined {
+function getLiveViewport(seriesData: ChartSeriesData): ChartViewport | undefined {
   const latestPointTime = getLatestPointTime(seriesData);
   if (!Number.isFinite(latestPointTime)) return undefined;
 
@@ -142,9 +127,7 @@ function snapshotSeries(
   if (livePoints.length === 0) return archivePoints;
 
   const firstLiveTime = livePoints[0]!.time;
-  const archiveBeforeLive = archivePoints.filter(
-    (point) => point.time < firstLiveTime,
-  );
+  const archiveBeforeLive = archivePoints.filter((point) => point.time < firstLiveTime);
 
   if (viewport && firstLiveTime > viewport.end) {
     return archiveBeforeLive;
@@ -206,9 +189,7 @@ export function LiveChart({
   const visiblePointsRef = useRef<ChartSeriesData>(emptySeriesData());
   const viewportRef = useRef<ChartViewport | null>(null);
   const dragRef = useRef<DragState | null>(null);
-  const viewportDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const viewportDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setHistoryViewport = useAtomSet(viewportAtom);
   const historyResult = useAtomValue(historyAtom(normalizedSeriesConfigs));
 
@@ -218,11 +199,7 @@ export function LiveChart({
       livePointsRef.current,
       viewportRef.current,
     );
-    updateChartData(
-      chartRef.current,
-      normalizedSeriesConfigs,
-      visiblePointsRef.current,
-    );
+    updateChartData(chartRef.current, normalizedSeriesConfigs, visiblePointsRef.current);
   }, [normalizedSeriesConfigs]);
 
   const getLiveViewportFromAllPoints = useCallback(() => {
@@ -324,8 +301,7 @@ export function LiveChart({
     const zr = chart.getZr();
 
     const handlePointerDown = (event: ZrPointerEvent) => {
-      const viewport =
-        viewportRef.current ?? getLiveViewport(visiblePointsRef.current);
+      const viewport = viewportRef.current ?? getLiveViewport(visiblePointsRef.current);
       if (!viewport) return;
 
       const pausedViewport: ChartViewport = {
@@ -370,14 +346,12 @@ export function LiveChart({
     const handleWheel = (event: ZrWheelEvent) => {
       event.event?.preventDefault?.();
 
-      const viewport =
-        viewportRef.current ?? getLiveViewport(visiblePointsRef.current);
+      const viewport = viewportRef.current ?? getLiveViewport(visiblePointsRef.current);
       if (!viewport) return;
 
       const chartWidth = Math.max(chart.getWidth(), 1);
       const currentWidth = viewport.end - viewport.start;
-      const zoomFactor =
-        (event.wheelDelta ?? 0) > 0 ? ZOOM_IN_FACTOR : ZOOM_OUT_FACTOR;
+      const zoomFactor = (event.wheelDelta ?? 0) > 0 ? ZOOM_IN_FACTOR : ZOOM_OUT_FACTOR;
       const nextWidth = Math.min(
         MAX_VIEWPORT_MS,
         Math.max(MIN_VIEWPORT_MS, currentWidth * zoomFactor),
@@ -467,10 +441,7 @@ export function LiveChart({
     (series: string, point: ChartPoint) => {
       livePointsRef.current = {
         ...livePointsRef.current,
-        [series]: mergePoints([
-          ...(livePointsRef.current[series] ?? []),
-          point,
-        ]),
+        [series]: mergePoints([...(livePointsRef.current[series] ?? []), point]),
       };
 
       if (viewportRef.current?.mode === "paused") {

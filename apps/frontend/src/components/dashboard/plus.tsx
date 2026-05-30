@@ -36,9 +36,9 @@ function AddCardDialog({
   onOpenChange: (open: boolean) => void;
   props: IDockviewHeaderActionsProps;
 }) {
-  const [selectedCard, setSelectedCard] = useState<
-    (typeof CardArray)[number] | null
-  >(CardArray[0] ?? null);
+  const [selectedCard, setSelectedCard] = useState<(typeof CardArray)[number] | null>(
+    CardArray[0] ?? null,
+  );
 
   useEffect(() => {
     if (open) {
@@ -46,10 +46,7 @@ function AddCardDialog({
     }
   }, [open]);
 
-  const selectedCardName = useMemo(
-    () => selectedCard?.name ?? "",
-    [selectedCard],
-  );
+  const selectedCardName = useMemo(() => selectedCard?.name ?? "", [selectedCard]);
 
   return (
     <Dialog disablePointerDismissal open={open} onOpenChange={onOpenChange}>

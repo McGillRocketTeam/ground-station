@@ -16,10 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { isCardId } from "@/lib/cards";
-import {
-  persistDashboardLayout,
-  snapshotDockviewLayout,
-} from "@/lib/dashboard-layout";
+import { persistDashboardLayout, snapshotDockviewLayout } from "@/lib/dashboard-layout";
 
 import { Button } from "../../ui/button";
 import { DashboardCardForm } from "./card-form";

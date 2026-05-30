@@ -1,7 +1,4 @@
-import {
-  BrowserHttpClient,
-  BrowserKeyValueStore,
-} from "@effect/platform-browser";
+import { BrowserHttpClient, BrowserKeyValueStore } from "@effect/platform-browser";
 import {
   CommandHistoryEvent,
   EventsEvent,
@@ -35,8 +32,7 @@ import {
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 import { AsyncResult, Atom, AtomHttpApi } from "effect/unstable/reactivity";
 
-type ArchivedCommandHistoryEntry =
-  typeof import("@mrt/yamcs-effect").CommandHistoryEntry.Type;
+type ArchivedCommandHistoryEntry = typeof import("@mrt/yamcs-effect").CommandHistoryEntry.Type;
 type ArchivedEvent = typeof import("@mrt/yamcs-effect").Event.Type;
 type ArchivedLink = typeof import("@mrt/yamcs-effect").LinkInfo.Type;
 type StreamingCommandHistoryEntry =
@@ -71,24 +67,16 @@ function decodeStreamOrLog<A, E, R>(
     ),
     Stream.tap((message) =>
       Exit.isFailure(message.decoded)
-        ? logValidationFailure(
-            label,
-            Cause.pretty(message.decoded.cause),
-            message.raw,
-          )
+        ? logValidationFailure(label, Cause.pretty(message.decoded.cause), message.raw)
         : Effect.sync(() => undefined),
     ),
-    Stream.map((message) =>
-      isDecodedSuccess(message) ? [message.decoded.value] : [],
-    ),
+    Stream.map((message) => (isDecodedSuccess(message) ? [message.decoded.value] : [])),
     Stream.flattenIterable,
   ) as Stream.Stream<A, E, R>;
 }
 
 const frontendRuntimeFactory = Atom.context({ memoMap: Atom.defaultMemoMap });
-const localStorageRuntime = Atom.runtime(
-  BrowserKeyValueStore.layerLocalStorage,
-);
+const localStorageRuntime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
 
 function resolveRuntimeUrl(url: string): string {
   const parsedUrl = new URL(url);
@@ -108,9 +96,7 @@ export const yamcsBaseUrl = resolveRuntimeUrl(import.meta.env.YAMCS_URL);
 const runtimeEnv = { ...import.meta.env, YAMCS_URL: yamcsBaseUrl };
 
 frontendRuntimeFactory.addGlobalLayer(Logger.layer([Logger.consolePretty()]));
-frontendRuntimeFactory.addGlobalLayer(
-  ConfigProvider.layer(ConfigProvider.fromUnknown(runtimeEnv)),
-);
+frontendRuntimeFactory.addGlobalLayer(ConfigProvider.layer(ConfigProvider.fromUnknown(runtimeEnv)));
 
 const subscriptionRuntime = frontendRuntimeFactory(WebSocketClient.layer);
 
@@ -168,12 +154,7 @@ const timeSubscriptionAtomForInstance = Atom.family((instance: string) =>
         );
 
         return stream.pipe(
-          (stream) =>
-            decodeStreamOrLog(
-              stream,
-              TimeEvent,
-              `time subscription (${instance})`,
-            ),
+          (stream) => decodeStreamOrLog(stream, TimeEvent, `time subscription (${instance})`),
           Stream.map((message) => message.data),
           Stream.ensuring(ws.unsubscribe(call)),
         );
@@ -204,19 +185,12 @@ const linksSubscriptionAtomForInstance = Atom.family((instance: string) =>
           }),
         );
 
-        const { call, stream } = yield* ws.subscribe(
-          SubscribeLinksRequest.make({ instance }),
-        );
+        const { call, stream } = yield* ws.subscribe(SubscribeLinksRequest.make({ instance }));
 
         return Stream.concat(
           Stream.succeed(priorLinks),
           stream.pipe(
-            (stream) =>
-              decodeStreamOrLog(
-                stream,
-                LinkEvent,
-                `links subscription (${instance})`,
-              ),
+            (stream) => decodeStreamOrLog(stream, LinkEvent, `links subscription (${instance})`),
             Stream.map((message) => message.data.links),
             Stream.ensuring(ws.unsubscribe(call)),
           ),
@@ -239,23 +213,17 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
               }),
             ),
             (error) =>
-              logValidationFailure(
-                `command history archive query (${instance})`,
-                error,
-                { instance },
-              ),
+              logValidationFailure(`command history archive query (${instance})`, error, {
+                instance,
+              }),
           ),
           () => ({
             commands: [] as ReadonlyArray<ArchivedCommandHistoryEntry>,
           }),
         );
         const priorCommands =
-          ("commands" in priorCommandResult
-            ? priorCommandResult.commands
-            : undefined) ??
-          ("entry" in priorCommandResult
-            ? priorCommandResult.entry
-            : undefined) ??
+          ("commands" in priorCommandResult ? priorCommandResult.commands : undefined) ??
+          ("entry" in priorCommandResult ? priorCommandResult.entry : undefined) ??
           [];
 
         const { call, stream } = yield* ws.subscribe(
@@ -271,9 +239,7 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
             command as StreamingCommandHistoryEntry,
           ]),
         );
-        const sortCommands = (
-          state: Map<string, StreamingCommandHistoryEntry>,
-        ) =>
+        const sortCommands = (state: Map<string, StreamingCommandHistoryEntry>) =>
           Array.from(state.values()).sort((a, b) =>
             DateTime.Order(b.generationTime, a.generationTime),
           );
@@ -292,23 +258,18 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
         return Stream.concat(
           Stream.succeed(sortCommands(initial)),
           dataStream.pipe(
-            Stream.scanEffect(
-              initial,
-              (state, commandEntry: StreamingCommandHistoryEntry) =>
-                Effect.sync(() => {
-                  const current = state.get(commandEntry.id);
+            Stream.scanEffect(initial, (state, commandEntry: StreamingCommandHistoryEntry) =>
+              Effect.sync(() => {
+                const current = state.get(commandEntry.id);
 
-                  if (current) {
-                    state.set(
-                      commandEntry.id,
-                      mergeCommandEntries(current, commandEntry),
-                    );
-                  } else {
-                    state.set(commandEntry.id, commandEntry);
-                  }
+                if (current) {
+                  state.set(commandEntry.id, mergeCommandEntries(current, commandEntry));
+                } else {
+                  state.set(commandEntry.id, commandEntry);
+                }
 
-                  return state;
-                }),
+                return state;
+              }),
             ),
             Stream.map(sortCommands),
           ),
@@ -319,13 +280,7 @@ const commandsSubscriptionAtomForInstance = Atom.family((instance: string) =>
 );
 
 const parameterSubscriptionAtomForInstance = Atom.family(
-  ({
-    instance,
-    qualifiedName,
-  }: {
-    instance: string;
-    qualifiedName: QualifiedName;
-  }) =>
+  ({ instance, qualifiedName }: { instance: string; qualifiedName: QualifiedName }) =>
     subscriptionRuntime.atom(
       Stream.unwrap(
         Effect.gen(function* () {
@@ -363,10 +318,7 @@ const parameterSubscriptionAtomForInstance = Atom.family(
                 }),
               ),
             ),
-            Stream.map(
-              (valuesByName) =>
-                valuesByName[qualifiedName] as typeof ParameterValue.Type,
-            ),
+            Stream.map((valuesByName) => valuesByName[qualifiedName] as typeof ParameterValue.Type),
             Stream.ensuring(ws.unsubscribe(call)),
           );
         }),
@@ -392,14 +344,10 @@ const eventsSubscriptionAtomForInstance = Atom.family((instance: string) =>
                 }),
               ),
               (error) =>
-                logValidationFailure(
-                  `events archive query (${instance})`,
-                  error,
-                  {
-                    instance,
-                    next,
-                  },
-                ),
+                logValidationFailure(`events archive query (${instance})`, error, {
+                  instance,
+                  next,
+                }),
             ),
             () => ({
               events: [] as ReadonlyArray<ArchivedEvent>,
@@ -416,25 +364,15 @@ const eventsSubscriptionAtomForInstance = Atom.family((instance: string) =>
           next = response.continuationToken;
         }
 
-        const { call, stream } = yield* ws.subscribe(
-          SubscribeEventsRequest.make({ instance }),
-        );
+        const { call, stream } = yield* ws.subscribe(SubscribeEventsRequest.make({ instance }));
 
         const initial = [...priorEvents].reverse();
 
         return Stream.concat(
           Stream.succeed(initial),
           stream.pipe(
-            (stream) =>
-              decodeStreamOrLog(
-                stream,
-                EventsEvent,
-                `events subscription (${instance})`,
-              ),
-            Stream.scan(initial, (allEvents, event) => [
-              ...allEvents,
-              event.data,
-            ]),
+            (stream) => decodeStreamOrLog(stream, EventsEvent, `events subscription (${instance})`),
+            Stream.scan(initial, (allEvents, event) => [...allEvents, event.data]),
             Stream.ensuring(ws.unsubscribe(call)),
           ),
         );
@@ -453,9 +391,8 @@ export const linksSubscriptionAtom = Atom.make((get) =>
 
 export const singleLinkSubscriptionAtom = Atom.family((name: string) =>
   Atom.make((get) =>
-    AsyncResult.map(
-      get(linksSubscriptionAtomForInstance(get(selectedInstanceAtom))),
-      (links) => links.find((link) => link.name === name),
+    AsyncResult.map(get(linksSubscriptionAtomForInstance(get(selectedInstanceAtom))), (links) =>
+      links.find((link) => link.name === name),
     ),
   ),
 );
@@ -464,16 +401,15 @@ export const commandsSubscriptionAtom = Atom.make((get) =>
   get(commandsSubscriptionAtomForInstance(get(selectedInstanceAtom))),
 );
 
-export const parameterSubscriptionAtom = Atom.family(
-  (qualifiedName: QualifiedName) =>
-    Atom.make((get) =>
-      get(
-        parameterSubscriptionAtomForInstance({
-          instance: get(selectedInstanceAtom),
-          qualifiedName,
-        }),
-      ),
+export const parameterSubscriptionAtom = Atom.family((qualifiedName: QualifiedName) =>
+  Atom.make((get) =>
+    get(
+      parameterSubscriptionAtomForInstance({
+        instance: get(selectedInstanceAtom),
+        qualifiedName,
+      }),
     ),
+  ),
 );
 
 export const eventsSubscriptionAtom = Atom.make((get) =>

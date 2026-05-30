@@ -8,10 +8,7 @@ export function extractAttribute(command: CommandHistoryEntry, attr: string) {
   return command.attr.find((a) => a.name === attr)?.value;
 }
 
-function extractAttributeVariant(
-  command: CommandHistoryEntry,
-  attributes: ReadonlyArray<string>,
-) {
+function extractAttributeVariant(command: CommandHistoryEntry, attributes: ReadonlyArray<string>) {
   for (const attribute of attributes) {
     const value = extractAttribute(command, attribute);
 
@@ -70,12 +67,8 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
       extractAcknowledgement(command, "Released"),
       extractAcknowledgement(command, "Sent"),
     ].filter(validAck),
-    systemA: systemAAckOrder
-      .map((ack) => extractAcknowledgement(command, ack))
-      .filter(validAck),
-    systemB: systemBAckOrder
-      .map((ack) => extractAcknowledgement(command, ack))
-      .filter(validAck),
+    systemA: systemAAckOrder.map((ack) => extractAcknowledgement(command, ack)).filter(validAck),
+    systemB: systemBAckOrder.map((ack) => extractAcknowledgement(command, ack)).filter(validAck),
     other: extraAckNames
       .filter(
         (ack) =>
@@ -109,9 +102,7 @@ function listAckNames(command: CommandHistoryEntry) {
     }
 
     if (attribute.name.startsWith("Acknowledge_")) {
-      ackNames.add(
-        attribute.name.slice("Acknowledge_".length, -"_Status".length),
-      );
+      ackNames.add(attribute.name.slice("Acknowledge_".length, -"_Status".length));
       continue;
     }
 
@@ -184,7 +175,5 @@ export function formatCommandDate(d: Date) {
     second: "2-digit",
   });
 
-  return isToday
-    ? d.toLocaleTimeString()
-    : d.toLocaleDateString() + ", " + time;
+  return isToday ? d.toLocaleTimeString() : d.toLocaleDateString() + ", " + time;
 }

@@ -18,11 +18,7 @@ export type DashboardChartSeriesFieldApi = AnyFieldApi & {
   handleChange: (value: ReadonlyArray<ChartSeriesFieldValue>) => void;
 };
 
-export function DashboardChartSeriesField({
-  field,
-}: {
-  field: DashboardChartSeriesFieldApi;
-}) {
+export function DashboardChartSeriesField({ field }: { field: DashboardChartSeriesFieldApi }) {
   return (
     <FormTable<ChartSeriesFieldValue>
       addLabel="Add series"
@@ -33,9 +29,7 @@ export function DashboardChartSeriesField({
           render: ({ row, updateRow }) => (
             <ParameterSelector
               value={row.parameter ? { qualifiedName: row.parameter } : null}
-              onChange={(parameter) =>
-                updateRow({ ...row, parameter: parameter.qualifiedName })
-              }
+              onChange={(parameter) => updateRow({ ...row, parameter: parameter.qualifiedName })}
             />
           ),
         },
@@ -44,9 +38,7 @@ export function DashboardChartSeriesField({
           render: ({ row, updateRow }) => (
             <Input
               value={row.label}
-              onChange={(event) =>
-                updateRow({ ...row, label: event.target.value })
-              }
+              onChange={(event) => updateRow({ ...row, label: event.target.value })}
             />
           ),
         },
@@ -76,15 +68,11 @@ export function DashboardChartSeriesField({
                 className="h-7 w-10 p-1"
                 type="color"
                 value={row.color}
-                onChange={(event) =>
-                  updateRow({ ...row, color: event.target.value })
-                }
+                onChange={(event) => updateRow({ ...row, color: event.target.value })}
               />
               <Input
                 value={row.color}
-                onChange={(event) =>
-                  updateRow({ ...row, color: event.target.value })
-                }
+                onChange={(event) => updateRow({ ...row, color: event.target.value })}
               />
             </div>
           ),

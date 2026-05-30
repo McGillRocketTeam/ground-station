@@ -5,9 +5,7 @@ import { Atom } from "effect/unstable/reactivity";
 import { yamcsBaseUrl } from "@/lib/atom";
 
 export const exportFormSchema = Schema.Struct({
-  instance: Schema.String.check(
-    Schema.isMinLength(1, { message: "Instance is required" }),
-  ),
+  instance: Schema.String.check(Schema.isMinLength(1, { message: "Instance is required" })),
   startDate: Schema.DateTimeUtcFromDate,
   endDate: Schema.DateTimeUtcFromDate,
   header: StreamArchiveHeader,
@@ -20,9 +18,7 @@ export type CsvPreviewModel = {
   rows: ReadonlyArray<ReadonlyArray<string>>;
 };
 
-export function makeDefaultExportFormValues(
-  instance: string,
-): ExportFormValues {
+export function makeDefaultExportFormValues(instance: string): ExportFormValues {
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - 3 * 60 * 60 * 1000);
 
@@ -70,15 +66,12 @@ export const exportPreviewCsvAtom = Atom.make((get) =>
         const response = await fetch(url);
 
         if (!response.ok) {
-          throw new Error(
-            `StatusCode error (${response.status} ${response.statusText} ${url})`,
-          );
+          throw new Error(`StatusCode error (${response.status} ${response.statusText} ${url})`);
         }
 
         return response.text();
       },
-      catch: (error) =>
-        error instanceof Error ? error : new Error(String(error)),
+      catch: (error) => (error instanceof Error ? error : new Error(String(error))),
     });
   }),
 );
@@ -98,10 +91,7 @@ export const exportPreviewModelAtom = Atom.make((get): CsvPreviewModel => {
   return parseCsvPreview(csvResult.value, header === "NONE");
 });
 
-function parseCsvPreview(
-  csv: string,
-  isHeaderHidden: boolean,
-): CsvPreviewModel {
+function parseCsvPreview(csv: string, isHeaderHidden: boolean): CsvPreviewModel {
   const rows = parseCsvRows(csv);
 
   if (rows.length === 0) {
@@ -115,9 +105,7 @@ function parseCsvPreview(
     const width = rows.reduce((max, row) => Math.max(max, row.length), 0);
 
     return {
-      columns: Array.from({ length: width }, (_, index) =>
-        spreadsheetColumnName(index),
-      ),
+      columns: Array.from({ length: width }, (_, index) => spreadsheetColumnName(index)),
       rows,
     };
   }

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { CardArray } from "@/lib/cards";
-import { cn } from "@/lib/utils";
+import { cn, createId } from "@/lib/utils";
 
 import { Button } from "../ui/button";
 import { DashboardCardForm } from "./form/card-form";
@@ -97,7 +97,7 @@ function AddCardDialog({
             onSubmit={({ title, params }) => {
               props.containerApi.addPanel({
                 component: selectedCard.id,
-                id: crypto.randomUUID(),
+                id: createId(),
                 params,
                 position: {
                   direction: "within",

@@ -11,6 +11,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { createId } from "@/lib/utils";
 
 import { editPanelDialogHandle } from "./form/edit-dialog";
 
@@ -71,7 +72,7 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
 
     props.containerApi.addPanel({
       component: copied.component,
-      id: crypto.randomUUID(),
+      id: createId(),
       params: cloneParams(copied.params),
       position: {
         direction: "within",

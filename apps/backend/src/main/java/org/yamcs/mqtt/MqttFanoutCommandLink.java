@@ -81,8 +81,9 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       if (commandCountingEnabled) {
         registerAckRoute(
             ackRoutes, target.ackTopic(), target, AckChannel.FLIGHT_COMPUTER, "ackTopic");
-        registerAckRoute(
-            ackRoutes, target.radioAckTopic(), target, AckChannel.RADIO, "radioAckTopic");
+        for (String radioAckTopic : target.radioAckTopics()) {
+          registerAckRoute(ackRoutes, radioAckTopic, target, AckChannel.RADIO, "radioAckTopic");
+        }
       } else {
         registerAckRoute(
             ackRoutes, target.statusAckTopic(), target, AckChannel.STATUS, "statusAckTopic");
@@ -104,6 +105,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     targetSpec.addOption("commandTopic", OptionType.STRING).withRequired(false);
     targetSpec.addOption("ackTopic", OptionType.STRING).withRequired(false);
     targetSpec.addOption("radioAckTopic", OptionType.STRING).withRequired(false);
+    targetSpec.addOption("radioAckTopics", OptionType.LIST).withElementType(OptionType.STRING);
     targetSpec.addOption("statusAckTopic", OptionType.STRING).withRequired(false);
     targetSpec
         .addOption("ackFlagByteIndex", OptionType.INTEGER)
@@ -801,8 +803,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       String ackTopic = targetConfig.getString("ackTopic", topicFromBase(baseTopic, "telemetry"));
       String statusAckTopic =
           targetConfig.getString("statusAckTopic", topicFromBase(baseTopic, "acks"));
-      String radioAckTopic =
-          targetConfig.getString("radioAckTopic", radioAckTopicFromBase(name, baseTopic));
+      List<String> radioAckTopics = radioAckTopicsFromConfig(targetConfig, name, baseTopic);
 
       loadedTargets.add(
           new Target(
@@ -811,7 +812,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
               commandTopic,
               ackTopic,
               statusAckTopic,
-              radioAckTopic,
+              radioAckTopics,
               targetConfig.getInt("ackFlagByteIndex", DEFAULT_ACK_FLAG_BYTE_INDEX),
               targetConfig.getInt("ackFlagBitIndex", DEFAULT_ACK_FLAG_BIT_INDEX),
               targetConfig.getInt("ackIdByteIndex", DEFAULT_ACK_ID_BYTE_INDEX)));
@@ -836,19 +837,33 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     };
   }
 
-  private String radioAckTopicFromBase(String name, String baseTopic) {
+  private List<String> radioAckTopicsFromConfig(
+      YConfiguration targetConfig, String name, String baseTopic) {
+    if (targetConfig.containsKey("radioAckTopics")) {
+      return List.copyOf(targetConfig.getList("radioAckTopics"));
+    }
+
+    if (targetConfig.containsKey("radioAckTopic")) {
+      return List.of(targetConfig.getString("radioAckTopic"));
+    }
+
+    return radioAckTopicsFromBase(name, baseTopic);
+  }
+
+  private List<String> radioAckTopicsFromBase(String name, String baseTopic) {
+    String systemName = name;
     if (baseTopic != null && !baseTopic.isBlank()) {
       int firstSeparator = baseTopic.indexOf('/');
       if (firstSeparator > 0) {
-        return baseTopic.substring(0, firstSeparator) + "/ControlStation/Radio/acks";
+        systemName = baseTopic.substring(0, firstSeparator);
       }
     }
 
-    if (name == null || name.isBlank()) {
-      return null;
+    if (systemName == null || systemName.isBlank()) {
+      return List.of();
     }
 
-    return name + "/ControlStation/Radio/acks";
+    return List.of(systemName + "/Pad/Radio/acks", systemName + "/ControlStation/Radio/acks");
   }
 
   private boolean isResetAvCommand(PreparedCommand preparedCommand) {
@@ -890,7 +905,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       String commandTopic,
       String ackTopic,
       String statusAckTopic,
-      String radioAckTopic,
+      List<String> radioAckTopics,
       int ackFlagByteIndex,
       int ackFlagBitIndex,
       int ackIdByteIndex) {
@@ -915,7 +930,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     boolean expectsRadioAcks() {
-      return radioAckTopic != null && !radioAckTopic.isBlank();
+      return !radioAckTopics.isEmpty();
     }
 
     boolean expectsStatusAcks() {

@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { createId } from "@/lib/utils";
 
 export type FormTableColumn<T> = {
   header: string;
@@ -52,9 +53,7 @@ export function FormTable<T>({
   onChange: (value: ReadonlyArray<T>) => void;
   value: ReadonlyArray<T>;
 }) {
-  const rowIdsRef = useRef<ReadonlyArray<string>>(
-    value.map(() => crypto.randomUUID()),
-  );
+  const rowIdsRef = useRef<ReadonlyArray<string>>(value.map(() => createId()));
   const [history, setHistory] = useState<FormTableHistory<T>>({
     past: [],
     future: [],
@@ -62,7 +61,7 @@ export function FormTable<T>({
 
   if (rowIdsRef.current.length !== value.length) {
     rowIdsRef.current = value.map(
-      (_, index) => rowIdsRef.current[index] ?? crypto.randomUUID(),
+      (_, index) => rowIdsRef.current[index] ?? createId(),
     );
   }
 
@@ -209,7 +208,7 @@ export function FormTable<T>({
           type="button"
           variant="outline"
           onClick={() => {
-            rowIdsRef.current = [...rowIdsRef.current, crypto.randomUUID()];
+            rowIdsRef.current = [...rowIdsRef.current, createId()];
             changeValue([...value, createRow()]);
           }}
         >

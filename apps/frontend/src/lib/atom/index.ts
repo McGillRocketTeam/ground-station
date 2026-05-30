@@ -89,11 +89,27 @@ const frontendRuntimeFactory = Atom.context({ memoMap: Atom.defaultMemoMap });
 const localStorageRuntime = Atom.runtime(
   BrowserKeyValueStore.layerLocalStorage,
 );
-const yamcsBaseUrl = import.meta.env.YAMCS_URL;
+
+function resolveRuntimeUrl(url: string): string {
+  const parsedUrl = new URL(url);
+
+  if (
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsedUrl.hostname) &&
+    !["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ) {
+    parsedUrl.hostname = window.location.hostname;
+  }
+
+  return parsedUrl.toString();
+}
+
+export const yamcsBaseUrl = resolveRuntimeUrl(import.meta.env.YAMCS_URL);
+const runtimeEnv = { ...import.meta.env, YAMCS_URL: yamcsBaseUrl };
 
 frontendRuntimeFactory.addGlobalLayer(Logger.layer([Logger.consolePretty()]));
 frontendRuntimeFactory.addGlobalLayer(
-  ConfigProvider.layer(ConfigProvider.fromUnknown(import.meta.env)),
+  ConfigProvider.layer(ConfigProvider.fromUnknown(runtimeEnv)),
 );
 
 const subscriptionRuntime = frontendRuntimeFactory(WebSocketClient.layer);

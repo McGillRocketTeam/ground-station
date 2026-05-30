@@ -2,6 +2,8 @@ import { StreamArchiveHeader } from "@mrt/yamcs-effect";
 import { Effect, Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
+import { yamcsBaseUrl } from "@/lib/atom";
+
 export const exportFormSchema = Schema.Struct({
   instance: Schema.String.check(
     Schema.isMinLength(1, { message: "Instance is required" }),
@@ -45,7 +47,7 @@ export const exportPreviewUrlAtom = Atom.make((get) => {
 
   const url = new URL(
     `/api/archive/${encodeURIComponent(options.instance)}:exportParameterValues`,
-    import.meta.env.YAMCS_URL,
+    yamcsBaseUrl,
   );
 
   url.searchParams.set("start", options.startDate.toISOString());

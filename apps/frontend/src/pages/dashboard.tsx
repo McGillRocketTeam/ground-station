@@ -33,6 +33,7 @@ import {
   readPersistedDashboardLayout,
   snapshotDockviewLayout,
 } from "@/lib/dashboard-layout";
+import { createId } from "@/lib/utils";
 
 const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
 
@@ -106,27 +107,27 @@ export function DashboardPage() {
     event.api.addPanel({
       title: "Parameter Table",
       component: "parameter-table",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
     // event.api.addPanel({
     //   title: "Command History",
     //   component: "command-history",
-    //   id: crypto.randomUUID(),
+    //   id: createId(),
     // });
     event.api.addPanel({
       title: "Events",
       component: "events",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
     event.api.addPanel({
       title: "Links",
       component: "links",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
     // event.api.addPanel({
     //   title: "Map",
     //   component: "map-card",
-    //   id: crypto.randomUUID(),
+    //   id: createId(),
     //   params: {
     //     latitude: 45.5017,
     //     longitude: -73.5673,
@@ -135,7 +136,7 @@ export function DashboardPage() {
     event.api.addPanel({
       title: "Command Buttons",
       component: "command-button",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
 
     const initialLayout = snapshotDockviewLayout(event.api.toJSON());

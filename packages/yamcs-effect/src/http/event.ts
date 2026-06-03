@@ -1,9 +1,5 @@
 import { Schema } from "effect";
-import {
-  HttpApiGroup,
-  HttpApiEndpoint,
-  HttpApiError,
-} from "effect/unstable/httpapi";
+import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
 import { Event } from "../schema.js";
 
@@ -12,14 +8,7 @@ const ListEventsOptions = {
   limit: Schema.optional(Schema.String),
   order: Schema.optional(Schema.Literals(["asc", "desc"])),
   severity: Schema.optional(
-    Schema.Literals([
-      "info",
-      "watch",
-      "warning",
-      "distress",
-      "critical",
-      "severe",
-    ]),
+    Schema.Literals(["info", "watch", "warning", "distress", "critical", "severe"]),
   ),
   source: Schema.optional(Schema.String),
   next: Schema.optional(Schema.String),
@@ -45,16 +34,12 @@ export const eventGroup = HttpApiGroup.make("event")
     }),
   )
   .add(
-    HttpApiEndpoint.post(
-      "listEventsWithPayload",
-      "/archive/:instance/events:list",
-      {
-        params: { instance: Schema.String },
-        payload: Schema.UndefinedOr(Schema.Struct(ListEventsOptions)),
-        success: ListEventsResponse,
-        error: [HttpApiError.NotFound],
-      },
-    ),
+    HttpApiEndpoint.post("listEventsWithPayload", "/archive/:instance/events:list", {
+      params: { instance: Schema.String },
+      payload: Schema.UndefinedOr(Schema.Struct(ListEventsOptions)),
+      success: ListEventsResponse,
+      error: [HttpApiError.NotFound],
+    }),
   );
 
 export default eventGroup;

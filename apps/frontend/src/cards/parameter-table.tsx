@@ -7,7 +7,7 @@ import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
-const SYSTEM_A_PREFIX = "SystemA/Rocket/FlightComputer";
+const SYSTEM_A_PREFIX = "SystemB/Rocket/FlightComputer";
 
 const CardEntries = {
   "FLIGHT ATOMIC": [
@@ -174,7 +174,7 @@ const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
 });
 
 const Value = memo(function Value({ name }: { name: string }) {
-  const result = useAtomValue(parameterSubscriptionAtom(name));
+  const result = useAtomValue(parameterSubscriptionAtom(name.replace("SystemA", "SystemB")));
 
   return AsyncResult.match(result, {
     onInitial: () => (

@@ -16,6 +16,7 @@ import { LinksGraphCard } from "@/cards/links-graph";
 import { MapCard } from "@/cards/map-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
 import { ParameterTable } from "@/cards/parameter-table";
+import { ProceduresCard } from "@/cards/procedures";
 import { TextCard } from "@/cards/text-card";
 
 // Source of truth - add all cards here
@@ -32,6 +33,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   MqttExplorerCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
+  ProceduresCard,
 ] as const;
 
 export interface CardDefinition<Id extends string, T extends Schema.Struct.Fields> {

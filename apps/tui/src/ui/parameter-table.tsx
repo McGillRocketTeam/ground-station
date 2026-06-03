@@ -20,7 +20,7 @@ const parameterColumns = {
   fcb: 16,
 } as const;
 
-const flightComputerPath = (system: "SystemA" | "SystemB", name: string) =>
+const flightComputerPath = (system: "SystemA" | "systemB", name: string) =>
   `/${system}/Rocket/FlightComputer/${name}`;
 
 const formatParameterValue = (value: unknown) =>
@@ -161,7 +161,7 @@ export function ParameterTable() {
               name,
               description,
               fcaPath: flightComputerPath("SystemA", name),
-              fcbPath: flightComputerPath("SystemB", name),
+              fcbPath: flightComputerPath("systemB", name),
             },
           ]
         : [];

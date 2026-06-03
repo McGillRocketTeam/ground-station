@@ -26,7 +26,7 @@ function GaugeParameter({
   parameter: string;
   ranges: typeof DEFAULT_VISUAL_RANGES;
 }) {
-  const result = useAtomValue(parameterSubscriptionAtom(parameter));
+  const result = useAtomValue(parameterSubscriptionAtom(parameter.replace("SystemA", "SystemB")));
 
   return AsyncResult.match(result, {
     onInitial: () => <Gauge label={label} max={max} min={min} ranges={ranges} value={0} />,

@@ -167,7 +167,7 @@ function LiveSeriesSubscription({
     [onPoint, series, seriesKey],
   );
 
-  useAtomSubscribe(liveParameterAtom(parameter), handleUpdate);
+  useAtomSubscribe(liveParameterAtom(parameter.replace("SystemA", "SystemB")), handleUpdate);
 
   return null;
 }

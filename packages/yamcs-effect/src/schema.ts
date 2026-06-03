@@ -57,13 +57,7 @@ export const MathOperationCalibratorInfo = Schema.Struct({
 });
 
 export const CalibratorInfo = Schema.Struct({
-  type: Schema.Literals([
-    "POLYNOMIAL",
-    "SPLINE",
-    "MATH_OPERATION",
-    "JAVA_EXPRESSION",
-    "ALGORITHM",
-  ]),
+  type: Schema.Literals(["POLYNOMIAL", "SPLINE", "MATH_OPERATION", "JAVA_EXPRESSION", "ALGORITHM"]),
   polynomialCalibrator: Schema.optional(PolynomialCalibratorInfo),
   splineCalibrator: Schema.optional(SplineCalibratorInfo),
   javaExpressionCalibrator: Schema.optional(JavaExpressionCalibratorInfo),
@@ -185,9 +179,7 @@ const spaceSystemInfoFields = {
   // ancillaryData: {[key: Schema.String]: AncillaryDataInfo},
 };
 
-export interface SpaceSystemInfo extends Schema.Struct.Type<
-  typeof spaceSystemInfoFields
-> {
+export interface SpaceSystemInfo extends Schema.Struct.Type<typeof spaceSystemInfoFields> {
   // Define `subcategories` using recursion
   readonly sub?: ReadonlyArray<SpaceSystemInfo> | undefined;
 }
@@ -283,8 +275,7 @@ export interface EnumeratedValue {
   readonly type: "ENUMERATED";
   readonly value: string;
 }
-export const EnumeratedValue: Schema.Codec<EnumeratedValue, unknown> =
-  EnumeratedValueSchema;
+export const EnumeratedValue: Schema.Codec<EnumeratedValue, unknown> = EnumeratedValueSchema;
 
 export const AggregateValue = Schema.Struct({
   type: Schema.Literal("AGGREGATE"),
@@ -326,10 +317,8 @@ const CommandHistoryAttributeSchema = Schema.Struct({
 });
 
 export type CommandHistoryAttribute = typeof CommandHistoryAttributeSchema.Type;
-export const CommandHistoryAttribute: Schema.Codec<
-  CommandHistoryAttribute,
-  unknown
-> = CommandHistoryAttributeSchema;
+export const CommandHistoryAttribute: Schema.Codec<CommandHistoryAttribute, unknown> =
+  CommandHistoryAttributeSchema;
 
 const CommandAssignmentSchema = Schema.Struct({
   name: Schema.String,
@@ -338,8 +327,7 @@ const CommandAssignmentSchema = Schema.Struct({
 });
 
 export type CommandAssignment = typeof CommandAssignmentSchema.Type;
-export const CommandAssignment: Schema.Codec<CommandAssignment, unknown> =
-  CommandAssignmentSchema;
+export const CommandAssignment: Schema.Codec<CommandAssignment, unknown> = CommandAssignmentSchema;
 
 const CommandHistoryEntrySchema = Schema.Struct({
   id: CommandId,
@@ -371,12 +359,9 @@ const StreamingCommandHisotryEntrySchema = Schema.Struct({
   assignments: Schema.optional(Schema.Array(CommandAssignment)),
 });
 
-export type StreamingCommandHisotryEntry =
-  typeof StreamingCommandHisotryEntrySchema.Type;
-export const StreamingCommandHisotryEntry: Schema.Codec<
-  StreamingCommandHisotryEntry,
-  unknown
-> = StreamingCommandHisotryEntrySchema;
+export type StreamingCommandHisotryEntry = typeof StreamingCommandHisotryEntrySchema.Type;
+export const StreamingCommandHisotryEntry: Schema.Codec<StreamingCommandHisotryEntry, unknown> =
+  StreamingCommandHisotryEntrySchema;
 
 /**
  * Represents a request to issue a command within the system.
@@ -434,6 +419,129 @@ const IssueCommandResponseSchema = Schema.Struct({
 export type IssueCommandResponse = typeof IssueCommandResponseSchema.Type;
 export const IssueCommandResponse: Schema.Codec<IssueCommandResponse, unknown> =
   IssueCommandResponseSchema;
+
+export const Advancement = Schema.Struct({
+  acknowledgment: Schema.String.pipe(
+    Schema.withDecodingDefault(Effect.succeed("Acknowledge_Queued")),
+  ),
+  wait: Schema.optional(Schema.Number),
+});
+
+export type JsonPrimitive = string | number | boolean;
+export type JsonObject = { readonly [key: string]: JsonValue };
+export type JsonValue = JsonPrimitive | ReadonlyArray<JsonValue> | JsonObject;
+
+export const JsonValue: Schema.Schema<JsonValue> = Schema.Union([
+  Schema.String,
+  Schema.Number,
+  Schema.Boolean,
+  Schema.Array(Schema.suspend((): Schema.Schema<JsonValue> => JsonValue)),
+  Schema.Record(
+    Schema.String,
+    Schema.suspend((): Schema.Schema<JsonValue> => JsonValue),
+  ),
+]);
+
+export const TextStep = Schema.Struct({
+  type: Schema.Literal("text"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  text: Schema.String,
+});
+
+export const NoteStep = Schema.Struct({
+  type: Schema.Literal("note"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  text: Schema.String,
+  color: Schema.optional(Schema.String),
+});
+
+export const CheckStep = Schema.Struct({
+  type: Schema.Literal("check"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  parameters: Schema.Array(
+    Schema.Struct({
+      parameter: Schema.String,
+    }),
+  ),
+});
+
+export const VerifyCondition = Schema.Struct({
+  parameter: Schema.String,
+  operator: Schema.Literals(["eq", "neq", "le", "lte", "gt", "gte"]),
+  value: JsonValue,
+  display: Schema.optional(
+    Schema.Struct({
+      row: Schema.optional(Schema.String),
+      column: Schema.optional(Schema.String),
+      label: Schema.optional(Schema.String),
+    }),
+  ),
+});
+
+export const VerifyPresentationColumn = Schema.Struct({
+  id: Schema.String,
+  label: Schema.String,
+});
+
+export const VerifyPresentation = Schema.Struct({
+  type: Schema.Literal("truthTable"),
+  columns: Schema.Array(VerifyPresentationColumn),
+});
+
+export const VerifyStep = Schema.Struct({
+  type: Schema.Literal("verify"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  condition: Schema.Array(VerifyCondition),
+  presentation: Schema.optional(VerifyPresentation),
+  delay: Schema.Int.pipe(Schema.withDecodingDefault(Effect.succeed(0))),
+  timeout: Schema.optional(Schema.Int),
+});
+
+export const CommandStep = Schema.Struct({
+  type: Schema.Literal("command"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  name: Schema.String,
+  namespace: Schema.optional(Schema.String),
+  arguments: Schema.optional(
+    Schema.Array(
+      Schema.Struct({
+        name: Schema.String,
+        value: JsonValue,
+      }),
+    ),
+  ),
+  extraOptions: Schema.optional(
+    Schema.Array(
+      Schema.Struct({
+        id: Schema.optional(Schema.String),
+        value: Schema.optional(Schema.Union([Schema.String, Schema.Number, Schema.Boolean])),
+      }),
+    ),
+  ),
+  stream: Schema.optional(Schema.String),
+  advancement: Schema.optional(Advancement),
+});
+
+export const ProcedureStep = Schema.Union([TextStep, NoteStep, CheckStep, VerifyStep, CommandStep]);
+
+export const ProcedureStack = Schema.Struct({
+  steps: Schema.Array(ProcedureStep),
+  advancement: Schema.optional(Advancement),
+});
+
+export type ProcedureStack = typeof ProcedureStack.Type;
+
+export const YamcsStack = ProcedureStack;
 
 export const ActionInfo = Schema.Struct({
   id: Schema.String,
@@ -525,9 +633,7 @@ export const CommandInfo = Schema.Struct({
   qualifiedName: Schema.String,
   shortDescription: Schema.optional(Schema.String),
   longDescription: Schema.optional(Schema.String),
-  significance: Schema.optional(
-    Schema.Struct({ consequenceLevel: ConsequenceLevel }),
-  ),
+  significance: Schema.optional(Schema.Struct({ consequenceLevel: ConsequenceLevel })),
 });
 
 export const OperatorType = Schema.Literals([
@@ -539,10 +645,7 @@ export const OperatorType = Schema.Literals([
   "SMALLER_THAN_OR_EQUAL_TO",
 ]);
 
-export const ReferenceLocationType = Schema.Literals([
-  "CONTAINER_START",
-  "PREVIOUS_ENTRY",
-]);
+export const ReferenceLocationType = Schema.Literals(["CONTAINER_START", "PREVIOUS_ENTRY"]);
 
 export const ArgumentTypeInfo = Schema.Struct({
   name: Schema.String,
@@ -591,15 +694,11 @@ export class ContainerInfo extends Schema.Opaque<ContainerInfo>()(
     sizeInBits: Schema.Number,
     restrictionCriteria: Schema.Array(ComparisonInfo),
     restrictionCriteriaExpression: Schema.String,
-    entry: Schema.Array(
-      Schema.suspend((): Schema.Codec<SequenceEntryInfo> => SequenceEntryInfo),
-    ),
+    entry: Schema.Array(Schema.suspend((): Schema.Codec<SequenceEntryInfo> => SequenceEntryInfo)),
     usedBy: Schema.Any,
     ancillaryData: Schema.Record(Schema.String, Schema.String),
     archivePartition: Schema.Boolean,
-    baseContainer: Schema.suspend(
-      (): Schema.Codec<ContainerInfo> => ContainerInfo,
-    ),
+    baseContainer: Schema.suspend((): Schema.Codec<ContainerInfo> => ContainerInfo),
   }),
 ) {}
 

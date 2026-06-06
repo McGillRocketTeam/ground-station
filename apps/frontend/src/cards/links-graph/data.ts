@@ -12,12 +12,9 @@ export type LinkEdgeData = {
 
 export type WifiAntennaEdgeData = {
   sourceQualifiedName: string;
-  connectedStationsParameter: string;
+  connectedStationsLinkName: string;
   flip?: boolean;
 };
-
-const csWifiConnectedStationsParameter =
-  "/yamcs/leo-mbp/links/CS WiFi Antenna (Access Point)/Connected Stations";
 
 export type RadioLinkNode = Node<RadioLinkNodeData, "radioLink">;
 export type GroundStationNode = Node<{}, "groundStation">;
@@ -123,7 +120,7 @@ export const initialEdges: CustomEdgeType[] = [
     type: "wifiAntenna",
     data: {
       sourceQualifiedName: "PAD Wifi Antenna (Client)",
-      connectedStationsParameter: csWifiConnectedStationsParameter,
+      connectedStationsLinkName: "CS WiFi Antenna (Access Point)",
     },
   },
   {
@@ -152,7 +149,7 @@ export const initialEdges: CustomEdgeType[] = [
     data: {
       flip: true,
       sourceQualifiedName: "CS WiFi Antenna (Access Point)",
-      connectedStationsParameter: csWifiConnectedStationsParameter,
+      connectedStationsLinkName: "CS WiFi Antenna (Access Point)",
     },
   },
 ];

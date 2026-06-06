@@ -7,7 +7,12 @@ import { RadioTower, Server } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { PopoverTrigger } from "@/components/ui/popover";
-import { parameterSubscriptionAtom, singleLinkSubscriptionAtom } from "@/lib/atom";
+import {
+  parameterSubscriptionAtom,
+  selectedInstanceAtom,
+  singleLinkSubscriptionAtom,
+  YamcsAtomHttpClient,
+} from "@/lib/atom";
 import { cn } from "@/lib/utils";
 
 import type { Link } from "../links/utils";
@@ -16,9 +21,6 @@ import "./index.css";
 import type { GroundStationNode, LinkEdgeData, RadioLinkNode, WifiAntennaEdgeData } from "./data";
 
 import { colorByStatus, isLinkTransmitting } from "../links/utils";
-
-const csWifiConnectedStationsParameter =
-  "/yamcs/leo-mbp/links/CS WiFi Antenna (Access Point)/Connected Stations";
 
 function colorValueByStatus(link: Link) {
   if (link.status === "OK" && !isLinkTransmitting(link)) {
@@ -159,26 +161,51 @@ function extractNumericParameterValue(parameterResult: unknown) {
   return Number.isFinite(numericValue) ? numericValue : undefined;
 }
 
-function WifiAntennaEdge({
+function getLinkParameterName(links: ReadonlyArray<Link>, linkName: string, suffix: string) {
+  return links
+    .find((link) => link.name === linkName)
+    ?.parameters?.find((parameter) => parameter.endsWith(suffix));
+}
+
+function useConnectedStationsParameter(linkName: string) {
+  const instance = useAtomValue(selectedInstanceAtom);
+  const linksResult = useAtomValue(
+    YamcsAtomHttpClient.query("link", "listLinks", {
+      params: { instance },
+    }),
+  );
+
+  return linksResult._tag === "Success"
+    ? getLinkParameterName(linksResult.value.links, linkName, "/Connected Stations")
+    : undefined;
+}
+
+function ResolvedWifiAntennaEdge({
   id,
-  data,
+  flip,
+  parameterName,
   sourceX,
   sourceY,
   targetX,
   targetY,
   sourcePosition,
   targetPosition,
-}: EdgeProps<Edge<WifiAntennaEdgeData, "wifiAntenna">>) {
-  const sourceQualifiedName = data?.sourceQualifiedName ?? "";
-  const connectedStationsParameter = data?.connectedStationsParameter ?? "";
-  const linkResult = useAtomValue(singleLinkSubscriptionAtom(sourceQualifiedName));
-  const connectedStationsResult = useAtomValue(
-    parameterSubscriptionAtom(connectedStationsParameter),
-  );
+}: {
+  id: string;
+  flip?: boolean;
+  parameterName: string;
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
+  sourcePosition: Position;
+  targetPosition: Position;
+}) {
+  const connectedStationsResult = useAtomValue(parameterSubscriptionAtom(parameterName));
   const connectedStations = extractNumericParameterValue(connectedStationsResult);
   const isActive = (connectedStations ?? 0) > 0;
 
-  if (linkResult._tag !== "Success" || linkResult.value === undefined || !isActive) {
+  if (!isActive) {
     return null;
   }
 
@@ -196,7 +223,7 @@ function WifiAntennaEdge({
     <BaseEdge
       id={id}
       path={edgePath}
-      className={cn("links-graph__edge-path", data?.flip && "links-graph__edge-path--reverse")}
+      className={cn("links-graph__edge-path", flip && "links-graph__edge-path--reverse")}
       style={{
         stroke: "var(--color-success)",
         strokeWidth: 1.5,
@@ -206,33 +233,64 @@ function WifiAntennaEdge({
   );
 }
 
-function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
-  const linkResult = useAtomValue(singleLinkSubscriptionAtom(data.qualifiedName));
-  const connectedStationsResult = useAtomValue(
-    parameterSubscriptionAtom(csWifiConnectedStationsParameter),
+function WifiAntennaEdge({
+  id,
+  data,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+}: EdgeProps<Edge<WifiAntennaEdgeData, "wifiAntenna">>) {
+  const connectedStationsLinkName = data?.connectedStationsLinkName ?? "";
+  const parameterName = useConnectedStationsParameter(connectedStationsLinkName);
+
+  if (!parameterName) {
+    return null;
+  }
+
+  return (
+    <ResolvedWifiAntennaEdge
+      id={id}
+      flip={data?.flip}
+      parameterName={parameterName}
+      sourceX={sourceX}
+      sourceY={sourceY}
+      targetX={targetX}
+      targetY={targetY}
+      sourcePosition={sourcePosition}
+      targetPosition={targetPosition}
+    />
   );
+}
+
+function WifiAntennaNodeContent({
+  data,
+  link,
+  parameterName,
+}: {
+  data: RadioLinkNode["data"];
+  link: Link | undefined;
+  parameterName: string;
+}) {
+  const connectedStationsResult = useAtomValue(parameterSubscriptionAtom(parameterName));
   const connectedStations = extractNumericParameterValue(connectedStationsResult);
-  const isWifiAntennaNode =
-    data.qualifiedName === "PAD Wifi Antenna (Client)" ||
-    data.qualifiedName === "CS WiFi Antenna (Access Point)";
-  const nodeClass = isWifiAntennaNode
-    ? (connectedStations ?? 0) > 0
+  const nodeClass =
+    (connectedStations ?? 0) > 0
       ? "text-success"
-      : linkResult._tag === "Success"
-        ? linkResult.value
-          ? colorByStatus(linkResult.value.status, linkResult.value)
-          : "text-muted-foreground"
-        : linkResult._tag === "Failure"
-          ? "text-error"
-          : "text-muted-foreground"
-    : linkResult._tag === "Success"
-      ? linkResult.value
-        ? colorByStatus(linkResult.value.status, linkResult.value)
-        : "text-muted-foreground"
-      : linkResult._tag === "Failure"
-        ? "text-error"
+      : link
+        ? colorByStatus(link.status, link)
         : "text-muted-foreground";
 
+  return renderRadioLinkNode(data, link, nodeClass);
+}
+
+function renderRadioLinkNode(
+  data: RadioLinkNode["data"],
+  link: Link | undefined,
+  nodeClass: string,
+) {
   const text = (
     <div
       className={cn(
@@ -254,9 +312,9 @@ function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
         "group flex w-[20ch] flex-col items-center gap-2 rounded-none outline-none focus-visible:outline-none",
         nodeClass,
       )}
-      payload={linkResult._tag === "Success" ? linkResult.value : undefined}
+      payload={link}
       handle={linksPopover}
-      onClick={() => console.log(linkResult)}
+      onClick={() => console.log(link)}
     >
       {data.textPosition === "top" && text}
       <div className="relative grid aspect-square place-items-center border-[1.5px] border-dashed border-current bg-current/15 p-2 transition-[box-shadow,color,background-color] group-focus-visible:shadow-[0_0_0_2px_color-mix(in_oklab,currentColor_55%,transparent),0_0_0_6px_color-mix(in_oklab,currentColor_18%,transparent)]">
@@ -301,6 +359,38 @@ function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
       </div>
       {data.textPosition === "bottom" && text}
     </PopoverTrigger>
+  );
+}
+
+function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
+  const linkResult = useAtomValue(singleLinkSubscriptionAtom(data.qualifiedName));
+  const isWifiAntennaNode =
+    data.qualifiedName === "PAD Wifi Antenna (Client)" ||
+    data.qualifiedName === "CS WiFi Antenna (Access Point)";
+  const parameterName = useConnectedStationsParameter("CS WiFi Antenna (Access Point)");
+  const fallbackNodeClass =
+    linkResult._tag === "Success"
+      ? linkResult.value
+        ? colorByStatus(linkResult.value.status, linkResult.value)
+        : "text-muted-foreground"
+      : linkResult._tag === "Failure"
+        ? "text-error"
+        : "text-muted-foreground";
+
+  if (isWifiAntennaNode && parameterName) {
+    return (
+      <WifiAntennaNodeContent
+        data={data}
+        link={linkResult._tag === "Success" ? linkResult.value : undefined}
+        parameterName={parameterName}
+      />
+    );
+  }
+
+  return renderRadioLinkNode(
+    data,
+    linkResult._tag === "Success" ? linkResult.value : undefined,
+    fallbackNodeClass,
   );
 }
 

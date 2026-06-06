@@ -23,6 +23,7 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
   static readonly layer = Layer.effect(
     this,
     Effect.gen(function* () {
+      yield* Effect.log("STARING WS");
       const yamcsUrl = yield* Config.url("YAMCS_URL");
       const websocketUrl = new URL("api/websocket", yamcsUrl);
       websocketUrl.protocol = yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
@@ -97,7 +98,6 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
             );
           }
 
-          yield* Effect.logInfo(`${reply.call}`);
           return reply.call!;
         });
 

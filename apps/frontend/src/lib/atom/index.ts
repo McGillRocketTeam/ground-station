@@ -301,7 +301,6 @@ const parameterSubscriptionAtomForInstance = Atom.family(
 
           const mappingEvents = yield* eventStream.pipe(
             Stream.filter((event) => "mapping" in event),
-            Stream.tap(Effect.log),
             Stream.take(1),
             Stream.runCollect,
           );

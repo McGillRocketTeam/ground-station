@@ -1,11 +1,21 @@
-import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { useAtomSet, useAtomSuspense } from "@effect/atom-react";
 import { ProcedureStack, ProcedureStep } from "@mrt/yamcs-procedures";
 import { Schema } from "effect";
 import { Suspense } from "react";
 
-import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import { AckRow, FCAckRow } from "@/cards/command-history/command-detail";
+import { collectAcks } from "@/cards/command-history/utils";
 import { makeCard } from "@/lib/cards";
+import { cn } from "@/lib/utils";
 
+import { CommandStepLiveData } from "./procedure-executor";
+import {
+  executeProcedureStepAtom,
+  procedureExecutionStepAtom,
+  selectNextProcedureStepAtom,
+  selectProcedureStepAtom,
+  selectPreviousProcedureStepAtom,
+} from "./procedure-executor.atoms";
 import { TW1 } from "./procedures/tw1";
 
 export const ProceduresCard = makeCard({
@@ -16,15 +26,27 @@ export const ProceduresCard = makeCard({
 });
 
 function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type }) {
+  const selectNextStep = useAtomSet(selectNextProcedureStepAtom);
+  const selectPreviousStep = useAtomSet(selectPreviousProcedureStepAtom);
+  const executeStep = useAtomSet(executeProcedureStepAtom);
+
   return (
     <div className="h-full min-h-0 overflow-auto">
-      <div className="sticky top-0 h-8 bg-background border-b">
-        <button className="size-8 border-r">N</button>
+      <div className="sticky top-0 z-10 flex h-8 bg-background border-b">
+        <button onClick={() => selectPreviousStep()} className="h-full border-r px-2">
+          Prev
+        </button>
+        <button onClick={() => selectNextStep()} className="h-full border-r px-2">
+          Next
+        </button>
+        <button onClick={() => executeStep()} className="h-full border-r px-2">
+          Execute
+        </button>
       </div>
-      <div className="grid pb-6 grid-cols-[auto_auto_1fr] gap-x-2 gap-y-4 font-mono text-sm text-orange-text max-w-[80ch] mx-auto">
-        {procedure.steps.map((step) => (
-          <Suspense fallback="Loading...">
-            <ProcedureStepView step={step} />
+      <div className="grid pb-6 grid-cols-[auto_auto_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[80ch] mx-auto">
+        {procedure.steps.map((_, index) => (
+          <Suspense fallback={<div className="col-span-full">Loading...</div>} key={index}>
+            <ProcedureStepView index={index} />
           </Suspense>
         ))}
       </div>
@@ -106,7 +128,11 @@ function formatValue(value: unknown) {
   return String(value);
 }
 
-function ProcedureStepView({ step }: { step: typeof ProcedureStep.Type }) {
+function ProcedureStepView({ index }: { index: number }) {
+  const executionStep = useAtomSuspense(procedureExecutionStepAtom(index)).value;
+  const step = executionStep.meta;
+  const selectStep = useAtomSet(selectProcedureStepAtom);
+
   if (step.type === "note") {
     return (
       <div className="col-span-full text-center text-black" style={{ background: step.color }}>
@@ -115,48 +141,102 @@ function ProcedureStepView({ step }: { step: typeof ProcedureStep.Type }) {
     );
   }
 
-  const instance = useAtomValue(selectedInstanceAtom);
-  const sendCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
-
   return (
-    <div className="grid grid-cols-subgrid col-span-full px-2">
+    <div
+      className={cn(
+        "grid grid-cols-subgrid col-span-full px-2 py-2",
+        executionStep.isSelected ? "bg-selection-background/30" : "",
+      )}
+      onClick={() => selectStep(index)}
+    >
       <div>
         {step.stepNumber}
         {step.stepNumber && "."}
       </div>
       <div className="pr-2">{step.role}</div>
-      {(() => {
-        switch (step.type) {
-          case "text":
-            return <div className="whitespace-pre-wrap text-pretty">{step.text}</div>;
-          case "check":
-            return <div className="whitespace-pre-line text-pretty">{step.comment}</div>;
-          case "verify":
-            return (
-              <div className="whitespace-pre-line text-pretty">
-                {step.comment}
-                {step.presentation?.type === "truthTable" && <TruthTable step={step} />}
-              </div>
-            );
-          case "command":
-            return (
-              <div className="space-y-2">
-                <div className="whitespace-pre-line text-pretty">{step.comment}</div>
-                <button
-                  className="p-1 border border-current hover:bg-current/25"
-                  onClick={() =>
-                    sendCommand({
-                      params: { instance, processor: "realtime", name: step.name },
-                      payload: {},
-                    })
-                  }
-                >
-                  SEND
-                </button>
-              </div>
-            );
-        }
-      })()}
+      <div className="space-y-2">
+        {(() => {
+          switch (step.type) {
+            case "text":
+              return <div className="whitespace-pre-wrap text-pretty">{step.text}</div>;
+            case "check":
+              return <div className="whitespace-pre-line text-pretty">{step.comment}</div>;
+            case "verify":
+              return (
+                <div className="whitespace-pre-line text-pretty">
+                  {step.comment}
+                  {step.presentation?.type === "truthTable" && <TruthTable step={step} />}
+                </div>
+              );
+            case "command":
+              if (!(executionStep.liveData instanceof CommandStepLiveData)) {
+                return <div className="whitespace-pre-line text-pretty">{step.comment}</div>;
+              }
+
+              const command = executionStep.liveData.command;
+              const acks = collectAcks(command);
+
+              return (
+                <>
+                  <div className="whitespace-pre-line text-pretty">{step.comment}</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
+                      <div className="col-span-full text-foreground pb-1">Ground Station</div>
+                      {acks.yamcs.map((ack) => (
+                        <AckRow key={ack.name} ack={ack} command={command} />
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
+                      <div className="col-span-full text-foreground pb-1">FC A</div>
+                      {acks.systemA.map((ack) => (
+                        <AckRow
+                          friendlyName={ack.label}
+                          key={ack.name}
+                          ack={ack}
+                          command={command}
+                        />
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
+                      <div className="col-span-full text-foreground pb-1">FC B</div>
+                      {acks.systemB.map((ack) => (
+                        <AckRow
+                          friendlyName={ack.label}
+                          key={ack.name}
+                          ack={ack}
+                          command={command}
+                        />
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
+                      {acks.other.map((ack) => (
+                        <AckRow
+                          friendlyName={ack.label}
+                          key={ack.name}
+                          ack={ack}
+                          command={command}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
+                    {acks.completion ? <FCAckRow ack={acks.completion} command={command} /> : null}
+                  </div>
+                </>
+              );
+          }
+        })()}
+        {executionStep.liveMessage ? (
+          <div
+            className={cn(
+              "text-xs uppercase tracking-wide text-muted-foreground",
+              executionStep.state === "failed" && "text-error normal-case",
+            )}
+          >
+            {executionStep.liveMessage}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

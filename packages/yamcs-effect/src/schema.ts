@@ -409,7 +409,7 @@ const IssueCommandResponseSchema = Schema.Struct({
   origin: Schema.String,
   sequenceNumber: Schema.Number,
   commandName: QualifiedName,
-  assignments: Schema.Array(CommandAssignment),
+  assignments: Schema.optional(Schema.Array(CommandAssignment)),
   unprocessedBinary: Schema.Uint8ArrayFromBase64,
   binary: Schema.Uint8ArrayFromBase64,
   username: Schema.String,

@@ -147,7 +147,7 @@ function DetailTable({
       {acks.completion && (
         <div className="space-y-0.5">
           <Label>Completion</Label>
-          <div className="grid grid-cols-[auto_1fr] gap-x-2">
+          <div className="grid grid-cols-[auto_1fr] gap-x-2 max-w-80">
             <FCAckRow ack={acks.completion} command={command} />
           </div>
         </div>
@@ -156,7 +156,7 @@ function DetailTable({
   );
 }
 
-function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) {
+export function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) {
   if (ack.status === "??") return;
 
   return (
@@ -182,7 +182,7 @@ function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) 
         )}
       </div>
       {ack.message && (
-        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
+        <div className="col-span-full border-l-2 border-error py-1 pl-2 font-sans break-all">
           {ack.message}
         </div>
       )}
@@ -190,7 +190,7 @@ function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) 
   );
 }
 
-function AckRow({
+export function AckRow({
   ack,
   command,
   friendlyName,
@@ -220,7 +220,7 @@ function AckRow({
         )}
       </div>
       {ack.message && (
-        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
+        <div className="col-span-full border-l-2 border-error py-1 pl-2 font-sans break-all">
           {ack.message}
         </div>
       )}

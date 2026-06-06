@@ -37,10 +37,7 @@ export interface StringDataEncoding {
   readonly encoding: string;
 }
 
-export type DataEncoding =
-  | IntegerDataEncoding
-  | FloatDataEncoding
-  | StringDataEncoding;
+export type DataEncoding = IntegerDataEncoding | FloatDataEncoding | StringDataEncoding;
 
 interface EnumValue {
   readonly value: string;
@@ -169,11 +166,9 @@ export const getContainer = (basePath: string, containerName: string) =>
 
     const text = yield* result.text;
 
-    const container = yield* Schema.decodeUnknownEffect(
-      Schema.fromJsonString(ContainerInfo),
-    )(text).pipe(
-      Effect.tapErrorTag("SchemaError", (e) => Effect.logError(e.message)),
-    );
+    const container = yield* Schema.decodeUnknownEffect(Schema.fromJsonString(ContainerInfo))(
+      text,
+    ).pipe(Effect.tapErrorTag("SchemaError", (e) => Effect.logError(e.message)));
 
     return container;
   });

@@ -43,6 +43,18 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
 
+  - name: PAD Wifi Antenna (Client) 
+    class: org.yamcs.mrt.links.WifiAntennaLink
+    ipAddress: 192.168.0.254
+    username: mrt
+    password: H0tFire!
+
+  - name: CS WiFi Antenna (Access Point)
+    class: org.yamcs.mrt.links.WifiAntennaLink
+    ipAddress: 192.168.0.253
+    username: mrt
+    password: H0tFire!
+
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_b_fc_realtime

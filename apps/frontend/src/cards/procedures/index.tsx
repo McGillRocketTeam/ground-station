@@ -32,7 +32,7 @@ function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type })
 
   return (
     <div className="h-full min-h-0 overflow-auto">
-      <div className="sticky top-0 z-10 flex h-8 bg-background border-b">
+      <div className="sticky top-0 z-10 flex h-8 bg-background border-b text-sm">
         <button onClick={() => selectPreviousStep()} className="h-full border-r px-2">
           Prev
         </button>

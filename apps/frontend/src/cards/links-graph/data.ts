@@ -3,14 +3,30 @@ import type { BuiltInEdge, Edge, Node } from "@xyflow/react";
 export type RadioLinkNodeData = {
   qualifiedName: string;
   friendlyName: string;
-  textPosition: "top" | "bottom";
+  textPosition: "top" | "bottom" | "right";
 };
+
+export type LinkEdgeData = {
+  qualifiedName?: string;
+};
+
+export type WifiAntennaEdgeData = {
+  sourceQualifiedName: string;
+  connectedStationsParameter: string;
+  flip?: boolean;
+};
+
+const csWifiConnectedStationsParameter =
+  "/yamcs/leo-mbp/links/CS WiFi Antenna (Access Point)/Connected Stations";
 
 export type RadioLinkNode = Node<RadioLinkNodeData, "radioLink">;
 export type GroundStationNode = Node<{}, "groundStation">;
 
 export type CustomNodeType = RadioLinkNode | GroundStationNode;
-export type CustomEdgeType = Edge<{}, "link"> | BuiltInEdge;
+export type CustomEdgeType =
+  | Edge<LinkEdgeData, "link">
+  | Edge<WifiAntennaEdgeData, "wifiAntenna">
+  | BuiltInEdge;
 
 export const initialNodes: CustomNodeType[] = [
   {
@@ -35,8 +51,28 @@ export const initialNodes: CustomNodeType[] = [
   },
   {
     type: "radioLink",
+    id: "PAD Wifi Antenna (Client)",
+    position: { x: 125, y: 180 },
+    data: {
+      qualifiedName: "PAD Wifi Antenna (Client)",
+      friendlyName: "Pad WiFi\nAntenna",
+      textPosition: "right",
+    },
+  },
+  {
+    type: "radioLink",
+    id: "CS WiFi Antenna (Access Point)",
+    position: { x: 125, y: 360 },
+    data: {
+      qualifiedName: "CS WiFi Antenna (Access Point)",
+      friendlyName: "CS WiFi\nAntenna",
+      textPosition: "right",
+    },
+  },
+  {
+    type: "radioLink",
     id: "SystemA/ControlStation/Radio",
-    position: { x: 0, y: 400 },
+    position: { x: 0, y: 720 },
     data: {
       qualifiedName: "SystemA/ControlStation/Radio",
       friendlyName: "System A\nControl Station\nRadio",
@@ -44,46 +80,58 @@ export const initialNodes: CustomNodeType[] = [
     },
   },
   {
+    type: "groundStation",
+    id: "groundStation",
+    position: { x: 125, y: 540 },
+    data: {},
+  },
+  {
     type: "radioLink",
     id: "SystemB/ControlStation/Radio",
-    position: { x: 250, y: 400 },
+    position: { x: 250, y: 720 },
     data: {
       qualifiedName: "SystemB/ControlStation/Radio",
       friendlyName: "System B\nControl Station\nRadio",
       textPosition: "bottom",
     },
   },
-  {
-    type: "groundStation",
-    id: "groundStation",
-    position: { x: 125, y: 225 },
-    data: {},
-  },
 ];
 
 export const initialEdges: CustomEdgeType[] = [
   {
-    id: "SystemA/Pad/Radio->groundStation",
+    id: "SystemA/Pad/Radio->PAD Wifi Antenna (Client)",
     source: "SystemA/Pad/Radio",
     sourceHandle: "bottom",
-    target: "groundStation",
-    targetHandle: "left-top",
+    target: "PAD Wifi Antenna (Client)",
+    targetHandle: "left",
     type: "link",
   },
   {
-    id: "SystemB/Pad/Radio->groundStation",
+    id: "SystemB/Pad/Radio->PAD Wifi Antenna (Client)",
     source: "SystemB/Pad/Radio",
     sourceHandle: "bottom",
-    target: "groundStation",
-    targetHandle: "right-top",
+    target: "PAD Wifi Antenna (Client)",
+    targetHandle: "right",
     type: "link",
+  },
+  {
+    id: "PAD Wifi Antenna (Client)->CS WiFi Antenna (Access Point)",
+    source: "PAD Wifi Antenna (Client)",
+    sourceHandle: "bottom",
+    target: "CS WiFi Antenna (Access Point)",
+    targetHandle: "top",
+    type: "wifiAntenna",
+    data: {
+      sourceQualifiedName: "PAD Wifi Antenna (Client)",
+      connectedStationsParameter: csWifiConnectedStationsParameter,
+    },
   },
   {
     id: "SystemA/ControlStation/Radio->groundStation",
     source: "SystemA/ControlStation/Radio",
     sourceHandle: "top",
     target: "groundStation",
-    targetHandle: "left-bottom",
+    targetHandle: "left",
     type: "link",
   },
   {
@@ -91,7 +139,20 @@ export const initialEdges: CustomEdgeType[] = [
     source: "SystemB/ControlStation/Radio",
     sourceHandle: "top",
     target: "groundStation",
-    targetHandle: "right-bottom",
+    targetHandle: "right",
     type: "link",
+  },
+  {
+    id: "groundStation->CS WiFi Antenna (Access Point)",
+    source: "groundStation",
+    sourceHandle: "top",
+    target: "CS WiFi Antenna (Access Point)",
+    targetHandle: "bottom",
+    type: "wifiAntenna",
+    data: {
+      flip: true,
+      sourceQualifiedName: "CS WiFi Antenna (Access Point)",
+      connectedStationsParameter: csWifiConnectedStationsParameter,
+    },
   },
 ];

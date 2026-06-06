@@ -20,48 +20,30 @@ const makeIntField = (
   min: number,
   max: number,
   dataMode: string,
-): Effect.Effect<
-  Effect.Effect<GeneratedFieldValue, never, never>,
-  never,
-  never
-> =>
+): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> =>
   Ref.make(0).pipe(
     Effect.map((ref) => {
       const range = max - min + 1;
 
       return dataMode === "random"
         ? Effect.sync(() => Math.floor(Math.random() * range) + min)
-        : Ref.getAndUpdate(ref, (n) => (n + 1) % range).pipe(
-            Effect.map((n) => n + min),
-          );
+        : Ref.getAndUpdate(ref, (n) => (n + 1) % range).pipe(Effect.map((n) => n + min));
     }),
   );
 
 const makeFixedField = (
   value: GeneratedFieldValue,
-): Effect.Effect<
-  Effect.Effect<GeneratedFieldValue, never, never>,
-  never,
-  never
-> => Effect.succeed(Effect.succeed(value));
+): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> =>
+  Effect.succeed(Effect.succeed(value));
 
 const makeChoiceField = (
   values: ReadonlyArray<number>,
   dataMode: string,
-): Effect.Effect<
-  Effect.Effect<GeneratedFieldValue, never, never>,
-  never,
-  never
-> =>
+): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> =>
   Ref.make(0).pipe(
     Effect.map((ref) =>
       dataMode === "random"
-        ? Effect.sync(
-            () =>
-              values[Math.floor(Math.random() * values.length)] ??
-              values[0] ??
-              0,
-          )
+        ? Effect.sync(() => values[Math.floor(Math.random() * values.length)] ?? values[0] ?? 0)
         : Ref.getAndUpdate(ref, (n) => (n + 1) % values.length).pipe(
             Effect.map((n) => values[n] ?? values[0] ?? 0),
           ),
@@ -69,22 +51,16 @@ const makeChoiceField = (
   );
 
 const getEnumerationValues = (parameter: Parameter): ReadonlyArray<number> =>
-  (parameter.type.enumValues ?? parameter.type.enumValue ?? []).flatMap(
-    ({ value }) => {
-      const parsed = Number.parseInt(value, 10);
-      return Number.isInteger(parsed) ? [parsed] : [];
-    },
-  );
+  (parameter.type.enumValues ?? parameter.type.enumValue ?? []).flatMap(({ value }) => {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isInteger(parsed) ? [parsed] : [];
+  });
 
 const makeStringField = (
   label: string,
   sizeInBits: number,
   dataMode: string,
-): Effect.Effect<
-  Effect.Effect<GeneratedFieldValue, never, never>,
-  never,
-  never
-> => {
+): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> => {
   const byteLength = Math.max(1, Math.floor(sizeInBits / 8));
   const textLength = Math.max(1, byteLength - 1);
   const prefix = label
@@ -101,14 +77,9 @@ const makeStringField = (
               Math.random().toString(36).charAt(2).toUpperCase(),
             ).join(""),
           )
-        : Ref.getAndUpdate(
-            ref,
-            (n) => (n + 1) % 10 ** Math.max(1, suffixLength),
-          ).pipe(
+        : Ref.getAndUpdate(ref, (n) => (n + 1) % 10 ** Math.max(1, suffixLength)).pipe(
             Effect.map((n) => {
-              const suffix = suffixLength
-                ? n.toString().padStart(suffixLength, "0")
-                : "";
+              const suffix = suffixLength ? n.toString().padStart(suffixLength, "0") : "";
               return `${prefix}${suffix}`.slice(0, textLength);
             }),
           ),
@@ -119,11 +90,7 @@ const makeStringField = (
 const makeFloatField = (
   sizeInBits: number,
   dataMode: string,
-): Effect.Effect<
-  Effect.Effect<GeneratedFieldValue, never, never>,
-  never,
-  never
-> =>
+): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> =>
   Ref.make(0).pipe(
     Effect.map((ref) => {
       const min = sizeInBits === 64 ? -1e6 : -1e3;
@@ -133,9 +100,7 @@ const makeFloatField = (
 
       return dataMode === "random"
         ? Effect.sync(() => Math.random() * (max - min) + min)
-        : Ref.getAndUpdate(ref, (n) => (n + 1) % steps).pipe(
-            Effect.map((n) => n * step + min),
-          );
+        : Ref.getAndUpdate(ref, (n) => (n + 1) % steps).pipe(Effect.map((n) => n * step + min));
     }),
   );
 
@@ -144,11 +109,7 @@ const makeIncrementingFloatField = (
   max: number,
   step: number,
   dataMode: string,
-): Effect.Effect<
-  Effect.Effect<GeneratedFieldValue, never, never>,
-  never,
-  never
-> =>
+): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> =>
   Ref.make(0).pipe(
     Effect.map((ref) => {
       const steps = Math.floor((max - min) / step) + 1;
@@ -167,11 +128,7 @@ export class DataGenerator extends Context.Service<
     /** Create a number generator derived from a parameter definition */
     readonly forParameter: (
       parameter: Parameter,
-    ) => Effect.Effect<
-      Effect.Effect<GeneratedFieldValue, never, never>,
-      never,
-      never
-    >;
+    ) => Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never>;
   }
 >()("@mrt/simulator/DataGenerator") {
   static readonly layer = Layer.effect(
@@ -207,21 +164,11 @@ export class DataGenerator extends Context.Service<
           const name = parameter.name.toLowerCase();
 
           if (name.includes("latitude") || name.includes("lat")) {
-            return makeIncrementingFloatField(
-              -90_000_000,
-              90_000_000,
-              10_000_000,
-              dataMode,
-            );
+            return makeIncrementingFloatField(-90_000_000, 90_000_000, 10_000_000, dataMode);
           }
 
           if (name.includes("longitude") || name.includes("long")) {
-            return makeIncrementingFloatField(
-              -180_000_000,
-              180_000_000,
-              10_000_000,
-              dataMode,
-            );
+            return makeIncrementingFloatField(-180_000_000, 180_000_000, 10_000_000, dataMode);
           }
 
           return makeIncrementingFloatField(0, 10_000_000, 10_000, dataMode);

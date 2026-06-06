@@ -58,9 +58,7 @@ export class MqttConnection extends Context.Service<
           yield* Effect.logDebug(`[${props.topic}]: ${props.message}`);
           yield* Effect.callback<void, typeof MqttError.Type>((resume) => {
             const message =
-              typeof props.message === "string"
-                ? props.message
-                : Buffer.from(props.message);
+              typeof props.message === "string" ? props.message : Buffer.from(props.message);
 
             client.publish(props.topic, message, props.opts, (error) => {
               return error
@@ -83,10 +81,7 @@ export class MqttConnection extends Context.Service<
               .onMessage({ topic, payload, text: payload.toString("utf8") })
               .pipe(
                 Effect.catchCause((cause) =>
-                  Effect.logError(
-                    `Failed handling MQTT message for ${topic}`,
-                    cause,
-                  ),
+                  Effect.logError(`Failed handling MQTT message for ${topic}`, cause),
                 ),
               ),
           );
@@ -96,9 +91,7 @@ export class MqttConnection extends Context.Service<
           Effect.gen(function* () {
             yield* Effect.callback<void, typeof MqttError.Type>((resume) => {
               client.subscribe(params.topic, (error) => {
-                return error
-                  ? resume(Effect.fail(new MqttError({ error })))
-                  : resume(Effect.void);
+                return error ? resume(Effect.fail(new MqttError({ error }))) : resume(Effect.void);
               });
 
               return Effect.void;

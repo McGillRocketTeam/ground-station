@@ -182,7 +182,7 @@ See https://github.com/yamcs/pymdb
       </FloatParameterType>
       <FloatParameterType name="fc_temp" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -469,11 +469,21 @@ See https://github.com/yamcs/pymdb
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>0.412</ValueOperand>
+              <Operator>*</Operator>
+              <ValueOperand>185.3</ValueOperand>
+              <Operator>-</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
       </FloatParameterType>
       <FloatParameterType name="tank_temp" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
@@ -505,7 +515,7 @@ See https://github.com/yamcs/pymdb
       </BooleanParameterType>
       <FloatParameterType name="vent_temp" sizeInBits="32">
         <UnitSet>
-          <Unit form="calibrated">°C</Unit>
+          <Unit form="calibrated">C</Unit>
         </UnitSet>
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
           <DefaultCalibrator>

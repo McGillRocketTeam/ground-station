@@ -7,6 +7,7 @@ import { Popover, PopoverContent } from "@/components/ui/popover";
 import { makeCard } from "@/lib/cards";
 
 import { LinkDetail } from "../links/link-detail";
+import type { CustomEdgeType, CustomNodeType } from "./data";
 import { edgeTypes, linksPopover, nodeTypes, noopNodeClick } from "./custom-elements";
 import { initialEdges, initialNodes } from "./data";
 
@@ -15,7 +16,7 @@ export const LinksGraphCard = makeCard({
   name: "Links Graph",
   schema: Schema.Struct({}),
   component: (props) => {
-    const flowRef = useRef<ReactFlowInstance | null>(null);
+    const flowRef = useRef<ReactFlowInstance<CustomNodeType, CustomEdgeType> | null>(null);
 
     useEffect(() => {
       const disposable = props.api.onDidDimensionsChange(() => {

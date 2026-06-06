@@ -38,9 +38,7 @@ const urrgTopologies: ReadonlyArray<SystemTopology> = [
   },
 ];
 
-const topologiesForInstance = (
-  instance: string,
-): ReadonlyArray<SystemTopology> => {
+const topologiesForInstance = (instance: string): ReadonlyArray<SystemTopology> => {
   switch (instance) {
     case "launch-canada":
       return launchCanadaTopologies;
@@ -70,11 +68,9 @@ const makeSystemActors = (topology: SystemTopology) =>
 
 export const makeSimulatorForInstance = (instance: string) =>
   Effect.gen(function* () {
-    const actorGroups = yield* Effect.forEach(
-      topologiesForInstance(instance),
-      makeSystemActors,
-      { concurrency: "unbounded" },
-    );
+    const actorGroups = yield* Effect.forEach(topologiesForInstance(instance), makeSystemActors, {
+      concurrency: "unbounded",
+    });
 
     const actors = actorGroups.flat() as Array<AstraActor<unknown>>;
 

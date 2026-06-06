@@ -629,12 +629,14 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       return;
     }
 
+    failedCommand(dispatch.commandId(), dispatch.flightComputerFailureMessage());
     commandHistoryPublisher.publishAck(
         dispatch.commandId(),
         CommandHistoryPublisher.CommandComplete_KEY,
         timeService.getMissionTime(),
         AckStatus.NOK,
         dispatch.flightComputerFailureDetail());
+    releaseDispatch(dispatch);
   }
 
   private void finalizeDispatchPublish(DispatchState dispatch, DispatchProgress progress) {

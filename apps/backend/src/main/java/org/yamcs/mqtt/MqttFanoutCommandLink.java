@@ -1140,6 +1140,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
       Set<String> expectedFlightTargets =
           failedTargets.isEmpty() ? requestedTargetsByName.keySet() : publishedTargets;
+      if (resetAv) {
+        return flightComputerAcks.containsAll(expectedFlightTargets);
+      }
+
       Set<String> expectedPublishedRadioTargets = new HashSet<>(expectedRadioTargets);
       if (!failedTargets.isEmpty()) {
         expectedPublishedRadioTargets.retainAll(publishedTargets);

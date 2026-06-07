@@ -3,11 +3,11 @@ packages:
   - apps/*
 
 catalog:
-  '@effect/language-service': ^0.83.1
-  '@effect/opentelemetry': beta 
+  '@effect/language-service': ^0.86.2
+  '@effect/opentelemetry': 4.0.0-beta.78
   '@effect/platform-browser': 4.0.0-beta.51
-  '@effect/platform-node': beta
+  '@effect/platform-node': 4.0.0-beta.78
   effect: 4.0.0-beta.51
-  oxfmt: ^0.35.0
-  oxlint: ^1.57.0
-  typescript: 5.9.3
+  oxfmt: ^0.53.0
+  oxlint: ^1.68.0
+  typescript: 6.0.3

@@ -151,7 +151,7 @@ importers:
         version: 1.4.0
     devDependencies:
       '@effect/language-service':
-        specifier: ^0.86.2
+        specifier: 'catalog:'
         version: 0.86.2
       '@types/dygraphs':
         specifier: ^2.1.11

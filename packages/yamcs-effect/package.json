@@ -21,7 +21,7 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@types/node": "latest",
-    "tsx": "^4.21.0"
+    "tsx": "^4.22.4"
   },
   "peerDependencies": {
     "oxfmt": "catalog:",

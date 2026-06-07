@@ -41,8 +41,29 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<yamcsVersion>5.12.2</yamcsVersion>
+		<yamcsVersion>5.12.7</yamcsVersion>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!--
+				Align every transitive Netty module to a single patched release.
+				yamcs-core pulls netty-handler/netty-codec-http, but the test-scoped
+				netty-codec-mqtt (4.1.112) would otherwise win Maven's nearest-wins
+				mediation and drag netty-common/buffer/transport/codec onto the
+				compile classpath at 4.1.112 - vulnerable to CVE-2025-24970 and
+				CVE-2025-25193 (netty-common) and version-skewed against netty-handler.
+				Importing the BOM forces all Netty modules to 4.1.132.Final.
+			-->
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>4.1.132.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>

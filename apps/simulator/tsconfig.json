@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "composite": true,
     "target": "ES2022",
     "module": "NodeNext",
     "moduleDetection": "force",
@@ -19,8 +18,10 @@
       }
     ],
 
-    "declaration": true,
-    "declarationMap": true,
+    // This is a runnable app, not a published library, so it does not emit
+    // .d.ts. Declaration emit is also what surfaced TS4023 (NodeInspectSymbol)
+    // from effect's Inspectable type after the effect 4.0.0-beta.78 alignment.
+    "declaration": false,
     "sourceMap": true,
     "skipLibCheck": true,
 

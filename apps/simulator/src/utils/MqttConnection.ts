@@ -21,7 +21,9 @@ interface SubscribeParameters {
 }
 
 class MqttError extends Schema.TaggedErrorClass<MqttError>()("MqttError", {
-  error: Schema.ErrorWithStack,
+  // effect 4.0.0-beta.78 replaced Schema.ErrorWithStack with Schema.Error();
+  // includeStack preserves the previous "with stack" serialization behavior.
+  error: Schema.Error({ includeStack: true }),
 }) {}
 
 export class MqttConnection extends Context.Service<

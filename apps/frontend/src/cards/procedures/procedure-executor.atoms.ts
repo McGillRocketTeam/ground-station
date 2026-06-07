@@ -4,11 +4,14 @@ import { Atom } from "effect/unstable/reactivity";
 
 import { YamcsAtomHttpClient } from "@/lib/atom";
 
-import { ProcedureExecutor } from "./procedure-executor";
+import { ProcedureExecutor, ProcedureExecutorLog } from "./procedure-executor";
 
 const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) =>
   Layer.provideMerge(
-    Layer.merge(ProcedureExecutor.layer(), WebSocketClient.layer),
+    Layer.merge(
+      Layer.provideMerge(ProcedureExecutor.layer(), ProcedureExecutorLog.layer),
+      WebSocketClient.layer,
+    ),
     get(YamcsAtomHttpClient.runtime.layer),
   ),
 );

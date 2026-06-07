@@ -12,11 +12,11 @@ import {
   Cause,
   Context,
   Data,
+  DateTime,
   Effect,
   Exit,
   Layer,
   Option,
-  Queue,
   Schema,
   Stream,
   SubscriptionRef,
@@ -26,39 +26,6 @@ import { get } from "effect/unstable/reactivity/Atom";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
 import { TW1 } from "./procedures/tw1";
-
-class AduitCommand extends Schema.TaggedClass<AduitCommand>()("AduitCommand", {
-  //...
-}) {}
-
-class AuditText extends Schema.TaggedClass<AuditText>()("AuditText", {
-  //...
-}) {}
-
-const AuditEntry = Schema.Union([AduitCommand, AuditText]);
-type AuditEntry = typeof AuditEntry.Type;
-
-export class ProcedureExecutorLog extends Context.Service<ProcedureExecutorLog, {}>()(
-  "@mrt/frontend/ProcedureExecutorLog",
-) {
-  static readonly layer = Layer.effect(
-    ProcedureExecutorLog,
-    Effect.gen(function* () {
-      const queue = yield* Queue.unbounded<string>();
-
-      const output = Stream.fromQueue(queue).pipe(
-        Stream.runFold(
-          () => "",
-          (a, b) => {
-            return a + "\n" + b;
-          },
-        ),
-      );
-
-      return { output };
-    }),
-  );
-}
 
 const ExecutionStepState = Schema.Literals(["initial", "running", "completed", "failed"]);
 type ExecutionStepState = typeof ExecutionStepState.Type;
@@ -74,6 +41,16 @@ export class CommandStepLiveData extends Schema.TaggedClass<CommandStepLiveData>
 
 const StepLiveData = Schema.Union([EmptyStepLiveData, CommandStepLiveData]);
 type StepLiveData = typeof StepLiveData.Type;
+
+const ProcedureAuditEventType = Schema.Literals([
+  "stepSelected",
+  "stepExecutionStarted",
+  "stepLiveMessageUpdated",
+  "stepLiveDataUpdated",
+  "stepCompleted",
+  "stepFailed",
+]);
+type ProcedureAuditEventType = typeof ProcedureAuditEventType.Type;
 
 export class ExecutionStep extends Schema.Class<ExecutionStep>("ExecutionStep")({
   state: ExecutionStepState,
@@ -92,12 +69,75 @@ export class ExecutionStep extends Schema.Class<ExecutionStep>("ExecutionStep")(
     });
 }
 
+const formatStepDisplayNumber = (step: ExecutionStep) =>
+  step.meta.stepNumber === undefined
+    ? `#${step.meta.type}@${step.meta.role}`
+    : `${step.meta.stepNumber}`;
+
+class ProcedureAuditEntry extends Schema.Class<ProcedureAuditEntry>("ProcedureAuditEntry")({
+  at: Schema.DateTimeUtc,
+  event: ProcedureAuditEventType,
+  stepIndex: Schema.Number,
+  stepNumber: Schema.NullOr(Schema.Number),
+  stepDisplayNumber: Schema.String,
+  message: Schema.String,
+  liveData: StepLiveData,
+}) {}
+
+const makeAuditEntry = (
+  at: DateTime.Utc,
+  stepIndex: number,
+  step: ExecutionStep,
+  event: ProcedureAuditEventType,
+  message: string,
+  liveData: StepLiveData = step.liveData,
+) =>
+  ProcedureAuditEntry.make({
+    at,
+    event,
+    stepIndex,
+    stepNumber: step.meta.stepNumber ?? null,
+    stepDisplayNumber: formatStepDisplayNumber(step),
+    message,
+    liveData,
+  });
+
+const renderAuditEntriesAsText = (entries: ReadonlyArray<ProcedureAuditEntry>) =>
+  entries
+    .map(
+      (entry) =>
+        `${DateTime.toDate(entry.at).toISOString()} | ${entry.event} | stepIndex=${entry.stepIndex} | stepNumber=${entry.stepDisplayNumber} | ${entry.message}`,
+    )
+    .join("\n");
+
+export class ProcedureExecutorLog extends Context.Service<
+  ProcedureExecutorLog,
+  {
+    readonly entries: SubscriptionRef.SubscriptionRef<ReadonlyArray<ProcedureAuditEntry>>;
+    readonly append: (entry: ProcedureAuditEntry) => Effect.Effect<void>;
+    readonly renderText: () => Effect.Effect<string>;
+  }
+>()("@mrt/frontend/ProcedureExecutorLog") {
+  static readonly layer = Layer.effect(
+    ProcedureExecutorLog,
+    Effect.gen(function* () {
+      const entries = yield* SubscriptionRef.make<ReadonlyArray<ProcedureAuditEntry>>([]);
+
+      const append = (entry: ProcedureAuditEntry) =>
+        SubscriptionRef.update(entries, (current) => [...current, entry]);
+
+      const renderText = () => Effect.map(SubscriptionRef.get(entries), renderAuditEntriesAsText);
+
+      return { entries, append, renderText };
+    }),
+  );
+}
+
 export class ProcedureExecutionState extends Schema.Class<ProcedureExecutionState>(
   "ProcedureExecutionState",
 )({
   currentStepIndex: Schema.Number,
   steps: Schema.Array(ExecutionStep),
-  audit: Schema.Array(AuditEntry),
 }) {}
 
 const updateStepAt = (
@@ -241,6 +281,30 @@ const failCurrentStep = (
     ),
   });
 
+const applyRecordedStepChange = (
+  state: ProcedureExecutionState,
+  index: number,
+  f: (step: ExecutionStep) => ExecutionStep,
+): readonly [ProcedureExecutionState, ExecutionStep | undefined] => {
+  let updatedStep: ExecutionStep | undefined;
+  const steps = updateStepAt(state.steps, index, (step) => {
+    updatedStep = f(step);
+    return updatedStep;
+  });
+
+  if (!updatedStep) {
+    return [state, undefined] as const;
+  }
+
+  return [
+    ProcedureExecutionState.make({
+      ...state,
+      steps,
+    }),
+    updatedStep,
+  ] as const;
+};
+
 export class ProcedureExecutor extends Context.Service<
   ProcedureExecutor,
   {
@@ -250,6 +314,7 @@ export class ProcedureExecutor extends Context.Service<
       never,
       YamcsAtomHttpClient | WebSocketClient | AtomRegistry.AtomRegistry
     >;
+    readonly renderAuditText: () => Effect.Effect<string>;
     readonly selectStep: (index: number) => Effect.Effect<void>;
     readonly selectNextStep: () => Effect.Effect<void>;
     readonly selectPreviousStep: () => Effect.Effect<void>;
@@ -263,17 +328,86 @@ export class ProcedureExecutor extends Context.Service<
           ProcedureExecutionState.make({
             currentStepIndex: 0,
             steps: TW1.steps.map(ExecutionStep.fromProcedureStep),
-            audit: [],
           }),
         );
+        const log = yield* ProcedureExecutorLog;
 
-        const updateExecutionStep = (index: number, f: (step: ExecutionStep) => ExecutionStep) =>
-          SubscriptionRef.update(state, (executionState) =>
-            ProcedureExecutionState.make({
-              ...executionState,
-              steps: updateStepAt(executionState.steps, index, f),
-            }),
-          );
+        const recordStepChange = (
+          index: number,
+          event: ProcedureAuditEventType,
+          message: string,
+          f: (step: ExecutionStep) => ExecutionStep,
+        ) =>
+          Effect.gen(function* () {
+            const at = yield* DateTime.now;
+            const updatedStep = yield* SubscriptionRef.modify(state, (executionState) => {
+              const [nextState, updatedStep] = applyRecordedStepChange(executionState, index, f);
+              return [updatedStep, nextState] as const;
+            });
+
+            if (!updatedStep) {
+              return;
+            }
+
+            yield* log.append(makeAuditEntry(at, index, updatedStep, event, message));
+          });
+
+        const recordSelection = (nextIndex: number) =>
+          Effect.gen(function* () {
+            const at = yield* DateTime.now;
+            const result = yield* SubscriptionRef.modify(state, (executionState) => {
+              const nextState = moveSelection(executionState, nextIndex);
+
+              if (nextState.currentStepIndex === executionState.currentStepIndex) {
+                return [undefined, executionState] as const;
+              }
+
+              const selectedStep = nextState.steps[nextState.currentStepIndex];
+
+              if (!selectedStep) {
+                return [undefined, nextState] as const;
+              }
+
+              return [
+                { index: nextState.currentStepIndex, step: selectedStep },
+                nextState,
+              ] as const;
+            });
+
+            if (!result) {
+              return;
+            }
+
+            yield* log.append(
+              makeAuditEntry(
+                at,
+                result.index,
+                result.step,
+                "stepSelected",
+                `Selected step ${formatStepDisplayNumber(result.step)}`,
+              ),
+            );
+          });
+
+        const recordStepOutcome = (
+          index: number,
+          event: Extract<ProcedureAuditEventType, "stepCompleted" | "stepFailed">,
+          message: string,
+          f: (state: ProcedureExecutionState) => ProcedureExecutionState,
+        ) =>
+          Effect.gen(function* () {
+            const at = yield* DateTime.now;
+            const step = yield* SubscriptionRef.modify(state, (executionState) => {
+              const nextState = f(executionState);
+              return [nextState.steps[index], nextState] as const;
+            });
+
+            if (!step) {
+              return;
+            }
+
+            yield* log.append(makeAuditEntry(at, index, step, event, message));
+          });
 
         const runStep = (index: number, step: typeof ProcedureStep.Type) => {
           switch (step.type) {
@@ -281,8 +415,11 @@ export class ProcedureExecutor extends Context.Service<
             case "note":
             case "check":
             case "verify":
-              return updateExecutionStep(index, (step) =>
-                setStepLiveMessage(step, "No live events for this step"),
+              return recordStepChange(
+                index,
+                "stepLiveMessageUpdated",
+                "No live events for this step",
+                (step) => setStepLiveMessage(step, "No live events for this step"),
               );
             case "command":
               return Effect.gen(function* () {
@@ -304,6 +441,10 @@ export class ProcedureExecutor extends Context.Service<
                   }),
                 );
 
+                yield* recordStepChange(index, "stepLiveMessageUpdated", `Sent ${cmd.id}`, (step) =>
+                  setStepLiveMessage(step, `Sent ${cmd.id}`),
+                );
+
                 const result = yield* timeoutCommandCompletion(
                   stream.pipe(
                     Stream.mapEffect((msg) => Schema.decodeEffect(CommandHistoryEvent)(msg)),
@@ -321,8 +462,12 @@ export class ProcedureExecutor extends Context.Service<
                     ),
                     Stream.tap((entry) => Effect.logInfo(formatCommandLiveMessage(entry))),
                     Stream.tap((entry) =>
-                      updateExecutionStep(index, (step) =>
-                        setStepLiveData(step, new CommandStepLiveData({ command: entry })),
+                      recordStepChange(
+                        index,
+                        "stepLiveDataUpdated",
+                        formatCommandLiveMessage(entry),
+                        (step) =>
+                          setStepLiveData(step, new CommandStepLiveData({ command: entry })),
                       ),
                     ),
                     Stream.filter(isTerminalCommandEntry),
@@ -363,57 +508,59 @@ export class ProcedureExecutor extends Context.Service<
         };
 
         const execute = Effect.fn("ProcedureExecutor.execute")(function* () {
-          const current = yield* SubscriptionRef.modify(state, (executionState) => {
-            const step = executionState.steps[executionState.currentStepIndex];
+          const executionState = yield* SubscriptionRef.get(state);
+          const step = executionState.steps[executionState.currentStepIndex];
 
-            if (!step) {
-              return [undefined, executionState] as const;
-            }
-
-            return [
-              { index: executionState.currentStepIndex, step },
-              ProcedureExecutionState.make({
-                ...executionState,
-                steps: updateStepAt(executionState.steps, executionState.currentStepIndex, (step) =>
-                  setStepLiveMessage(setStepState(step, "running"), "Starting step..."),
-                ),
-              }),
-            ] as const;
-          });
+          const current = step ? { index: executionState.currentStepIndex, step } : undefined;
 
           if (!current) {
             return;
           }
 
+          yield* recordStepChange(
+            current.index,
+            "stepExecutionStarted",
+            "Starting step...",
+            (step) => setStepLiveMessage(setStepState(step, "running"), "Starting step..."),
+          );
+
           const exit = yield* Effect.exit(runStep(current.index, current.step.meta));
 
-          yield* SubscriptionRef.update(state, (executionState) =>
-            Exit.isSuccess(exit)
-              ? completeCurrentStep(executionState, current.index)
-              : failCurrentStep(
-                  executionState,
-                  current.index,
-                  Cause.prettyErrors(exit.cause).join(", "),
-                ),
+          if (Exit.isSuccess(exit)) {
+            yield* recordStepOutcome(
+              current.index,
+              "stepCompleted",
+              "Step completed",
+              (executionState) => completeCurrentStep(executionState, current.index),
+            );
+            return;
+          }
+
+          const failureMessage = Cause.prettyErrors(exit.cause).join(", ");
+
+          yield* recordStepOutcome(current.index, "stepFailed", failureMessage, (executionState) =>
+            failCurrentStep(executionState, current.index, failureMessage),
           );
         });
 
-        const selectStep = (index: number) =>
-          SubscriptionRef.update(state, (executionState) => moveSelection(executionState, index));
+        const renderAuditText = () => log.renderText();
+
+        const selectStep = (index: number) => recordSelection(index);
 
         const selectNextStep = () =>
-          SubscriptionRef.update(state, (executionState) =>
-            moveSelection(executionState, executionState.currentStepIndex + 1),
+          Effect.flatMap(SubscriptionRef.get(state), (executionState) =>
+            recordSelection(executionState.currentStepIndex + 1),
           );
 
         const selectPreviousStep = () =>
-          SubscriptionRef.update(state, (executionState) =>
-            moveSelection(executionState, executionState.currentStepIndex - 1),
+          Effect.flatMap(SubscriptionRef.get(state), (executionState) =>
+            recordSelection(executionState.currentStepIndex - 1),
           );
 
         return ProcedureExecutor.of({
           state,
           execute,
+          renderAuditText,
           selectStep,
           selectNextStep,
           selectPreviousStep,

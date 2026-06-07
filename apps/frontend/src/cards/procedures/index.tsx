@@ -187,7 +187,7 @@ function ProcedureStepView({ index }: { index: number }) {
                       ))}
                     </div>
                     <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
-                      <div className="col-span-full text-foreground pb-1">FC A</div>
+                      <div className="col-span-full text-foreground pb-1">SYSTEM A</div>
                       {acks.systemA.map((ack) => (
                         <AckRow
                           friendlyName={ack.label}
@@ -198,7 +198,7 @@ function ProcedureStepView({ index }: { index: number }) {
                       ))}
                     </div>
                     <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
-                      <div className="col-span-full text-foreground pb-1">FC B</div>
+                      <div className="col-span-full text-foreground pb-1">SYSTEM B</div>
                       {acks.systemB.map((ack) => (
                         <AckRow
                           friendlyName={ack.label}

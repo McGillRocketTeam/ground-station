@@ -22,6 +22,21 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
+  - name: LabJack
+    class: org.yamcs.labjack.LabJackDataLink
+    tmStream: tm_labJack
+    tcStream: tc_labJack
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
+  - name: ControlBox
+    class: org.yamcs.mrt.links.ControlBoxLink
+    stream: tm_controlbox_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -95,6 +110,13 @@ dataLinks:
 mdb:
   - type: xtce
     args:
+      file: mdb/controlbox.xml
+  - type: xtce
+    spec: "LabJack"
+    args:
+      file: mdb/labjack-t7.xml
+  - type: xtce
+    args:
       file: mdb/commands.xml
   - type: emptyNode
     spec: "SystemA"
@@ -144,7 +166,15 @@ mdb:
 # Configuration for streams created at server startup
 streamConfig:
   tm:
+    - name: "tm_controlbox_realtime"
+      rootContainer: "/ControlBox/ControlBoxPacket"
+      processor: "realtime"
     - name: "system_a_fc_realtime"
+
+    - name: "tm_labJack"
+      processor: "realtime"
+      rootContainer: "/LabJackT7/LabJackPacket"
+
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
     - name: "system_b_fc_realtime"
@@ -175,3 +205,7 @@ streamConfig:
     - name: "tc_radio_realtime"
       processor: "realtime"
       tcPatterns: [".*/Radio/.*"]
+
+    - name: "tc_labJack"
+      processor: "realtime"
+      tcPatterns: ["/LabJackT7/.*"]

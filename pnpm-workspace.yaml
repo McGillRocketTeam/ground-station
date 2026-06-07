@@ -13,6 +13,9 @@ catalog:
   '@effect/platform-browser': 4.0.0-beta.51
   '@effect/platform-node': 4.0.0-beta.78
   effect: 4.0.0-beta.51
-  oxfmt: ^0.53.0
-  oxlint: ^1.68.0
+  # Pinned to the pre-upgrade versions so `lint`/`fmt:check` behave as before.
+  # oxfmt 0.53 and oxlint 1.68 reformat differently / add stricter rules that
+  # flag pre-existing code; revisit as a separate formatting/lint-debt pass.
+  oxfmt: 0.35.0
+  oxlint: 1.50.0
   typescript: 6.0.3

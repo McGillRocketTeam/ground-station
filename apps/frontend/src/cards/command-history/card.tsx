@@ -159,7 +159,7 @@ const CommandRow = memo(function CommandRow({
             <div className="col-span-2 text-right">
               {formatDate(command.generationTime)}
             </div>
-            <div className="line-clamp-1 no-scrollbar overflow-x-scroll">
+            <div className="no-scrollbar line-clamp-1 overflow-x-scroll">
               {commandLabel}
             </div>
             <div className="text-center">

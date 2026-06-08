@@ -10,8 +10,8 @@ import java.util.Set;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.YConfiguration;
+import org.yamcs.labjack.LabJackConfig;
 import org.yamcs.labjack.LabJackDataLink;
-import org.yamcs.labjack.LabJackUtil;
 import org.yamcs.logging.Log;
 import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
@@ -302,7 +302,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
       return;
     }
 
-    for (int pin = 0; pin < LabJackUtil.NUM_DIGITAL_PINS; pin++) {
+    for (int pin = 0; pin < LabJackConfig.NUM_DIGITAL_PINS; pin++) {
       labJack.writeDigitalPin(pin, 0);
     }
 

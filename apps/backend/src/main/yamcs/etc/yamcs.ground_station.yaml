@@ -67,9 +67,15 @@ streamConfig:
     - name: "tm_controlbox_realtime"
       rootContainer: "/ControlBox/ControlBoxPacket"
       processor: "realtime"
-    # Labjack
+    # Labjack — decimated realtime/frontend path (GRAPH_FREQ) + archived at that rate
     - name: "tm_labJack"
       processor: "realtime"
+      rootContainer: "/LabJackT7/LabJackPacket"
+
+    # Labjack — full raw-rate archive. Only receives data when LabJackConfig.ARCHIVE_FULL_RATE = true.
+    # Intentionally has NO "processor: realtime": it is archived for analysis but kept off the live
+    # path so the frontend is not overwhelmed at high scan rates (300-500 Hz). See LabJackDataLink.
+    - name: "tm_labjack_hires"
       rootContainer: "/LabJackT7/LabJackPacket"
 
     - name: "tm_dump"

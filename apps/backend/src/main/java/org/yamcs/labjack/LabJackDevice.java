@@ -107,24 +107,38 @@ public class LabJackDevice {
     }
 
     /**
-     * Configures the T7 hardware watchdog to drive <b>all</b> DIO low if it times out (no host comms for
-     * {@link LabJackConfig#WATCHDOG_TIMEOUT_S} seconds). Uses LJM register <i>names</i> so the address
-     * map can't drift. The previous code never set DIO_DIRECTION, so the pins were left as inputs and
-     * would not actually be driven low — fixed here by forcing all 23 DIO to outputs.
+     * Arms the T7 hardware watchdog (datasheet §23) to drive <b>all 23 DIO low</b> — without rebooting —
+     * if it times out after {@link LabJackConfig#WATCHDOG_TIMEOUT_S} seconds with no qualifying comms.
+     * Uses LJM register <i>names</i> so the address map can't drift. Register semantics (per §23):
+     * <ul>
+     *   <li>{@code DIO_ENABLE=1} — enable the DIO failsafe action</li>
+     *   <li>{@code DIO_INHIBIT=0} — bitmask where 1 = protect/skip a line; 0 affects every DIO</li>
+     *   <li>{@code DIO_DIRECTION=0x7FFFFF} — bitmask where 1 = drive as output (all 23 lines)</li>
+     *   <li>{@code DIO_STATE=0} — level bitmask; all low</li>
+     *   <li>{@code RESET_ENABLE=0} — do <b>not</b> reboot the device on timeout (DIO-low only)</li>
+     * </ul>
+     * The previous code never set DIO_DIRECTION, so the lines stayed inputs and were not actually
+     * driven low — fixed here.
      *
-     * <p>The timer is fed by any host→device Modbus traffic; the periodic DIO_STATE poll keeps it alive
-     * during normal operation so it only fires when the control station truly goes quiet.
+     * <p><b>Feeding the timer:</b> §23 "When Using Stream" — spontaneous stream data does NOT reset the
+     * watchdog; only a command-response exchange does. The data link's periodic {@code DIO_STATE} read
+     * supplies exactly that, so the watchdog stays fed during normal streaming and only trips when the
+     * control station goes silent.
+     *
+     * <p>These are {@code *_DEFAULT} (flash-backed) registers; frequent writes wear the flash, so the
+     * data link calls this only once per session (the settings persist across device reboots anyway).
      */
     public void configureWatchdog() {
-        // Disable before reconfiguring (the *_DEFAULT registers are applied on the next watchdog reset).
-        LJM.eWriteName(handle, "WATCHDOG_ENABLE_DEFAULT", 0);
+        LJM.eWriteName(handle, "WATCHDOG_ENABLE_DEFAULT", 0); // disable while (re)configuring
         LJM.eWriteName(handle, "WATCHDOG_TIMEOUT_S_DEFAULT", LabJackConfig.WATCHDOG_TIMEOUT_S);
-        LJM.eWriteName(handle, "WATCHDOG_DIO_ENABLE_DEFAULT", 1);             // act on DIO at timeout
-        LJM.eWriteName(handle, "WATCHDOG_DIO_STATE_DEFAULT", 0);             // ...drive them LOW
-        LJM.eWriteName(handle, "WATCHDOG_DIO_DIRECTION_DEFAULT", DIO_ALL_OUTPUTS_MASK); // as outputs
-        LJM.eWriteName(handle, "WATCHDOG_DIO_INHIBIT_DEFAULT", 0);           // affect all 23 DIO
-        LJM.eWriteName(handle, "WATCHDOG_ENABLE_DEFAULT", 1);                // re-enable
-        log.info("Watchdog armed: " + LabJackConfig.WATCHDOG_TIMEOUT_S + "s timeout, all DIO -> LOW on trip");
+        LJM.eWriteName(handle, "WATCHDOG_RESET_ENABLE_DEFAULT", 0);          // no reboot on timeout
+        LJM.eWriteName(handle, "WATCHDOG_DIO_ENABLE_DEFAULT", 1);            // drive DIO on timeout
+        LJM.eWriteName(handle, "WATCHDOG_DIO_INHIBIT_DEFAULT", 0);           // 0 = affect all 23 DIO
+        LJM.eWriteName(handle, "WATCHDOG_DIO_DIRECTION_DEFAULT", DIO_ALL_OUTPUTS_MASK); // all outputs
+        LJM.eWriteName(handle, "WATCHDOG_DIO_STATE_DEFAULT", 0);             // all LOW
+        LJM.eWriteName(handle, "WATCHDOG_ENABLE_DEFAULT", 1);                // enable
+        log.info("Watchdog armed: " + LabJackConfig.WATCHDOG_TIMEOUT_S
+                + "s timeout, all 23 DIO -> LOW on trip (no reboot)");
     }
 
     /** Starts stream mode over AIN0..AIN13 at {@link LabJackConfig#SCAN_RATE_HZ}. */

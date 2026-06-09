@@ -48,7 +48,11 @@ preserves existing behaviour, fixes the known bugs, and is ready for the HIL tes
   review (not changed here): e.g. AIN0 comment `95.167*v-79.167` vs algorithm `1389.7*v+13.78`;
   thrust uses AIN3 / weight uses AIN2 (param names imply the reverse); `ain9`/`ain10` offsets
   (189.71 / 172.71) differ from the stated 182.71.
-- **Watchdog registers** — confirm `DIO_DIRECTION/STATE/INHIBIT` semantics against the T7 watchdog
-  datasheet during HIL; tune the `INHIBIT` mask if any line must be excluded.
+- **Watchdog** — register semantics now verified against datasheet §23: `DIO_INHIBIT=0` affects all
+  DIO, `DIO_DIRECTION=0x7FFFFF` drives them as outputs, `DIO_STATE=0` low, `RESET_ENABLE=0` (DIO-low
+  failsafe, no reboot). Written once per session (the `*_DEFAULT` registers are flash-backed). Fed by
+  the command-response DIO poll — spontaneous stream data does NOT feed the timer (§23 "When Using
+  Stream"). To confirm at HIL: measured trip time + that every intended line drives low. Optional
+  hardening: set the device IO power-up defaults to low so DIO are safe during the reboot window too.
 - **Concurrency** — command / E-stop writes run on a different thread than the stream read (as before);
   watch for LJM contention at 500 Hz.

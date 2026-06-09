@@ -65,9 +65,10 @@ Reproduces the old `E_STREAM_READ_FAIL` lock-up.
 **Overall:** ⬜ PASS ⬜ PASS-WITH-NOTES ⬜ FAIL
 
 ## Issues found / follow-ups
-1. Watchdog DIO register semantics (`WATCHDOG_DIO_DIRECTION/STATE/INHIBIT`) — confirm against the T7
-   watchdog datasheet that all intended lines actually drive low; adjust `INHIBIT` mask if any line
-   must be left alone. Result: _____
+1. Watchdog — register semantics verified against datasheet §23 (no reboot; all 23 DIO -> low; fed by
+   command-response, not stream). Confirm at HIL: measured trip time and that every intended line
+   actually drives low; adjust `INHIBIT` if any line must be excluded. Optional: set device IO power-up
+   defaults low to cover the reboot window. Result: _____
 2. Concurrency: command/E-stop writes occur on a different thread than the stream read — watch for any
    LJM contention at 500 Hz. Result: _____
 3. _____

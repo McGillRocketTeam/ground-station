@@ -75,6 +75,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
 
     private int graphCounter = 0;
     private int seqNum = 0;
+    private boolean watchdogConfigured = false; // flash-backed; write once per session, not per reconnect
     private volatile byte[] lastDigital = new byte[LabJackPacket.DIGITAL_BYTES];
 
     // Optional full-rate archive (ARCHIVE_FULL_RATE)
@@ -121,6 +122,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
         }
         running = true;
         graphCounter = 0;
+        watchdogConfigured = false;
         LabJackDevice.configureLibraryAutoReconnect();
         device = createDevice();
         setupArchiveStream();
@@ -213,7 +215,10 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
         try {
             device.open();
             device.configureAnalogRanges();
-            device.configureWatchdog();
+            if (!watchdogConfigured) {
+                device.configureWatchdog(); // *_DEFAULT persists in flash; write once per session
+                watchdogConfigured = true;
+            }
             device.setAllDigitalLow(); // safe state on every (re)connect
             device.startStream();
             log.info("LabJack streaming at " + LabJackConfig.SCAN_RATE_HZ + " Hz ("

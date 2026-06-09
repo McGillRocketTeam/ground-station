@@ -123,7 +123,9 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
         running = true;
         graphCounter = 0;
         watchdogConfigured = false;
-        LabJackDevice.configureLibraryAutoReconnect();
+        // NOTE: do not touch LJM here — this runs on the YAMCS service-init thread. The first native
+        // call (which forces loading LabJackM.dll) happens on the acquisition thread in run(), so a
+        // missing native library degrades the link gracefully instead of failing backend startup.
         device = createDevice();
         setupArchiveStream();
 
@@ -178,36 +180,53 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
     @Override
     public void run() {
         long backoff = LabJackConfig.RECONNECT_BACKOFF_MS;
-        while (running) {
-            if (!device.isOpen()) {
-                if (state != State.RECONNECTING) {
-                    state = State.CONNECTING;
+        try {
+            // First LJM call on this (background) thread: forces JNA to load LabJackM.dll now. If the
+            // native library is missing/incompatible it throws an UnsatisfiedLinkError (a LinkageError,
+            // not an Exception), handled below so the backend still starts.
+            LabJackDevice.configureLibraryAutoReconnect();
+            while (running) {
+                if (!device.isOpen()) {
+                    if (state != State.RECONNECTING) {
+                        state = State.CONNECTING;
+                    }
+                    if (tryConnect()) {
+                        state = State.STREAMING;
+                        backoff = LabJackConfig.RECONNECT_BACKOFF_MS;
+                    } else {
+                        long wait = (state == State.RECONNECTING)
+                                ? backoff : LabJackConfig.CONNECT_RETRY_MS;
+                        sleep(wait);
+                        backoff = Math.min(backoff * 2, LabJackConfig.RECONNECT_BACKOFF_MAX_MS);
+                    }
+                    continue;
                 }
-                if (tryConnect()) {
-                    state = State.STREAMING;
-                    backoff = LabJackConfig.RECONNECT_BACKOFF_MS;
-                } else {
-                    long wait = (state == State.RECONNECTING)
-                            ? backoff : LabJackConfig.CONNECT_RETRY_MS;
-                    sleep(wait);
-                    backoff = Math.min(backoff * 2, LabJackConfig.RECONNECT_BACKOFF_MAX_MS);
-                }
-                continue;
-            }
-            try {
-                acquireOnce();
-            } catch (LJMException e) {
-                if (LabJackDevice.isDisconnectError(e.getError())) {
-                    log.warn("LabJack stream lost (LJM " + e.getError() + ": " + e.getMessage()
-                            + "); re-establishing");
+                try {
+                    acquireOnce();
+                } catch (LJMException e) {
+                    if (LabJackDevice.isDisconnectError(e.getError())) {
+                        log.warn("LabJack stream lost (LJM " + e.getError() + ": " + e.getMessage()
+                                + "); re-establishing");
+                        enterReconnecting();
+                    } else {
+                        log.error("Transient LabJack error (LJM " + e.getError() + "): " + e.getMessage());
+                    }
+                } catch (Exception e) {
+                    log.error("Unexpected LabJack error; re-establishing: " + e.getMessage());
                     enterReconnecting();
-                } else {
-                    log.error("Transient LabJack error (LJM " + e.getError() + "): " + e.getMessage());
                 }
-            } catch (Exception e) {
-                log.error("Unexpected LabJack error; re-establishing: " + e.getMessage());
-                enterReconnecting();
             }
+        } catch (LinkageError err) {
+            // Native library (LabJackM.dll / liblabjackm) missing or incompatible. Can't recover without
+            // installing it and restarting, so do NOT take down the backend: disable the link and leave a
+            // clear, actionable message. The rest of YAMCS keeps running.
+            log.error("LabJack link disabled: could not load native library 'LabJackM' (" + err
+                    + "). Install the LabJack LJM software (provides LabJackM.dll on Windows) on this"
+                    + " machine and restart the backend. The rest of YAMCS is unaffected.");
+        } catch (Throwable t) {
+            log.error("LabJack acquisition thread stopped unexpectedly: " + t);
+        } finally {
+            state = State.DISCONNECTED;
         }
     }
 

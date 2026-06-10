@@ -1,0 +1,1045 @@
+import { ProcedureStack, ProcedureStep } from "@mrt/yamcs-effect";
+
+export const TW1 = ProcedureStack.make({
+  steps: [
+    ProcedureStep.make({
+      type: "note",
+      text: "AV-Propulsion Integration & Telemetry Verification",
+      color: "#FFBF80",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 19,
+      role: "CSH",
+      name: "/FlightComputer/reset_av",
+      comment: "Press the command stack button to Reset AV.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 20,
+      role: "AVC",
+      text: "Confirm FC-A reboots. \nConfirm FC-B reboots.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 21,
+      role: "CSC",
+      text: "Confirm the ACK for the Reset AV command.",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 22,
+      role: "CSH",
+      name: "/FlightComputer/propulsion_on",
+      comment: "Press the command stack button to set Propulsion On.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 23,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalArm", label: "Logical ARM" },
+          { id: "electricalArm", label: "Electrical ARM" },
+          { id: "continuity", label: "Continuity" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/FDOV/logical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "logicalArm" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "electricalArm" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/continuity",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "continuity" },
+        },
+        {
+          parameter: "/Propulsion/VentValve/logical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Vent Valve", column: "logicalArm" },
+        },
+        {
+          parameter: "/Propulsion/VentValve/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Vent Valve", column: "electricalArm" },
+        },
+        {
+          parameter: "/Propulsion/VentValve/continuity",
+          operator: "eq",
+          value: true,
+          display: { row: "Vent Valve", column: "continuity" },
+        },
+        {
+          parameter: "/Propulsion/MOV/logical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "MOV", column: "logicalArm" },
+        },
+        {
+          parameter: "/Propulsion/MOV/electrical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "MOV", column: "electricalArm" },
+        },
+        {
+          parameter: "/Propulsion/MOV/continuity",
+          operator: "eq",
+          value: true,
+          display: { row: "MOV", column: "continuity" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 24,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      off  off   off on",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   off   off on",
+        "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 25,
+      role: "CSC",
+      comment: "Verify that the Tank Pressure reading is within 0.0 to 20.0 PSI",
+      delay: 0,
+      condition: [
+        {
+          parameter: "/Propulsion/TankPressure",
+          operator: "gte",
+          value: 0,
+        },
+        {
+          parameter: "/Propulsion/TankPressure",
+          operator: "lte",
+          value: 20,
+        },
+      ],
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 26,
+      role: "CSC",
+      comment: "Verify that the Vent Temperature reading is within 12.0 to 30.0 C",
+      delay: 0,
+      condition: [
+        {
+          parameter: "/Propulsion/VentTemperature",
+          operator: "gte",
+          value: 12,
+        },
+        {
+          parameter: "/Propulsion/VentTemperature",
+          operator: "lte",
+          value: 30,
+        },
+      ],
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 27,
+      role: "CSC",
+      comment: "Verify that the Combustion Chamber Pressure reading is within 0.0 to 20.0 PSI",
+      delay: 0,
+      condition: [
+        {
+          parameter: "/Propulsion/CombustionChamberPressure",
+          operator: "gte",
+          value: 0,
+        },
+        {
+          parameter: "/Propulsion/CombustionChamberPressure",
+          operator: "lte",
+          value: 20,
+        },
+      ],
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 28,
+      role: "CSC",
+      comment: "Verify that the Tank Temperature reading is within 12.0 to 30.0 C",
+      delay: 0,
+      condition: [
+        {
+          parameter: "/Propulsion/TankTemperature",
+          operator: "gte",
+          value: 12,
+        },
+        {
+          parameter: "/Propulsion/TankTemperature",
+          operator: "lte",
+          value: 30,
+        },
+      ],
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 29,
+      role: "CSH",
+      name: "/FlightComputer/reset_prop_boards_valve_state",
+      comment: "Press the command stack button to Reset Propulsion Valve States.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 30,
+      role: "CSC",
+      text: "Confirm that the completion ACK is received.",
+    }),
+    ProcedureStep.make({
+      type: "note",
+      text: "Basic MOV Verification",
+      color: "#FFF798",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 31,
+      role: "PRC",
+      text: "Place 2 fingers corresponding valves to feel for gate actuation.",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 32,
+      role: "CSH",
+      comment: "Insert and turn the key switch clockwise to switch MOV to ARMED.",
+      name: "/FlightComputer/mov_arming",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 33,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalArm", label: "Logical ARM" },
+          { id: "electricalArm", label: "Electrical ARM" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/MOV/logical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "MOV", column: "logicalArm" },
+        },
+        {
+          parameter: "/Propulsion/MOV/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "MOV", column: "electricalArm" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 34,
+      role: "CSC",
+      comment: "Press the Launch button.",
+      name: "/FlightComputer/launch",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 35,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 36,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   on    on  on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 37,
+      role: "CSH",
+      comment: "Turn the key switch counter clockwise to switch MOV to DISARMED.",
+      name: "/FlightComputer/mov_disarming",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 38,
+      role: "CSH",
+      text: "Remove the key from the key switch.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 39,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalArm", label: "Logical ARM" },
+          { id: "electricalArm", label: "Electrical ARM" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/MOV/logical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "MOV", column: "logicalArm" },
+        },
+        {
+          parameter: "/Propulsion/MOV/electrical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "MOV", column: "electricalArm" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 40,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      off  off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "note",
+      text: "Basic Vent Valve Verification",
+      color: "#FFF798",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 41,
+      role: "PRC",
+      text: "Place 2 fingers on the vent valve to feel for gate actuation.",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 42,
+      role: "CSH",
+      name: "/FlightComputer/vent_valve_energize",
+      comment: "Set the Vent Valve switch to ENERGIZED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 43,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalEnergized", label: "Logical Energized" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/VentValve/logical_energized",
+          operator: "eq",
+          value: true,
+          display: { row: "Vent Valve", column: "logicalEnergized" },
+        },
+        {
+          parameter: "/Propulsion/VentValve/energize_gate",
+          operator: "eq",
+          value: true,
+          display: { row: "Vent Valve", column: "energizeGate" },
+        },
+        {
+          parameter: "/Propulsion/VentValve/energize_current",
+          operator: "eq",
+          value: true,
+          display: { row: "Vent Valve", column: "energizeCurrent" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 44,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   on    on  on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 45,
+      role: "CSH",
+      name: "/FlightComputer/vent_valve_de-energize",
+      comment: "Set the Vent Valve switch to DE-ENERGIZED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 46,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalEnergized", label: "Logical Energized" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/VentValve/logical_energized",
+          operator: "eq",
+          value: false,
+          display: { row: "Vent Valve", column: "logicalEnergized" },
+        },
+        {
+          parameter: "/Propulsion/VentValve/energize_gate",
+          operator: "eq",
+          value: false,
+          display: { row: "Vent Valve", column: "energizeGate" },
+        },
+        {
+          parameter: "/Propulsion/VentValve/energize_current",
+          operator: "eq",
+          value: false,
+          display: { row: "Vent Valve", column: "energizeCurrent" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 47,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 48,
+      role: "CSH",
+      name: "/FlightComputer/reset_av",
+      comment: "Press the command stack button to Reset AV.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 49,
+      role: "AVC",
+      text: "Confirm FC-A reboots. \nConfirm FC-B reboots.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 50,
+      role: "CSC",
+      text: "Confirm the ACK for the Reset AV command.",
+    }),
+    ProcedureStep.make({
+      type: "note",
+      text: "Basic F/DOV Verification",
+      color: "#FFF798",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 51,
+      role: "PRC",
+      text: "Place 2 fingers on the F/DOV to feel for gate actuation.",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 52,
+      role: "CSH",
+      name: "/FlightComputer/fdov_energize",
+      comment: "Set the F/DOV switch to ENERGIZED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 53,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalEnergized", label: "Logical Energized" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/FDOV/logical_energized",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "logicalEnergized" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_gate",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "energizeGate" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_current",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "energizeCurrent" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 54,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   on    on  on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 55,
+      role: "CSH",
+      name: "/FlightComputer/fdov_de-energize",
+      comment: "Set the F/DOV switch to DE-ENERGIZED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 56,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalEnergized", label: "Logical Energized" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/FDOV/logical_energized",
+          operator: "eq",
+          value: false,
+          display: { row: "F/DOV", column: "logicalEnergized" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_gate",
+          operator: "eq",
+          value: false,
+          display: { row: "F/DOV", column: "energizeGate" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_current",
+          operator: "eq",
+          value: false,
+          display: { row: "F/DOV", column: "energizeCurrent" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 57,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "note",
+      text: "Abort Functional Verification",
+      color: "#FFF798",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 58,
+      role: "CSH",
+      name: "/FlightComputer/mov_arming",
+      comment: "Insert and turn the key switch clockwise to switch MOV to ARMED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 59,
+      role: "AVC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalArm", label: "Logical ARM" },
+          { id: "electricalArm", label: "Electrical ARM" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/MOV/logical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "MOV", column: "logicalArm" },
+        },
+        {
+          parameter: "/Propulsion/MOV/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "MOV", column: "electricalArm" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 60,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 61,
+      role: "CSH",
+      name: "/FlightComputer/mov_disarming",
+      comment: "Turn the key switch counter clockwise to switch MOV to DISARMED.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 62,
+      role: "CSH",
+      text: "Remove the key from the key switch.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 63,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalArm", label: "Logical ARM" },
+          { id: "electricalArm", label: "Electrical ARM" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/MOV/logical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "MOV", column: "logicalArm" },
+        },
+        {
+          parameter: "/Propulsion/MOV/electrical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "MOV", column: "electricalArm" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 64,
+      role: "CSC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      off  off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 65,
+      role: "CSH",
+      name: "/FlightComputer/fdov_energize",
+      comment: "Set the F/DOV switch to ENERGIZED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 66,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalEnergized", label: "Logical Energized" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/FDOV/logical_energized",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "logicalEnergized" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_gate",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "energizeGate" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_current",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "energizeCurrent" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 67,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   on    on  on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 68,
+      role: "CSH",
+      name: "/FlightComputer/fdov_de-energize",
+      comment: "Set the F/DOV switch to DE-ENERGIZED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 69,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalEnergized", label: "Logical Energized" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Propulsion/FDOV/logical_energized",
+          operator: "eq",
+          value: false,
+          display: { row: "F/DOV", column: "logicalEnergized" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_gate",
+          operator: "eq",
+          value: false,
+          display: { row: "F/DOV", column: "energizeGate" },
+        },
+        {
+          parameter: "/Propulsion/FDOV/energize_current",
+          operator: "eq",
+          value: false,
+          display: { row: "F/DOV", column: "energizeCurrent" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 70,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 71,
+      role: "AVC",
+      text: "Turn off the Power Supply.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 72,
+      role: "AVC",
+      text: "Disconnect the Power Umbilical-Power Supply cable.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 73,
+      role: "AVC & PRC",
+      text: "Connect the Umbilical Panel to the Vent Radax using 4 6-32 fasteners.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 74,
+      role: "AVC",
+      text: "Connect the Male Power Umbilical connector to the rocket.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 75,
+      role: "AVC",
+      text: "Connect the Male Power Umbilical harness to a DC power supply.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 76,
+      role: "AEC & PRC",
+      text: "Secure panels to radaxes excluding the panels covering the prop boards, ensure all vent lines are routed out of the panels and are covered loosely to prevent dust from entering the lines.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 77,
+      role: "AEC & PRC",
+      text: "ENSURE THAT THE MANUAL DUMP VALVE IS CLOSED.",
+    }),
+    ProcedureStep.make({
+      type: "note",
+      text: "The AV-Prop sub-assembly is complete.",
+      color: "#FFF798",
+    }),
+    ProcedureStep.make({
+      type: "note",
+      text: "Recovery Sub-System Command and Telemetry Verification",
+      color: "#FFBF80",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 28,
+      role: "CSH",
+      name: "/FlightComputer/reset_av",
+      comment: "Press the command stack button to Reset AV.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 29,
+      role: "AVC",
+      text: "Confirm FC-A reboots. \nConfirm FC-B reboots.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 30,
+      role: "CSC",
+      text: "Confirm the ACK for the Reset AV command.",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 31,
+      role: "CSH",
+      name: "/FlightComputer/arm_recovery",
+      comment: "Press the command stack button to set Recovery Arm.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 32,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalArm", label: "Logical ARM" },
+          { id: "electricalArm", label: "Electrical ARM" },
+          { id: "continuity", label: "Continuity" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Recovery/Drogue/logical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Drogue", column: "logicalArm" },
+        },
+        {
+          parameter: "/Recovery/Drogue/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Drogue", column: "electricalArm" },
+        },
+        {
+          parameter: "/Recovery/Drogue/continuity",
+          operator: "eq",
+          value: true,
+          display: { row: "Drogue", column: "continuity" },
+        },
+        {
+          parameter: "/Recovery/Main/logical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Main", column: "logicalArm" },
+        },
+        {
+          parameter: "/Recovery/Main/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Main", column: "electricalArm" },
+        },
+        {
+          parameter: "/Recovery/Main/continuity",
+          operator: "eq",
+          value: true,
+          display: { row: "Main", column: "continuity" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the ejection channel states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 33,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the FC-A Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   off   off on",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   off   off on",
+        "Confirm the LEDs on the FC-B Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      on   off   off on",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   off   off on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 34,
+      role: "CSH",
+      name: "/FlightComputer/disarm_recovery",
+      comment: "Press the command stack button to set Recovery Disarm.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 35,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalArm", label: "Logical ARM" },
+          { id: "electricalArm", label: "Electrical ARM" },
+          { id: "continuity", label: "Continuity" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/Recovery/Drogue/logical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "Drogue", column: "logicalArm" },
+        },
+        {
+          parameter: "/Recovery/Drogue/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Drogue", column: "electricalArm" },
+        },
+        {
+          parameter: "/Recovery/Drogue/continuity",
+          operator: "eq",
+          value: true,
+          display: { row: "Drogue", column: "continuity" },
+        },
+        {
+          parameter: "/Recovery/Main/logical_arm",
+          operator: "eq",
+          value: false,
+          display: { row: "Main", column: "logicalArm" },
+        },
+        {
+          parameter: "/Recovery/Main/electrical_arm",
+          operator: "eq",
+          value: true,
+          display: { row: "Main", column: "electricalArm" },
+        },
+        {
+          parameter: "/Recovery/Main/continuity",
+          operator: "eq",
+          value: true,
+          display: { row: "Main", column: "continuity" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the ejection channel states are as follows:",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 36,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the FC-A Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      off  off   off on",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   off   off off",
+        "Confirm the LEDs on the FC-B Energize Daughter Board are as follows:",
+        "  Channel  ARM  GATE  EN  CON",
+        "  CH1      off  off   off on",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   off   off off",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 37,
+      role: "AVC",
+      text: "Verify that Payload Electronics are functioning nominally.",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 38,
+      role: "AVC",
+      text: "Disarm SRAD avionics.",
+    }),
+    ProcedureStep.make({
+      type: "note",
+      text: "The SRAD avionics system is validated for flight.",
+      color: "#FFF798",
+    }),
+  ],
+});

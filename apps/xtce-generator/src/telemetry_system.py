@@ -32,7 +32,7 @@ class TelemetrySystem(FlightSystem):
     def set_param_calibrator(row: dict[str, Any]):
         cal = row["Calibration Function f(x)"]
         if cal:
-            return Y.calibrators.MathOperation(expression=cal)
+            return Y.MathOperation(expression=cal)
         return None
 
     @staticmethod
@@ -47,7 +47,8 @@ class TelemetrySystem(FlightSystem):
     def make_param(self, row: dict[str, Any]) -> Y.Parameter:
         gui_type = str(row["GUI Type"])
 
-        variable_name = str(row["Variable Name"])
+        packet_variable_name = str(row["Packet Variable Name"])
+        gui_variable_name = str(row["GUI Variable Name"])
         ui_name = str(row["UI Name"])
         description = str(row["Description (optional)"])
         units_cal = str(row["Units"])
@@ -65,7 +66,7 @@ class TelemetrySystem(FlightSystem):
             case "Boolean":
                 param = Y.BooleanParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -78,13 +79,13 @@ class TelemetrySystem(FlightSystem):
                 size = FlightSystem.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create enumerated parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create enumerated parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
 
                 enum_metadata = str(row["Metadata/Notes"])
                 param = Y.EnumeratedParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -98,13 +99,13 @@ class TelemetrySystem(FlightSystem):
                 size = FlightSystem.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create float parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create float parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 calibrator = TelemetrySystem.set_param_calibrator(row)
                 if "float" in encoded_type:
                     param = Y.FloatParameter(
                         system=self.sys,
-                        name=variable_name,
+                        name=gui_variable_name,
                         short_description=ui_name,
                         long_description=description,
                         calibrated_units=units_cal,
@@ -121,7 +122,7 @@ class TelemetrySystem(FlightSystem):
                     )
                     param = Y.FloatParameter(
                         system=self.sys,
-                        name=variable_name,
+                        name=gui_variable_name,
                         short_description=ui_name,
                         long_description=description,
                         calibrated_units=units_cal,
@@ -137,7 +138,7 @@ class TelemetrySystem(FlightSystem):
                 size = FlightSystem.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create integer parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create integer parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 scheme = (
                     Y.IntegerEncodingScheme.UNSIGNED
@@ -147,7 +148,7 @@ class TelemetrySystem(FlightSystem):
                 calibrator = TelemetrySystem.set_param_calibrator(row)
                 param = Y.IntegerParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -161,11 +162,11 @@ class TelemetrySystem(FlightSystem):
                 size = self.extract_number(encoded_type)
                 if size == None:
                     raise ValueError(
-                        f"Input Error: Tried to create string parameter '{variable_name}', but could not find a size in the type '{encoded_type}'"
+                        f"Input Error: Tried to create string parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 param = Y.StringParameter(
                     system=self.sys,
-                    name=variable_name,
+                    name=gui_variable_name,
                     short_description=ui_name,
                     long_description=description,
                     calibrated_units=units_cal,
@@ -192,9 +193,8 @@ class TelemetrySystem(FlightSystem):
         for group in TelemetrySystem.chunked(boolean_params, 8):
             group_size = len(group)
 
-            # If incomplete group (less than 8), add leading padding
+            # If incomplete group (less than 8), add leading padding.
             # Example: [A, B, C] -> (pad x 5) C B A
-            # Padding at higher bits, booleans at lower bits
             if group_size < 8:
                 padding_bits = 8 - group_size
                 pad_param = Y.IntegerParameter(
@@ -204,21 +204,13 @@ class TelemetrySystem(FlightSystem):
                     signed=False,
                     encoding=Y.IntegerEncoding(bits=padding_bits),
                 )
-                # Padding goes at higher bits (after the booleans in bit position)
-                # Booleans will be at current_bit_pos to current_bit_pos + group_size - 1
-                # Padding will be at current_bit_pos + group_size to current_bit_pos + 7
                 container.entries.append(
-                    Y.ParameterEntry(
-                        parameter=pad_param, bitpos=current_bit_pos + group_size
-                    )
+                    Y.ParameterEntry(parameter=pad_param, bitpos=current_bit_pos)
                 )
 
-            # Place booleans in reverse order within the byte
-            # Logical order: A, B, C, D, E, F, G, H
-            # Bits come into the backend little endian reversed so bit locations != logical order
-            # Bit positions: A=bit7, B=bit6, C=bit5, ..., H=bit0 (reversed)
-            # So reading the booleans correctly in the backend is like this H G F E D C B A
-            # So H will come first
+            # Place booleans in the byte to match the C++ little-endian packing.
+            # The first boolean lands in the last bit of the byte, so partial groups
+            # sit after their leading padding.
             for i, bool_param in enumerate(group):
                 bit_pos = current_bit_pos + 7 - i
                 entry = Y.ParameterEntry(parameter=bool_param, bitpos=bit_pos)
@@ -261,7 +253,7 @@ class TelemetrySystem(FlightSystem):
                 else:
                     if boolean_buffer:
                         current_bit_pos = self.process_booleans_group(
-                            self.sys, container, boolean_buffer, current_bit_pos, name
+                            container, boolean_buffer, current_bit_pos, name
                         )
                         boolean_buffer.clear()
 
@@ -273,11 +265,13 @@ class TelemetrySystem(FlightSystem):
                         and param.encoding
                         and hasattr(param.encoding, "bits")
                     ):
-                        current_bit_pos += param.encoding.bits
+                        bits = param.encoding.bits
+                        if bits is not None:
+                            current_bit_pos += bits
 
             if boolean_buffer:
                 current_bit_pos = self.process_booleans_group(
-                    self.sys, container, boolean_buffer, current_bit_pos, name
+                    container, boolean_buffer, current_bit_pos, name
                 )
 
             containers.append(
@@ -336,7 +330,6 @@ class TelemetrySystem(FlightSystem):
         )
         container.entries.append(Y.ParameterEntry(flags, offset=0))
 
-        num_empty_atomic_flags = 32 - len(atomic_params)
         pad = Y.IntegerParameter(
             system=self.sys,
             name="padding",
@@ -365,36 +358,26 @@ class TelemetrySystem(FlightSystem):
         # │└▶ Flag #7        │└▶ Flag #15
         # └▶ Flag #8         └▶ Flag #16
 
-        if len(atomic_params) < 8:
-            # we need this if there is less than 32 atomic flags
-            pre_pad = Y.IntegerParameter(
-                system=self.sys,
-                name="flags_pre_pad",
-                short_description="Flag Padding",
-                long_description="A.S.T.R.A. Packet Padding",
-                signed=False,
-                encoding=Y.IntegerEncoding(
-                    bits=8 - len(atomic_params), little_endian=True
-                ),
-            )
-            container.entries.append(Y.ParameterEntry(pre_pad, offset=0))
+        current_bit_pos = 32
+        current_bit_pos = self.process_booleans_group(
+            container,
+            list(atomic_params.values()),
+            current_bit_pos,
+            "flags",
+        )
 
-        for group in TelemetrySystem.chunked(atomic_params.values(), 8):
-            for atomic_flag_param in reversed(group):
-                entry = Y.ParameterEntry(parameter=atomic_flag_param, offset=0)
-                container.entries.append(entry)
-
-        if len(atomic_params) < 32:
-            # we need this if there is less than 32 atomic flags
-            pre_pad = Y.IntegerParameter(
+        if current_bit_pos < 64:
+            post_pad = Y.IntegerParameter(
                 system=self.sys,
                 name="flags_post_pad",
                 short_description="Flag Padding",
                 long_description="A.S.T.R.A. Packet Padding",
                 signed=False,
-                encoding=Y.IntegerEncoding(bits=24, little_endian=True),
+                encoding=Y.IntegerEncoding(
+                    bits=64 - current_bit_pos, little_endian=True
+                ),
             )
-            container.entries.append(Y.ParameterEntry(pre_pad, offset=0))
+            container.entries.append(Y.ParameterEntry(post_pad, bitpos=current_bit_pos))
 
         return (container, atomic_params)
 
@@ -406,7 +389,8 @@ class TelemetrySystem(FlightSystem):
 
         for row in param_data:
             param = self.make_param(row)
-            param_dict[param.name] = param
+            packet_variable_name = str(row["Packet Variable Name"])
+            param_dict[packet_variable_name] = param
 
         return param_dict
 
@@ -418,6 +402,9 @@ class TelemetrySystem(FlightSystem):
             atomic_names=list(atomic_data.keys())
         )
         frame_container.entries.append(Y.ContainerEntry(header_container))
+
+        if self.param_dict is None:
+            raise ValueError("Parameters must be created before atomics.")
 
         atomic_containers = self.make_atomic_containers(
             atomic_Data=atomic_data,

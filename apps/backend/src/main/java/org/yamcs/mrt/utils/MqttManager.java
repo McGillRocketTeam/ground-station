@@ -34,6 +34,10 @@ public class MqttManager implements MqttCallback {
     client.subscribe(topic);
   }
 
+  public void publish(String topic, MqttMessage message) throws MqttException {
+    client.publish(topic, message);
+  }
+
   @Override
   public void messageArrived(String topic, MqttMessage message) {
     // Find the handler for this topic and delegate the work

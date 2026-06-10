@@ -1,29 +1,18 @@
-import {
-  DataGridBody,
-  DataGridHead,
-  DataGridHeader,
-  DataGridRow,
-} from "@/components/ui/data-grid";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { Popover as PopoverPrimitive } from "@base-ui/react";
 import { Ellipsis } from "lucide-react";
+import { memo, useMemo } from "react";
 import { Fragment } from "react/jsx-runtime";
+
+import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+
 import { LinkDetail } from "./link-detail";
-import {
-  buildLinkTree,
-  colorByStatus,
-  type Link,
-  type LinkNode,
-} from "./utils";
+import { buildLinkTree, colorByStatus, type Link, type LinkNode } from "./utils";
 
 const linksPopover = PopoverPrimitive.createHandle<Link>();
 export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
-  const linkTree = buildLinkTree(links);
+  const linkTree = useMemo(() => buildLinkTree(links), [links]);
 
   return (
     <div className="grid grid-cols-[1.5rem_auto_1fr_auto_auto_1.5rem] gap-x-px">
@@ -42,7 +31,7 @@ export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
       <Popover handle={linksPopover}>
         {({ payload }) =>
           payload && (
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-96">
               <LinkDetail link={payload} />
             </PopoverContent>
           )
@@ -52,7 +41,7 @@ export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
   );
 }
 
-export function LinkRows({
+export const LinkRows = memo(function LinkRows({
   links,
   depth,
 }: {
@@ -65,15 +54,13 @@ export function LinkRows({
     return (
       <Fragment key={link.name}>
         <LinkRow link={link} depth={depth} isLast={isLast} />
-        {link.children.length > 0 && (
-          <LinkRows links={link.children} depth={depth + 1} />
-        )}
+        {link.children.length > 0 && <LinkRows links={link.children} depth={depth + 1} />}
       </Fragment>
     );
   });
-}
+});
 
-function LinkRow({
+const LinkRow = memo(function LinkRow({
   link,
   depth,
   isLast,
@@ -91,7 +78,9 @@ function LinkRow({
         <DataGridRow
           className={cn(
             "cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
-            colorByStatus(link.status),
+            link.status === "FAILED"
+              ? "*:bg-error *:text-error-foreground hover:*:bg-error"
+              : colorByStatus(link.status),
           )}
         >
           <div className="grid place-items-center">
@@ -102,10 +91,7 @@ function LinkRow({
             {/* Vertical continuation line */}
             {depth > 0 && (
               <span
-                className={cn(
-                  "absolute top-0 left-0 w-px bg-current",
-                  isLast ? "h-1/2" : "h-full",
-                )}
+                className={cn("absolute top-0 left-0 w-px bg-current", isLast ? "h-1/2" : "h-full")}
                 style={{ left: depth * 16 - 8 }}
               />
             )}
@@ -130,8 +116,7 @@ function LinkRow({
           </div>
 
           <div className="line-clamp-1 text-ellipsis">
-            {!link.detailedStatus?.startsWith(link.status) &&
-              link.status + ", "}
+            {!link.detailedStatus?.startsWith(link.status) && link.status + ", "}
             {link.detailedStatus}
           </div>
 
@@ -139,11 +124,11 @@ function LinkRow({
 
           <div className="text-right">{link.dataOutCount.toLocaleString()}</div>
 
-          <button className="text-muted-foreground grid cursor-pointer place-items-center">
+          <button className="grid cursor-pointer place-items-center text-muted-foreground">
             <Ellipsis className="size-3" />
           </button>
         </DataGridRow>
       }
     />
   );
-}
+});

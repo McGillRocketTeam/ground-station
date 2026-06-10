@@ -1,34 +1,44 @@
-import {
-  HttpApiEndpoint,
-  HttpApiError,
-  HttpApiGroup,
-  HttpApiSchema,
-} from "@effect/platform";
 import { Schema } from "effect";
-import { CommandId, ParameterSample, QualifiedName } from "../schema.js";
+import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
-const instanceParam = HttpApiSchema.param("instance", Schema.String);
-const parameterNameParam = HttpApiSchema.param("parameterName", QualifiedName);
+import { ParameterSample, QualifiedName } from "../schema.js";
 
-export const idParam = HttpApiSchema.param("id", CommandId);
+const ParameterSampleField = Schema.Literals([
+  "time",
+  "avg",
+  "min",
+  "max",
+  "n",
+  "minTime",
+  "maxTime",
+  "firstTime",
+  "lastTime",
+]);
 
-export const parameterGroup = HttpApiGroup.make("parameter")
-  .add(
-    HttpApiEndpoint.get(
-      "getSamples",
-    )`/stream-archive/${instanceParam}/parameters/${parameterNameParam}/samples`
-      .setUrlParams(
-        Schema.Struct({
-          start: Schema.DateFromString,
-          stop: Schema.optional(Schema.DateFromString),
-        }),
-      )
-      .addSuccess(
-        Schema.Struct({
-          sample: Schema.Array(ParameterSample),
-        }),
-      ),
-  )
-  .addError(HttpApiError.NotFound);
+const SamplesSource = Schema.Literals(["ParameterArchive", "replay"]);
+
+const GetSamplesResponse = Schema.Struct({
+  sample: Schema.Array(ParameterSample),
+});
+
+export const parameterGroup = HttpApiGroup.make("parameter").add(
+  HttpApiEndpoint.get("getSamples", "/archive/:instance/parameters/:parameterName/samples", {
+    params: {
+      instance: Schema.String,
+      parameterName: QualifiedName,
+    },
+    query: {
+      start: Schema.String,
+      stop: Schema.optional(Schema.String),
+      count: Schema.optional(Schema.NumberFromString),
+      fields: Schema.optional(Schema.Array(ParameterSampleField)),
+      gapTime: Schema.optional(Schema.NumberFromString),
+      source: Schema.optional(SamplesSource),
+      useRawValue: Schema.optional(Schema.Boolean),
+    },
+    success: GetSamplesResponse,
+    error: [HttpApiError.NotFound],
+  }),
+);
 
 export default parameterGroup;

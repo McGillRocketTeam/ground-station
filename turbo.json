@@ -8,6 +8,18 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "fmt": {
+      "dependsOn": ["^fmt"]
+    },
+    "fmt:check": {
+      "dependsOn": ["^fmt:check"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"]
+    },
     "dev": {
       "persistent": true,
       "cache": false

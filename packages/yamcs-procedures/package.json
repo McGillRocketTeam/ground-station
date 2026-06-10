@@ -1,0 +1,38 @@
+{
+  "name": "@mrt/yamcs-procedures",
+  "private": true,
+  "type": "module",
+  "module": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "prepare": "effect-language-service patch"
+  },
+  "dependencies": {
+    "@effect/opentelemetry": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "@mrt/yamcs-effect": "workspace:*",
+    "@opentelemetry/sdk-logs": "^0.212.0",
+    "@opentelemetry/sdk-trace-base": "^2.5.1",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@types/node": "latest",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "tsx": "^4.21.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

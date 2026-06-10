@@ -1,9 +1,39 @@
 import type { Value } from "@mrt/yamcs-effect";
+
 import { clsx, type ClassValue } from "clsx";
+import { DateTime } from "effect";
 import { twMerge } from "tailwind-merge";
+
+const utcDateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+  timeZone: "UTC",
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function createId() {
+  if (typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  return [...bytes]
+    .map((byte, index) => {
+      const value = byte.toString(16).padStart(2, "0");
+      return [4, 6, 8, 10].includes(index) ? `-${value}` : value;
+    })
+    .join("");
 }
 
 type DisplayNumber = { kind: "number"; value: number };
@@ -23,13 +53,20 @@ export function stringifyValue(value?: typeof Value.Type, fallback?: string) {
     case "UINT64":
     case "STRING":
     case "BOOLEAN":
-    case "TIMESTAMP":
       return value.value.toLocaleString();
+    case "TIMESTAMP":
+      return formatUtcDateTime(value.value);
     case "ENUMERATED":
     case "AGGREGATE":
     default:
       return fallback ?? "Unknown";
   }
+}
+
+export function formatUtcDateTime(date: Date | DateTime.DateTime) {
+  return date instanceof Date
+    ? utcDateTimeFormatter.format(date)
+    : DateTime.formatIntl(date, utcDateTimeFormatter);
 }
 
 export function displayValue(value: typeof Value.Type): Display {
@@ -49,7 +86,8 @@ export function displayValue(value: typeof Value.Type): Display {
   }
 }
 
-export function formatDate(date: Date) {
+export function formatDate(date: Date | DateTime.DateTime) {
+  const value = date instanceof Date ? date : DateTime.toDate(date);
   const months = [
     "Jan",
     "Feb",
@@ -65,12 +103,12 @@ export function formatDate(date: Date) {
     "Dec",
   ];
 
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = months[date.getMonth()];
+  const day = String(value.getDate()).padStart(2, "0");
+  const month = months[value.getMonth()];
 
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
+  const hours = String(value.getHours()).padStart(2, "0");
+  const minutes = String(value.getMinutes()).padStart(2, "0");
+  const seconds = String(value.getSeconds()).padStart(2, "0");
 
   return `${day} ${month} ${hours}:${minutes}:${seconds}`;
 }

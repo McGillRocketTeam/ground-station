@@ -1,0 +1,193 @@
+{
+  "$schema": "https://yamcs.org/schema/stack.schema.json",
+  "steps": [
+    {
+      "type": "command",
+      "name": "/FlightComputer/reset_av",
+      "comment": "Reset AV\n",
+      "extraOptions": [
+        {
+          "id": "mqttFanoutSystemB",
+          "value": true
+        }
+      ],
+      "arguments": [],
+      "advancement": {
+        "acknowledgment": "CommandComplete"
+      }
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/sd_open",
+      "extraOptions": [
+        {
+          "id": "mqttFanoutSystemB",
+          "value": true
+        }
+      ],
+      "arguments": []
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/sd_card_file_open",
+          "operator": "eq",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/arm_recovery",
+      "comment": "19 Press and hold Recovery Arm on the GUI.",
+      "extraOptions": [
+        {
+          "id": "mqttFanoutSystemB",
+          "value": true
+        }
+      ],
+      "arguments": []
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/drogue_armed_SW",
+          "operator": "eq",
+          "value": "true"
+        },
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/main_armed_SW",
+          "operator": "eq",
+          "value": "true"
+        }
+      ],
+      "timeout": 10000,
+      "comment": "Confirm the following: (1) ACK received, (2) drogue is armed, and (3) main is armed."
+    },
+    {
+      "type": "text",
+      "text": "Confirm that CH1 and CH2 LEDs on the Energize DB are ON."
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/propulsion_on",
+      "comment": "Press and hold Propulsion On on the GUI.",
+      "extraOptions": [
+        {
+          "id": "mqttFanoutSystemB",
+          "value": true
+        }
+      ],
+      "arguments": []
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/vent_armed_SW",
+          "operator": "eq",
+          "value": "true"
+        },
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/fdov_armed_SW",
+          "operator": "eq",
+          "value": "true"
+        }
+      ],
+      "timeout": 10000,
+      "comment": "Confirm the following: (1) ACK received, (2) Vent Valve is armed, and (3) F/DOV is\narmed."
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/mov_arming",
+      "comment": "Press and hold MOV Arm on the GUI.",
+      "extraOptions": [
+        {
+          "id": "mqttFanoutSystemB",
+          "value": true
+        }
+      ],
+      "arguments": []
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/mov_armed_SW",
+          "operator": "eq",
+          "value": "true"
+        }
+      ],
+      "timeout": 10000,
+      "comment": "Confirm the following: (1) ACK received and (2) MOV is armed."
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/drogue_continuity_HW",
+          "operator": "eq",
+          "value": "true"
+        },
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/main_continuity_HW",
+          "operator": "eq",
+          "value": "true"
+        }
+      ],
+      "comment": "Confirm that the Drogue and Main E-Matches are continuous."
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/umbilical_to_battery",
+      "comment": "Press and hold `Umbilical Low` on the GUI.",
+      "extraOptions": [
+        {
+          "id": "mqttFanoutSystemB",
+          "value": true
+        }
+      ],
+      "arguments": []
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/sd_card_file_open",
+          "operator": "eq",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "command",
+      "name": "/FlightComputer/launch",
+      "comment": "Press and hold `Launch` on the GUI",
+      "extraOptions": [
+        {
+          "id": "mqttFanoutSystemB",
+          "value": true
+        }
+      ],
+      "arguments": []
+    },
+    {
+      "type": "verify",
+      "condition": [
+        {
+          "parameter": "/SystemB/Rocket/FlightComputer/flight_stage",
+          "operator": "eq",
+          "value": "Ascent, climbing at high velocity"
+        }
+      ],
+      "timeout": 10000,
+      "comment": "Confirm the following: (1) ACK received and (2) flight stage is ascending."
+    }
+  ],
+  "advancement": {
+    "acknowledgment": "CommandComplete",
+    "wait": 1000
+  }
+}

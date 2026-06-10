@@ -71,7 +71,7 @@ See https://github.com/yamcs/pymdb
         <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
-      <MetaCommand name="landed" abstract="false" shortDescription="ld">
+      <MetaCommand name="landed" abstract="false" shortDescription="el">
         <LongDescription>Landed</LongDescription>
         <CommandContainer name="landed">
           <EntryList/>
@@ -96,7 +96,7 @@ See https://github.com/yamcs/pymdb
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="mov_arming" abstract="false" shortDescription="p2">
-        <LongDescription>MOV Arming</LongDescription>
+        <LongDescription>MOV Arm</LongDescription>
         <CommandContainer name="mov_arming">
           <EntryList/>
         </CommandContainer>
@@ -104,11 +104,27 @@ See https://github.com/yamcs/pymdb
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="mov_disarming" abstract="false" shortDescription="p3">
-        <LongDescription>MOV Disarming</LongDescription>
+        <LongDescription>MOV Disarm</LongDescription>
         <CommandContainer name="mov_disarming">
           <EntryList/>
         </CommandContainer>
         <DefaultSignificance consequenceLevel="vital"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="payload_reset" abstract="false" shortDescription="br">
+        <LongDescription>Reset Payload</LongDescription>
+        <CommandContainer name="payload_reset">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="payload_toggle" abstract="false" shortDescription="bt">
+        <LongDescription>Toggle Payload Sampling</LongDescription>
+        <CommandContainer name="payload_toggle">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="propulsion_off" abstract="false" shortDescription="po">
@@ -152,7 +168,7 @@ See https://github.com/yamcs/pymdb
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="reset_prop_boards_valve_state" abstract="false" shortDescription="pr">
-        <LongDescription>Reset Prop Valve States</LongDescription>
+        <LongDescription>Reset Propulsion Valve States</LongDescription>
         <CommandContainer name="reset_prop_boards_valve_state">
           <EntryList/>
         </CommandContainer>

@@ -1,0 +1,113 @@
+import { Effect, Schema } from "effect";
+
+export const Advancement = Schema.Struct({
+  acknowledgment: Schema.String.pipe(
+    Schema.withDecodingDefault(Effect.succeed("Acknowledge_Queued")),
+  ),
+  wait: Schema.optional(Schema.Number),
+});
+
+export const TextStep = Schema.Struct({
+  type: Schema.Literal("text"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  text: Schema.String,
+});
+
+export const NoteStep = Schema.Struct({
+  type: Schema.Literal("note"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  text: Schema.String,
+  color: Schema.optional(Schema.String),
+});
+
+export const CheckStep = Schema.Struct({
+  type: Schema.Literal("check"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  parameters: Schema.Array(
+    Schema.Struct({
+      parameter: Schema.String,
+    }),
+  ),
+});
+
+const JsonValue = Schema.Union([
+  Schema.String,
+  Schema.Number,
+  Schema.Boolean,
+  Schema.Array(Schema.Any),
+  Schema.Record(Schema.String, Schema.Any),
+]);
+
+export const VerifyCondition = Schema.Struct({
+  parameter: Schema.String,
+  operator: Schema.Literals(["eq", "neq", "le", "lte", "gt", "gte"]),
+  value: JsonValue,
+  display: Schema.optional(
+    Schema.Struct({
+      row: Schema.optional(Schema.String),
+      column: Schema.optional(Schema.String),
+      label: Schema.optional(Schema.String),
+    }),
+  ),
+});
+
+export const VerifyPresentationColumn = Schema.Struct({
+  id: Schema.String,
+  label: Schema.String,
+});
+
+export const VerifyPresentation = Schema.Struct({
+  type: Schema.Literal("truthTable"),
+  columns: Schema.Array(VerifyPresentationColumn),
+});
+
+export const VerifyStep = Schema.Struct({
+  type: Schema.Literal("verify"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  condition: Schema.Array(VerifyCondition),
+  presentation: Schema.optional(VerifyPresentation),
+  delay: Schema.Int.pipe(Schema.withDecodingDefault(Effect.succeed(0))),
+  timeout: Schema.optional(Schema.Int),
+});
+
+export const CommandStep = Schema.Struct({
+  type: Schema.Literal("command"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+  name: Schema.String,
+  namespace: Schema.optional(Schema.String),
+  arguments: Schema.optional(
+    Schema.Array(
+      Schema.Struct({
+        name: Schema.String,
+        value: JsonValue,
+      }),
+    ),
+  ),
+  extraOptions: Schema.optional(
+    Schema.Array(
+      Schema.Struct({
+        id: Schema.optional(Schema.String),
+        value: Schema.optional(Schema.Union([Schema.String, Schema.Number, Schema.Boolean])),
+      }),
+    ),
+  ),
+  stream: Schema.optional(Schema.String),
+  advancement: Schema.optional(Advancement),
+});
+
+export const ProcedureStep = Schema.Union([TextStep, NoteStep, CheckStep, VerifyStep, CommandStep]);
+
+export const ProcedureStack = Schema.Struct({
+  steps: Schema.Array(ProcedureStep),
+  advancement: Schema.optional(Advancement),
+});

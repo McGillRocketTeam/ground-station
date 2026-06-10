@@ -1,4 +1,4 @@
-name: Frontend Docker (build + publish)
+name: Docker
 
 on:
   push:
@@ -14,7 +14,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}-frontend
 
 jobs:
-  build:
+  frontend:
+    name: Frontend
     runs-on: ubuntu-latest
 
     permissions:

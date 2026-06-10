@@ -1,6 +1,8 @@
 # dependencies (bun install)
 node_modules
 
+tsconfig.tsbuildinfo
+
 # output
 out
 dist

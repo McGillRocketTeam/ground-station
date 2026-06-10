@@ -10,7 +10,7 @@ services:
   - class: org.yamcs.ProcessorCreatorService
     args:
       name: realtime
-      type: realtime-urrg
+      type: realtime
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
@@ -22,12 +22,6 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: simulator
-    class: org.yamcs.tctm.UdpParameterDataLink
-    stream: pp_realtime
-    port: 11016
-    json: true
-
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -35,24 +29,43 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemA/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: system_a_radio_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_a_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
 
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    stream: system_b_fc_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
   - name: SystemB/ControlStation/Radio
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: pp_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: system_b_radio_realtime
+    tcStream: tc_radio_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
+
+  - name: FlightComputerCommands
+    class: org.yamcs.mqtt.MqttFanoutCommandLink
+    autoReconnect: true
+    brokers:
+      - ${env.MQTT_BROKER_URL:tcp://localhost:1883}
+    tcStream: tc_realtime
+    targets:
+      - name: SystemA
+        baseTopic: SystemA/Rocket/FlightComputer
+        radioAckTopics:
+          - SystemA/ControlStation/Radio/acks
+      - name: SystemB
+        baseTopic: SystemB/Rocket/FlightComputer
+        radioAckTopics:
+          - SystemB/ControlStation/Radio/acks
+
 
 mdb:
   - type: xtce
@@ -94,18 +107,19 @@ mdb:
 # Configuration for streams created at server startup
 streamConfig:
   tm:
-    - name: "tm_433_realtime"
-      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
-      processor: "realtime"
     - name: "system_a_fc_realtime"
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
+    - name: "system_b_fc_realtime"
+      rootContainer: "/SystemB/Rocket/FlightComputer/FCFrame"
+      processor: "realtime"
+
     - name: "system_a_radio_realtime"
       rootContainer: "/SystemA/ControlStation/Radio/TelemetryPacket"
       processor: "realtime"
-    # - name: "tm_daq_realtime"
-    #   rootContainer: "/Thermocouple/ThermocoupleAggregatePacket"
-    #   processor: "realtime"
+    - name: "system_b_radio_realtime"
+      rootContainer: "/SystemB/ControlStation/Radio/TelemetryPacket"
+      processor: "realtime"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
@@ -115,3 +129,6 @@ streamConfig:
     - name: "tc_realtime"
       processor: "realtime"
       tcPatterns: ["/FlightComputer/.*"]
+    - name: "tc_radio_realtime"
+      processor: "realtime"
+      tcPatterns: [".*/Radio/.*"]

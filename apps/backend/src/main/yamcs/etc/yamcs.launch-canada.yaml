@@ -170,12 +170,10 @@ streamConfig:
       rootContainer: "/ControlBox/ControlBoxPacket"
       processor: "realtime"
     - name: "system_a_fc_realtime"
-
-    - name: "tm_labJack"
-      processor: "realtime"
-      rootContainer: "/LabJackT7/LabJackPacket"
-
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+      processor: "realtime"
+    - name: "tm_labJack"
+      rootContainer: "/LabJackT7/LabJackPacket"
       processor: "realtime"
     - name: "system_b_fc_realtime"
       rootContainer: "/SystemB/Rocket/FlightComputer/FCFrame"

@@ -41,13 +41,13 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private long lastArmingKeyOnTime = 0;
 
   private static final int YAMCS_HTTP_PORT = 8090;
-  private static final int FILL_FIO = 2;
-  private static final int DUMP_FIO = 3;
+  private static final int FILL_FIO = 0;
+  private static final int DUMP_FIO = 1;
   private static final int PURG_FIO = 5;
   private static final int MOV__FIO = 5;
   private static final int BLKT_FIO = 4;
   private static final int VENT_FIO = 4;
-  private static final int RUN__FIO = 0;
+  private static final int RUN__FIO = 7;
   private static final int IGNP__MIO = 1;
   private static final int IGNM__MIO = 0;
 
@@ -79,7 +79,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private static final Map<Integer, SwitchMapping> SWITCH_PIN_MAP =
       Map.ofEntries(
           Map.entry(0,  new SwitchMapping("panel_1_switch_estop",   -1)),            // E-stop: not mapped
-          Map.entry(1,  new SwitchMapping("panel_2_switch_launch",  MOV__FIO)),      // FIO6
+          Map.entry(1,  new SwitchMapping("panel_2_switch_launch",  -1)),      // FIO6
           Map.entry(2,  new SwitchMapping("panel_3_switch_1",       RUN__FIO)),      // FIO0
           Map.entry(3,  new SwitchMapping("panel_3_switch_2",       DUMP_FIO)),      // FIO3
           Map.entry(4,  new SwitchMapping("panel_4_switch_1",       -1)),             // Vent command only
@@ -127,6 +127,9 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
 
   /** Byte offset of the vent control switch in the telemetry packet. */
   private static final int VENT_OFFSET = 4;
+
+  /** Byte offset of the MOV control switch (panel_2_switch_launch) in the telemetry packet. */
+  private static final int MOV_OFFSET = 1;
 
   @Override
   public void init(String instance, String name, YConfiguration config) {
@@ -248,23 +251,36 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     // E-stop clear: on transition to OFF, send the corresponding flight computer cancel command.
     if (numSwitches > ESTOP_OFFSET
         && currentPayload[ESTOP_OFFSET] != previousSwitchStates[ESTOP_OFFSET]
-        && !estopOn) {
+        && !estopOn
+        && !isDebounced(ESTOP_OFFSET, now)) {
       handleEmergencyStopClear();
     }
 
     if (numSwitches > ARMING_KEY_OFFSET
-        && currentPayload[ARMING_KEY_OFFSET] != previousSwitchStates[ARMING_KEY_OFFSET]) {
+        && currentPayload[ARMING_KEY_OFFSET] != previousSwitchStates[ARMING_KEY_OFFSET]
+        && !isDebounced(ARMING_KEY_OFFSET, now)) {
       handleArmingKeyChange(currentPayload[ARMING_KEY_OFFSET] != 0);
     }
 
     if (numSwitches > FDOV_OFFSET
-        && currentPayload[FDOV_OFFSET] != previousSwitchStates[FDOV_OFFSET]) {
+        && currentPayload[FDOV_OFFSET] != previousSwitchStates[FDOV_OFFSET]
+        && !isDebounced(FDOV_OFFSET, now)) {
       handleFdovChange(currentPayload[FDOV_OFFSET] != 0);
     }
 
     if (numSwitches > VENT_OFFSET
-        && currentPayload[VENT_OFFSET] != previousSwitchStates[VENT_OFFSET]) {
+        && currentPayload[VENT_OFFSET] != previousSwitchStates[VENT_OFFSET]
+        && !isDebounced(VENT_OFFSET, now)) {
       handleVentChange(currentPayload[VENT_OFFSET] != 0);
+    }
+
+    if (numSwitches > MOV_OFFSET
+        && currentPayload[MOV_OFFSET] != previousSwitchStates[MOV_OFFSET]) {
+      if (!armingKeyOn) {
+        log.warn("Blocked MOV command: arming key is OFF");
+      } else if (!isDebounced(MOV_OFFSET, now)) {
+        handleMOVChange(currentPayload[MOV_OFFSET] != 0);
+      }
     }
 
     // If E-stop is currently asserted, block any other switch actions. Log attempts.
@@ -290,7 +306,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
           continue;
         }
 
-        if (i == ESTOP_OFFSET || i == ARMING_KEY_OFFSET || i == FDOV_OFFSET || i == VENT_OFFSET) {
+        if (i == ESTOP_OFFSET
+            || i == ARMING_KEY_OFFSET
+            || i == FDOV_OFFSET
+            || i == VENT_OFFSET
+            || i == MOV_OFFSET) {
           continue;
         }
 
@@ -320,6 +340,22 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     }
 
     previousSwitchStates = currentPayload.clone();
+  }
+
+  /**
+   * Checks whether a switch-driven flight computer command was issued for the given byte offset
+   * within the debounce window, recording the current time if not. Mirrors the per-switch debounce
+   * applied to LabJack pin commands so bounce-induced duplicate FC commands (arming, F/DOV, vent,
+   * e-stop clear) are suppressed in the same way.
+   */
+  private boolean isDebounced(int offset, long now) {
+    Long last = lastCommandTime.get(offset);
+    if (last != null && (now - last) < DEBOUNCE_MS) {
+      log.debug("Debounced rapid FC command for offset " + offset);
+      return true;
+    }
+    lastCommandTime.put(offset, now);
+    return false;
   }
 
   /**
@@ -363,6 +399,12 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private void handleVentChange(boolean energized) {
     String commandName = energized ? "vent_valve_energize" : "vent_valve_de-energize";
     log.info("Vent switch changed - issuing " + commandName);
+    issueFlightComputerCommand(commandName);
+  }
+
+  private void handleMOVChange(boolean energized) {
+    String commandName = energized ? "mov_energize" : "mov_de-energize";
+    log.info("MOV switch changed - issuing " + commandName);
     issueFlightComputerCommand(commandName);
   }
 

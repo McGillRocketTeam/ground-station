@@ -207,6 +207,24 @@ public class LabJackDevice {
         LJM.eWriteAddress(handle, DIO_REGISTER_BASE + pinNum, LJM.Constants.UINT16, state);
     }
 
+    /**
+     * Reads the live state (0/1) of a single digital line out of {@code DIO_STATE} (bit <i>i</i> =
+     * DIO<i>i</i>). Reading the whole-state register avoids the side effect of reading an individual
+     * DIO register, which would flip that line to input. Used to verify a commanded write.
+     */
+    public int readDigitalPinState(int pinNum) {
+        DoubleByReference ref = new DoubleByReference();
+        LJM.eReadName(handle, "DIO_STATE", ref);
+        return (int) ((((long) ref.getValue()) >> pinNum) & 1L);
+    }
+
+    /** Reads back the current output setting of a DAC (volts). Used to verify a commanded write. */
+    public double readDac(int pinNum) {
+        DoubleByReference ref = new DoubleByReference();
+        LJM.eReadName(handle, "DAC" + pinNum, ref);
+        return ref.getValue();
+    }
+
     /** Drives all 23 digital lines low (safe state). Used on connect and after a reconnect. */
     public void setAllDigitalLow() {
         for (int pin = 0; pin < LabJackConfig.NUM_DIGITAL_PINS; pin++) {

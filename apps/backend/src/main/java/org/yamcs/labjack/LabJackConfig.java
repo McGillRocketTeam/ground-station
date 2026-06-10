@@ -77,6 +77,14 @@ public final class LabJackConfig {
     /** Archive-only stream used when {@link #ARCHIVE_FULL_RATE} is on. */
     public static String ARCHIVE_STREAM = "tm_labjack_hires";
 
+    // ---- Command verification -------------------------------------------------------------------
+    /**
+     * Max |readback − target| (volts) for a DAC write to be acknowledged as complete. Engineering
+     * margin for float32 encoding + DAC quantization — not a datasheet figure; tighten after HIL
+     * characterisation if desired.
+     */
+    public static double DAC_READBACK_TOLERANCE_V = 0.05;
+
     // ---- Watchdog ------------------------------------------------------------------------------
     /** Hardware watchdog timeout in seconds. Fires (resets DIO low) after this long with no CS comms. */
     public static int WATCHDOG_TIMEOUT_S = 300; // 5 minutes

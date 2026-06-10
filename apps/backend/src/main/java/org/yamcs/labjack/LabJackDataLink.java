@@ -11,6 +11,8 @@ import libs.LJMException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.AbstractTcTmParamLink;
@@ -336,10 +338,22 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
 
     // ---- Commands ------------------------------------------------------------------------------
 
+    /**
+     * Executes a LabJack command and publishes its acknowledgment lifecycle to the command history
+     * (same fields {@code AstraCommandLink.handleFCAck} updates, so the UI shows progress identically):
+     * <ol>
+     *   <li><b>Acknowledge_Sent → OK</b> as soon as the LJM write returns without error;</li>
+     *   <li><b>CommandComplete → OK/NOK</b> by reading the pin back and comparing with the commanded
+     *       target — the LJM write API gives no per-command completion signal beyond throwing, so
+     *       readback verification is the completion source of truth.</li>
+     * </ol>
+     * Failures (not connected, LJM error, readback mismatch) publish NOK with the reason.
+     */
     @Override
     public boolean sendCommand(PreparedCommand preparedCommand) {
         if (device == null || !device.isOpen()) {
             log.warn("Cannot send LabJack command while not connected");
+            failedCommand(preparedCommand.getCommandId(), "LabJack not connected");
             return false;
         }
         int pinNum = -1;
@@ -353,28 +367,57 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
         }
         if (pinNum < 0 || valueToWrite == null) {
             log.error("LabJack command missing pin_number or value argument");
+            failedCommand(preparedCommand.getCommandId(), "Missing pin_number or value argument");
             return false;
         }
 
         try {
             String cmd = preparedCommand.getCommandName();
             if (cmd.endsWith("write_digital_pin")) {
-                int state = (int) valueToWrite.getEngValue().getSint64Value();
-                device.writeDigitalPin(pinNum, state);
-                log.info("Wrote " + state + " to DIO" + pinNum);
+                int target = (int) valueToWrite.getEngValue().getSint64Value();
+                device.writeDigitalPin(pinNum, target);
+                ackCommand(preparedCommand.getCommandId()); // Acknowledge_Sent -> OK
+                int actual = device.readDigitalPinState(pinNum);
+                completeCommand(preparedCommand, actual == target,
+                        "DIO" + pinNum + " readback=" + actual + ", commanded=" + target);
+                log.info("Wrote " + target + " to DIO" + pinNum + " (readback " + actual + ")");
             } else if (cmd.endsWith("write_DAC_pin")) {
-                double voltage = valueToWrite.getEngValue().getFloatValue();
-                device.writeDac(pinNum, voltage);
-                log.info("Wrote " + voltage + " V to DAC" + pinNum);
+                double targetV = valueToWrite.getEngValue().getFloatValue();
+                device.writeDac(pinNum, targetV);
+                ackCommand(preparedCommand.getCommandId()); // Acknowledge_Sent -> OK
+                double actualV = device.readDac(pinNum);
+                completeCommand(preparedCommand,
+                        Math.abs(actualV - targetV) <= LabJackConfig.DAC_READBACK_TOLERANCE_V,
+                        "DAC" + pinNum + " readback=" + actualV + " V, commanded=" + targetV + " V");
+                log.info("Wrote " + targetV + " V to DAC" + pinNum + " (readback " + actualV + " V)");
             } else {
                 log.warn("Unknown LabJack command: " + cmd);
+                failedCommand(preparedCommand.getCommandId(), "Unknown LabJack command: " + cmd);
                 return false;
             }
         } catch (Exception e) {
+            // The LJM call threw — that is the SDK's failure signal; reflect it in the command history.
             log.error("LabJack command failed: " + e.getMessage());
+            failedCommand(preparedCommand.getCommandId(), e.getMessage());
             return false;
         }
         return true;
+    }
+
+    /**
+     * Publishes the CommandComplete ack from the post-write readback comparison: OK when the pin now
+     * reads the commanded value, NOK (with the readback detail) otherwise.
+     */
+    private void completeCommand(PreparedCommand pc, boolean verified, String detail) {
+        if (verified) {
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.CommandComplete_KEY, getCurrentTime(), AckStatus.OK);
+        } else {
+            log.warn("LabJack command readback mismatch: " + detail);
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.CommandComplete_KEY, getCurrentTime(), AckStatus.NOK,
+                    "Readback mismatch: " + detail);
+        }
     }
 
     /**

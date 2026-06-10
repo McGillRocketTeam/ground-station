@@ -87,7 +87,9 @@ public class AstraCommandLink extends AbstractTcDataLink {
 	@Override
 	protected void doStart() {
 		var ack = new Acknowledgment("TEST_ACK");
-		var processor = YamcsServer.getServer().getInstance("ground_station").getProcessor("realtime");
+		// Use the instance this link actually runs in — the previous hardcoded "ground_station"
+		// NPE'd on any instance with another name (testsite/launch-canada/urrg) and killed doStart.
+		var processor = YamcsServer.getServer().getInstance(yamcsInstance).getProcessor("realtime");
 		processor.addAcknowledgment(ack);
 
 		try {

@@ -22,6 +22,15 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
+  - name: LabJack
+    class: org.yamcs.labjack.LabJackDataLink
+    tmStream: tm_labJack
+    tcStream: tc_labJack
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: -1
+      seqCountOffset: -1
+
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -43,7 +52,7 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
 
-  - name: PAD Wifi Antenna (Client) 
+  - name: PAD Wifi Antenna (Client)
     class: org.yamcs.mrt.links.WifiAntennaLink
     ipAddress: 192.168.0.254
     username: mrt
@@ -140,6 +149,10 @@ mdb:
           - type: xtce
             args:
               file: mdb/radio.xml
+  - type: xtce
+    spec: "LabJack"
+    args:
+      file: mdb/labjack-t7.xml
 
 # Configuration for streams created at server startup
 streamConfig:
@@ -163,6 +176,10 @@ streamConfig:
     - name: "system_b_pad_radio_realtime"
       rootContainer: "/SystemB/Pad/Radio/TelemetryPacket"
       processor: "realtime"
+    # Labjack
+    - name: "tm_labJack"
+      processor: "realtime"
+      rootContainer: "/LabJackT7/LabJackPacket"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
@@ -175,3 +192,6 @@ streamConfig:
     - name: "tc_radio_realtime"
       processor: "realtime"
       tcPatterns: [".*/Radio/.*"]
+    - name: "tc_labJack"
+      processor: "realtime"
+      tcPatterns: ["/LabJackT7/.*"]

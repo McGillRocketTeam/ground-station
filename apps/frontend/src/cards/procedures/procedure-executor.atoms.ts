@@ -34,6 +34,24 @@ export const executeProcedureStepAtom = procedureRuntime.fn<void>()(() =>
   ProcedureExecutor.use((executor) => executor.execute()),
 );
 
+export const downloadProcedureAuditTextAtom = procedureRuntime.fn<void>()(() =>
+  Effect.gen(function* () {
+    const text = yield* ProcedureExecutor.use((executor) => executor.renderAuditText());
+
+    yield* Effect.sync(() => {
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+
+      anchor.href = url;
+      anchor.download = `procedure-audit-${new Date().toISOString().replaceAll(":", "-")}.txt`;
+      anchor.click();
+
+      URL.revokeObjectURL(url);
+    });
+  }),
+);
+
 export const selectProcedureStepAtom = procedureRuntime.fn<number>()((index) =>
   ProcedureExecutor.use((executor) => executor.selectStep(index)),
 );

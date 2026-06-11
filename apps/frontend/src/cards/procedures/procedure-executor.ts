@@ -102,20 +102,12 @@ const makeAuditEntry = (
     liveData,
   });
 
-const renderAuditEntriesAsText = (entries: ReadonlyArray<ProcedureAuditEntry>) =>
-  entries
-    .map(
-      (entry) =>
-        `${DateTime.toDate(entry.at).toISOString()} | ${entry.event} | stepIndex=${entry.stepIndex} | stepNumber=${entry.stepDisplayNumber} | ${entry.message}`,
-    )
-    .join("\n");
-
 export class ProcedureExecutorLog extends Context.Service<
   ProcedureExecutorLog,
   {
     readonly entries: SubscriptionRef.SubscriptionRef<ReadonlyArray<ProcedureAuditEntry>>;
     readonly append: (entry: ProcedureAuditEntry) => Effect.Effect<void>;
-    readonly renderText: () => Effect.Effect<string>;
+    readonly renderText: Effect.Effect<string>;
   }
 >()("@mrt/frontend/ProcedureExecutorLog") {
   static readonly layer = Layer.effect(
@@ -126,7 +118,14 @@ export class ProcedureExecutorLog extends Context.Service<
       const append = (entry: ProcedureAuditEntry) =>
         SubscriptionRef.update(entries, (current) => [...current, entry]);
 
-      const renderText = () => Effect.map(SubscriptionRef.get(entries), renderAuditEntriesAsText);
+      const renderText = Effect.map(SubscriptionRef.get(entries), (entries) =>
+        entries
+          .map(
+            (entry) =>
+              `${DateTime.toDate(entry.at).toISOString()} | ${entry.event} | stepIndex=${entry.stepIndex} | stepNumber=${entry.stepDisplayNumber} | ${entry.message}`,
+          )
+          .join("\n"),
+      );
 
       return { entries, append, renderText };
     }),
@@ -543,7 +542,7 @@ export class ProcedureExecutor extends Context.Service<
           );
         });
 
-        const renderAuditText = () => log.renderText();
+        const renderAuditText = () => log.renderText;
 
         const selectStep = (index: number) => recordSelection(index);
 

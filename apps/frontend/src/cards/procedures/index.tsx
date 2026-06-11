@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 import { CommandStepLiveData } from "./procedure-executor";
 import {
+  downloadProcedureAuditTextAtom,
   executeProcedureStepAtom,
   procedureExecutionStepAtom,
   selectNextProcedureStepAtom,
@@ -29,6 +30,7 @@ function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type })
   const selectNextStep = useAtomSet(selectNextProcedureStepAtom);
   const selectPreviousStep = useAtomSet(selectPreviousProcedureStepAtom);
   const executeStep = useAtomSet(executeProcedureStepAtom);
+  const downloadAuditText = useAtomSet(downloadProcedureAuditTextAtom);
 
   return (
     <div className="h-full min-h-0 overflow-auto">
@@ -41,6 +43,9 @@ function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type })
         </button>
         <button onClick={() => executeStep()} className="h-full border-r px-2">
           Execute
+        </button>
+        <button onClick={() => downloadAuditText()} className="h-full border-r px-2">
+          Download Log
         </button>
       </div>
       <div className="grid pb-6 grid-cols-[auto_auto_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[80ch] mx-auto">

@@ -106,9 +106,9 @@ Examples from TW1:
   - `armed_HW`
   - `continuity_HW`
 - Energize-state tables:
-  - `energized_SW`
-  - `energizedGate_HW`
-  - `energizeCurrent_HW`
+  - `Logical Energize`
+  - `Energize Gate`
+  - `Energize Current`
 
 Recommended pattern:
 

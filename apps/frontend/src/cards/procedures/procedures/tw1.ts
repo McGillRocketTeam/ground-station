@@ -347,9 +347,9 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalEnergized", label: "energized_SW" },
-          { id: "energizeGate", label: "energizedGate_HW" },
-          { id: "energizeCurrent", label: "energizeCurrent_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [
@@ -368,7 +368,7 @@ export const TW1 = ProcedureStack.make({
         {
           parameter: "/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW",
           operator: "eq",
-          value: true,
+          value: false,
           display: { row: "Vent Valve", column: "energizeCurrent" },
         },
       ],
@@ -400,9 +400,9 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalEnergized", label: "energized_SW" },
-          { id: "energizeGate", label: "energizedGate_HW" },
-          { id: "energizeCurrent", label: "energizeCurrent_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [
@@ -615,9 +615,9 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalEnergized", label: "energized_SW" },
-          { id: "energizeGate", label: "energizedGate_HW" },
-          { id: "energizeCurrent", label: "energizeCurrent_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [
@@ -636,7 +636,7 @@ export const TW1 = ProcedureStack.make({
         {
           parameter: "/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW",
           operator: "eq",
-          value: true,
+          value: false,
           display: { row: "F/DOV", column: "energizeCurrent" },
         },
       ],
@@ -668,9 +668,9 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalEnergized", label: "energized_SW" },
-          { id: "energizeGate", label: "energizedGate_HW" },
-          { id: "energizeCurrent", label: "energizeCurrent_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [
@@ -824,9 +824,9 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalEnergized", label: "energized_SW" },
-          { id: "energizeGate", label: "energizedGate_HW" },
-          { id: "energizeCurrent", label: "energizeCurrent_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [
@@ -845,7 +845,7 @@ export const TW1 = ProcedureStack.make({
         {
           parameter: "/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW",
           operator: "eq",
-          value: true,
+          value: false,
           display: { row: "F/DOV", column: "energizeCurrent" },
         },
       ],
@@ -877,9 +877,9 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalEnergized", label: "energized_SW" },
-          { id: "energizeGate", label: "energizedGate_HW" },
-          { id: "energizeCurrent", label: "energizeCurrent_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [
@@ -898,7 +898,7 @@ export const TW1 = ProcedureStack.make({
         {
           parameter: "/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW",
           operator: "eq",
-          value: true,
+          value: false,
           display: { row: "Vent", column: "energizeCurrent" },
         },
       ],
@@ -930,9 +930,9 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalEnergized", label: "energized_SW" },
-          { id: "energizeGate", label: "energizedGate_HW" },
-          { id: "energizeCurrent", label: "energizeCurrent_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [

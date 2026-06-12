@@ -28,6 +28,16 @@ export type CustomEdgeType =
 export const initialNodes: CustomNodeType[] = [
   {
     type: "radioLink",
+    id: "LabJack",
+    position: { x: 125, y:  -80 },
+    data: {
+      qualifiedName: "LabJack",
+      friendlyName: "LabJack\nT7",
+      textPosition: "top",
+    },
+  },
+  {
+    type: "radioLink",
     id: "SystemA/Pad/Radio",
     position: { x: 0, y: 0 },
     data: {
@@ -109,6 +119,14 @@ export const initialEdges: CustomEdgeType[] = [
     sourceHandle: "bottom",
     target: "PAD Wifi Antenna (Client)",
     targetHandle: "right",
+    type: "link",
+  },
+    {
+    id: "LabJack->PAD Wifi Antenna (Client)",
+    source: "LabJack",
+    sourceHandle: "bottom",
+    target: "PAD Wifi Antenna (Client)",
+    targetHandle: "top",
     type: "link",
   },
   {

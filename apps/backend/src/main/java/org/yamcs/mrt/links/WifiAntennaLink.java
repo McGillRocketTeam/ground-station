@@ -151,7 +151,6 @@ public class WifiAntennaLink extends AbstractLink {
               InfoResponse.class,
               Map.of("X-Requested-With", "XMLHttpRequest"));
 
-      log.info("Wifi antenna poll response for {}: {}", ipAddress, pollResponse.rawBody);
       dataIn(1, pollResponse.rawBody.length());
 
       if (Boolean.TRUE.equals(pollResponse.body.timeout)) {

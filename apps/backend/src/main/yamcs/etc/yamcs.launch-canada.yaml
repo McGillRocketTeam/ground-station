@@ -30,6 +30,13 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: -1
       seqCountOffset: -1
+  - name: ControlBox
+    class: org.yamcs.mrt.links.ControlBoxLink
+    tmStream: tm_controlBox
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: -1
+      seqCountOffset: -1
 
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
@@ -153,6 +160,10 @@ mdb:
     spec: "LabJack"
     args:
       file: mdb/labjack-t7.xml
+  - type: xtce
+    spec: "ControlBox"
+    args:
+      file: mdb/controlbox.xml
 
 # Configuration for streams created at server startup
 streamConfig:
@@ -180,6 +191,9 @@ streamConfig:
     - name: "tm_labJack"
       processor: "realtime"
       rootContainer: "/LabJackT7/LabJackPacket"
+    - name: "tm_controlBox"
+      processor: "realtime"
+      rootContainer: "/ControlBox/ControlBoxPacket"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]

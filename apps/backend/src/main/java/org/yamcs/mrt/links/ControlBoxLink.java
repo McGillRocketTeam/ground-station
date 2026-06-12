@@ -52,7 +52,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private static final int IGNM__MIO = 0;
 
 
-  private static final String YAMCS_INSTANCE = "ground_station";
+  private static final String YAMCS_INSTANCE = "launch-canada";
   private static final String YAMCS_PROCESSOR = "realtime";
 
   private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -317,6 +317,14 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    * @param switchName the name of the control box switch (for logging)
    */
   private void issueWriteDigitalPinCommand(int pinNumber, boolean pinState, String switchName) {
+    log.info(
+        "Issuing write_digital_pin command: pin="
+            + pinNumber
+            + " state="
+            + (pinState ? "HIGH" : "LOW")
+            + " (triggered by "
+            + switchName
+            + ")");
     String pinStateStr = pinState ? "HIGH" : "LOW";
     String url =
         String.format(

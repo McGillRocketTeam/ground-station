@@ -1,4 +1,3 @@
-import type { ParameterValue } from "@mrt/yamcs-effect";
 import type { AsyncResult } from "effect/unstable/reactivity";
 
 import { useAtomSet, useAtomSubscribe, useAtomValue } from "@effect/atom-react";
@@ -6,6 +5,8 @@ import * as echarts from "echarts";
 import { graphic } from "echarts";
 import { DateTime } from "effect";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+
+import type { LiveParameterUpdate } from "@/lib/atom";
 
 import {
   ContextMenu,
@@ -148,10 +149,10 @@ function LiveSeriesSubscription({
   seriesKey: string;
 }) {
   const handleUpdate = useCallback(
-    (result: AsyncResult.AsyncResult<typeof ParameterValue.Type, unknown>) => {
+    (result: AsyncResult.AsyncResult<LiveParameterUpdate, unknown>) => {
       if (result._tag !== "Success") return;
 
-      const parameterValue = result.value;
+      const parameterValue = result.value.value;
       const numericValue = extractNumericValue(parameterValue);
       if (numericValue === undefined) return;
 

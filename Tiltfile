@@ -12,7 +12,7 @@ backend_resource_deps = [] if use_external_mqtt_broker else ['mqtt_broker']
 backend_env = {'MQTT_BROKER_URL': mqtt_broker_url} if use_external_mqtt_broker else {}
 frontend_mqtt_broker_url = mqtt_broker_url if use_external_mqtt_broker else 'ws://localhost:9001'
 simulator_env = {
-	'YAMCS_INSTANCE': 'urrg',
+	'YAMCS_INSTANCE': 'launch-canada',
 	'DATA_MODE': simulator_data_mode,
 }
 

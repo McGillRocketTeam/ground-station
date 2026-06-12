@@ -1,16 +1,21 @@
-import { WebSocketClient } from "@mrt/yamcs-effect";
+import { WebSocketClient, YamcsConfig } from "@mrt/yamcs-effect";
 import { Effect, Layer } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
-import { YamcsAtomHttpClient } from "@/lib/atom";
+import { selectedInstanceAtom, YamcsAtomHttpClient, yamcsBaseUrl } from "@/lib/atom";
 
 import { ProcedureExecutor, ProcedureExecutorLog } from "./procedure-executor";
 
 const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) =>
   Layer.provideMerge(
-    Layer.merge(
+    Layer.mergeAll(
       Layer.provideMerge(ProcedureExecutor.layer(), ProcedureExecutorLog.layer),
       WebSocketClient.layer,
+      Layer.succeed(YamcsConfig, {
+        url: new URL(yamcsBaseUrl),
+        instance: get(selectedInstanceAtom),
+        processor: "realtime",
+      }),
     ),
     get(YamcsAtomHttpClient.runtime.layer),
   ),

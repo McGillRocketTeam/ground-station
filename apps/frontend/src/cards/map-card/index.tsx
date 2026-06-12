@@ -4,8 +4,9 @@ import { Atom } from "effect/unstable/reactivity";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Map, Marker } from "react-map-gl/maplibre";
 
-import { useTheme } from "@/components/theme-provider";
+import type { LiveParameterUpdate } from "@/lib/atom";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { useTheme } from "@/components/theme-provider";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { atomRegistry } from "@/lib/atom-registry";
 import { makeCard } from "@/lib/cards";
@@ -39,8 +40,12 @@ function isValidCoordinate(latitude: number, longitude: number) {
 }
 
 export function RocketMarker(props: { lat: string; long: string }) {
-  const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value.engValue;
-  const longValue = useAtomSuspense(parameterSubscriptionAtom(props.long)).value.engValue;
+  const latitude = useAtomSuspense(parameterSubscriptionAtom(props.lat))
+    .value as LiveParameterUpdate;
+  const longitude = useAtomSuspense(parameterSubscriptionAtom(props.long))
+    .value as LiveParameterUpdate;
+  const latValue = latitude.value.engValue;
+  const longValue = longitude.value.engValue;
 
   if (latValue.type === "FLOAT" && longValue.type === "FLOAT") {
     const latitude = Number(latValue.value);

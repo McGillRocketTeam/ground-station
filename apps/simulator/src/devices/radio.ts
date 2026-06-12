@@ -8,6 +8,7 @@ import {
   type AstraDetail,
   type AstraStatus,
 } from "../Simulator.ts";
+import { SIMULATOR_STATE_INTERVAL_MS, SIMULATOR_TELEMETRY_INTERVAL_MS } from "../utils/Config.ts";
 import { getContainer } from "../utils/Container.ts";
 import { makePacketBuilder } from "../utils/PacketBuilder.ts";
 import {
@@ -19,9 +20,6 @@ import {
 type RadioMode = "OFF" | "IDLE" | "TRANSMIT";
 type RadioRole = "Pad" | "ControlStation";
 type RadioCommand = "CLEAR" | "POWER_ON" | "POWER_OFF" | "UNKNOWN";
-
-const TELEMETRY_INTERVAL = Duration.millis(2_000 / 3);
-const STATE_INTERVAL = Duration.millis(5_000 / 3);
 
 interface RadioState {
   readonly role: RadioRole;
@@ -72,6 +70,8 @@ const initialStateForRole = (role: RadioRole): RadioState => ({
 
 export const makeRadioActor = (options: RadioActorOptions) =>
   Effect.gen(function* () {
+    const telemetryInterval = Duration.millis(yield* SIMULATOR_TELEMETRY_INTERVAL_MS);
+    const stateInterval = Duration.millis(yield* SIMULATOR_STATE_INTERVAL_MS);
     const endpoint = makeAstraEndpoint(options.baseTopic);
     const container = yield* getContainer(options.baseTopic, "TelemetryPacket");
     const buildPacket = yield* makePacketBuilder(container);
@@ -300,19 +300,19 @@ export const makeRadioActor = (options: RadioActorOptions) =>
               yield* publishOwnState;
               yield* publishLinkedFlightComputerState;
               yield* publishOwnTelemetry.pipe(
-                Effect.repeat(Schedule.spaced(TELEMETRY_INTERVAL)),
+                Effect.repeat(Schedule.spaced(telemetryInterval)),
                 Effect.forkScoped,
               );
               yield* publishLinkedFlightComputer.pipe(
-                Effect.repeat(Schedule.spaced(TELEMETRY_INTERVAL)),
+                Effect.repeat(Schedule.spaced(telemetryInterval)),
                 Effect.forkScoped,
               );
               yield* publishOwnState.pipe(
-                Effect.repeat(Schedule.spaced(STATE_INTERVAL)),
+                Effect.repeat(Schedule.spaced(stateInterval)),
                 Effect.forkScoped,
               );
               yield* publishLinkedFlightComputerState.pipe(
-                Effect.repeat(Schedule.spaced(STATE_INTERVAL)),
+                Effect.repeat(Schedule.spaced(stateInterval)),
                 Effect.forkScoped,
               );
             }),

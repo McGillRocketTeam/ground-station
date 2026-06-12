@@ -1,4 +1,4 @@
-import { Config, DateTime, Effect, Layer, Schema, Context, Stream } from "effect";
+import { Context, DateTime, Effect, Layer, Schema, Stream } from "effect";
 
 import type { QualifiedName } from "./schema.js";
 
@@ -20,6 +20,7 @@ import {
   EventsEvent,
   type ParameterValue,
 } from "./websocket/server-messages.js";
+import { YamcsConfig } from "./yamcs-config.js";
 
 export interface YamcsSubscriptionsService {
   readonly time: Stream.Stream<(typeof TimeEvent.Type)["data"], Schema.SchemaError>;
@@ -56,7 +57,7 @@ export class YamcsSubscriptions extends Context.Service<
 >()("@mrt/yamcs-effect/YamcsSubscriptions", {
   make: Effect.gen(function* () {
     const ws = yield* WebSocketClient;
-    const instance = yield* Config.string("YAMCS_INSTANCE");
+    const yamcsConfig = yield* YamcsConfig;
 
     /**
      * Subscribe to YAMCS mission time.
@@ -66,8 +67,8 @@ export class YamcsSubscriptions extends Context.Service<
       Effect.gen(function* () {
         const { call, stream } = yield* ws.subscribe(
           SubscribeTimeRequest.make({
-            instance,
-            processor: "realtime",
+            instance: yamcsConfig.instance,
+            processor: yamcsConfig.processor,
           }),
         );
 
@@ -85,7 +86,9 @@ export class YamcsSubscriptions extends Context.Service<
      */
     const links = Stream.unwrap(
       Effect.gen(function* () {
-        const { call, stream } = yield* ws.subscribe(SubscribeLinksRequest.make({ instance }));
+        const { call, stream } = yield* ws.subscribe(
+          SubscribeLinksRequest.make({ instance: yamcsConfig.instance }),
+        );
 
         return stream.pipe(
           Stream.mapEffect((m) => Schema.decodeUnknownEffect(LinkEvent)(m)),
@@ -108,8 +111,8 @@ export class YamcsSubscriptions extends Context.Service<
         Effect.gen(function* () {
           const { call, stream } = yield* ws.subscribe(
             SubscribeCommandsRequest.make({
-              instance,
-              processor: "realtime",
+              instance: yamcsConfig.instance,
+              processor: yamcsConfig.processor,
             }),
           );
 
@@ -162,8 +165,8 @@ export class YamcsSubscriptions extends Context.Service<
         Effect.gen(function* () {
           const { call, stream } = yield* ws.subscribe(
             SubscribeParameterRequest.make({
-              instance,
-              processor: "realtime",
+              instance: yamcsConfig.instance,
+              processor: yamcsConfig.processor,
               id: [{ name: qualifiedName }],
             }),
           );
@@ -205,7 +208,9 @@ export class YamcsSubscriptions extends Context.Service<
     const events = (priorEvents: ReadonlyArray<typeof import("./schema.js").Event.Type>) =>
       Stream.unwrap(
         Effect.gen(function* () {
-          const { call, stream } = yield* ws.subscribe(SubscribeEventsRequest.make({ instance }));
+          const { call, stream } = yield* ws.subscribe(
+            SubscribeEventsRequest.make({ instance: yamcsConfig.instance }),
+          );
 
           // priorEvents should be in chronological order (oldest first)
           const initial = [...priorEvents];

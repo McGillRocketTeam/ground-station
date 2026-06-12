@@ -4,8 +4,10 @@ import { Suspense } from "react";
 import { timeSubscriptionAtom } from "@/lib/atom";
 import { cn, formatDate } from "@/lib/utils";
 
+type MissionTimeData = (typeof import("@mrt/yamcs-effect").TimeEvent.Type)["data"];
+
 function Time() {
-  const { value: time } = useAtomSuspense(timeSubscriptionAtom).value;
+  const { value: time } = useAtomSuspense(timeSubscriptionAtom).value as MissionTimeData;
 
   return formatDate(time);
 }

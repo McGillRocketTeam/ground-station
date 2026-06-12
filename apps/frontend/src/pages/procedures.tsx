@@ -216,10 +216,11 @@ function ProcedureRow({ step, index }: { step: ProcedureStep; index: number }) {
   );
 }
 
+type LiveParameterUpdate = import("@/lib/atom").LiveParameterUpdate;
+
 function Value({ parameter }: { parameter: typeof NamedObjectId.Type }) {
-  return (
-    <div>
-      {stringifyValue(useAtomSuspense(parameterSubscriptionAtom(parameter.name)).value.engValue)}
-    </div>
-  );
+  const subscription = useAtomSuspense(parameterSubscriptionAtom(parameter.name))
+    .value as LiveParameterUpdate;
+
+  return <div>{stringifyValue(subscription.value.engValue)}</div>;
 }

@@ -2,6 +2,8 @@ import { Schema } from "effect";
 
 import { NamedObjectId } from "../schema.js";
 
+export const ParameterSubscriptionAction = Schema.Literals(["REPLACE", "ADD", "REMOVE"]);
+
 /*     Built-in Client Messages     */
 export const Cancel = Schema.Struct({
   type: Schema.Literal("cancel"),
@@ -33,6 +35,7 @@ export const SubscribeParameterRequest = Schema.TaggedStruct("parameters", {
   instance: Schema.String,
   processor: Schema.String,
   id: Schema.Array(NamedObjectId),
+  action: Schema.optional(ParameterSubscriptionAction),
 });
 
 export const SubscribeEventsRequest = Schema.TaggedStruct("events", {

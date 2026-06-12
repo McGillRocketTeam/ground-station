@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { makeFlightComputerSimulation } from "./devices/flight-computer.ts";
 import { makeRadioActor } from "./devices/radio.ts";
 import { runAstraActor, type AstraActor } from "./Simulator.ts";
+import { SIMULATOR_RADIO_LOCATION, SIMULATOR_SYSTEM } from "./utils/Config.ts";
 
 type RadioLocation = "Pad" | "ControlStation";
 
@@ -42,37 +43,44 @@ const topologiesForInstance = (instance: string): ReadonlyArray<SystemTopology> 
   switch (instance) {
     case "launch-canada":
       return launchCanadaTopologies;
-    default:
+    case "urrg":
       return urrgTopologies;
+    default:
+      throw new Error(
+        `Unsupported YAMCS instance "${instance}" for @mrt/simulator. Supported instances: launch-canada, urrg.`,
+      );
   }
 };
 
-const makeSystemActors = (topology: SystemTopology) =>
+export const makeSimulatorForInstance = (instance: string) =>
   Effect.gen(function* () {
+    const selectedSystem = yield* SIMULATOR_SYSTEM;
+    const selectedLocation = yield* SIMULATOR_RADIO_LOCATION;
+    const topology = topologiesForInstance(instance).find(
+      (candidate) => candidate.systemName === selectedSystem,
+    );
+
+    if (topology === undefined) {
+      throw new Error(
+        `Unsupported simulator system "${selectedSystem}" for instance "${instance}".`,
+      );
+    }
+
+    if (!topology.radioLocations.includes(selectedLocation)) {
+      throw new Error(
+        `Radio location "${selectedLocation}" is not available for system "${selectedSystem}" in instance "${instance}".`,
+      );
+    }
+
     const flightComputer = yield* makeFlightComputerSimulation(
       `${topology.systemName}/Rocket/FlightComputer`,
     );
+    const actor = (yield* makeRadioActor({
+      baseTopic: `${topology.systemName}/${selectedLocation}/Radio`,
+      role: selectedLocation,
+      forwardsFlightComputerCommands: selectedLocation === topology.commandSender,
+      flightComputer,
+    })) as AstraActor<unknown>;
 
-    return yield* Effect.forEach(
-      topology.radioLocations,
-      (location) =>
-        makeRadioActor({
-          baseTopic: `${topology.systemName}/${location}/Radio`,
-          role: location,
-          forwardsFlightComputerCommands: location === topology.commandSender,
-          flightComputer,
-        }),
-      { concurrency: "unbounded" },
-    );
-  });
-
-export const makeSimulatorForInstance = (instance: string) =>
-  Effect.gen(function* () {
-    const actorGroups = yield* Effect.forEach(topologiesForInstance(instance), makeSystemActors, {
-      concurrency: "unbounded",
-    });
-
-    const actors = actorGroups.flat() as Array<AstraActor<unknown>>;
-
-    yield* Effect.forEach(actors, runAstraActor, { concurrency: "unbounded" });
+    return yield* runAstraActor(actor);
   });

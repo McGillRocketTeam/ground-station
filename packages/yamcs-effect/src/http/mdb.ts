@@ -39,6 +39,8 @@ export const mdbGroup = HttpApiGroup.make("mdb")
       params: { instance: Schema.String },
       query: {
         q: Schema.optional(Schema.String),
+        next: Schema.optional(Schema.String),
+        pos: Schema.optional(Schema.String),
         limit: Schema.optional(Schema.String),
       },
       success: ListParametersResponse,

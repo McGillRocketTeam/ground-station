@@ -3,6 +3,8 @@ import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 import { memo, useState, type ReactNode } from "react";
 
+import type { LiveParameterUpdate } from "@/lib/atom";
+
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
@@ -174,7 +176,9 @@ const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
 });
 
 const Value = memo(function Value({ name }: { name: string }) {
-  const result = useAtomValue(parameterSubscriptionAtom(name.replace("SystemA", "SystemB")));
+  const result: AsyncResult.AsyncResult<LiveParameterUpdate, unknown> = useAtomValue(
+    parameterSubscriptionAtom(name.replace("SystemA", "SystemB")),
+  );
 
   return AsyncResult.match(result, {
     onInitial: () => (
@@ -190,7 +194,9 @@ const Value = memo(function Value({ name }: { name: string }) {
     onSuccess: ({ value }) => (
       <>
         <div className="line-clamp-1 text-right text-ellipsis">
-          {"value" in value.engValue ? value.engValue.value.toLocaleString() : "Unknown Value Type"}
+          {"value" in value.value.engValue
+            ? value.value.engValue.value.toLocaleString()
+            : "Unknown Value Type"}
         </div>
       </>
     ),

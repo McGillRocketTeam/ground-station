@@ -6,6 +6,7 @@ import { Events, Reply, Messages as ServerMessages, SubscriptionId } from "./ser
 export interface WebSocketClientService {
   readonly messages: Stream.Stream<typeof ServerMessages.Type>;
   readonly send: (data: Record<string, any>) => Effect.Effect<SubscriptionId>;
+  readonly sendWithoutReply: (data: Record<string, any>) => Effect.Effect<void>;
   readonly subscribe: (request: typeof SubscriptionRequest.Type) => Effect.Effect<{
     call: SubscriptionId;
     stream: Stream.Stream<typeof Events.Type>;
@@ -101,6 +102,13 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
           return reply.call!;
         });
 
+      const sendWithoutReply = (data: Record<string, any>) =>
+        Effect.gen(function* () {
+          const messageId = id++;
+          yield* Effect.logDebug(`Sending Streaming Message ${data.type}`, data);
+          yield* Effect.sync(() => ws.send(JSON.stringify({ ...data, id: messageId })));
+        });
+
       const subscribe = Effect.fnUntraced(function* (request: typeof SubscriptionRequest.Type) {
         const { _tag, ...data } = request;
 
@@ -130,7 +138,7 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
         );
       });
 
-      return { messages, send, subscribe, unsubscribe };
+      return { messages, send, sendWithoutReply, subscribe, unsubscribe };
     }),
   );
 }

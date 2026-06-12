@@ -7,6 +7,7 @@ import {
   StreamingCommandHisotryEntry,
   SubscribeCommandsRequest,
   WebSocketClient,
+  YamcsConfig,
 } from "@mrt/yamcs-effect";
 import {
   Cause,
@@ -21,9 +22,8 @@ import {
   Stream,
   SubscriptionRef,
 } from "effect";
-import { get } from "effect/unstable/reactivity/Atom";
 
-import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import { YamcsAtomHttpClient } from "@/lib/atom";
 
 import { TW1 } from "./procedures/tw1";
 
@@ -423,19 +423,22 @@ export class ProcedureExecutor extends Context.Service<
             case "command":
               return Effect.gen(function* () {
                 const ws = yield* WebSocketClient;
-
-                const instance = yield* get(selectedInstanceAtom);
+                const yamcsConfig = yield* YamcsConfig;
 
                 const { call, stream } = yield* ws.subscribe(
                   SubscribeCommandsRequest.make({
-                    instance,
-                    processor: "realtime",
+                    instance: yamcsConfig.instance,
+                    processor: yamcsConfig.processor,
                   }),
                 );
 
                 const cmd = yield* YamcsAtomHttpClient.use((client) =>
                   client.command.issueCommand({
-                    params: { name: step.name, instance, processor: "realtime" },
+                    params: {
+                      name: step.name,
+                      instance: yamcsConfig.instance,
+                      processor: yamcsConfig.processor,
+                    },
                     payload: {},
                   }),
                 );

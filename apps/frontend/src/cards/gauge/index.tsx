@@ -2,6 +2,8 @@ import { useAtomValue } from "@effect/atom-react";
 import { Cause } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 
+import type { LiveParameterUpdate } from "@/lib/atom";
+
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
@@ -26,7 +28,9 @@ function GaugeParameter({
   parameter: string;
   ranges: typeof DEFAULT_VISUAL_RANGES;
 }) {
-  const result = useAtomValue(parameterSubscriptionAtom(parameter.replace("SystemA", "SystemB")));
+  const result: AsyncResult.AsyncResult<LiveParameterUpdate, unknown> = useAtomValue(
+    parameterSubscriptionAtom(parameter.replace("SystemA", "SystemB")),
+  );
 
   return AsyncResult.match(result, {
     onInitial: () => <Gauge label={label} max={max} min={min} ranges={ranges} value={0} />,
@@ -37,10 +41,10 @@ function GaugeParameter({
     ),
     onSuccess: ({ value }) => {
       const parameterValue =
-        value.engValue && "value" in value.engValue
-          ? value.engValue.value
-          : value.rawValue && "value" in value.rawValue
-            ? value.rawValue.value
+        value.value.engValue && "value" in value.value.engValue
+          ? value.value.engValue.value
+          : value.value.rawValue && "value" in value.value.rawValue
+            ? value.value.rawValue.value
             : undefined;
 
       return (

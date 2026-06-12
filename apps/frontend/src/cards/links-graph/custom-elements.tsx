@@ -148,11 +148,20 @@ function extractNumericParameterValue(parameterResult: unknown) {
   }
 
   const value = parameterResult.value;
-  if (typeof value !== "object" || value === null || !("engValue" in value)) {
+  if (typeof value !== "object" || value === null || !("value" in value)) {
     return undefined;
   }
 
-  const engValue = value.engValue;
+  const parameterValue = value.value;
+  if (
+    typeof parameterValue !== "object" ||
+    parameterValue === null ||
+    !("engValue" in parameterValue)
+  ) {
+    return undefined;
+  }
+
+  const engValue = parameterValue.engValue;
   if (typeof engValue !== "object" || engValue === null || !("value" in engValue)) {
     return undefined;
   }

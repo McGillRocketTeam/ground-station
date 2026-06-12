@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,9 @@ import org.yamcs.mrt.utils.MqttTopicHandler;
 import org.yamcs.tctm.AbstractTmDataLink;
 
 public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandler {
+  private static final String FLIGHT_COMPUTER_COMMAND_PATH = "/FlightComputer/";
+  private static final String EMPTY_COMMAND_BODY = "{\"args\":{},\"extra\":{}}";
+
   MqttToTmPacketConverter tmConverter;
 
   // Local State
@@ -51,15 +55,15 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private static final int IGNP__MIO = 1;
   private static final int IGNM__MIO = 0;
 
-
   private static final String YAMCS_INSTANCE = "launch-canada";
   private static final String YAMCS_PROCESSOR = "realtime";
 
   private final HttpClient httpClient = HttpClient.newHttpClient();
+  private Map<Integer, LabJackCommandMapping> labJackCommandMap = Map.of();
+  private Map<Integer, FlightComputerCommandMapping> flightComputerCommandMap = Map.of();
 
   /**
-   * Switch-to-LabJack pin mapping. Each entry maps a byte offset in the ControlBox telemetry packet
-   * to the corresponding LabJack digital pin number.
+   * Switch names by byte offset in the ControlBox telemetry packet.
    *
    * <p>Packet layout (from controlbox.xml): byte 0: panel_1_switch_estop byte 1:
    * panel_2_switch_launch byte 2: panel_3_switch_1 byte 3: panel_3_switch_2 byte 4:
@@ -67,43 +71,48 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    * byte 8: panel_6_switch_1 byte 9: panel_6_switch_2 byte 10: panel_7_switch_1 byte 11:
    * panel_7_switch_2 byte 12: panel_8_switch_1 byte 13: panel_9_switch_key byte 14:
    * panel_8_switch_2 (BLKT)
-   *
-   * <p>Pin number -1 means the switch is not mapped to a LabJack pin.
-   *
-   * <p>When a switch changes, issueWriteDigitalPinCommand() sends an async HTTP POST to
-   * http://localhost:8090/api/processors/ground_station/realtime/commands/LabJackT7/write_digital_pin
-   * with pin_number and pin_state (HIGH/LOW).
    */
   // @formatter:off
-  private static final Map<Integer, SwitchMapping> SWITCH_PIN_MAP =
+  private static final Map<Integer, String> SWITCH_NAME_MAP =
       Map.ofEntries(
-          Map.entry(0,  new SwitchMapping("panel_1_switch_estop",   -1)),            // E-stop: not mapped
-          Map.entry(1,  new SwitchMapping("panel_2_switch_launch",  MOV__FIO)),      // FIO6
-          Map.entry(2,  new SwitchMapping("panel_3_switch_1",       RUN__FIO)),      // FIO0
-          Map.entry(3,  new SwitchMapping("panel_3_switch_2",       DUMP_FIO)),      // FIO3
-          Map.entry(4,  new SwitchMapping("panel_4_switch_1",       VENT_FIO)),      // FIO7
-          Map.entry(5,  new SwitchMapping("panel_4_switch_2",       FILL_FIO)),      // FIO1
-          Map.entry(6,  new SwitchMapping("panel_5_switch_1",       PURG_FIO)),      // FIO5
-          Map.entry(7,  new SwitchMapping("panel_5_switch_2",       -1)),             // FIO5
-          Map.entry(8,  new SwitchMapping("panel_6_switch_1",       -1)),             // FIO6
-          Map.entry(9,  new SwitchMapping("panel_6_switch_2",       -1)),             // FIO7
-          Map.entry(10, new SwitchMapping("panel_7_switch_1",       -1)),             // DAC0
-          Map.entry(11, new SwitchMapping("panel_7_switch_2",       20+IGNM__MIO)),    // DAC1
-          Map.entry(12, new SwitchMapping("panel_8_switch_1",       20+IGNP__MIO)),    // DAC0
-          Map.entry(14, new SwitchMapping("panel_9_switch_key",     -1)),            // Key: not mapped
-          Map.entry(15, new SwitchMapping("panel_8_switch_2",       BLKT_FIO))      // FIO4
+          Map.entry(0,  "panel_1_switch_estop"),
+          Map.entry(1,  "panel_2_switch_launch"),
+          Map.entry(2,  "panel_3_switch_1"),
+          Map.entry(3,  "panel_3_switch_2"),
+          Map.entry(4,  "panel_4_switch_1"),
+          Map.entry(5,  "panel_4_switch_2"),
+          Map.entry(6,  "panel_5_switch_1"),
+          Map.entry(7,  "panel_5_switch_2"),
+          Map.entry(8,  "panel_6_switch_1"),
+          Map.entry(9,  "panel_6_switch_2"),
+          Map.entry(10, "panel_7_switch_1"),
+          Map.entry(11, "panel_7_switch_2"),
+          Map.entry(12, "panel_8_switch_1"),
+          Map.entry(13, "panel_9_switch_key"),
+          Map.entry(14, "panel_8_switch_2")
+          );
+
+  private static final Map<Integer, LabJackCommandMapping> DEFAULT_LABJACK_COMMAND_MAP =
+      Map.ofEntries(
+          Map.entry(1,  new LabJackCommandMapping(MOV__FIO, false)),
+          Map.entry(2,  new LabJackCommandMapping(RUN__FIO, false)),
+          Map.entry(3,  new LabJackCommandMapping(DUMP_FIO, false)),
+          Map.entry(4,  new LabJackCommandMapping(VENT_FIO, false)),
+          Map.entry(5,  new LabJackCommandMapping(FILL_FIO, false)),
+          Map.entry(6,  new LabJackCommandMapping(PURG_FIO, false)),
+          Map.entry(11, new LabJackCommandMapping(20 + IGNM__MIO, true)),
+          Map.entry(12, new LabJackCommandMapping(20 + IGNP__MIO, true)),
+          Map.entry(14, new LabJackCommandMapping(BLKT_FIO, false))
           );
 
   // @formatter:on
 
-  private record SwitchMapping(String name, int labJackPin, boolean isDac) {
-    SwitchMapping(String name, int labJackPin) {
-      this(name, labJackPin, false);
-    }
-  }
+  private record LabJackCommandMapping(int pin, boolean isDac) {}
+
+  private record FlightComputerCommandMapping(String onCommand, String offCommand) {}
 
   /** Byte offset of the arming key switch in the telemetry packet. */
-  private static final int ARMING_KEY_OFFSET = 14;
+  private static final int ARMING_KEY_OFFSET = 13;
 
   /**
    * Switches that require the arming key to be ON before their commands are dispatched. Identified
@@ -125,6 +134,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   public void init(String instance, String name, YConfiguration config) {
     MqttManager manager = MqttManager.getInstance();
     this.baseTopic = name;
+    this.labJackCommandMap = loadLabJackCommandMap(config);
+    this.flightComputerCommandMap = loadFlightComputerCommandMap(config);
 
     tmConverter = new DefaultMqttToTmPacketConverter();
     tmConverter.init(yamcsInstance, linkName, config);
@@ -207,9 +218,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   }
 
   /**
-   * Compares the current telemetry packet against the previous one to detect switch state changes.
-   * For each changed switch that has a LabJack pin mapping, issues a /LabJackT7/write_digital_pin
-   * command via the Yamcs HTTP API.
+   * Compares the current telemetry packet against the previous one to detect switch state changes
+   * and dispatches any configured LabJack or FlightComputer commands.
    */
   private void detectAndDispatchChanges(byte[] currentPayload) {
     if (previousSwitchStates == null) {
@@ -243,8 +253,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
       for (int i = 0; i < numSwitches; i++) {
         if (i == ESTOP_OFFSET) continue;
         if (currentPayload[i] != previousSwitchStates[i]) {
-          SwitchMapping mapping = SWITCH_PIN_MAP.get(i);
-          String name = mapping != null ? mapping.name() : ("switch_" + i);
+          String name = switchNameForOffset(i);
           log.warn("Blocked switch change for " + name + " because E-STOP is active");
         }
       } 
@@ -256,33 +265,32 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     // Normal processing when no E-stop active
     for (int i = 0; i < numSwitches; i++) {
       if (currentPayload[i] != previousSwitchStates[i]) {
-        SwitchMapping mapping = SWITCH_PIN_MAP.get(i);
-        if (mapping == null) {
-          continue;
-        }
-
+        String switchName = switchNameForOffset(i);
         boolean newState = currentPayload[i] != 0;
-        log.info("Switch state change: " + mapping.name() + " -> " + (newState ? "ON" : "OFF"));
+        log.info("Switch state change: " + switchName + " -> " + (newState ? "ON" : "OFF"));
 
         if (ARMING_KEY_GUARDED_SWITCHES.contains(i) && !armingKeyOn) {
-          log.warn("Blocked command for " + mapping.name() + ": arming key is OFF");
+          log.warn("Blocked command for " + switchName + ": arming key is OFF");
           continue;
         }
 
         Long last = lastCommandTime.get(i);
         if (last != null && (now - last) < DEBOUNCE_MS) {
-          log.debug("Debounced rapid change for " + mapping.name());
+          log.debug("Debounced rapid change for " + switchName);
           continue;
         }
         lastCommandTime.put(i, now);
 
-        if (mapping.labJackPin() >= 0) {
-          if (mapping.isDac()) {
-            issueWriteDACPinCommand(mapping.labJackPin(), newState, mapping.name());
+        LabJackCommandMapping labJackMapping = labJackCommandMap.get(i);
+        if (labJackMapping != null) {
+          if (labJackMapping.isDac()) {
+            issueWriteDACPinCommand(labJackMapping.pin(), newState, switchName);
           } else {
-            issueWriteDigitalPinCommand(mapping.labJackPin(), newState, mapping.name());
+            issueWriteDigitalPinCommand(labJackMapping.pin(), newState, switchName);
           }
         }
+
+        issueFlightComputerCommand(i, newState, switchName);
       }
     }
 
@@ -307,6 +315,147 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     }
 
     log.warn("EMERGENCY STOP: all digital pins set to LOW");
+    issueFlightComputerCommand(ESTOP_OFFSET, true, "panel_1_switch_estop");
+  }
+
+  private Map<Integer, FlightComputerCommandMapping> loadFlightComputerCommandMap(
+      YConfiguration config) {
+    if (!config.containsKey("flightComputerCommands")) {
+      return Map.of();
+    }
+
+    Object rawMappings = config.getRoot().get("flightComputerCommands");
+    if (!(rawMappings instanceof List<?> mappingsList)) {
+      log.warn("Ignoring invalid flightComputerCommands config: expected a list");
+      return Map.of();
+    }
+
+    Map<Integer, FlightComputerCommandMapping> mappings = new HashMap<>();
+    for (Object entry : mappingsList) {
+      if (!(entry instanceof Map<?, ?> rawEntry)) {
+        log.warn("Ignoring invalid flightComputerCommands entry: expected a map");
+        continue;
+      }
+
+      Integer offset = resolveSwitchOffset(rawEntry);
+      if (offset == null) {
+        log.warn(
+            "Ignoring flightComputerCommands entry without a valid offset or switchName");
+        continue;
+      }
+
+      String onCommand = normalizeFlightComputerCommand(rawEntry.get("onCommand"));
+      String offCommand = normalizeFlightComputerCommand(rawEntry.get("offCommand"));
+      if (onCommand == null && offCommand == null) {
+        log.warn(
+            "Ignoring flightComputerCommands entry for offset "
+                + offset
+                + ": no onCommand or offCommand configured");
+        continue;
+      }
+
+      mappings.put(offset, new FlightComputerCommandMapping(onCommand, offCommand));
+    }
+
+    return Map.copyOf(mappings);
+  }
+
+  private Map<Integer, LabJackCommandMapping> loadLabJackCommandMap(YConfiguration config) {
+    if (!config.containsKey("labJackCommands")) {
+      return DEFAULT_LABJACK_COMMAND_MAP;
+    }
+
+    Object rawMappings = config.getRoot().get("labJackCommands");
+    if (!(rawMappings instanceof List<?> mappingsList)) {
+      log.warn("Ignoring invalid labJackCommands config: expected a list");
+      return DEFAULT_LABJACK_COMMAND_MAP;
+    }
+
+    Map<Integer, LabJackCommandMapping> mappings = new HashMap<>();
+    for (Object entry : mappingsList) {
+      if (!(entry instanceof Map<?, ?> rawEntry)) {
+        log.warn("Ignoring invalid labJackCommands entry: expected a map");
+        continue;
+      }
+
+      Integer offset = resolveSwitchOffset(rawEntry);
+      Integer pin = parseSwitchOffset(rawEntry.get("pin"));
+      if (offset == null || pin == null) {
+        log.warn("Ignoring labJackCommands entry without a valid offset/switchName and pin");
+        continue;
+      }
+
+      boolean isDac = Boolean.TRUE.equals(rawEntry.get("isDac"));
+      mappings.put(offset, new LabJackCommandMapping(pin, isDac));
+    }
+
+    return Map.copyOf(mappings);
+  }
+
+  private Integer parseSwitchOffset(Object rawOffset) {
+    if (rawOffset instanceof Number number) {
+      return number.intValue();
+    }
+    if (rawOffset instanceof String text && !text.isBlank()) {
+      try {
+        return Integer.parseInt(text);
+      } catch (NumberFormatException e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  private Integer resolveSwitchOffset(Map<?, ?> rawEntry) {
+    Integer offset = parseSwitchOffset(rawEntry.get("offset"));
+    if (offset != null) {
+      return offset;
+    }
+
+    Object rawSwitchName = rawEntry.get("switchName");
+    if (!(rawSwitchName instanceof String switchName) || switchName.isBlank()) {
+      return null;
+    }
+
+    for (Map.Entry<Integer, String> entry : SWITCH_NAME_MAP.entrySet()) {
+      if (entry.getValue().equals(switchName)) {
+        return entry.getKey();
+      }
+    }
+
+    return null;
+  }
+
+  private String switchNameForOffset(int offset) {
+    return SWITCH_NAME_MAP.getOrDefault(offset, "switch_" + offset);
+  }
+
+  private String normalizeFlightComputerCommand(Object rawCommand) {
+    if (!(rawCommand instanceof String command)) {
+      return null;
+    }
+
+    String trimmed = command.trim();
+    if (trimmed.isEmpty()) {
+      return null;
+    }
+
+    return trimmed.startsWith("/") ? trimmed : FLIGHT_COMPUTER_COMMAND_PATH + trimmed;
+  }
+
+  private void issueFlightComputerCommand(int switchOffset, boolean newState, String switchName) {
+    FlightComputerCommandMapping mapping = flightComputerCommandMap.get(switchOffset);
+    if (mapping == null) {
+      return;
+    }
+
+    String commandPath = newState ? mapping.onCommand() : mapping.offCommand();
+    if (commandPath == null) {
+      return;
+    }
+
+    log.info("Issuing FlightComputer command: " + commandPath + " (triggered by " + switchName + ")");
+    issueYamcsCommand(commandPath, EMPTY_COMMAND_BODY, "FlightComputer command for " + switchName);
   }
 
   /**
@@ -335,42 +484,17 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
         String.format(
             "{\"args\": {\"pin_number\": %d, \"pin_state\": \"%s\"}}", pinNumber, pinStateStr);
 
-    HttpRequest request =
-        HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-            .build();
-
-    httpClient
-        .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-        .thenAccept(
-            response -> {
-              if (response.statusCode() == 200) {
-                log.info(
-                    "Issued write_digital_pin: pin="
-                        + pinNumber
-                        + " state="
-                        + pinStateStr
-                        + " (triggered by "
-                        + switchName
-                        + ")");
-              } else {
-                log.warn(
-                    "Failed to issue write_digital_pin for "
-                        + switchName
-                        + ": HTTP "
-                        + response.statusCode()
-                        + " - "
-                        + response.body());
-              }
-            })
-        .exceptionally(
-            ex -> {
-              log.error(
-                  "Error issuing write_digital_pin for " + switchName + ": " + ex.getMessage());
-              return null;
-            });
+    issueYamcsCommand(
+        url,
+        jsonBody,
+        "write_digital_pin for " + switchName,
+        "Issued write_digital_pin: pin="
+            + pinNumber
+            + " state="
+            + pinStateStr
+            + " (triggered by "
+            + switchName
+            + ")");
   }
 
   /**
@@ -391,6 +515,29 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
         String.format(
             "{\"args\": {\"pin_number\": %d, \"pin_voltage\": %s}}", pinNumber, voltage);
 
+    issueYamcsCommand(
+        url,
+        jsonBody,
+        "write_DAC_pin for " + switchName,
+        "Issued write_DAC_pin: pin="
+            + pinNumber
+            + " voltage="
+            + voltage
+            + "V (triggered by "
+            + switchName
+            + ")");
+  }
+
+  private void issueYamcsCommand(String commandPath, String jsonBody, String actionDescription) {
+    String url =
+        String.format(
+            "http://localhost:%d/api/processors/%s/%s/commands%s",
+            YAMCS_HTTP_PORT, YAMCS_INSTANCE, YAMCS_PROCESSOR, commandPath);
+    issueYamcsCommand(url, jsonBody, actionDescription, "Issued " + actionDescription);
+  }
+
+  private void issueYamcsCommand(
+      String url, String jsonBody, String actionDescription, String successMessage) {
     HttpRequest request =
         HttpRequest.newBuilder()
             .uri(URI.create(url))
@@ -403,18 +550,11 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
         .thenAccept(
             response -> {
               if (response.statusCode() == 200) {
-                log.info(
-                    "Issued write_DAC_pin: pin="
-                        + pinNumber
-                        + " voltage="
-                        + voltage
-                        + "V (triggered by "
-                        + switchName
-                        + ")");
+                log.info(successMessage);
               } else {
                 log.warn(
-                    "Failed to issue write_DAC_pin for "
-                        + switchName
+                    "Failed to issue "
+                        + actionDescription
                         + ": HTTP "
                         + response.statusCode()
                         + " - "
@@ -423,8 +563,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
             })
         .exceptionally(
             ex -> {
-              log.error(
-                  "Error issuing write_DAC_pin for " + switchName + ": " + ex.getMessage());
+              log.error("Error issuing " + actionDescription + ": " + ex.getMessage());
               return null;
             });
   }

@@ -33,6 +33,34 @@ dataLinks:
   - name: ControlBox
     class: org.yamcs.mrt.links.ControlBoxLink
     tmStream: tm_controlBox
+    labJackCommands:
+      - switchName: panel_2_switch_launch
+        pin: 5
+      - switchName: panel_3_switch_1
+        pin: 0
+      - switchName: panel_3_switch_2
+        pin: 3
+      - switchName: panel_4_switch_1
+        pin: 4
+      - switchName: panel_4_switch_2
+        pin: 2
+      - switchName: panel_5_switch_1
+        pin: 5
+      - switchName: panel_7_switch_2
+        pin: 20
+        isDac: true
+      - switchName: panel_8_switch_1
+        pin: 21
+        isDac: true
+      - switchName: panel_8_switch_2
+        pin: 4
+    flightComputerCommands:
+      - switchName: panel_9_switch_key
+        onCommand: mov_arming
+        offCommand: mov_disarming
+      - switchName: panel_1_switch_estop
+        onCommand: emergency_stop
+        offCommand: emergency_cancel
     packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: -1

@@ -12,6 +12,9 @@ export const ChartSeriesConfigSchema = Schema.Struct({
 });
 
 export const ChartCardConfigSchema = Schema.Struct({
+  defaultTimeWindowMinutes: Schema.optional(Schema.NumberFromString).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Default Time Window (minutes)" }),
+  ),
   series: Schema.optional(Schema.Array(ChartSeriesConfigSchema)).pipe(
     Schema.annotate({
       [FormTitleAnnotationId]: "Series",
@@ -22,6 +25,8 @@ export const ChartCardConfigSchema = Schema.Struct({
 
 export type ChartSeriesConfig = typeof ChartSeriesConfigSchema.Type;
 export type ChartCardConfig = typeof ChartCardConfigSchema.Type;
+
+export const DEFAULT_TIME_WINDOW_MINUTES = 15;
 
 export const DEFAULT_SERIES_CONFIGS: ReadonlyArray<ChartSeriesConfig> = [
   {

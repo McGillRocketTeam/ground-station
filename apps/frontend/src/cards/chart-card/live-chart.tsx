@@ -4,7 +4,7 @@ import { useAtomSet, useAtomSubscribe, useAtomValue } from "@effect/atom-react";
 import * as echarts from "echarts";
 import { graphic } from "echarts";
 import { DateTime } from "effect";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef } from "react";
 
 import type { LiveParameterUpdate } from "@/lib/atom";
 
@@ -21,14 +21,15 @@ import type { ChartPoint, ChartSeriesData, ChartViewport, PanelApi } from "./typ
 import { DEFAULT_SERIES_CONFIGS } from "./config";
 import {
   applySeriesOffset,
+  createLiveViewport,
   extractNumericValue,
   historyAtom,
   liveParameterAtom,
-  LIVE_WINDOW_MS,
   mergePoints,
+  toLiveWindowMs,
   viewportAtom,
 } from "./data";
-import { resizeChart, setChartViewport, updateChartData } from "./echarts";
+import { applyChartTheme, resizeChart, setChartViewport, updateChartData } from "./echarts";
 
 type DragState = {
   pointerX: number;
@@ -90,15 +91,14 @@ function getLatestPointTime(seriesData: ChartSeriesData) {
   );
 }
 
-function getLiveViewport(seriesData: ChartSeriesData): ChartViewport | undefined {
+function getLiveViewport(
+  seriesData: ChartSeriesData,
+  liveWindowMs: number,
+): ChartViewport | undefined {
   const latestPointTime = getLatestPointTime(seriesData);
   if (!Number.isFinite(latestPointTime)) return undefined;
 
-  return {
-    end: latestPointTime,
-    mode: "live",
-    start: latestPointTime - LIVE_WINDOW_MS,
-  };
+  return createLiveViewport(liveWindowMs, latestPointTime);
 }
 
 function emptySeriesData(): ChartSeriesData {
@@ -168,21 +168,32 @@ function LiveSeriesSubscription({
     [onPoint, series, seriesKey],
   );
 
-  useAtomSubscribe(liveParameterAtom(parameter.replace("SystemA", "SystemB")), handleUpdate);
+  useAtomSubscribe(liveParameterAtom(parameter), handleUpdate);
 
   return null;
 }
 
 export function LiveChart({
   api,
+  defaultTimeWindowMinutes,
   seriesConfigs,
 }: {
   api: PanelApi;
+  defaultTimeWindowMinutes?: number;
   seriesConfigs?: ReadonlyArray<ChartSeriesConfig>;
 }) {
+  const chartScopeId = useId();
   const normalizedSeriesConfigs = useMemo(() => {
     return seriesConfigs?.length ? seriesConfigs : DEFAULT_SERIES_CONFIGS;
   }, [seriesConfigs]);
+  const liveWindowMs = useMemo(
+    () => toLiveWindowMs(defaultTimeWindowMinutes),
+    [defaultTimeWindowMinutes],
+  );
+  const historyAtomKey = useMemo(
+    () => ({ scopeId: chartScopeId, seriesConfigs: normalizedSeriesConfigs }),
+    [chartScopeId, normalizedSeriesConfigs],
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
   const archivePointsRef = useRef<ChartSeriesData>(emptySeriesData());
@@ -191,8 +202,8 @@ export function LiveChart({
   const viewportRef = useRef<ChartViewport | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const viewportDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const setHistoryViewport = useAtomSet(viewportAtom);
-  const historyResult = useAtomValue(historyAtom(normalizedSeriesConfigs));
+  const setHistoryViewport = useAtomSet(viewportAtom(chartScopeId));
+  const historyResult = useAtomValue(historyAtom(historyAtomKey));
 
   const renderSnapshot = useCallback(() => {
     visiblePointsRef.current = snapshotSeriesData(
@@ -206,8 +217,9 @@ export function LiveChart({
   const getLiveViewportFromAllPoints = useCallback(() => {
     return getLiveViewport(
       snapshotSeriesData(archivePointsRef.current, livePointsRef.current, null),
+      liveWindowMs,
     );
-  }, []);
+  }, [liveWindowMs]);
 
   const resetToLive = useCallback(() => {
     const liveViewport = getLiveViewportFromAllPoints();
@@ -288,6 +300,7 @@ export function LiveChart({
         trigger: "axis",
       },
     });
+    applyChartTheme(chart, containerRef.current);
 
     return () => {
       chart.dispose();
@@ -302,7 +315,8 @@ export function LiveChart({
     const zr = chart.getZr();
 
     const handlePointerDown = (event: ZrPointerEvent) => {
-      const viewport = viewportRef.current ?? getLiveViewport(visiblePointsRef.current);
+      const viewport =
+        viewportRef.current ?? getLiveViewport(visiblePointsRef.current, liveWindowMs);
       if (!viewport) return;
 
       const pausedViewport: ChartViewport = {
@@ -347,7 +361,8 @@ export function LiveChart({
     const handleWheel = (event: ZrWheelEvent) => {
       event.event?.preventDefault?.();
 
-      const viewport = viewportRef.current ?? getLiveViewport(visiblePointsRef.current);
+      const viewport =
+        viewportRef.current ?? getLiveViewport(visiblePointsRef.current, liveWindowMs);
       if (!viewport) return;
 
       const chartWidth = Math.max(chart.getWidth(), 1);
@@ -383,7 +398,7 @@ export function LiveChart({
       zr.off("globalout", handlePointerUp);
       zr.off("mousewheel", handleWheel);
     };
-  }, [scheduleHistoryFetch]);
+  }, [liveWindowMs, scheduleHistoryFetch]);
 
   useEffect(
     () => () => {
@@ -408,6 +423,25 @@ export function LiveChart({
     };
   }, []);
 
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      applyChartTheme(chartRef.current, containerRef.current);
+    });
+
+    applyChartTheme(chartRef.current, containerRef.current);
+    observer.observe(root, {
+      attributeFilter: ["class"],
+      attributes: true,
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   useLayoutEffect(() => {
     resizeChart(chartRef.current, {
       height: api.height,
@@ -424,19 +458,28 @@ export function LiveChart({
   }, [api]);
 
   useEffect(() => {
+    if (viewportRef.current?.mode === "paused") return;
+
+    const liveViewport = getLiveViewportFromAllPoints() ?? createLiveViewport(liveWindowMs);
+    viewportRef.current = liveViewport;
+    setChartViewport(chartRef.current, liveViewport.start, liveViewport.end);
+    setHistoryViewport(liveViewport);
+  }, [getLiveViewportFromAllPoints, liveWindowMs, setHistoryViewport]);
+
+  useEffect(() => {
     if (historyResult._tag !== "Success") return;
 
     archivePointsRef.current = historyResult.value;
     renderSnapshot();
 
     if (!viewportRef.current || viewportRef.current.mode === "live") {
-      const liveViewport = getLiveViewport(visiblePointsRef.current);
+      const liveViewport = getLiveViewport(visiblePointsRef.current, liveWindowMs);
       if (!liveViewport) return;
 
       viewportRef.current = liveViewport;
       setChartViewport(chartRef.current, liveViewport.start, liveViewport.end);
     }
-  }, [historyResult, renderSnapshot]);
+  }, [historyResult, liveWindowMs, renderSnapshot]);
 
   const applyLivePoint = useCallback(
     (series: string, point: ChartPoint) => {

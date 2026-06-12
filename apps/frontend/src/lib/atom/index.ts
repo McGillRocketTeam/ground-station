@@ -228,6 +228,14 @@ export const commandsSubscriptionAtom = yamcsSubscriptionRuntime.atom((get) =>
   ),
 );
 
+export const parameterInfoAtom = Atom.family((qualifiedName: QualifiedName) =>
+  yamcsSubscriptionRuntime.atom(Parameters.use((s) => s.get(qualifiedName))),
+);
+
+export const parameterListAtom = yamcsSubscriptionRuntime.atom(
+  Parameters.use((s) => Effect.succeed(s.all)),
+);
+
 export const parameterSubscriptionAtom = Atom.family((qualifiedName: QualifiedName) =>
   yamcsSubscriptionRuntime.atom(
     Stream.unwrap(

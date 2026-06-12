@@ -4,7 +4,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 
-import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import { parameterListAtom } from "@/lib/atom";
 import { ParameterField } from "@/lib/dashboard-field-types";
 
 import {
@@ -47,18 +47,11 @@ export function ParameterSelector({
   value: DashboardParameterFieldValue | null;
   onChange: (value: DashboardParameterFieldValue) => void;
 }) {
-  const instance = useAtomValue(selectedInstanceAtom);
-
-  const parametersResult = useAtomValue(
-    YamcsAtomHttpClient.query("mdb", "listParameters", {
-      params: { instance },
-      query: {},
-    }),
-  );
+  const parametersResult = useAtomValue(parameterListAtom);
 
   return AsyncResult.builder(parametersResult)
     .onInitial(() => <div>Loading Parameter Selector...</div>)
-    .onSuccess(({ parameters }) => {
+    .onSuccess((parameters) => {
       const parameterOptions: ReadonlyArray<DashboardParameterFieldValue> = parameters.map(
         (parameter) => ({
           qualifiedName: parameter.qualifiedName,

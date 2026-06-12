@@ -29,7 +29,7 @@ function GaugeParameter({
   ranges: typeof DEFAULT_VISUAL_RANGES;
 }) {
   const result: AsyncResult.AsyncResult<LiveParameterUpdate, unknown> = useAtomValue(
-    parameterSubscriptionAtom(parameter.replace("SystemA", "SystemB")),
+    parameterSubscriptionAtom(parameter),
   );
 
   return AsyncResult.match(result, {

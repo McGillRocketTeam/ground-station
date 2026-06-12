@@ -1,13 +1,14 @@
-import { useAtomValue } from "@effect/atom-react";
+import { useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 import { memo, useState, type ReactNode } from "react";
 
 import type { LiveParameterUpdate } from "@/lib/atom";
 
-import { parameterSubscriptionAtom } from "@/lib/atom";
+import { parameterInfoAtom, parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
+import { cn } from "@/lib/utils";
 
 const SYSTEM_A_PREFIX = "SystemB/Rocket/FlightComputer";
 
@@ -95,7 +96,7 @@ export const ParameterTable = makeCard({
 
     return (
       <div className="h-full overflow-auto">
-        <div className="grid grid-cols-[1.5rem_minmax(12rem,1fr)_minmax(8rem,0.7fr)] gap-px font-mono">
+        <div className="grid grid-cols-[1.5rem_minmax(12rem,1fr)_minmax(8rem,0.7fr)_minmax(8rem,0.7fr)] gap-px font-mono">
           <TableHeader />
           {sections.map((section) => (
             <TableGroup key={section.title} name={section.title}>
@@ -118,7 +119,10 @@ const TableHeader = memo(function TableHeader() {
         Parameter
       </div>
       <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1">
-        Value
+        System A
+      </div>
+      <div className="border-t border-t-background-secondary-highlight bg-background-secondary px-1">
+        System B
       </div>
       {/* <div className="bg-background-secondary border-t-background-secondary-highlight border-t px-1"> */}
       {/*   Unit */}
@@ -161,15 +165,16 @@ const TableGroup = memo(function TableGroup({
 });
 
 const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
-  const label = parameter.split("/").at(-1) ?? parameter;
+  const info = useAtomSuspense(parameterInfoAtom(parameter)).value;
 
   return (
     <div className="col-span-full grid grid-cols-subgrid text-sm *:bg-background *:px-1 hover:*:bg-selection-background">
       <div />
       <div className="line-clamp-1 text-ellipsis" title={parameter}>
-        {label}
+        {info.shortDescription ?? info.qualifiedName}
       </div>
-      <Value name={parameter} />
+      <Value name={parameter.replace("SystemB", "SystemA")} />
+      {parameter.includes("SystemA") && <Value name={parameter.replace("SystemA", "SystemB")} />}
       {/* <div /> */}
     </div>
   );
@@ -177,13 +182,17 @@ const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
 
 const Value = memo(function Value({ name }: { name: string }) {
   const result: AsyncResult.AsyncResult<LiveParameterUpdate, unknown> = useAtomValue(
-    parameterSubscriptionAtom(name.replace("SystemA", "SystemB")),
+    parameterSubscriptionAtom(name),
   );
+
+  const double = !name.includes("SystemA") && !name.includes("SystemB");
 
   return AsyncResult.match(result, {
     onInitial: () => (
       <>
-        <div className="text-right text-muted-foreground">Awaiting Value</div>
+        <div className={cn("text-right text-muted-foreground", double && "col-span-2")}>
+          Awaiting Value
+        </div>
       </>
     ),
     onFailure: ({ cause }) => (
@@ -193,7 +202,7 @@ const Value = memo(function Value({ name }: { name: string }) {
     ),
     onSuccess: ({ value }) => (
       <>
-        <div className="line-clamp-1 text-right text-ellipsis">
+        <div className={cn("line-clamp-1 text-right text-ellipsis", double && "col-span-2")}>
           {"value" in value.value.engValue
             ? value.value.engValue.value.toLocaleString()
             : "Unknown Value Type"}

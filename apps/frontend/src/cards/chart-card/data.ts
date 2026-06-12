@@ -8,29 +8,49 @@ import { parameterSubscriptionAtom, selectedInstanceAtom, YamcsAtomHttpClient } 
 import type { ChartSeriesConfig } from "./config";
 import type { ChartPoint, ChartViewport } from "./types";
 
+import { DEFAULT_TIME_WINDOW_MINUTES } from "./config";
+
 export const MAX_POINTS = 1000;
-export const LIVE_WINDOW_MS = 15 * 60 * 1000;
+export const DEFAULT_LIVE_WINDOW_MS = DEFAULT_TIME_WINDOW_MINUTES * 60 * 1000;
 
 const SAMPLE_COUNT = 5200;
 
 export const liveParameterAtom = parameterSubscriptionAtom;
+
+type HistoryAtomKey = {
+  scopeId: string;
+  seriesConfigs: ReadonlyArray<ChartSeriesConfig>;
+};
 
 export function applySeriesOffset(value: number, series: ChartSeriesConfig) {
   const offset = Number(series.offset ?? 0);
   return value + (Number.isFinite(offset) ? offset : 0);
 }
 
-export const viewportAtom = Atom.make<ChartViewport>({
-  end: Date.now(),
-  mode: "live",
-  start: Date.now() - LIVE_WINDOW_MS,
-});
+export function toLiveWindowMs(defaultTimeWindowMinutes?: number) {
+  const minutes = Number(defaultTimeWindowMinutes);
+  if (!Number.isFinite(minutes) || minutes <= 0) return DEFAULT_LIVE_WINDOW_MS;
 
-export const historyAtom = Atom.family((seriesConfigs: ReadonlyArray<ChartSeriesConfig>) =>
+  return minutes * 60 * 1000;
+}
+
+export function createLiveViewport(liveWindowMs: number, end = Date.now()): ChartViewport {
+  return {
+    end,
+    mode: "live",
+    start: end - liveWindowMs,
+  };
+}
+
+export const viewportAtom = Atom.family((_scopeId: string) =>
+  Atom.make<ChartViewport>(createLiveViewport(DEFAULT_LIVE_WINDOW_MS)),
+);
+
+export const historyAtom = Atom.family(({ scopeId, seriesConfigs }: HistoryAtomKey) =>
   Atom.make((get) =>
     Effect.gen(function* () {
       const instance = get(selectedInstanceAtom);
-      const viewport = get(viewportAtom);
+      const viewport = get(viewportAtom(scopeId));
       const samplePaddingMs = Math.max(1, (viewport.end - viewport.start) / SAMPLE_COUNT);
       const stop = new Date(viewport.end + samplePaddingMs);
       const start = new Date(viewport.start - samplePaddingMs);

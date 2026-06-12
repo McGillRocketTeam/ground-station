@@ -9,7 +9,11 @@ export const ChartCard = makeCard({
   schema: ChartCardConfigSchema,
   component: (props) => (
     <div className="relative grid h-full min-h-0 w-full min-w-0">
-      <LiveChart api={props.api} seriesConfigs={props.params.series ?? DEFAULT_SERIES_CONFIGS} />
+      <LiveChart
+        api={props.api}
+        defaultTimeWindowMinutes={props.params.defaultTimeWindowMinutes}
+        seriesConfigs={props.params.series ?? DEFAULT_SERIES_CONFIGS}
+      />
     </div>
   ),
 });

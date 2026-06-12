@@ -1,19 +1,20 @@
-import type { AtomRegistry } from "effect/unstable/reactivity";
+import type { AtomRegistry as AtomRegistryType } from "effect/unstable/reactivity";
 
 import {
+  type QualifiedName,
   CommandHistoryEvent,
-  mergeCommandEntries,
   ProcedureStep,
   StreamingCommandHisotryEntry,
-  SubscribeCommandsRequest,
   WebSocketClient,
   YamcsConfig,
+  Parameters,
 } from "@mrt/yamcs-effect";
 import {
   Cause,
   Context,
   Data,
   DateTime,
+  Duration,
   Effect,
   Exit,
   Layer,
@@ -22,8 +23,10 @@ import {
   Stream,
   SubscriptionRef,
 } from "effect";
+import { AtomRegistry } from "effect/unstable/reactivity";
 
-import { YamcsAtomHttpClient } from "@/lib/atom";
+import { commandsSubscriptionAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import { stringifyValue } from "@/lib/utils";
 
 import { TW1 } from "./procedures/tw1";
 
@@ -39,8 +42,43 @@ export class CommandStepLiveData extends Schema.TaggedClass<CommandStepLiveData>
   },
 ) {}
 
-const StepLiveData = Schema.Union([EmptyStepLiveData, CommandStepLiveData]);
+const VerifyConditionStatusSchema = Schema.Literals(["pending", "passed"]);
+type VerifyConditionStatus = typeof VerifyConditionStatusSchema.Type;
+
+class VerifyConditionLiveData extends Schema.Class<VerifyConditionLiveData>(
+  "VerifyConditionLiveData",
+)({
+  label: Schema.String,
+  parameter: Schema.String,
+  mirroredParameter: Schema.optional(Schema.String),
+  operator: Schema.String,
+  expected: Schema.String,
+  actual: Schema.NullOr(Schema.String),
+  status: VerifyConditionStatusSchema,
+  mirroredActual: Schema.NullOr(Schema.String),
+  mirroredStatus: Schema.optional(VerifyConditionStatusSchema),
+}) {}
+
+export class VerifyStepLiveData extends Schema.TaggedClass<VerifyStepLiveData>()(
+  "VerifyStepLiveData",
+  {
+    conditions: Schema.Array(VerifyConditionLiveData),
+  },
+) {}
+
+const StepLiveData = Schema.Union([EmptyStepLiveData, CommandStepLiveData, VerifyStepLiveData]);
 type StepLiveData = typeof StepLiveData.Type;
+
+type CommandHistoryEntry = (typeof CommandHistoryEvent.Type)["data"];
+type VerifyStep = Extract<typeof ProcedureStep.Type, { type: "verify" }>;
+type VerifyCondition = VerifyStep["condition"][number];
+
+interface SelectedCommandStep {
+  readonly stepIndex: number;
+  readonly commandName: string;
+  readonly selectedAt: DateTime.Utc;
+  readonly trackedCommandId: string | null;
+}
 
 const ProcedureAuditEventType = Schema.Literals([
   "stepSelected",
@@ -174,13 +212,13 @@ const formatAttrValue = (attr: {
   readonly value: { readonly type: string; readonly stringValue?: string };
 }) => attr.value.stringValue ?? attr.value.type;
 
-const formatCommandLiveMessage = (entry: (typeof CommandHistoryEvent.Type)["data"]) =>
+const formatCommandLiveMessage = (entry: CommandHistoryEntry) =>
   entry.attr.map((attr) => `${attr.name}: ${formatAttrValue(attr)}`).join("\n");
 
-const getCommandAttributeValue = (entry: (typeof CommandHistoryEvent.Type)["data"], name: string) =>
+const getCommandAttributeValue = (entry: CommandHistoryEntry, name: string) =>
   entry.attr.find((attr) => attr.name === name)?.value;
 
-const isTerminalCommandEntry = (entry: (typeof CommandHistoryEvent.Type)["data"]) =>
+const isTerminalCommandEntry = (entry: CommandHistoryEntry) =>
   entry.attr.some(
     (attr) =>
       attr.name === "CommandComplete_Status" &&
@@ -196,18 +234,24 @@ class ProcedureCommandFailedError extends Data.TaggedError("ProcedureCommandFail
   readonly message: string;
 }> {}
 
-const timeoutCommandCompletion = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+const timeoutStepCompletion = <A, E, R>(
+  effect: Effect.Effect<A, E, R>,
+  duration: Duration.Input = "15 seconds",
+) =>
   effect.pipe(
     Effect.timeoutOrElse({
-      duration: "15 seconds",
+      duration,
       orElse: () =>
         Effect.fail(
           new ProcedureStepTimeoutError({
-            message: "Timed out waiting for command completion after 15 seconds",
+            message: `Timed out waiting for step completion after ${duration}`,
           }),
         ),
     }),
   );
+
+const timeoutCommandCompletion = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+  timeoutStepCompletion(effect, "15 seconds");
 
 const clampStepIndex = (steps: ReadonlyArray<ExecutionStep>, index: number): number => {
   if (steps.length === 0) {
@@ -215,6 +259,167 @@ const clampStepIndex = (steps: ReadonlyArray<ExecutionStep>, index: number): num
   }
 
   return Math.max(0, Math.min(index, steps.length - 1));
+};
+
+const isCommandExecutionStep = (
+  step: ExecutionStep | undefined,
+): step is ExecutionStep & {
+  readonly meta: Extract<typeof ProcedureStep.Type, { type: "command" }>;
+} => step?.meta.type === "command";
+
+const formatVerifyOperator = (operator: VerifyCondition["operator"]) => {
+  switch (operator) {
+    case "eq":
+      return "==";
+    case "neq":
+      return "!=";
+    case "gt":
+      return ">";
+    case "gte":
+      return ">=";
+    case "le":
+      return "<";
+    case "lte":
+      return "<=";
+  }
+};
+
+const formatJsonValue = (value: unknown): string => {
+  if (value === null) {
+    return "null";
+  }
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map(formatJsonValue).join(", ")}]`;
+  }
+
+  if (typeof value === "object") {
+    return `{${Object.entries(value)
+      .map(([key, entry]) => `${key}: ${formatJsonValue(entry)}`)
+      .join(", ")}}`;
+  }
+
+  return String(value);
+};
+
+const getParameterLeafName = (qualifiedName: QualifiedName) => {
+  const segments = qualifiedName.split("/").filter(Boolean);
+  return segments.at(-1) ?? qualifiedName;
+};
+
+const getMirroredParameterName = (qualifiedName: QualifiedName): QualifiedName | undefined =>
+  qualifiedName.includes("SystemA")
+    ? (qualifiedName.replace("SystemA", "SystemB") as QualifiedName)
+    : undefined;
+
+const formatVerifyConditionLabel = (step: VerifyStep, condition: VerifyCondition) => {
+  if (condition.display?.label) {
+    return condition.display.label;
+  }
+
+  const row = condition.display?.row;
+  const columnId = condition.display?.column;
+  const columnLabel =
+    step.presentation?.type === "truthTable" && columnId
+      ? step.presentation.columns.find((column) => column.id === columnId)?.label
+      : undefined;
+
+  if (row || columnLabel || columnId) {
+    return [row, columnLabel ?? columnId].filter((part) => part && part.length > 0).join(" ");
+  }
+
+  return getParameterLeafName(condition.parameter).replaceAll("_", " ");
+};
+
+const makeVerifyConditionLiveData = (step: VerifyStep, condition: VerifyCondition) =>
+  VerifyConditionLiveData.make({
+    label: formatVerifyConditionLabel(step, condition),
+    parameter: condition.parameter,
+    mirroredParameter: getMirroredParameterName(condition.parameter),
+    operator: formatVerifyOperator(condition.operator),
+    expected: formatJsonValue(condition.value),
+    actual: null,
+    status: "pending",
+    mirroredActual: null,
+    mirroredStatus: getMirroredParameterName(condition.parameter) ? "pending" : undefined,
+  });
+
+const valueToComparable = (
+  value: { readonly type: string; readonly value?: unknown } | undefined,
+): unknown => {
+  if (!value || !("value" in value)) {
+    return undefined;
+  }
+
+  return value.value;
+};
+
+const jsonValueEquals = (left: unknown, right: unknown): boolean => {
+  if (Object.is(left, right)) {
+    return true;
+  }
+
+  if (typeof left !== typeof right) {
+    return false;
+  }
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return (
+      left.length === right.length &&
+      left.every((entry, index) => jsonValueEquals(entry, right[index]))
+    );
+  }
+
+  if (typeof left === "object" && left !== null && typeof right === "object" && right !== null) {
+    const leftEntries = Object.entries(left);
+    const rightEntries = Object.entries(right);
+
+    return (
+      leftEntries.length === rightEntries.length &&
+      leftEntries.every(([key, entry]) =>
+        jsonValueEquals(entry, (right as Record<string, unknown>)[key]),
+      )
+    );
+  }
+
+  return false;
+};
+
+const compareVerifyCondition = (actual: unknown, condition: VerifyCondition): boolean => {
+  switch (condition.operator) {
+    case "eq":
+      return jsonValueEquals(actual, condition.value);
+    case "neq":
+      return !jsonValueEquals(actual, condition.value);
+    case "gt":
+      return (
+        typeof actual === "number" &&
+        typeof condition.value === "number" &&
+        actual > condition.value
+      );
+    case "gte":
+      return (
+        typeof actual === "number" &&
+        typeof condition.value === "number" &&
+        actual >= condition.value
+      );
+    case "le":
+      return (
+        typeof actual === "number" &&
+        typeof condition.value === "number" &&
+        actual < condition.value
+      );
+    case "lte":
+      return (
+        typeof actual === "number" &&
+        typeof condition.value === "number" &&
+        actual <= condition.value
+      );
+  }
 };
 
 const moveSelection = (
@@ -311,7 +516,7 @@ export class ProcedureExecutor extends Context.Service<
     readonly execute: () => Effect.Effect<
       void,
       never,
-      YamcsAtomHttpClient | WebSocketClient | AtomRegistry.AtomRegistry
+      YamcsAtomHttpClient | WebSocketClient | AtomRegistryType.AtomRegistry
     >;
     readonly renderAuditText: () => Effect.Effect<string>;
     readonly selectStep: (index: number) => Effect.Effect<void>;
@@ -323,6 +528,8 @@ export class ProcedureExecutor extends Context.Service<
     Layer.effect(
       ProcedureExecutor,
       Effect.gen(function* () {
+        const parameterService = yield* Parameters;
+        const registry = yield* AtomRegistry.AtomRegistry;
         const state = yield* SubscriptionRef.make(
           ProcedureExecutionState.make({
             currentStepIndex: 0,
@@ -330,6 +537,44 @@ export class ProcedureExecutor extends Context.Service<
           }),
         );
         const log = yield* ProcedureExecutorLog;
+        const selectedCommandStep = yield* SubscriptionRef.make<Option.Option<SelectedCommandStep>>(
+          Option.none(),
+        );
+
+        const syncSelectedCommandStep = (selectedAt: DateTime.Utc) =>
+          Effect.gen(function* () {
+            const executionState = yield* SubscriptionRef.get(state);
+            const step = executionState.steps[executionState.currentStepIndex];
+
+            if (!isCommandExecutionStep(step) || !step.isSelected) {
+              yield* SubscriptionRef.set(selectedCommandStep, Option.none());
+              return;
+            }
+
+            yield* SubscriptionRef.set(
+              selectedCommandStep,
+              Option.some({
+                stepIndex: executionState.currentStepIndex,
+                commandName: step.meta.name,
+                selectedAt,
+                trackedCommandId: null,
+              }),
+            );
+          });
+
+        const setTrackedCommandId = (stepIndex: number, commandId: string) =>
+          SubscriptionRef.update(selectedCommandStep, (current) =>
+            Option.match(current, {
+              onNone: () => Option.none(),
+              onSome: (selected) =>
+                selected.stepIndex === stepIndex
+                  ? Option.some({
+                      ...selected,
+                      trackedCommandId: commandId,
+                    })
+                  : current,
+            }),
+          );
 
         const recordStepChange = (
           index: number,
@@ -386,6 +631,8 @@ export class ProcedureExecutor extends Context.Service<
                 `Selected step ${formatStepDisplayNumber(result.step)}`,
               ),
             );
+
+            yield* syncSelectedCommandStep(at);
           });
 
         const recordStepOutcome = (
@@ -406,31 +653,215 @@ export class ProcedureExecutor extends Context.Service<
             }
 
             yield* log.append(makeAuditEntry(at, index, step, event, message));
+            yield* syncSelectedCommandStep(at);
           });
+
+        const awaitCommandResult = (commandId: string, index: number) =>
+          timeoutCommandCompletion(
+            AtomRegistry.toStreamResult(registry, commandsSubscriptionAtom).pipe(
+              Stream.map((commands) => commands.find((entry) => entry.id === commandId)),
+              Stream.filter((entry): entry is CommandHistoryEntry => entry !== undefined),
+              Stream.changes,
+              Stream.tap((entry) =>
+                recordStepChange(
+                  index,
+                  "stepLiveDataUpdated",
+                  formatCommandLiveMessage(entry),
+                  (step) => setStepLiveData(step, new CommandStepLiveData({ command: entry })),
+                ),
+              ),
+              Stream.filter(isTerminalCommandEntry),
+              Stream.runHead,
+              Effect.flatMap(
+                Option.match({
+                  onNone: () =>
+                    Effect.fail(
+                      new ProcedureStepTimeoutError({
+                        message: "Timed out waiting for command completion after 15 seconds",
+                      }),
+                    ),
+                  onSome: Effect.succeed,
+                }),
+              ),
+            ),
+          );
+
+        const validateCommandResult = (result: CommandHistoryEntry) => {
+          const completionStatus = getCommandAttributeValue(result, "CommandComplete_Status");
+          const completionMessage = getCommandAttributeValue(result, "CommandComplete_Message");
+
+          if (completionStatus?.type === "STRING" && completionStatus.value === "NOK") {
+            return Effect.fail(
+              new ProcedureCommandFailedError({
+                message:
+                  completionMessage?.type === "STRING"
+                    ? completionMessage.value
+                    : `Command completion status was ${completionStatus.value}`,
+              }),
+            );
+          }
+
+          return Effect.succeed(result);
+        };
+
+        const updateVerifyConditionAt = (
+          index: number,
+          conditionIndex: number,
+          target: "primary" | "mirrored",
+          actual: string | null,
+          status: VerifyConditionStatus,
+        ) =>
+          recordStepChange(
+            index,
+            "stepLiveDataUpdated",
+            actual === null ? "Awaiting verification values" : actual,
+            (step) => {
+              if (!(step.liveData instanceof VerifyStepLiveData)) {
+                return step;
+              }
+
+              return setStepLiveData(
+                step,
+                new VerifyStepLiveData({
+                  conditions: step.liveData.conditions.map((condition, currentIndex) =>
+                    currentIndex === conditionIndex
+                      ? VerifyConditionLiveData.make({
+                          ...condition,
+                          actual: target === "primary" ? actual : condition.actual,
+                          status: target === "primary" ? status : condition.status,
+                          mirroredActual:
+                            target === "mirrored" ? actual : (condition.mirroredActual ?? null),
+                          mirroredStatus: target === "mirrored" ? status : condition.mirroredStatus,
+                        })
+                      : condition,
+                  ),
+                }),
+              );
+            },
+          );
+
+        const awaitVerifyParameter = (
+          index: number,
+          conditionIndex: number,
+          target: "primary" | "mirrored",
+          parameter: QualifiedName,
+          condition: VerifyCondition,
+          label: string,
+        ) =>
+          Effect.scoped(
+            Effect.gen(function* () {
+              const subscription = yield* parameterService.subscribe(parameter);
+
+              return yield* subscription.updates.pipe(
+                Stream.tap(({ value }) => {
+                  const actual = stringifyValue(value.engValue);
+                  const isSatisfied = compareVerifyCondition(
+                    valueToComparable(value.engValue),
+                    condition,
+                  );
+
+                  return updateVerifyConditionAt(
+                    index,
+                    conditionIndex,
+                    target,
+                    actual,
+                    isSatisfied ? "passed" : "pending",
+                  );
+                }),
+                Stream.filter(({ value }) =>
+                  compareVerifyCondition(valueToComparable(value.engValue), condition),
+                ),
+                Stream.runHead,
+                Effect.flatMap(
+                  Option.match({
+                    onNone: () =>
+                      Effect.fail(
+                        new ProcedureStepTimeoutError({
+                          message: `Verification stream ended before ${label} was satisfied`,
+                        }),
+                      ),
+                    onSome: Effect.succeed,
+                  }),
+                ),
+              );
+            }),
+          );
 
         const runStep = (index: number, step: typeof ProcedureStep.Type) => {
           switch (step.type) {
             case "text":
             case "note":
             case "check":
-            case "verify":
               return recordStepChange(
                 index,
                 "stepLiveMessageUpdated",
                 "No live events for this step",
                 (step) => setStepLiveMessage(step, "No live events for this step"),
               );
+            case "verify": {
+              const initialLiveData = new VerifyStepLiveData({
+                conditions: step.condition.map((condition) =>
+                  makeVerifyConditionLiveData(step, condition),
+                ),
+              });
+
+              return Effect.gen(function* () {
+                yield* recordStepChange(
+                  index,
+                  "stepLiveDataUpdated",
+                  `Monitoring ${step.condition.length} verification condition${step.condition.length === 1 ? "" : "s"}`,
+                  (currentStep) =>
+                    setStepLiveData(
+                      setStepLiveMessage(currentStep, "Waiting for verification conditions..."),
+                      initialLiveData,
+                    ),
+                );
+
+                if (step.delay > 0) {
+                  yield* Effect.sleep(`${step.delay} seconds`);
+                }
+
+                yield* timeoutStepCompletion(
+                  Effect.all(
+                    step.condition.map((condition, conditionIndex) => {
+                      const label = formatVerifyConditionLabel(step, condition);
+                      const mirroredParameter = getMirroredParameterName(condition.parameter);
+
+                      return Effect.all(
+                        [
+                          awaitVerifyParameter(
+                            index,
+                            conditionIndex,
+                            "primary",
+                            condition.parameter,
+                            condition,
+                            label,
+                          ),
+                          ...(mirroredParameter
+                            ? [
+                                awaitVerifyParameter(
+                                  index,
+                                  conditionIndex,
+                                  "mirrored",
+                                  mirroredParameter,
+                                  condition,
+                                  `${label} (System B)`,
+                                ),
+                              ]
+                            : []),
+                        ],
+                        { concurrency: "unbounded" },
+                      );
+                    }),
+                    { concurrency: "unbounded" },
+                  ),
+                  step.timeout ? `${step.timeout} seconds` : undefined,
+                );
+              });
+            }
             case "command":
               return Effect.gen(function* () {
-                const ws = yield* WebSocketClient;
                 const yamcsConfig = yield* YamcsConfig;
-
-                const { call, stream } = yield* ws.subscribe(
-                  SubscribeCommandsRequest.make({
-                    instance: yamcsConfig.instance,
-                    processor: yamcsConfig.processor,
-                  }),
-                );
 
                 const cmd = yield* YamcsAtomHttpClient.use((client) =>
                   client.command.issueCommand({
@@ -443,71 +874,96 @@ export class ProcedureExecutor extends Context.Service<
                   }),
                 );
 
+                yield* setTrackedCommandId(index, cmd.id);
+
                 yield* recordStepChange(index, "stepLiveMessageUpdated", `Sent ${cmd.id}`, (step) =>
                   setStepLiveMessage(step, `Sent ${cmd.id}`),
                 );
 
-                const result = yield* timeoutCommandCompletion(
-                  stream.pipe(
-                    Stream.mapEffect((msg) => Schema.decodeEffect(CommandHistoryEvent)(msg)),
-                    Stream.map((message) => message.data),
-                    Stream.filter((entry) => entry.id === cmd.id),
-                    Stream.scan<
-                      (typeof CommandHistoryEvent.Type)["data"] | undefined,
-                      (typeof CommandHistoryEvent.Type)["data"]
-                    >(undefined, (current, next) =>
-                      current ? mergeCommandEntries(current, next) : next,
-                    ),
-                    Stream.filter(
-                      (entry): entry is (typeof CommandHistoryEvent.Type)["data"] =>
-                        entry !== undefined,
-                    ),
-                    Stream.tap((entry) => Effect.logInfo(formatCommandLiveMessage(entry))),
-                    Stream.tap((entry) =>
-                      recordStepChange(
-                        index,
-                        "stepLiveDataUpdated",
-                        formatCommandLiveMessage(entry),
-                        (step) =>
-                          setStepLiveData(step, new CommandStepLiveData({ command: entry })),
-                      ),
-                    ),
-                    Stream.filter(isTerminalCommandEntry),
-                    Stream.runHead,
-                    Effect.flatMap(
-                      Option.match({
-                        onNone: () =>
-                          Effect.fail(
-                            new ProcedureStepTimeoutError({
-                              message: "Timed out waiting for command completion after 15 seconds",
-                            }),
-                          ),
-                        onSome: Effect.succeed,
-                      }),
-                    ),
-                    Effect.ensuring(ws.unsubscribe(call)),
-                  ),
-                );
+                const result = yield* awaitCommandResult(cmd.id, index);
 
-                const completionStatus = getCommandAttributeValue(result, "CommandComplete_Status");
-                const completionMessage = getCommandAttributeValue(
-                  result,
-                  "CommandComplete_Message",
-                );
-
-                if (completionStatus?.type === "STRING" && completionStatus.value === "NOK") {
-                  return yield* new ProcedureCommandFailedError({
-                    message:
-                      completionMessage?.type === "STRING"
-                        ? completionMessage.value
-                        : `Command completion status was ${completionStatus.value}`,
-                  });
-                }
-
-                return result;
+                return yield* validateCommandResult(result);
               });
           }
         };
+
+        yield* AtomRegistry.toStreamResult(registry, commandsSubscriptionAtom).pipe(
+          Stream.runForEach((commands) =>
+            Effect.gen(function* () {
+              const selected = yield* SubscriptionRef.get(selectedCommandStep);
+
+              if (Option.isNone(selected)) {
+                return;
+              }
+
+              const executionState = yield* SubscriptionRef.get(state);
+              const currentStep = executionState.steps[selected.value.stepIndex];
+
+              if (
+                executionState.currentStepIndex !== selected.value.stepIndex ||
+                !isCommandExecutionStep(currentStep) ||
+                !currentStep.isSelected
+              ) {
+                return;
+              }
+
+              const candidate = commands.find(
+                (command) =>
+                  command.commandName === selected.value.commandName &&
+                  command.id !== selected.value.trackedCommandId &&
+                  DateTime.toEpochMillis(command.generationTime) >=
+                    DateTime.toEpochMillis(selected.value.selectedAt),
+              );
+
+              if (!candidate) {
+                return;
+              }
+
+              yield* setTrackedCommandId(selected.value.stepIndex, candidate.id);
+
+              yield* recordStepChange(
+                selected.value.stepIndex,
+                "stepExecutionStarted",
+                "Starting step...",
+                (step) => setStepLiveMessage(setStepState(step, "running"), "Starting step..."),
+              );
+
+              yield* recordStepChange(
+                selected.value.stepIndex,
+                "stepLiveMessageUpdated",
+                `Sent ${candidate.id}`,
+                (step) => setStepLiveMessage(step, `Sent ${candidate.id}`),
+              );
+
+              const exit = yield* Effect.exit(
+                awaitCommandResult(candidate.id, selected.value.stepIndex).pipe(
+                  Effect.flatMap(validateCommandResult),
+                ),
+              );
+
+              if (Exit.isSuccess(exit)) {
+                yield* recordStepOutcome(
+                  selected.value.stepIndex,
+                  "stepCompleted",
+                  "Step completed",
+                  (executionState) => completeCurrentStep(executionState, selected.value.stepIndex),
+                );
+                return;
+              }
+
+              const failureMessage = Cause.prettyErrors(exit.cause).join(", ");
+
+              yield* recordStepOutcome(
+                selected.value.stepIndex,
+                "stepFailed",
+                failureMessage,
+                (executionState) =>
+                  failCurrentStep(executionState, selected.value.stepIndex, failureMessage),
+              );
+            }),
+          ),
+          Effect.forkScoped,
+        );
 
         const execute = Effect.fn("ProcedureExecutor.execute")(function* () {
           const executionState = yield* SubscriptionRef.get(state);

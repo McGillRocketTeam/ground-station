@@ -1,4 +1,7 @@
-import { WebSocketClient, YamcsConfig } from "@mrt/yamcs-effect";
+import type * as AtomRegistry from "effect/unstable/reactivity/AtomRegistry";
+import type * as Reactivity from "effect/unstable/reactivity/Reactivity";
+
+import { Parameters, WebSocketClient, YamcsConfig } from "@mrt/yamcs-effect";
 import { Effect, Layer } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
@@ -6,20 +9,26 @@ import { selectedInstanceAtom, YamcsAtomHttpClient, yamcsBaseUrl } from "@/lib/a
 
 import { ProcedureExecutor, ProcedureExecutorLog } from "./procedure-executor";
 
-const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) =>
-  Layer.provideMerge(
-    Layer.mergeAll(
-      Layer.provideMerge(ProcedureExecutor.layer(), ProcedureExecutorLog.layer),
-      WebSocketClient.layer,
-      Layer.succeed(YamcsConfig, {
-        url: new URL(yamcsBaseUrl),
-        instance: get(selectedInstanceAtom),
-        processor: "realtime",
-      }),
-    ),
-    get(YamcsAtomHttpClient.runtime.layer),
-  ),
-);
+type ProcedureRuntimeContext = AtomRegistry.AtomRegistry | Reactivity.Reactivity;
+
+const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) => {
+  const yamcsConfigLayer = Layer.succeed(YamcsConfig, {
+    url: new URL(yamcsBaseUrl),
+    instance: get(selectedInstanceAtom),
+    processor: "realtime",
+  });
+  const runtimeLayer = get(YamcsAtomHttpClient.runtime.layer);
+  const sharedLayer = Layer.merge(
+    runtimeLayer,
+    Layer.merge(WebSocketClient.layer, yamcsConfigLayer),
+  );
+  const parametersLayer = Layer.provideMerge(Parameters.layer, sharedLayer);
+
+  return Layer.provideMerge(
+    Layer.provideMerge(ProcedureExecutor.layer(), ProcedureExecutorLog.layer),
+    Layer.merge(sharedLayer, parametersLayer),
+  ) as Layer.Layer<any, any, ProcedureRuntimeContext>;
+});
 
 export const procedureExecutionStateAtom = procedureRuntime.subscriptionRef(
   ProcedureExecutor.use((executor) => Effect.succeed(executor.state)),

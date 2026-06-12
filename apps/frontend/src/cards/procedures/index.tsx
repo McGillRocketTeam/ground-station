@@ -1,14 +1,15 @@
 import { useAtomSet, useAtomSuspense } from "@effect/atom-react";
 import { ProcedureStack, ProcedureStep } from "@mrt/yamcs-procedures";
 import { Schema } from "effect";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 
+import { BrailleSpinner } from "@/cards/command-history/braile-spinner";
 import { AckRow, FCAckRow } from "@/cards/command-history/command-detail";
 import { collectAcks } from "@/cards/command-history/utils";
 import { makeCard } from "@/lib/cards";
 import { cn } from "@/lib/utils";
 
-import { CommandStepLiveData } from "./procedure-executor";
+import { CommandStepLiveData, VerifyStepLiveData } from "./procedure-executor";
 import {
   downloadProcedureAuditTextAtom,
   executeProcedureStepAtom,
@@ -133,6 +134,50 @@ function formatValue(value: unknown) {
   return String(value);
 }
 
+function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
+  return (
+    <div className="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-1 text-xs text-muted-foreground">
+      <div>SYS A</div>
+      <div>SYS B</div>
+      <div>Condition</div>
+      {liveData.conditions.map((condition) => (
+        <Fragment key={`${condition.parameter}-${condition.label}`}>
+          <div
+            className={cn(
+              "w-3ch",
+              condition.status === "passed" ? "text-success" : "text-muted-foreground",
+            )}
+          >
+            {condition.status === "passed" ? "OK" : <BrailleSpinner />}
+          </div>
+          <div
+            className={cn(
+              "w-3ch",
+              condition.mirroredStatus === undefined && "text-transparent",
+              condition.mirroredStatus === "passed" && "text-success",
+              condition.mirroredStatus === "pending" && "text-muted-foreground",
+            )}
+          >
+            {condition.mirroredStatus === undefined ? (
+              "OK"
+            ) : condition.mirroredStatus === "passed" ? (
+              "OK"
+            ) : (
+              <BrailleSpinner />
+            )}
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-foreground">{condition.label}</span>
+            <span>
+              {condition.operator} {condition.expected}
+            </span>
+          </div>
+        </Fragment>
+      ))}
+    </div>
+  );
+}
+
 function ProcedureStepView({ index }: { index: number }) {
   const executionStep = useAtomSuspense(procedureExecutionStepAtom(index)).value;
   const step = executionStep.meta;
@@ -168,10 +213,15 @@ function ProcedureStepView({ index }: { index: number }) {
               return <div className="whitespace-pre-line text-pretty">{step.comment}</div>;
             case "verify":
               return (
-                <div className="whitespace-pre-line text-pretty">
-                  {step.comment}
-                  {step.presentation?.type === "truthTable" && <TruthTable step={step} />}
-                </div>
+                <>
+                  <div className="whitespace-pre-line text-pretty">
+                    {step.comment}
+                    {step.presentation?.type === "truthTable" && <TruthTable step={step} />}
+                  </div>
+                  {executionStep.liveData instanceof VerifyStepLiveData ? (
+                    <VerifyConditionList liveData={executionStep.liveData} />
+                  ) : null}
+                </>
               );
             case "command":
               if (!(executionStep.liveData instanceof CommandStepLiveData)) {

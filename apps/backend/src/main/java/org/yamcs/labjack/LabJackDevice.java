@@ -142,7 +142,7 @@ public class LabJackDevice {
     }
 
     /** Starts stream mode over AIN0..AIN13 at {@link LabJackConfig#SCAN_RATE_HZ}. */
-    public void startStream() {
+    public double startStream() {
         int[] scanList = new int[LabJackConfig.NUM_ANALOG_PINS];
         for (int i = 0; i < LabJackConfig.NUM_ANALOG_PINS; i++) {
             scanList[i] = (LabJackConfig.ANALOG_PIN_START + i) * 2; // AIN# register address = #*2
@@ -161,6 +161,7 @@ public class LabJackDevice {
         streaming = true;
         log.info("Stream started: requested " + LabJackConfig.SCAN_RATE_HZ + " Hz, actual "
                 + actualScanRate.getValue() + " Hz, " + LabJackConfig.SCANS_PER_READ + " scans/read");
+        return actualScanRate.getValue();
     }
 
     /**

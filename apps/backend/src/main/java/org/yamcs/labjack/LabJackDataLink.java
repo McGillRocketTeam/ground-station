@@ -79,6 +79,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
     private int seqNum = 0;
     private boolean watchdogConfigured = false; // flash-backed; write once per session, not per reconnect
     private volatile byte[] lastDigital = new byte[LabJackPacket.DIGITAL_BYTES];
+    private double actualScanRateHz = LabJackConfig.SCAN_RATE_HZ;
 
     // Optional full-rate archive (ARCHIVE_FULL_RATE)
     private Stream archiveStream;
@@ -124,6 +125,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
         }
         running = true;
         graphCounter = 0;
+        actualScanRateHz = LabJackConfig.SCAN_RATE_HZ;
         watchdogConfigured = false;
         // NOTE: do not touch LJM here — this runs on the YAMCS service-init thread. The first native
         // call (which forces loading LabJackM.dll) happens on the acquisition thread in run(), so a
@@ -241,10 +243,11 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
                 watchdogConfigured = true;
             }
             device.setAllDigitalLow(); // safe state on every (re)connect
-            device.startStream();
-            log.info("LabJack streaming at " + LabJackConfig.SCAN_RATE_HZ + " Hz ("
+            actualScanRateHz = device.startStream();
+            LabJackConfig.validateSamplingConfig(actualScanRateHz);
+            log.info("LabJack streaming at " + actualScanRateHz + " Hz ("
                     + LabJackConfig.NUM_ANALOG_PINS + " AIN, " + LabJackConfig.SCANS_PER_READ
-                    + " scans/read, graphFreq=" + LabJackConfig.GRAPH_FREQ + ")");
+                    + " scans/read, packetRate=" + LabJackConfig.TM_PACKET_RATE_HZ + " Hz)");
             return true;
         } catch (Exception e) {
             log.warn("LabJack connect attempt failed: " + e.getMessage());
@@ -449,7 +452,8 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
             return "DISABLED";
         }
         return switch (state) {
-            case STREAMING -> "OK - streaming at " + LabJackConfig.SCAN_RATE_HZ + " Hz";
+            case STREAMING -> "OK - streaming at " + actualScanRateHz + " Hz, saving packets at "
+                    + LabJackConfig.TM_PACKET_RATE_HZ + " Hz";
             case CONNECTING -> "Connecting to LabJack...";
             case RECONNECTING -> "Reconnecting - LabJack link lost";
             case DISCONNECTED -> "Disconnected";

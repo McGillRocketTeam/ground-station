@@ -41,7 +41,7 @@ public final class LabJackConfig {
      * timestamp); smaller = lower latency. eStreamRead blocks until this many scans are buffered, so at
      * 300 Hz a value of 30 yields ~10 reads/s (~100 ms batches).
      */
-    public static int SCANS_PER_READ = 30;
+    public static int SCANS_PER_READ = 6;
     /** 0 = max speed/lowest resolution (required to reach the higher scan rates), up to 8 = slowest. */
     public static int STREAM_RESOLUTION_INDEX = 0;
     /** Per-channel settling time; 0 = auto. Increase only if STREAM_SCAN_OVERLAP warnings appear. */
@@ -62,11 +62,16 @@ public final class LabJackConfig {
 
     // ---- YAMCS publishing rate (IO-latency control) --------------------------------------------
     /**
-     * Realtime decimation: forward 1 of every {@code GRAPH_FREQ} scans to the realtime processor (the
-     * frontend). 1 = send every scan. Raising this throttles the websocket/UI without affecting the CSV
-     * (always full rate) or — when {@link #ARCHIVE_FULL_RATE} is on — the YAMCS archive.
+     * Realtime decimation: forward 1 of every {@code GRAPH_FREQ} scans to the realtime processor (and
+     * therefore the default packet-saving path). The default 300 Hz / 6 = 50 Hz. Raising this throttles
+     * the websocket/UI without affecting the CSV (always full rate) or — when {@link #ARCHIVE_FULL_RATE}
+     * is on — the YAMCS archive.
      */
-    public static int GRAPH_FREQ = 1;
+    public static int GRAPH_FREQ = 6;
+    /** Target rate for the non-CSV telemetry packet path. Default 300 Hz / 6 = 50 Hz. */
+    public static double TM_PACKET_RATE_HZ = 50.0;
+    /** Allowed rate error when LJM reports the actual achieved scan rate. */
+    public static double TM_PACKET_RATE_TOLERANCE_HZ = 0.01;
     /**
      * When true, every scan is also written to {@link #ARCHIVE_STREAM} so the YAMCS archive keeps the
      * full raw sample rate while the realtime/frontend path stays decimated by {@link #GRAPH_FREQ}.
@@ -113,13 +118,30 @@ public final class LabJackConfig {
         SCANS_PER_READ = config.getInt("scansPerRead", SCANS_PER_READ);
         STREAM_RESOLUTION_INDEX = config.getInt("streamResolutionIndex", STREAM_RESOLUTION_INDEX);
         GRAPH_FREQ = Math.max(1, config.getInt("graphFreq", GRAPH_FREQ));
+        TM_PACKET_RATE_HZ = config.getDouble("tmPacketRateHz", TM_PACKET_RATE_HZ);
         ARCHIVE_FULL_RATE = config.getBoolean("archiveFullRate", ARCHIVE_FULL_RATE);
         ARCHIVE_STREAM = config.getString("archiveStream", ARCHIVE_STREAM);
         WATCHDOG_TIMEOUT_S = config.getInt("watchdogTimeoutS", WATCHDOG_TIMEOUT_S);
         CSV_DIR = config.getString("csvDir", CSV_DIR);
+        validateSamplingConfig(SCAN_RATE_HZ);
         log.info("LabJack config: scanRate={} Hz, scansPerRead={}, resolutionIndex={}, graphFreq={}, "
-                + "archiveFullRate={}, watchdogTimeout={} s",
+                + "tmPacketRate={} Hz, archiveFullRate={}, watchdogTimeout={} s",
                 SCAN_RATE_HZ, SCANS_PER_READ, STREAM_RESOLUTION_INDEX, GRAPH_FREQ,
-                ARCHIVE_FULL_RATE, WATCHDOG_TIMEOUT_S);
+                TM_PACKET_RATE_HZ, ARCHIVE_FULL_RATE, WATCHDOG_TIMEOUT_S);
+    }
+
+    /** Ensures the configured non-CSV packet path stays pinned to the requested telemetry rate. */
+    public static void validateSamplingConfig(double achievedScanRateHz) {
+        if (SCANS_PER_READ != GRAPH_FREQ) {
+            throw new IllegalArgumentException("LabJack requires scansPerRead == graphFreq so packets are"
+                    + " emitted one per stream read at a stable rate; got scansPerRead=" + SCANS_PER_READ
+                    + ", graphFreq=" + GRAPH_FREQ);
+        }
+        double actualPacketRateHz = achievedScanRateHz / GRAPH_FREQ;
+        if (Math.abs(actualPacketRateHz - TM_PACKET_RATE_HZ) > TM_PACKET_RATE_TOLERANCE_HZ) {
+            throw new IllegalArgumentException("LabJack packet path must run at " + TM_PACKET_RATE_HZ
+                    + " Hz (+/- " + TM_PACKET_RATE_TOLERANCE_HZ + ") but is " + actualPacketRateHz
+                    + " Hz with scanRateHz=" + achievedScanRateHz + " and graphFreq=" + GRAPH_FREQ);
+        }
     }
 }

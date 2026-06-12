@@ -1,6 +1,7 @@
 package org.yamcs.labjack;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,5 +28,13 @@ class LabJackConfigTest {
         for (int ch = LabJackConfig.AIN_LOW_RANGE_CHANNEL_COUNT; ch < LabJackConfig.NUM_ANALOG_PINS; ch++) {
             assertEquals(LabJackConfig.AIN_HIGH_RANGE_V, LabJackConfig.rangeForChannel(ch), "AIN" + ch);
         }
+    }
+
+    @Test
+    void packetSamplingDefaultsToExactlyFiftyHertz() {
+        assertEquals(6, LabJackConfig.SCANS_PER_READ);
+        assertEquals(6, LabJackConfig.GRAPH_FREQ);
+        assertEquals(50.0, LabJackConfig.TM_PACKET_RATE_HZ);
+        assertDoesNotThrow(() -> LabJackConfig.validateSamplingConfig(LabJackConfig.SCAN_RATE_HZ));
     }
 }

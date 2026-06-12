@@ -22,6 +22,50 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
+  - name: LabJack
+    class: org.yamcs.labjack.LabJackDataLink
+    tmStream: tm_labJack
+    tcStream: tc_labJack
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: -1
+      seqCountOffset: -1
+  - name: ControlBox
+    class: org.yamcs.mrt.links.ControlBoxLink
+    tmStream: tm_controlBox
+    labJackCommands:
+      - switchName: panel_3_switch_1
+        pin: 1 # FIO 1 DUMP
+      - switchName: panel_3_switch_2
+        pin: 6 # FIO 6 LA-RET POWER
+      - switchName: panel_4_switch_1
+        pin: 0 # FIO 0 FILL
+      - switchName: panel_5_switch_1
+        pin: 5
+      - switchName: panel_7_switch_2
+        pin: 20
+        isDac: true
+      - switchName: panel_8_switch_1
+        pin: 21
+        isDac: true
+    flightComputerCommands:
+      - switchName: panel_8_switch_2
+        onCommand: mov_arming
+        offCommand: mov_disarming
+      - switchName: panel_4_switch_2
+        onCommand: vent_valve_energize
+        offCommand: vent_valve_de-energize
+      - switchName: panel_2_switch_launch
+        onCommand: launch
+        offCommand: ""
+      - switchName: panel_1_switch_estop
+        onCommand: emergency_stop
+        offCommand: emergency_cancel
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: -1
+      seqCountOffset: -1
+
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -43,7 +87,7 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
 
-  - name: PAD Wifi Antenna (Client) 
+  - name: PAD Wifi Antenna (Client)
     class: org.yamcs.mrt.links.WifiAntennaLink
     ipAddress: 192.168.0.254
     username: mrt
@@ -140,6 +184,14 @@ mdb:
           - type: xtce
             args:
               file: mdb/radio.xml
+  - type: xtce
+    spec: "LabJack"
+    args:
+      file: mdb/labjack-t7.xml
+  - type: xtce
+    spec: "ControlBox"
+    args:
+      file: mdb/controlbox.xml
 
 # Configuration for streams created at server startup
 streamConfig:
@@ -163,6 +215,13 @@ streamConfig:
     - name: "system_b_pad_radio_realtime"
       rootContainer: "/SystemB/Pad/Radio/TelemetryPacket"
       processor: "realtime"
+    # Labjack
+    - name: "tm_labJack"
+      processor: "realtime"
+      rootContainer: "/LabJackT7/LabJackPacket"
+    - name: "tm_controlBox"
+      processor: "realtime"
+      rootContainer: "/ControlBox/ControlBoxPacket"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
@@ -175,3 +234,6 @@ streamConfig:
     - name: "tc_radio_realtime"
       processor: "realtime"
       tcPatterns: [".*/Radio/.*"]
+    - name: "tc_labJack"
+      processor: "realtime"
+      tcPatterns: ["/LabJackT7/.*"]

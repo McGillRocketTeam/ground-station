@@ -57,6 +57,15 @@ dataLinks:
     class: org.yamcs.labjack.LabJackDataLink
     tmStream: tm_labJack
     tcStream: tc_labJack
+    # The LabJack packet is a raw 59-byte payload (14 float32 AIN + 3 DIO bytes): no header, no
+    # checksum, no embedded time/seq fields. GenericPacketPreprocessor with both offsets -1 (and no
+    # errorDetection) is the config YAMCS parses it with — same as yamcs.launch-canada.yaml, where it
+    # is verified against hardware. Without this, the link falls back to IssPacketPreprocessor
+    # (CCSDS + checksum) and every LabJack parameter stays empty in the UI.
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: -1
+      seqCountOffset: -1
 
   - name: simulator
     class: org.yamcs.tctm.UdpParameterDataLink

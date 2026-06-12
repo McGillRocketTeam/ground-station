@@ -471,7 +471,7 @@ export function LiveChart({
           onPoint={applyLivePoint}
         />
       ))}
-      <ContextMenuTrigger asChild>
+      <ContextMenuTrigger>
         <div ref={containerRef} className="h-full w-full" />
       </ContextMenuTrigger>
       <ContextMenuContent>

@@ -1,366 +1,466 @@
 package org.yamcs.labjack;
 
-import com.sun.jna.ptr.IntByReference;
-import libs.LJM;
-import org.yamcs.TmPacket;
-import org.yamcs.YConfiguration;
-import org.yamcs.commanding.ArgumentValue;
-import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.Mdb;
-import org.yamcs.mdb.MdbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
-import org.yamcs.tctm.AbstractTcTmParamLink;
-import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.SequenceContainer;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import libs.LJMException;
+import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.TmPacket;
+import org.yamcs.YConfiguration;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
+import org.yamcs.commanding.ArgumentValue;
+import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.tctm.AbstractTcTmParamLink;
+import org.yamcs.xtce.Argument;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
-public class LabJackDataLink extends AbstractTcTmParamLink
-		implements Runnable {
+/**
+ * YAMCS data link for the LabJack T7. Streams AIN0-13 in stream mode, polls the digital lines, packs
+ * each scan into the {@code /LabJackT7/LabJackPacket} container, and writes a full-rate local CSV.
+ *
+ * <p>Design (see {@code docs/test-reports} + the refactor summary):
+ * <ul>
+ *   <li><b>Supervised acquisition</b> — a single thread owns the
+ *       {@code DISCONNECTED → CONNECTING → STREAMING → RECONNECTING} lifecycle. A stream read that
+ *       fails with a disconnect-class LJM error (e.g. the T7 is powered off) tears down and transparently
+ *       re-establishes the stream once the device returns — fixing the old "stuck after E_STREAM_READ_FAIL"
+ *       behaviour.</li>
+ *   <li><b>Dual-rate</b> — every scan goes to the CSV (full rate). The realtime/frontend path is
+ *       decimated by {@link LabJackConfig#GRAPH_FREQ}. With {@link LabJackConfig#ARCHIVE_FULL_RATE} on,
+ *       every scan is additionally written to the {@link LabJackConfig#ARCHIVE_STREAM} so the YAMCS
+ *       archive keeps the full raw rate while the UI stays responsive.</li>
+ *   <li><b>Watchdog</b> — armed on connect via {@link LabJackDevice#configureWatchdog()}; the periodic
+ *       digital read supplies the host→device traffic that keeps it fed during normal operation, so it
+ *       only trips (driving all DIO low) when the control station truly goes silent.</li>
+ * </ul>
+ * Hardware tunables live in {@link LabJackConfig}. Sensor calibration is in the MDB, not here.
+ */
+public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
 
-	private static LabJackDataLink instance;
+    private enum State { DISCONNECTED, CONNECTING, STREAMING, RECONNECTING }
 
-	public static LabJackDataLink getInstance() {
-		return instance;
-	}
+    private record CsvEntry(long receptionTime, byte[] packet) {}
 
-	private static final String CSV_FILENAME = "yamcs-data" + File.separator + "labjack_csv" + File.separator
-			+ "labj_"
-			+ new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss")
-					.format(new Date())
-			+ ".csv";
+    /**
+     * Singleton handle so safety-critical callers (the control box E-stop in {@code ControlBoxLink}) can
+     * drive pins directly via {@link #writeDigitalPin(int, int)}, bypassing the HTTP command path for
+     * minimal latency.
+     */
+    private static volatile LabJackDataLink instance;
 
-	private static final int GRAPH_FREQ = 1;
+    public LabJackDataLink() {
+        instance = this;
+    }
 
-	private int packetCount = 0;
-	private int deviceHandle = 0;
-	private boolean isConnected = false;
+    public static LabJackDataLink getInstance() {
+        return instance;
+    }
 
-	private final Queue<TmPacket> dataQueue = new ConcurrentLinkedQueue<>();
+    private volatile State state = State.DISCONNECTED;
+    private volatile boolean running = false;
 
-	private ScheduledExecutorService executorService;
-	private BufferedWriter csvWriter;
-	private XtceTmExtractor tmExtractor;
-	private SequenceContainer sequenceContainer;
+    private LabJackDevice device;
+    private Thread acquisitionThread;
+    private ScheduledExecutorService csvExecutor;
+    private LabJackCsvWriter csvWriter;
+    private final Queue<CsvEntry> csvQueue = new ConcurrentLinkedQueue<>();
 
-	public LabJackDataLink() {
-		instance = this;
-	}
+    private int graphCounter = 0;
+    private int seqNum = 0;
+    private boolean watchdogConfigured = false; // flash-backed; write once per session, not per reconnect
+    private volatile byte[] lastDigital = new byte[LabJackPacket.DIGITAL_BYTES];
 
-	/**
-	 * Attempts to connect to any LabJack device (via ethernet or USB)
-	 */
-	private void attemptLabJackConnection() {
-		IntByReference handleRef = new IntByReference(0);
-		try {
-			LJM.openS("ANY", "ANY", "ANY", handleRef);
-			log.info("LabJack Connected");
-			deviceHandle = handleRef.getValue();
+    // Optional full-rate archive (ARCHIVE_FULL_RATE)
+    private Stream archiveStream;
+    private TupleDefinition archiveTupleDef;
 
-			// Watchdog 5 min
-			int type = LJM.Constants.UINT32;
+    @Override
+    public void init(String instance, String name, YConfiguration config) {
+        super.init(instance, name, config);
+        // Reads scanRateHz/scansPerRead/graphFreq/archiveFullRate/... if present; otherwise keeps the
+        // static defaults. Safe with no extra keys in the link config.
+        LabJackConfig.applyOverrides(config);
+    }
 
-			int WATCHDOG_ENABLE_DEFAULT = 61600;
-			int WATCHDOG_TIMEOUT_S_DEFAULT = 61604;
-			int WATCHDOG_DIO_ENABLE_DEFAULT = 61630;
-			int WATCHDOG_DIO_STATE_DEFAULT = 61632;
-			int WATCHDOG_RESET_ENABLE_DEFAULT = 61620;
+    // ---- Lifecycle -----------------------------------------------------------------------------
 
-			LJM.eWriteAddress(deviceHandle, WATCHDOG_ENABLE_DEFAULT, type, 0); // Disables watchdog to change it
-			LJM.eWriteAddress(deviceHandle, WATCHDOG_TIMEOUT_S_DEFAULT, type, 300); // 5 minute timer
-			LJM.eWriteAddress(deviceHandle, WATCHDOG_DIO_ENABLE_DEFAULT, type, 0); // Disable DIO
-			LJM.eWriteAddress(deviceHandle, WATCHDOG_DIO_STATE_DEFAULT, type, 0); // DIO all LOW
-			LJM.eWriteAddress(deviceHandle, WATCHDOG_DIO_ENABLE_DEFAULT, type, 1); // Re enable DIO
-			LJM.eWriteAddress(deviceHandle, WATCHDOG_ENABLE_DEFAULT, type, 1); // Re-enable watchdog
-			isConnected = true;
+    @Override
+    protected void doStart() {
+        if (!isDisabled()) {
+            startAcquisition();
+        }
+        notifyStarted();
+    }
 
-		} catch (Exception e) {
-			log.warn("Could not connect to LabJack");
-		}
-	}
+    @Override
+    protected void doStop() {
+        stopAcquisition();
+        notifyStopped();
+    }
 
-	/**
-	 * Reads all readable LabJack pins (analog, digital) and packs the readings into
-	 * a binary packet according to
-	 * LABJ_XTCE.xml where all analog data is in the most significant bits followed
-	 * by all digital data.
-	 * This binary packet is then added to the {@link #dataQueue}.
-	 */
-	private void readAllPins() {
-		if (!isConnected) {
-			log.error("Attempting to read LabJack pins when no LabJack is connected");
-			throw new IllegalStateException();
-		}
+    @Override
+    public void doEnable() {
+        startAcquisition();
+    }
 
-		double[] analogReadings = new double[LabJackUtil.NUM_ANALOG_PINS];
+    @Override
+    public void doDisable() {
+        stopAcquisition();
+    }
 
-		for (int i = 0; i < LabJackUtil.NUM_ANALOG_PINS; i++) {
+    private synchronized void startAcquisition() {
+        if (running) {
+            return;
+        }
+        running = true;
+        graphCounter = 0;
+        watchdogConfigured = false;
+        // NOTE: do not touch LJM here — this runs on the YAMCS service-init thread. The first native
+        // call (which forces loading LabJackM.dll) happens on the acquisition thread in run(), so a
+        // missing native library degrades the link gracefully instead of failing backend startup.
+        device = createDevice();
+        setupArchiveStream();
 
-			analogReadings[i] = LabJackUtil.readAnalogPin(deviceHandle, i);
-		}
-		byte[] analogBinaryData = createAnalogBinaryPacket(analogReadings);
+        csvWriter = new LabJackCsvWriter();
+        csvWriter.open();
+        csvExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, getClass().getSimpleName() + "-csv");
+            t.setDaemon(true);
+            return t;
+        });
+        csvExecutor.scheduleWithFixedDelay(this::drainCsv, 1000, 500, TimeUnit.MILLISECONDS);
 
-		byte[] digitalBinaryData = LabJackUtil.readDigitalPins(deviceHandle);
+        acquisitionThread = new Thread(this, getClass().getSimpleName() + "-acq");
+        acquisitionThread.start();
+    }
 
-		if (digitalBinaryData == null) {
-			return;
-		}
+    private synchronized void stopAcquisition() {
+        if (!running) {
+            return;
+        }
+        running = false;
+        if (device != null) {
+            device.stopStream(); // unblocks a pending eStreamRead so the acquisition loop can exit
+        }
+        if (acquisitionThread != null) {
+            try {
+                acquisitionThread.join(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        if (csvExecutor != null) {
+            csvExecutor.shutdownNow();
+        }
+        drainCsv();
+        if (csvWriter != null) {
+            csvWriter.close();
+        }
+        if (device != null) {
+            device.close();
+        }
+        state = State.DISCONNECTED;
+    }
 
-		byte[] combinedBinaryData = new byte[analogBinaryData.length + digitalBinaryData.length];
-		int index = 0;
-		for (; index < analogBinaryData.length; index++) {
-			combinedBinaryData[index] = analogBinaryData[index];
-		}
-		for (; index < combinedBinaryData.length; index++) {
-			combinedBinaryData[index] = digitalBinaryData[index - analogBinaryData.length];
-		}
-		dataIn(1, combinedBinaryData.length);
-		TmPacket tmPacket = new TmPacket(getCurrentTime(), combinedBinaryData);
+    /** Overridable so tests can inject a fake device (no hardware / no Mockito needed). */
+    protected LabJackDevice createDevice() {
+        return new LabJackDevice();
+    }
 
-		if (++packetCount > GRAPH_FREQ) {
-			packetCount = 0;
-			executorService.schedule(() -> processPacket(packetPreprocessor.process(tmPacket)), 0, TimeUnit.SECONDS);
-		}
+    // ---- Acquisition loop ----------------------------------------------------------------------
 
-		dataQueue.add(tmPacket);
-	}
+    @Override
+    public void run() {
+        long backoff = LabJackConfig.RECONNECT_BACKOFF_MS;
+        try {
+            // First LJM call on this (background) thread: forces JNA to load LabJackM.dll now. If the
+            // native library is missing/incompatible it throws an UnsatisfiedLinkError (a LinkageError,
+            // not an Exception), handled below so the backend still starts.
+            LabJackDevice.configureLibraryAutoReconnect();
+            while (running) {
+                if (!device.isOpen()) {
+                    if (state != State.RECONNECTING) {
+                        state = State.CONNECTING;
+                    }
+                    if (tryConnect()) {
+                        state = State.STREAMING;
+                        backoff = LabJackConfig.RECONNECT_BACKOFF_MS;
+                    } else {
+                        long wait = (state == State.RECONNECTING)
+                                ? backoff : LabJackConfig.CONNECT_RETRY_MS;
+                        sleep(wait);
+                        backoff = Math.min(backoff * 2, LabJackConfig.RECONNECT_BACKOFF_MAX_MS);
+                    }
+                    continue;
+                }
+                try {
+                    acquireOnce();
+                } catch (LJMException e) {
+                    if (LabJackDevice.isDisconnectError(e.getError())) {
+                        log.warn("LabJack stream lost (LJM " + e.getError() + ": " + e.getMessage()
+                                + "); re-establishing");
+                        enterReconnecting();
+                    } else {
+                        log.error("Transient LabJack error (LJM " + e.getError() + "): " + e.getMessage());
+                    }
+                } catch (Exception e) {
+                    log.error("Unexpected LabJack error; re-establishing: " + e.getMessage());
+                    enterReconnecting();
+                }
+            }
+        } catch (LinkageError err) {
+            // Native library (LabJackM.dll / liblabjackm) missing or incompatible. Can't recover without
+            // installing it and restarting, so do NOT take down the backend: disable the link and leave a
+            // clear, actionable message. The rest of YAMCS keeps running.
+            log.error("LabJack link disabled: could not load native library 'LabJackM' (" + err
+                    + "). Install the LabJack LJM software (provides LabJackM.dll on Windows) on this"
+                    + " machine and restart the backend. The rest of YAMCS is unaffected.");
+        } catch (Throwable t) {
+            log.error("LabJack acquisition thread stopped unexpectedly: " + t);
+        } finally {
+            state = State.DISCONNECTED;
+        }
+    }
 
-	private void savePacketToCSV() {
+    private boolean tryConnect() {
+        try {
+            device.open();
+            device.configureAnalogRanges();
+            if (!watchdogConfigured) {
+                device.configureWatchdog(); // *_DEFAULT persists in flash; write once per session
+                watchdogConfigured = true;
+            }
+            device.setAllDigitalLow(); // safe state on every (re)connect
+            device.startStream();
+            log.info("LabJack streaming at " + LabJackConfig.SCAN_RATE_HZ + " Hz ("
+                    + LabJackConfig.NUM_ANALOG_PINS + " AIN, " + LabJackConfig.SCANS_PER_READ
+                    + " scans/read, graphFreq=" + LabJackConfig.GRAPH_FREQ + ")");
+            return true;
+        } catch (Exception e) {
+            log.warn("LabJack connect attempt failed: " + e.getMessage());
+            device.close();
+            return false;
+        }
+    }
 
-		while (!dataQueue.isEmpty()) {
-			StringBuilder row = new StringBuilder();
+    private void enterReconnecting() {
+        state = State.RECONNECTING;
+        device.stopStream();
+        device.close();
+    }
 
-			TmPacket dataArr = dataQueue.poll();
-			LocalDateTime dateTime = Instant.ofEpochMilli(dataArr.getReceptionTime())
-					.atZone(ZoneId.systemDefault())
-					.toLocalDateTime();
-			row.append(dateTime.format(DateTimeFormatter.ISO_LOCAL_TIME)).append(",");
-			var result = tmExtractor.processPacket(dataArr.getPacket(), dataArr.getGenerationTime(),
-					dataArr.getReceptionTime(), dataArr.getSeqCount());
-			row.append(dataArr.getReceptionTime());
-			for (var param : result.getParameterResult()) {
-				row.append(param.getEngValue()).append(",");
-			}
-			row.setLength(row.length() - 1);
-			try {
-				csvWriter.write(row.toString());
-				csvWriter.newLine();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+    /** Reads one stream batch + the digital state and publishes/records the scans. */
+    private void acquireOnce() {
+        double[] batch = device.readStream(); // throws LJMException on disconnect
 
-		}
-	}
+        // Command-response digital read: also the traffic that keeps the watchdog fed. A transient
+        // failure reuses the last value; a disconnect-class failure propagates to trigger reconnect.
+        try {
+            lastDigital = device.readDigitalState();
+        } catch (LJMException e) {
+            if (LabJackDevice.isDisconnectError(e.getError())) {
+                throw e;
+            }
+            log.warn("Digital read failed (LJM " + e.getError() + "); reusing last state");
+        }
+        byte[] digital = lastDigital;
 
-	/**
-	 * Converts array of floating point analog readings into a corresponding array
-	 * of bytes.
-	 * 
-	 * @param floatValues array of analog readings
-	 * @return array of bytes corresponding to the incoming array of readings (just
-	 *         used Float.floatToIntBits)
-	 */
-	private byte[] createAnalogBinaryPacket(double[] floatValues) {
-		ByteBuffer buffer = ByteBuffer.allocate(floatValues.length * 4); // Each float is 4 bytes (32 bits)
+        long now = getCurrentTime();
+        int n = LabJackConfig.NUM_ANALOG_PINS;
+        for (int scan = 0; scan < LabJackConfig.SCANS_PER_READ; scan++) {
+            double[] scanValues = Arrays.copyOfRange(batch, scan * n, (scan + 1) * n);
+            byte[] packet = LabJackPacket.build(scanValues, digital);
 
-		for (double value : floatValues) {
-			int bits = Float.floatToIntBits((float) value); // Convert float to 32-bit int representation
-			buffer.putInt(bits); // Add the 32-bit int to the byte buffer
-		}
+            dataIn(1, packet.length);
+            csvQueue.add(new CsvEntry(now, packet)); // full rate -> CSV
 
-		return buffer.array(); // Return the packed byte array
-	}
+            if (LabJackConfig.ARCHIVE_FULL_RATE) {
+                emitToArchive(now, packet); // full rate -> YAMCS archive
+            }
 
-	@Override
-	protected Status connectionStatus() {
-		return isConnected ? Status.OK : Status.UNAVAIL;
-	}
+            if (++graphCounter >= LabJackConfig.GRAPH_FREQ) { // decimated -> realtime/frontend
+                graphCounter = 0;
+                processPacket(packetPreprocessor.process(new TmPacket(now, packet)));
+            }
+        }
+    }
 
-	@Override
-	protected void doStart() {
-		if (!isDisabled()) {
-			Thread thread = new Thread(this);
-			thread.setName(getClass().getSimpleName());
-			thread.start();
-		}
-		notifyStarted();
-	}
+    // ---- Full-rate archive (optional) ----------------------------------------------------------
 
-	@Override
-	protected void doStop() {
-		if (isConnected) {
-			executorService.shutdown();
-			LJM.close(deviceHandle);
-			isConnected = false;
+    private void setupArchiveStream() {
+        archiveStream = null;
+        if (!LabJackConfig.ARCHIVE_FULL_RATE) {
+            return;
+        }
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        archiveStream = ydb.getStream(LabJackConfig.ARCHIVE_STREAM);
+        if (archiveStream == null) {
+            log.warn("archiveFullRate is on but stream '" + LabJackConfig.ARCHIVE_STREAM
+                    + "' is not declared in streamConfig; full-rate archiving disabled");
+            return;
+        }
+        archiveTupleDef = new TupleDefinition();
+        archiveTupleDef.addColumn(StandardTupleDefinitions.GENTIME_COLUMN, DataType.TIMESTAMP);
+        archiveTupleDef.addColumn(StandardTupleDefinitions.SEQNUM_COLUMN, DataType.INT);
+        archiveTupleDef.addColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN, DataType.TIMESTAMP);
+        archiveTupleDef.addColumn(StandardTupleDefinitions.TM_STATUS_COLUMN, DataType.INT);
+        archiveTupleDef.addColumn(StandardTupleDefinitions.TM_PACKET_COLUMN, DataType.BINARY);
+        log.info("Full-rate archive enabled -> stream '" + LabJackConfig.ARCHIVE_STREAM + "'");
+    }
 
-			try {
-				csvWriter.close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		notifyStopped();
-	}
+    private void emitToArchive(long now, byte[] packet) {
+        if (archiveStream == null) {
+            return;
+        }
+        archiveStream.emitTuple(
+                new Tuple(archiveTupleDef, new Object[] {now, seqNum++, now, 0, packet}));
+    }
 
-	@Override
-	public void run() {
-		while (!isConnected) {
-			attemptLabJackConnection();
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
+    // ---- CSV -----------------------------------------------------------------------------------
 
-		initializeCSVWriterAndTasks();
-	}
+    private void drainCsv() {
+        CsvEntry e;
+        while ((e = csvQueue.poll()) != null) {
+            csvWriter.writeRow(e.receptionTime(), e.packet());
+        }
+        csvWriter.flush();
+    }
 
-	private void initializeCSVWriterAndTasks() {
-		try {
-			File file = new File(CSV_FILENAME);
-			if (!file.exists()) {
-				file.getParentFile().mkdirs();
-				log.info("Creating LabJack CSV file at: " + file.getAbsolutePath());
-				csvWriter = new BufferedWriter(new FileWriter(file));
-				writeCSVHeader();
-			} else {
-				csvWriter = new BufferedWriter(new FileWriter(file));
-			}
+    // ---- Commands ------------------------------------------------------------------------------
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+    /**
+     * Executes a LabJack command and publishes its acknowledgment lifecycle to the command history
+     * (same fields {@code AstraCommandLink.handleFCAck} updates, so the UI shows progress identically):
+     * <ol>
+     *   <li><b>Acknowledge_Sent → OK</b> as soon as the LJM write returns without error;</li>
+     *   <li><b>CommandComplete → OK/NOK</b> by reading the pin back and comparing with the commanded
+     *       target — the LJM write API gives no per-command completion signal beyond throwing, so
+     *       readback verification is the completion source of truth.</li>
+     * </ol>
+     * Failures (not connected, LJM error, readback mismatch) publish NOK with the reason.
+     */
+    @Override
+    public boolean sendCommand(PreparedCommand preparedCommand) {
+        if (device == null || !device.isOpen()) {
+            log.warn("Cannot send LabJack command while not connected");
+            failedCommand(preparedCommand.getCommandId(), "LabJack not connected");
+            return false;
+        }
+        int pinNum = -1;
+        ArgumentValue valueToWrite = null;
+        for (Map.Entry<Argument, ArgumentValue> argument : preparedCommand.getArgAssignment().entrySet()) {
+            if (argument.getKey().getName().equals("pin_number")) {
+                pinNum = argument.getValue().getEngValue().getUint32Value();
+            } else {
+                valueToWrite = argument.getValue();
+            }
+        }
+        if (pinNum < 0 || valueToWrite == null) {
+            log.error("LabJack command missing pin_number or value argument");
+            failedCommand(preparedCommand.getCommandId(), "Missing pin_number or value argument");
+            return false;
+        }
 
-		for (int digital_pin = 0; digital_pin < LabJackUtil.NUM_DIGITAL_PINS; ++digital_pin) {
-			writeDigitalPin(digital_pin, 0);
-		}
+        try {
+            String cmd = preparedCommand.getCommandName();
+            if (cmd.endsWith("write_digital_pin")) {
+                int target = (int) valueToWrite.getEngValue().getSint64Value();
+                device.writeDigitalPin(pinNum, target);
+                ackCommand(preparedCommand.getCommandId()); // Acknowledge_Sent -> OK
+                int actual = device.readDigitalPinState(pinNum);
+                completeCommand(preparedCommand, actual == target,
+                        "DIO" + pinNum + " readback=" + actual + ", commanded=" + target);
+                log.info("Wrote " + target + " to DIO" + pinNum + " (readback " + actual + ")");
+            } else if (cmd.endsWith("write_DAC_pin")) {
+                double targetV = valueToWrite.getEngValue().getFloatValue();
+                device.writeDac(pinNum, targetV);
+                ackCommand(preparedCommand.getCommandId()); // Acknowledge_Sent -> OK
+                double actualV = device.readDac(pinNum);
+                completeCommand(preparedCommand,
+                        Math.abs(actualV - targetV) <= LabJackConfig.DAC_READBACK_TOLERANCE_V,
+                        "DAC" + pinNum + " readback=" + actualV + " V, commanded=" + targetV + " V");
+                log.info("Wrote " + targetV + " V to DAC" + pinNum + " (readback " + actualV + " V)");
+            } else {
+                log.warn("Unknown LabJack command: " + cmd);
+                failedCommand(preparedCommand.getCommandId(), "Unknown LabJack command: " + cmd);
+                return false;
+            }
+        } catch (Exception e) {
+            // The LJM call threw — that is the SDK's failure signal; reflect it in the command history.
+            log.error("LabJack command failed: " + e.getMessage());
+            failedCommand(preparedCommand.getCommandId(), e.getMessage());
+            return false;
+        }
+        return true;
+    }
 
-		executorService = Executors.newScheduledThreadPool(5);
-		executorService.scheduleAtFixedRate(this::readAllPins, 25, 10, TimeUnit.MICROSECONDS);
-		executorService.scheduleWithFixedDelay(this::savePacketToCSV, 1000, 500, TimeUnit.MILLISECONDS);
-	}
+    /**
+     * Publishes the CommandComplete ack from the post-write readback comparison: OK when the pin now
+     * reads the commanded value, NOK (with the readback detail) otherwise.
+     */
+    private void completeCommand(PreparedCommand pc, boolean verified, String detail) {
+        if (verified) {
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.CommandComplete_KEY, getCurrentTime(), AckStatus.OK);
+        } else {
+            log.warn("LabJack command readback mismatch: " + detail);
+            commandHistoryPublisher.publishAck(pc.getCommandId(),
+                    CommandHistoryPublisher.CommandComplete_KEY, getCurrentTime(), AckStatus.NOK,
+                    "Readback mismatch: " + detail);
+        }
+    }
 
-	private void writeCSVHeader() throws IOException {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("Reception Time,");
-		for (int i = 0; i < LabJackUtil.NUM_ANALOG_PINS; i++) {
-			stringBuilder.append("AIN").append(i).append(",");
-		}
-		for (int i = 0; i < LabJackUtil.NUM_DIGITAL_PINS; i++) {
-			stringBuilder.append("DIO").append(i).append(",");
-		}
-		stringBuilder.setLength(stringBuilder.length() - 1);
-		csvWriter.write(stringBuilder.toString());
-		csvWriter.newLine();
-	}
+    /**
+     * Directly drives a digital pin, bypassing the YAMCS command pipeline. Used by the control box
+     * E-stop fast path ({@code ControlBoxLink}) for minimal latency. Safe no-op if not connected.
+     */
+    public void writeDigitalPin(int pinNum, int state) {
+        if (device == null || !device.isOpen()) {
+            log.warn("Cannot write DIO" + pinNum + " - LabJack not connected");
+            return;
+        }
+        try {
+            device.writeDigitalPin(pinNum, state);
+        } catch (Exception e) {
+            log.error("Failed to write DIO" + pinNum + ": " + e.getMessage());
+        }
+    }
 
-	@Override
-	public void doDisable() {
-		if (isConnected) {
-			executorService.shutdown();
+    // ---- Status --------------------------------------------------------------------------------
 
-			LJM.close(deviceHandle);
-			isConnected = false;
-			try {
-				csvWriter.close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
+    @Override
+    protected Status connectionStatus() {
+        return state == State.STREAMING ? Status.OK : Status.UNAVAIL;
+    }
 
-	@Override
-	public void doEnable() {
-		Thread thread = new Thread(this);
-		thread.setName(getClass().getSimpleName() + "-" + linkName);
-		thread.start();
-	}
+    @Override
+    public String getDetailedStatus() {
+        if (isDisabled()) {
+            return "DISABLED";
+        }
+        return switch (state) {
+            case STREAMING -> "OK - streaming at " + LabJackConfig.SCAN_RATE_HZ + " Hz";
+            case CONNECTING -> "Connecting to LabJack...";
+            case RECONNECTING -> "Reconnecting - LabJack link lost";
+            case DISCONNECTED -> "Disconnected";
+        };
+    }
 
-	@Override
-	public String getDetailedStatus() {
-		if (isDisabled()) {
-			return "DISABLED";
-		} else if (isConnected) {
-			return "OK, connected to LabJack";
-		} else {
-			return "UNAVAILABLE, not connected to LabJack";
-		}
-	}
-
-	@Override
-	public void init(String instance, String name, YConfiguration config) {
-		super.init(instance, name, config);
-		Mdb mdb = MdbFactory.getInstance("ground_station");
-		tmExtractor = new XtceTmExtractor(mdb);
-		sequenceContainer = mdb.getSequenceContainer("/LabJackT7/LabJackPacket");
-		tmExtractor.startProviding(sequenceContainer);
-
-		for (var seqEntry : sequenceContainer.getEntryList()) {
-			if (seqEntry instanceof ParameterEntry parameterEntry) {
-				tmExtractor.startProviding(parameterEntry.getParameter());
-			}
-		}
-
-	}
-
-	@Override
-	public boolean sendCommand(PreparedCommand preparedCommand) {
-		if (!isConnected) {
-			log.warn("Attempting to send LabJack commands while not being connected to a LabJack");
-			return false;
-		}
-		var arguments = preparedCommand.getArgAssignment();
-		int pinNum = -1;
-		ArgumentValue valueToWrite = null;
-		for (var argument : arguments.entrySet()) {
-			if (argument.getKey().getName().equals("pin_number")) {
-				pinNum = argument.getValue().getEngValue().getUint32Value();
-			} else {
-				valueToWrite = argument.getValue();
-			}
-		}
-
-		if (preparedCommand.getCommandName().endsWith("write_digital_pin")) {
-			writeDigitalPin(pinNum, ((int) valueToWrite.getEngValue().getSint64Value()));
-		} else if (preparedCommand.getCommandName().endsWith("write_DAC_pin")) {
-			writeDACPin(pinNum, valueToWrite.getEngValue().getFloatValue());
-		}
-
-		return true;
-	}
-
-	public void writeDigitalPin(int pinNum, int voltage) {
-		try {
-			LabJackUtil.setDigitalPin(deviceHandle, pinNum, voltage);
-			log.info("Wrote: " + voltage + " to digital pin " + pinNum);
-		} catch (Exception e) {
-			log.error("Failed to write " + voltage + " to digital pin " + pinNum);
-		}
-	}
-
-	public void writeDACPin(int pinNum, float voltage) {
-		try {
-			LabJackUtil.setDACPin(deviceHandle, pinNum, voltage);
-			log.info("Wrote: " + voltage + " to DAC pin " + pinNum);
-		} catch (Exception e) {
-			log.error("Failed to write " + voltage + " to DAC pin " + pinNum);
-		}
-
-	}
+    private static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

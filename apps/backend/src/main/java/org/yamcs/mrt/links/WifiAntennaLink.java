@@ -132,6 +132,13 @@ public class WifiAntennaLink extends AbstractLink {
     return detailedStatus;
   }
 
+  private void setStatus(Status newStatus) {
+    status = newStatus;
+    if (newStatus != Status.OK) {
+      apConnectedStations = 0L;
+    }
+  }
+
   private void refreshStatus() {
     try {
       if (authenticationPermanentlyFailed) {
@@ -151,19 +158,18 @@ public class WifiAntennaLink extends AbstractLink {
               InfoResponse.class,
               Map.of("X-Requested-With", "XMLHttpRequest"));
 
-      log.info("Wifi antenna poll response for {}: {}", ipAddress, pollResponse.rawBody);
       dataIn(1, pollResponse.rawBody.length());
 
       if (Boolean.TRUE.equals(pollResponse.body.timeout)) {
         sessionCookie = null;
-        status = Status.UNAVAIL;
+        setStatus(Status.UNAVAIL);
         detailedStatus = "Wifi antenna session timed out, reauthenticating";
         return;
       }
 
       updateMetrics(pollResponse.body.data);
 
-      status = Status.OK;
+      setStatus(Status.OK);
       detailedStatus =
           "Authenticated and polling wifi antenna control plane at "
               + ipAddress
@@ -172,7 +178,7 @@ public class WifiAntennaLink extends AbstractLink {
               + ")";
     } catch (Exception e) {
       sessionCookie = null;
-      status = Status.FAILED;
+      setStatus(Status.FAILED);
       if (e instanceof AuthenticationFailedException) {
         authenticationPermanentlyFailed = true;
         detailedStatus =
@@ -202,7 +208,7 @@ public class WifiAntennaLink extends AbstractLink {
         return true;
       }
 
-      status = Status.FAILED;
+      setStatus(Status.FAILED);
       detailedStatus =
           "Wifi antenna authentication lost for "
               + ipAddress

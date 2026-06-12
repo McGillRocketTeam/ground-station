@@ -111,8 +111,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
 
   private record FlightComputerCommandMapping(String onCommand, String offCommand) {}
 
-  /** Byte offset of the arming key switch in the telemetry packet. */
-  private static final int ARMING_KEY_OFFSET = 13;
+  /** Byte offset treated as the effective arming key switch in the telemetry packet. */
+  private static final int ARMING_KEY_OFFSET = 14;
 
   /**
    * Switches that require the arming key to be ON before their commands are dispatched. Identified

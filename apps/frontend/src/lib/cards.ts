@@ -17,6 +17,7 @@ import { MapCard } from "@/cards/map-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
 import { ParameterTable } from "@/cards/parameter-table";
 import { ProceduresCard } from "@/cards/procedures";
+import { SerialMonitorCard } from "@/cards/serial-monitor";
 import { TextCard } from "@/cards/text-card";
 
 // Source of truth - add all cards here
@@ -31,6 +32,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   CommandButtonCard,
   GaugeCard,
   MqttExplorerCard,
+  SerialMonitorCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
   ProceduresCard,

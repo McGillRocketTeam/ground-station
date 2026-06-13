@@ -9,6 +9,10 @@ import { Field, FieldError, FieldLabel } from "../../ui/field";
 import { Input } from "../../ui/input";
 import { DashboardChartSeriesField, type DashboardChartSeriesFieldApi } from "./chart-series-field";
 import {
+  DashboardCommandArrayField,
+  type DashboardCommandArrayFieldApi,
+} from "./command-array-field";
+import {
   DashboardGaugeVisualRangesField,
   type DashboardGaugeVisualRangesFieldApi,
 } from "./gauge-visual-ranges-field";
@@ -33,6 +37,9 @@ const DashboardGaugeVisualRangesFieldComponent =
   DashboardGaugeVisualRangesField as unknown as ComponentType<{
     field: DashboardGaugeVisualRangesFieldApi;
   }>;
+const DashboardCommandArrayFieldComponent = DashboardCommandArrayField as unknown as ComponentType<{
+  field: DashboardCommandArrayFieldApi;
+}>;
 const DashboardChartSeriesFieldComponent = DashboardChartSeriesField as unknown as ComponentType<{
   field: DashboardChartSeriesFieldApi;
 }>;
@@ -203,6 +210,10 @@ export function DashboardCardField({
               <DashboardGaugeVisualRangesFieldComponent
                 field={field as DashboardGaugeVisualRangesFieldApi}
               />
+            );
+          case "commandArray":
+            return (
+              <DashboardCommandArrayFieldComponent field={field as DashboardCommandArrayFieldApi} />
             );
           case "chartSeries":
             return (

@@ -10,6 +10,7 @@ export type FormType =
   | "string"
   | "parameter"
   | "parameterArray"
+  | "commandArray"
   | "gaugeVisualRanges"
   | "chartSeries"
   | "parameterTableSections"

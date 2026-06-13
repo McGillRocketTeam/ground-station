@@ -1,3 +1,5 @@
+import type { CommandInfo } from "@mrt/yamcs-effect";
+
 import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
@@ -6,8 +8,11 @@ import { useState } from "react";
 import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
 import { YamcsAtomHttpClient, selectedInstanceAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
+import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
 import { formatCommandDisplayName } from "../command-history/command-display";
+
+type CommandDefinition = typeof CommandInfo.Type;
 
 const TARGET_OPTIONS = ["BOTH", "SystemA", "SystemB"] as const;
 type TargetOption = (typeof TARGET_OPTIONS)[number];
@@ -26,8 +31,15 @@ const targetExtra = (target: TargetOption) => {
 export const CommandButtonCard = makeCard({
   id: "command-button",
   name: "Command Button Card",
-  schema: Schema.Struct({}),
-  component: () => {
+  schema: Schema.Struct({
+    commands: Schema.optional(Schema.Array(Schema.String)).pipe(
+      Schema.annotate({
+        [FormTitleAnnotationId]: "Commands",
+        [FormTypeAnnotationId]: "commandArray",
+      }),
+    ),
+  }),
+  component: (props) => {
     const instance = useAtomValue(selectedInstanceAtom);
     const commandList = useAtomValue(
       YamcsAtomHttpClient.query("mdb", "listCommands", {
@@ -47,12 +59,12 @@ export const CommandButtonCard = makeCard({
           {Cause.pretty(cause)}
         </pre>
       ))
-      .onSuccess(() => <CommandButtonTable />)
+      .onSuccess(() => <CommandButtonTable commands={props.params.commands} />)
       .render();
   },
 });
 
-function CommandButtonTable() {
+function CommandButtonTable({ commands: allowedCommands }: { commands?: ReadonlyArray<string> }) {
   const instance = useAtomValue(selectedInstanceAtom);
   const [target, setTarget] = useState<TargetOption>("BOTH");
   const sendCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
@@ -63,6 +75,7 @@ function CommandButtonTable() {
       query: {},
     }),
   ).value;
+  const visibleCommands = filterCommands(commands, allowedCommands);
 
   return (
     <div className="h-full overflow-auto">
@@ -89,7 +102,7 @@ function CommandButtonTable() {
         </DataGridHeader>
 
         <DataGridBody>
-          {commands.map((command) => (
+          {visibleCommands.map((command) => (
             <DataGridRow key={command.name}>
               <div>{formatCommandDisplayName(command.qualifiedName, command)}</div>
               <button
@@ -115,4 +128,25 @@ function CommandButtonTable() {
       </div>
     </div>
   );
+}
+
+function filterCommands(
+  commands: ReadonlyArray<CommandDefinition>,
+  allowedCommands?: ReadonlyArray<string>,
+) {
+  if (!allowedCommands || allowedCommands.length === 0) {
+    return commands;
+  }
+
+  const commandLookup = new Map(
+    commands.flatMap((command) => [
+      [command.qualifiedName, command] as const,
+      [command.name, command] as const,
+    ]),
+  );
+
+  return allowedCommands.flatMap((commandName) => {
+    const command = commandLookup.get(commandName);
+    return command ? [command] : [];
+  });
 }

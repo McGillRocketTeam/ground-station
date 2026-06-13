@@ -89,7 +89,7 @@ export function DashboardCommandArrayField({ field }: { field: DashboardCommandA
             <div className="text-muted-foreground">No commands added.</div>
           ) : (
             <div className="grid max-h-64 gap-1 overflow-y-auto pr-2">
-              {selectedCommands.map((commandName, commandIndex) => (
+              {selectedCommands.map((commandName: string, commandIndex: number) => (
                 <div
                   key={`${commandName}-${commandIndex}`}
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"
@@ -102,7 +102,9 @@ export function DashboardCommandArrayField({ field }: { field: DashboardCommandA
                     className="text-sm text-muted-foreground hover:text-foreground"
                     onClick={() =>
                       field.handleChange(
-                        selectedCommands.filter((_, index) => index !== commandIndex),
+                        selectedCommands.filter(
+                          (_: string, index: number) => index !== commandIndex,
+                        ),
                       )
                     }
                   >

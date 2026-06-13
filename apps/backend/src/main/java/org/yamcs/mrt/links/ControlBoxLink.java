@@ -124,10 +124,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    */
   private static final Set<Integer> ARMING_KEY_GUARDED_SWITCHES =
       Set.of(
-          1,
-          2, 
-          11,
-          12
+          1
           );
 
   /** Byte offset of the emergency stop switch in the telemetry packet. */

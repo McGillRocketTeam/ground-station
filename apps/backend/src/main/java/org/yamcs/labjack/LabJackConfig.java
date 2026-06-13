@@ -39,9 +39,9 @@ public final class LabJackConfig {
      * Scans returned per {@code eStreamRead}. This is the "stream mode buffer size" knob the DAQ test
      * report calls out: larger = fewer, bigger batches (multiple data points land in YAMCS at the same
      * timestamp); smaller = lower latency. eStreamRead blocks until this many scans are buffered, so at
-     * 300 Hz a value of 30 yields ~10 reads/s (~100 ms batches).
+     * 300 Hz a value of 12 yields 25 reads/s (~40 ms batches).
      */
-    public static int SCANS_PER_READ = 6;
+    public static int SCANS_PER_READ = 12;
     /** 0 = max speed/lowest resolution (required to reach the higher scan rates), up to 8 = slowest. */
     public static int STREAM_RESOLUTION_INDEX = 0;
     /** Per-channel settling time; 0 = auto. Increase only if STREAM_SCAN_OVERLAP warnings appear. */
@@ -63,13 +63,13 @@ public final class LabJackConfig {
     // ---- YAMCS publishing rate (IO-latency control) --------------------------------------------
     /**
      * Realtime decimation: forward 1 of every {@code GRAPH_FREQ} scans to the realtime processor (and
-     * therefore the default packet-saving path). The default 300 Hz / 6 = 50 Hz. Raising this throttles
+     * therefore the default packet-saving path). The default 300 Hz / 12 = 25 Hz. Raising this throttles
      * the websocket/UI without affecting the CSV (always full rate) or — when {@link #ARCHIVE_FULL_RATE}
      * is on — the YAMCS archive.
      */
-    public static int GRAPH_FREQ = 6;
-    /** Target rate for the non-CSV telemetry packet path. Default 300 Hz / 6 = 50 Hz. */
-    public static double TM_PACKET_RATE_HZ = 50.0;
+    public static int GRAPH_FREQ = 12;
+    /** Target rate for the non-CSV telemetry packet path. Default 300 Hz / 12 = 25 Hz. */
+    public static double TM_PACKET_RATE_HZ = 25.0;
     /** Allowed rate error when LJM reports the actual achieved scan rate. */
     public static double TM_PACKET_RATE_TOLERANCE_HZ = 0.01;
     /**

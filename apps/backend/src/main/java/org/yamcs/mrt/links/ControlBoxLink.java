@@ -37,9 +37,12 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   // Previous switch states for change detection (null = no previous packet received yet)
   private byte[] previousSwitchStates = null;
 
-  // Debounce: track last command time per switch index to suppress bounce-induced duplicate commands
+  // Debounce: track last accepted switch transition so the first edge wins for the debounce window.
   private final Map<Integer, Long> lastCommandTime = new HashMap<>();
-  private static final long DEBOUNCE_MS = 75;
+  private static final long SWITCH_DEBOUNCE_MS = 1000;
+
+  // Keep the arming key briefly asserted across very short telemetry bounce.
+  private static final long ARMING_KEY_DEBOUNCE_MS = 75;
 
   // Debounce: track last time arming key was seen ON to hold armed state across brief bounces
   private long lastArmingKeyOnTime = 0;
@@ -235,8 +238,9 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     if (rawArmingKeyOn) {
       lastArmingKeyOnTime = now;
     }
-    boolean armingKeyOn = rawArmingKeyOn || (now - lastArmingKeyOnTime) < DEBOUNCE_MS;
+    boolean armingKeyOn = rawArmingKeyOn || (now - lastArmingKeyOnTime) < ARMING_KEY_DEBOUNCE_MS;
     boolean estopOn = currentPayload.length > ESTOP_OFFSET && currentPayload[ESTOP_OFFSET] != 0;
+    byte[] nextSwitchStates = previousSwitchStates.clone();
 
     // E-stop activation: on transition to ON, immediately set all mapped pins LOW
     if (numSwitches > ESTOP_OFFSET
@@ -271,15 +275,17 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
 
         if (ARMING_KEY_GUARDED_SWITCHES.contains(i) && !armingKeyOn) {
           log.warn("Blocked command for " + switchName + ": arming key is OFF");
+          nextSwitchStates[i] = currentPayload[i];
           continue;
         }
 
         Long last = lastCommandTime.get(i);
-        if (last != null && (now - last) < DEBOUNCE_MS) {
-          log.debug("Debounced rapid change for " + switchName);
+        if (last != null && (now - last) < SWITCH_DEBOUNCE_MS) {
+          log.debug("Debounced rapid change for " + switchName + "; keeping first state in burst");
           continue;
         }
         lastCommandTime.put(i, now);
+        nextSwitchStates[i] = currentPayload[i];
 
         LabJackCommandMapping labJackMapping = labJackCommandMap.get(i);
         if (labJackMapping != null) {
@@ -294,7 +300,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
       }
     }
 
-    previousSwitchStates = currentPayload.clone();
+    previousSwitchStates = nextSwitchStates;
   }
 
   /**

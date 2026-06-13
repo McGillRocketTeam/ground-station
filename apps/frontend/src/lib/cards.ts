@@ -19,6 +19,7 @@ import { ParameterTable } from "@/cards/parameter-table";
 import { ProceduresCard } from "@/cards/procedures";
 import { SerialMonitorCard } from "@/cards/serial-monitor";
 import { TextCard } from "@/cards/text-card";
+import { VideoCard } from "@/cards/video-card";
 
 // Source of truth - add all cards here
 export const CardArray: CardDefinition<string, any>[] = [
@@ -33,6 +34,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   GaugeCard,
   MqttExplorerCard,
   SerialMonitorCard,
+  VideoCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
   ProceduresCard,

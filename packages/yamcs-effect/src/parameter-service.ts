@@ -237,7 +237,7 @@ export class Parameters extends Context.Service<
                   "values" in event ? Stream.fromIterable(event.values) : Stream.empty,
                 ),
                 Stream.filter((value) => String(value.numericId) === numericId),
-                Stream.changesWith((left, right) => parameterValueContentEquivalence(left, right)),
+                // Stream.changesWith((left, right) => parameterValueContentEquivalence(left, right)),
                 Stream.map((value) => ({ info, value })),
               );
 

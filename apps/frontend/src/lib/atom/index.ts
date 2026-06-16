@@ -243,12 +243,12 @@ export const parameterSubscriptionAtom = Atom.family((qualifiedName: QualifiedNa
         const parameters = yield* Parameters;
         const subscription = yield* parameters.subscribe(qualifiedName);
         return subscription.updates.pipe(
-          Stream.throttle({
-            cost: (chunk) => chunk.length,
-            units: 1,
-            duration: "100 millis",
-            strategy: "enforce",
-          }),
+          // Stream.throttle({
+          //   cost: (chunk) => chunk.length,
+          //   units: 1,
+          //   duration: "100 millis",
+          //   strategy: "enforce",
+          // }),
         );
       }),
     ),

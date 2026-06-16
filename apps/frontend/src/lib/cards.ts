@@ -10,6 +10,7 @@ import { ChartCard } from "@/cards/chart-card";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
+import { FaultPanelCard } from "@/cards/fault-panel-card";
 import { GaugeCard } from "@/cards/gauge";
 import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
@@ -30,6 +31,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   MapCard,
   LinksCard,
   EventsCard,
+  FaultPanelCard,
   CommandButtonCard,
   GaugeCard,
   MqttExplorerCard,

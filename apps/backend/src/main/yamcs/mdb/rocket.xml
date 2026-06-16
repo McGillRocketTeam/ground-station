@@ -490,7 +490,7 @@ See https://github.com/yamcs/pymdb
             <MathOperationCalibrator>
               <ThisParameterOperand/>
               <ValueOperand>100</ValueOperand>
-              <Operator>-</Operator>
+              <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -522,7 +522,7 @@ See https://github.com/yamcs/pymdb
             <MathOperationCalibrator>
               <ThisParameterOperand/>
               <ValueOperand>100</ValueOperand>
-              <Operator>-</Operator>
+              <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -803,7 +803,7 @@ See https://github.com/yamcs/pymdb
         <LongDescription>A.S.T.R.A. Packet Identifider</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="tank_pressure" parameterTypeRef="tank_pressure" shortDescription="Tank Bottom Pressure (prop top)">
+      <Parameter name="tank_pressure" parameterTypeRef="tank_pressure" shortDescription="Tank Pressure (prop top)">
         <LongDescription>Calculated from sensor voltage.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>

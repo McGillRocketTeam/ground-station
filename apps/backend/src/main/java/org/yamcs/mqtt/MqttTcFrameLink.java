@@ -11,7 +11,7 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.ccsds.AbstractTcFrameLink;
-import org.yamcs.tctm.ccsds.TcTransferFrame;
+import org.yamcs.tctm.ccsds.UplinkTransferFrame;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 
@@ -67,7 +67,7 @@ public class MqttTcFrameLink extends AbstractTcFrameLink implements Runnable {
             if (rateLimiter != null) {
                 rateLimiter.acquire();
             }
-            TcTransferFrame tf = multiplexer.getFrame();
+            UplinkTransferFrame tf = multiplexer.getFrame();
             if (tf != null) {
                 byte[] data = tf.getData();
                 if (log.isTraceEnabled()) {

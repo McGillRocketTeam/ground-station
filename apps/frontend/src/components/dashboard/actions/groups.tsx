@@ -2,10 +2,12 @@ import type { SerializedDockview } from "dockview-react";
 
 import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { formatForDisplay, type RegisterableHotkey } from "@tanstack/react-hotkeys";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { Schema } from "effect";
 import { Effect } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { Atom } from "effect/unstable/reactivity";
 import { Fragment } from "react";
-import { useNavigate } from "react-router";
 
 import type { DashboardAction, DashboardActionGroup } from "@/lib/dashboard-actions";
 
@@ -18,11 +20,16 @@ import {
   MenubarShortcut,
 } from "@/components/ui/menubar";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import { isSerializedDockviewLayout, snapshotDockviewLayout } from "@/lib/dashboard-layout";
 import {
-  dashboardStorageKey,
-  isSerializedDockviewLayout,
-  snapshotDockviewLayout,
-} from "@/lib/dashboard-layout";
+  DashboardPageRecord,
+  dashboardPagesAtom,
+  getDashboardPageLayout,
+  dashboardRouteTarget,
+  encodeDashboardPage,
+  importDashboardPageAtom,
+  setDashboardPageLayout,
+} from "@/lib/dashboard-persistence";
 
 import { editPanelDialogHandle } from "../form/edit-dialog";
 import {
@@ -45,25 +52,25 @@ export const toggleFullscreenAtom = Atom.fn(() =>
   }),
 );
 
-function downloadDashboardLayout(layout: unknown) {
-  const blob = new Blob([JSON.stringify(layout, null, 2)], {
+function downloadDashboardPage(page: DashboardPageRecord) {
+  const blob = new Blob([encodeDashboardPage(page)], {
     type: "application/json",
   });
   const downloadUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  const timestamp = new Date().toISOString().replaceAll(":", "-");
+  const slug = page.name
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, "-")
+    .replaceAll(/^-|-$/g, "");
 
   link.href = downloadUrl;
-  link.download = `dashboard-${timestamp}.json`;
+  link.download = `${slug || "dashboard"}.json`;
   link.click();
 
   URL.revokeObjectURL(downloadUrl);
 }
 
-const mrtEnvironment =
-  import.meta.env.MRT_ENVIRONMENT === "development" ? "development" : "production";
-
-function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
+function pickDashboardPageFile(): Promise<DashboardPageRecord | undefined> {
   return new Promise((resolve) => {
     const input = document.createElement("input");
 
@@ -78,12 +85,13 @@ function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
       }
 
       try {
-        const rawLayout = await file.text();
-        const layout = JSON.parse(rawLayout) as unknown;
-
-        resolve(isSerializedDockviewLayout(layout) ? snapshotDockviewLayout(layout) : undefined);
+        resolve(
+          Schema.decodeUnknownSync(Schema.fromJsonString(Schema.toCodecJson(DashboardPageRecord)))(
+            await file.text(),
+          ),
+        );
       } catch (err) {
-        console.error("Error importing dashboard layout", err);
+        console.error("Error importing dashboard page", err);
         resolve(undefined);
       }
     };
@@ -102,9 +110,14 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
   const undo = useAtomSet(dashboardUndoAtom);
   const redo = useAtomSet(dashboardRedoAtom);
   const initializeDashboardLayoutHistory = useAtomSet(initializeDashboardLayoutHistoryAtom);
+  const importDashboardPage = useAtomSet(importDashboardPageAtom, { mode: "promise" });
   const api = useAtomValue(dashboardDockviewApiAtom);
   const { past, present, future } = useAtomValue(dashboardLayoutHistoryAtom);
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const pagesResult = useAtomValue(dashboardPagesAtom);
+  const pages = AsyncResult.isSuccess(pagesResult) ? pagesResult.value : [];
+  const currentPage = pages.find((page) => page.path === pathname);
 
   return [
     {
@@ -136,98 +149,74 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
         {
           id: "new-page",
           label: "New Page",
-          run: () => {},
+          keywords: ["dashboard", "page", "new", "create"],
+          run: () => navigate({ to: "/new" }),
         },
         {
           id: "export-page",
           label: "Export Page",
           keywords: ["dashboard", "page", "export", "download", "json"],
-          disabled: !api && !present,
+          disabled: !currentPage,
           shortcut: "Mod+Shift+S",
           run: () => {
-            const layout = api?.toJSON() ?? present;
-
-            if (!layout) {
+            if (!currentPage) {
               return;
             }
 
-            downloadDashboardLayout(layout);
+            const layout = api?.toJSON() ?? present ?? getDashboardPageLayout(currentPage);
+
+            if (!isSerializedDockviewLayout(layout)) {
+              return;
+            }
+
+            downloadDashboardPage(
+              setDashboardPageLayout(currentPage, layout),
+            );
           },
         },
         {
           id: "import-page",
           label: "Import Page",
           keywords: ["dashboard", "page", "import", "upload", "json"],
-          disabled: !api,
+          disabled: false,
           shortcut: "Mod+Shift+O",
           run: () => {
-            if (!api) {
-              return;
-            }
-
-            void pickDashboardLayoutFile().then((layout) => {
-              if (!layout) {
+            void pickDashboardPageFile().then((page) => {
+              if (!page) {
                 return;
               }
 
-              try {
-                api.fromJSON(layout);
-                window.localStorage.setItem(dashboardStorageKey, JSON.stringify(layout));
-                initializeDashboardLayoutHistory(layout);
-              } catch (err) {
-                console.error("Error loading imported dashboard layout", err);
-              }
+              void importDashboardPage(page).then((importedPage) => {
+                void navigate(dashboardRouteTarget(importedPage.path));
+                const importedLayout = getDashboardPageLayout(importedPage);
+
+                if (importedLayout) {
+                  initializeDashboardLayoutHistory(importedLayout);
+                }
+              });
             });
           },
         },
       ],
     },
-    ...(mrtEnvironment === "development"
-      ? [
-          {
-            id: "dashboard-development",
-            heading: "Development",
-            actions: [
-              {
-                id: "dave-default-layout",
-                label: "Save Layout as Default",
-                keywords: ["dashboard", "layout", "default", "save"],
-                run: () => {
-                  if (!api) return;
-                  const layout = api.toJSON();
-                  console.log(layout);
-                },
-              },
-              {
-                id: "open-debug-page",
-                label: "Open Debug Page",
-                keywords: ["dashboard", "development", "debug"],
-                run: () => navigate("/debug"),
-              },
-            ],
-          },
-        ]
-      : []),
+    {
+      id: "dashboard-open-pages",
+      heading: "Open Page",
+      actions: pages.map((page) => ({
+        id: `open-page-${page.path}`,
+        label: page.name,
+        keywords: ["dashboard", "page", "open", page.path],
+        disabled: page.path === pathname,
+        run: () => {
+          void navigate(dashboardRouteTarget(page.path));
+        },
+      })),
+    },
   ];
 }
 
 export function useDashboardDataActionGroups(): ReadonlyArray<DashboardActionGroup> {
-  const navigate = useNavigate();
-
-  return [
-    {
-      id: "dashboard-data",
-      heading: "Data",
-      actions: [
-        {
-          id: "export-data",
-          label: "Export Data",
-          keywords: ["dashboard", "data", "export"],
-          run: () => navigate("/export"),
-        },
-      ],
-    },
-  ];
+  return [];
 }
 
 export function useDashboardViewActionGroups(): ReadonlyArray<DashboardActionGroup> {

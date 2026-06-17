@@ -73,7 +73,7 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
     props.containerApi.addPanel({
       component: copied.component,
       id: createId(),
-      params: cloneParams(copied.params),
+      params: cloneParams(copied.params) ?? undefined,
       position: {
         direction: "within",
         referencePanel: panel,

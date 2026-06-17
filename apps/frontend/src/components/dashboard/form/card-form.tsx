@@ -34,18 +34,16 @@ function getDefaultFieldValue(value: unknown) {
   return "";
 }
 
-function encodeDefaultFieldValue(fieldSchema: Schema.Schema<unknown>, value: unknown) {
+function encodeDefaultFieldValue(value: unknown) {
   if (value === undefined) {
     return undefined;
   }
 
-  try {
-    return Schema.encodeUnknownSync(
-      fieldSchema as Schema.Top & { readonly EncodingServices: never },
-    )(value);
-  } catch {
-    return getDefaultFieldValue(value);
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
   }
+
+  return value ?? getDefaultFieldValue(value);
 }
 
 export function DashboardCardForm({
@@ -75,12 +73,10 @@ export function DashboardCardForm({
 
   const defaultValues = useMemo<EncodedFormValues>(() => {
     return Object.fromEntries(
-      Object.entries(schema.fields as Record<string, Schema.Schema<unknown>>).map(
-        ([fieldName, fieldSchema]) => [
-          fieldName,
-          encodeDefaultFieldValue(fieldSchema, initialParams?.[fieldName]),
-        ],
-      ),
+      Object.entries(schema.fields as Record<string, Schema.Schema<unknown>>).map(([fieldName]) => [
+        fieldName,
+        encodeDefaultFieldValue(initialParams?.[fieldName]),
+      ]),
     );
   }, [initialParams, schema.fields]);
 

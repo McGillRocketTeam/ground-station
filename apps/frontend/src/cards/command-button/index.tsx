@@ -103,7 +103,7 @@ function CommandButtonTable({ commands: allowedCommands }: { commands?: Readonly
 
         <DataGridBody>
           {visibleCommands.map((command) => (
-            <DataGridRow key={command.name}>
+            <DataGridRow key={command.qualifiedName}>
               <div>{formatCommandDisplayName(command.qualifiedName, command)}</div>
               <button
                 onClick={() => {

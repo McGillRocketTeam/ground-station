@@ -1,9 +1,16 @@
+import type { FunctionComponent } from "react";
+
 import { useAtom, useAtomSet } from "@effect/atom-react";
-import { BrowserKeyValueStore } from "@effect/platform-browser";
-import { DockviewReact, themeAbyssSpaced, type DockviewReadyEvent } from "dockview-react";
-import { Schema } from "effect";
-import { Atom } from "effect/unstable/reactivity";
-import { useEffect } from "react";
+import {
+  DockviewReact,
+  type IDockviewPanelProps,
+  themeAbyssSpaced,
+  type DockviewReadyEvent,
+  type SerializedDockview,
+} from "dockview-react";
+import { useEffect, useState } from "react";
+
+import type { DashboardPageRecord } from "@/lib/dashboard-persistence";
 
 import { DashboardCommandMenu } from "@/components/dashboard/actions/command-menu";
 import { DashboardKeybinds } from "@/components/dashboard/actions/keybinds";
@@ -17,36 +24,33 @@ import {
 import { DashboardMenuBar } from "@/components/dashboard/actions/menu-bar";
 import { EditDialogPanel as EditPanelDialog } from "@/components/dashboard/form/edit-dialog";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { DashboardPlus } from "@/components/dashboard/plus";
 
 import "./dashboard.css";
-import { DashboardPlus } from "@/components/dashboard/plus";
 import { DashboardTab } from "@/components/dashboard/tab";
 import { CardComponentMap, getCardActionsForPanel } from "@/lib/cards";
-import {
-  dashboardStorageKey,
-  isSerializedDockviewLayout,
-  persistDashboardLayout,
-  readPersistedDashboardLayout,
-  snapshotDockviewLayout,
-} from "@/lib/dashboard-layout";
+import { isSerializedDockviewLayout, snapshotDockviewLayout } from "@/lib/dashboard-layout";
+import { writeDashboardLayoutAtom } from "@/lib/dashboard-persistence";
 import { createId } from "@/lib/utils";
 
-const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
-
-const dashboardLocalStorage = Atom.kvs({
-  runtime: runtime,
-  key: dashboardStorageKey,
-  schema: Schema.ObjectKeyword,
-  defaultValue: () => ({}),
-});
-
-export function DashboardPage() {
+export function DashboardPage({
+  page,
+  initialLayout,
+}: {
+  page: DashboardPageRecord;
+  initialLayout?: SerializedDockview;
+}) {
   const [api, setApi] = useAtom(dashboardDockviewApiAtom);
   const setActivePanel = useAtomSet(activePanelAtom);
   const setCurrentCardActions = useAtomSet(currentCardActionsAtom);
-  const [layout, setLayout] = useAtom(dashboardLocalStorage);
+  const writeDashboardLayout = useAtomSet(writeDashboardLayoutAtom);
+  const [layout, setLayout] = useState<SerializedDockview | undefined>(initialLayout);
   const initializeDashboardLayoutHistory = useAtomSet(initializeDashboardLayoutHistoryAtom);
   const pushDashboardLayoutHistory = useAtomSet(pushDashboardLayoutHistoryAtom);
+
+  useEffect(() => {
+    setLayout(initialLayout);
+  }, [initialLayout, page.path]);
 
   useEffect(() => {
     if (!api) {
@@ -55,13 +59,13 @@ export function DashboardPage() {
 
     const disposable = api.onDidLayoutChange(() => {
       const layout = snapshotDockviewLayout(api.toJSON());
-      persistDashboardLayout(layout);
+      writeDashboardLayout({ path: page.path, layout });
       setLayout(layout);
       pushDashboardLayoutHistory(layout);
     });
 
     return () => disposable.dispose();
-  }, [api, pushDashboardLayoutHistory, setLayout]);
+  }, [api, page.path, pushDashboardLayoutHistory]);
 
   useEffect(
     () => () => {
@@ -80,9 +84,9 @@ export function DashboardPage() {
       setCurrentCardActions(getCardActionsForPanel(panel));
     });
 
-    const persistedLayout =
-      readPersistedDashboardLayout() ??
-      (isSerializedDockviewLayout(layout) ? snapshotDockviewLayout(layout) : undefined);
+    const persistedLayout = isSerializedDockviewLayout(layout)
+      ? snapshotDockviewLayout(layout)
+      : undefined;
 
     if (persistedLayout) {
       setLayout(persistedLayout);
@@ -97,55 +101,26 @@ export function DashboardPage() {
     }
 
     event.api.addPanel({
-      title: "Parameter Table",
-      component: "parameter-table",
-      id: createId(),
-    });
-    // event.api.addPanel({
-    //   title: "Command History",
-    //   component: "command-history",
-    //   id: createId(),
-    // });
-    event.api.addPanel({
-      title: "Events",
-      component: "events",
-      id: createId(),
-    });
-    event.api.addPanel({
       title: "Links",
       component: "links",
       id: createId(),
     });
-    // event.api.addPanel({
-    //   title: "Map",
-    //   component: "map-card",
-    //   id: createId(),
-    //   params: {
-    //     latitude: 45.5017,
-    //     longitude: -73.5673,
-    //   },
-    // });
-    event.api.addPanel({
-      title: "Command Buttons",
-      component: "command-button",
-      id: createId(),
-    });
 
     const initialLayout = snapshotDockviewLayout(event.api.toJSON());
-    persistDashboardLayout(initialLayout);
+    writeDashboardLayout({ path: page.path, layout: initialLayout });
     setLayout(initialLayout);
     initializeDashboardLayoutHistory(initialLayout);
   };
 
   return (
     <div className="fixed flex h-full w-full flex-col p-1.25">
-      <DashboardHeader />
+      <DashboardHeader pageName={page.name} pagePath={page.path} />
       <DashboardMenuBar />
       <div className="grow pt-1.25">
         <DockviewReact
           onReady={onReady}
           theme={{ ...themeAbyssSpaced, gap: 5 }}
-          components={CardComponentMap}
+          components={CardComponentMap as Record<string, FunctionComponent<IDockviewPanelProps>>}
           leftHeaderActionsComponent={DashboardPlus}
           defaultTabComponent={DashboardTab}
         />

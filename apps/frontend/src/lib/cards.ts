@@ -1,5 +1,5 @@
 import type { IDockviewPanel, IDockviewPanelProps } from "dockview-react";
-import type { ComponentType, ErrorInfo, ReactNode } from "react";
+import type { ComponentProps, ComponentType, ErrorInfo, ReactNode } from "react";
 
 import { Schema } from "effect";
 import { Component, createElement } from "react";
@@ -141,4 +141,4 @@ export function getCardActionsForPanel(
 export type CardSchemaType<Id extends CardId> = Schema.Schema.Type<GetCard<Id>["schema"]>;
 
 // Get props type for a specific card's component
-export type CardProps<Id extends CardId> = Parameters<GetCard<Id>["component"]>[0];
+export type CardProps<Id extends CardId> = ComponentProps<GetCard<Id>["component"]>;

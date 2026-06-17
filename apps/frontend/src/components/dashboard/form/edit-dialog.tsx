@@ -1,6 +1,7 @@
 import type { IDockviewPanel } from "dockview-react";
 
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { useRouterState } from "@tanstack/react-router";
 
 import {
   dashboardDockviewApiAtom,
@@ -16,7 +17,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { isCardId } from "@/lib/cards";
-import { persistDashboardLayout, snapshotDockviewLayout } from "@/lib/dashboard-layout";
+import { snapshotDockviewLayout } from "@/lib/dashboard-layout";
+import { writeDashboardLayoutAtom } from "@/lib/dashboard-persistence";
 
 import { Button } from "../../ui/button";
 import { DashboardCardForm } from "./card-form";
@@ -26,6 +28,8 @@ export const editPanelDialogHandle = Dialog.createHandle<IDockviewPanel>();
 function EditPanelDialogForm({ payload }: { payload: IDockviewPanel }) {
   const api = useAtomValue(dashboardDockviewApiAtom);
   const pushDashboardLayoutHistory = useAtomSet(pushDashboardLayoutHistoryAtom);
+  const writeDashboardLayout = useAtomSet(writeDashboardLayoutAtom);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const componentId = payload.view.contentComponent;
 
   if (!isCardId(componentId)) {
@@ -49,7 +53,7 @@ function EditPanelDialogForm({ payload }: { payload: IDockviewPanel }) {
 
         if (api) {
           const layout = snapshotDockviewLayout(api.toJSON());
-          persistDashboardLayout(layout);
+          writeDashboardLayout({ path: pathname, layout });
           pushDashboardLayoutHistory(layout);
         }
 

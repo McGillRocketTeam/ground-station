@@ -28,12 +28,19 @@ function MissionTime() {
   );
 }
 
-export function DashboardHeader({ className }: { className?: string }) {
+export function DashboardHeader({
+  className,
+  pageName,
+}: {
+  className?: string;
+  pageName?: string;
+  pagePath?: string;
+}) {
   return (
     <div className={cn("flex flex-row justify-between", className)}>
       <div className="flex flex-col items-start font-mono text-xs uppercase">
         <div className="text-mrt">McGill Rocket Team</div>
-        <div className="text-muted-foreground">Ground Station Controls</div>
+        <div className="text-muted-foreground">{pageName ?? "Ground Station Controls"}</div>
       </div>
       <MissionTime />
     </div>

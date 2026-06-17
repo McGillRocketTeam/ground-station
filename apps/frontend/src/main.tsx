@@ -1,15 +1,15 @@
 import { RegistryContext } from "@effect/atom-react";
+import { RouterProvider } from "@tanstack/react-router";
 import { Logger } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { RouterProvider } from "react-router";
 
-import { router } from "./components/router/router.tsx";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider.tsx";
 import { TooltipProvider } from "./components/ui/tooltip.tsx";
 import { atomRegistry } from "./lib/atom-registry.ts";
+import { router } from "./router.tsx";
 
 Atom.runtime.addGlobalLayer(Logger.layer([Logger.consolePretty()]));
 

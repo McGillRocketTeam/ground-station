@@ -1,16 +1,16 @@
 import { Context, Data, Effect, Layer, RcMap, Schema, Scope, Semaphore, Stream } from "effect";
 import { HttpApiClient } from "effect/unstable/httpapi";
 
-import { YamcsApi } from "./http/index.ts";
-import { ParameterInfo, type QualifiedName, Value } from "./schema.ts";
-import { SubscribeParameterRequest } from "./websocket/client-messages.ts";
-import { WebSocketClient } from "./websocket/client.ts";
+import { YamcsApi } from "../http/index.ts";
+import { ParameterInfo, type QualifiedName, Value } from "../schema.ts";
+import { SubscribeParameterRequest } from "../websocket/client-messages.ts";
+import { WebSocketClient } from "../websocket/client.ts";
 import {
   ParameterEvent,
   type ParameterValue,
   type SubscriptionId,
-} from "./websocket/server-messages.ts";
-import { YamcsConfig } from "./yamcs-config.ts";
+} from "../websocket/server-messages.ts";
+import { YamcsConfig } from "../yamcs-config.ts";
 
 const parameterValueContentEquivalence = Schema.toEquivalence(
   Schema.Struct({

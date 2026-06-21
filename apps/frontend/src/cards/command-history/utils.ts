@@ -60,6 +60,11 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
     ),
   ];
   const completion = extractAcknowledgement(command, "CommandComplete", true);
+  const extractAcks = (acks: ReadonlyArray<string>) =>
+    acks.flatMap((ack) => {
+      const extracted = extractAcknowledgement(command, ack);
+      return validAck(extracted) ? [extracted] : [];
+    });
 
   return {
     yamcs: [
@@ -67,16 +72,18 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
       extractAcknowledgement(command, "Released"),
       extractAcknowledgement(command, "Sent"),
     ].filter(validAck),
-    systemA: systemAAckOrder.map((ack) => extractAcknowledgement(command, ack)).filter(validAck),
-    systemB: systemBAckOrder.map((ack) => extractAcknowledgement(command, ack)).filter(validAck),
+    systemA: extractAcks(systemAAckOrder),
+    systemB: extractAcks(systemBAckOrder),
     other: extraAckNames
       .filter(
         (ack) =>
           !systemAAckOrder.includes(ack as (typeof systemAAckOrder)[number]) &&
           !systemBAckOrder.includes(ack as (typeof systemBAckOrder)[number]),
       )
-      .map((ack) => extractAcknowledgement(command, ack))
-      .filter(validAck),
+      .flatMap((ack) => {
+        const extracted = extractAcknowledgement(command, ack);
+        return validAck(extracted) ? [extracted] : [];
+      }),
     completion: validAck(completion) ? completion : null,
   };
 }

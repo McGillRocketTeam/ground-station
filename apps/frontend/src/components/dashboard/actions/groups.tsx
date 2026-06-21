@@ -330,31 +330,31 @@ export function DashboardActionMenubarGroups({
 }: {
   groups: ReadonlyArray<DashboardActionGroup>;
 }) {
-  return groups
-    .filter((group) => group.actions.length > 0)
-    .map((group, index) => (
-      <Fragment key={group.id}>
-        {index > 0 ? <MenubarSeparator /> : null}
-        <MenubarGroup>
-          {group.actions.map((action) => (
-            <MenubarItem
-              key={action.id}
-              disabled={action.disabled}
-              onClick={action.run}
-              variant={action.destructive ? "destructive" : "default"}
-              className="text-nowrap"
-            >
-              {action.label}
-              {action.shortcut ? (
-                <MenubarShortcut>
-                  {formatForDisplay(action.shortcut as Parameters<typeof formatForDisplay>[0])}
-                </MenubarShortcut>
-              ) : null}
-            </MenubarItem>
-          ))}
-        </MenubarGroup>
-      </Fragment>
-    ));
+  const visibleGroups = groups.filter((group) => group.actions.length > 0);
+
+  return visibleGroups.map((group, index) => (
+    <Fragment key={group.id}>
+      {index > 0 ? <MenubarSeparator /> : null}
+      <MenubarGroup>
+        {group.actions.map((action) => (
+          <MenubarItem
+            key={action.id}
+            disabled={action.disabled}
+            onClick={action.run}
+            variant={action.destructive ? "destructive" : "default"}
+            className="text-nowrap"
+          >
+            {action.label}
+            {action.shortcut ? (
+              <MenubarShortcut>
+                {formatForDisplay(action.shortcut as Parameters<typeof formatForDisplay>[0])}
+              </MenubarShortcut>
+            ) : null}
+          </MenubarItem>
+        ))}
+      </MenubarGroup>
+    </Fragment>
+  ));
 }
 
 export function DashboardActionCommandGroups({
@@ -364,33 +364,33 @@ export function DashboardActionCommandGroups({
   groups: ReadonlyArray<DashboardActionGroup>;
   onAction?: () => void;
 }) {
-  return groups
-    .filter((group) => group.actions.length > 0)
-    .map((group) => (
-      <CommandGroup heading={group.heading} key={group.id}>
-        {group.actions.map((action) => (
-          <CommandItem
-            disabled={action.disabled}
-            key={action.id}
-            variant={action.destructive ? "destructive" : "default"}
-            value={[action.label, ...(action.keywords ?? [])].join(" ")}
-            onSelect={() => {
-              if (action.disabled) {
-                return;
-              }
+  const visibleGroups = groups.filter((group) => group.actions.length > 0);
 
-              action.run();
-              onAction?.();
-            }}
-          >
-            {action.label}
-            {action.shortcut ? (
-              <CommandShortcut>
-                {formatForDisplay(action.shortcut as Parameters<typeof formatForDisplay>[0])}
-              </CommandShortcut>
-            ) : null}
-          </CommandItem>
-        ))}
-      </CommandGroup>
-    ));
+  return visibleGroups.map((group) => (
+    <CommandGroup heading={group.heading} key={group.id}>
+      {group.actions.map((action) => (
+        <CommandItem
+          disabled={action.disabled}
+          key={action.id}
+          variant={action.destructive ? "destructive" : "default"}
+          value={[action.label, ...(action.keywords ?? [])].join(" ")}
+          onSelect={() => {
+            if (action.disabled) {
+              return;
+            }
+
+            action.run();
+            onAction?.();
+          }}
+        >
+          {action.label}
+          {action.shortcut ? (
+            <CommandShortcut>
+              {formatForDisplay(action.shortcut as Parameters<typeof formatForDisplay>[0])}
+            </CommandShortcut>
+          ) : null}
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  ));
 }

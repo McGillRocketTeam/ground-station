@@ -54,12 +54,10 @@ const filteredCommandIdsAtom = Atom.make((get) => {
   const commandDisplayMap = get(commandDisplayMapAtom);
 
   return AsyncResult.map(get(commandsSubscriptionAtom), (commands) =>
-    commands
-      .filter((command) => {
-        const label = commandDisplayMap.get(command.commandName) ?? command.commandName;
-        return label.toLowerCase().includes(commandSearchText);
-      })
-      .map((command) => command.id),
+    commands.flatMap((command) => {
+      const label = commandDisplayMap.get(command.commandName) ?? command.commandName;
+      return label.toLowerCase().includes(commandSearchText) ? [command.id] : [];
+    }),
   );
 });
 

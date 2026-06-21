@@ -35,12 +35,8 @@ const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) => {
   ) as Layer.Layer<any, any, ProcedureRuntimeContext>;
 });
 
-export const procedureExecutionStateAtom = procedureRuntime.subscriptionRef(
+const procedureExecutionStateAtom = procedureRuntime.subscriptionRef(
   ProcedureExecutor.use((executor) => Effect.succeed(executor.state)),
-);
-
-export const currentProcedureStepIndexAtom = procedureRuntime.atom((get) =>
-  Effect.map(get.result(procedureExecutionStateAtom), (state) => state.currentStepIndex),
 );
 
 export const procedureExecutionStepAtom = Atom.family((index: number) =>

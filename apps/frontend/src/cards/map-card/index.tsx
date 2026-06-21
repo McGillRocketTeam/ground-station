@@ -39,7 +39,7 @@ function isValidCoordinate(latitude: number, longitude: number) {
   );
 }
 
-export function RocketMarker(props: { lat: string; long: string }) {
+function RocketMarker(props: { lat: string; long: string }) {
   const latitude = useAtomSuspense(parameterSubscriptionAtom(props.lat))
     .value as LiveParameterUpdate;
   const longitude = useAtomSuspense(parameterSubscriptionAtom(props.long))

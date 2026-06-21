@@ -4,7 +4,7 @@ import { Atom } from "effect/unstable/reactivity";
 
 import { yamcsBaseUrl } from "@/lib/atom";
 
-export const exportFormSchema = Schema.Struct({
+const exportFormSchema = Schema.Struct({
   instance: Schema.String.check(Schema.isMinLength(1, { message: "Instance is required" })),
   startDate: Schema.DateTimeUtcFromDate,
   endDate: Schema.DateTimeUtcFromDate,

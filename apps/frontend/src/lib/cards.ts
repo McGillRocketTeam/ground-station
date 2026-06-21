@@ -109,7 +109,7 @@ type Cards = (typeof CardArray)[number];
 export type CardId = Cards["id"];
 type GetCard<Id extends CardId> = Extract<Cards, { id: Id }>;
 
-export const CardDefinitionMap = Object.fromEntries(CardArray.map((card) => [card.id, card])) as {
+const CardDefinitionMap = Object.fromEntries(CardArray.map((card) => [card.id, card])) as {
   [K in CardId]: GetCard<K>;
 };
 

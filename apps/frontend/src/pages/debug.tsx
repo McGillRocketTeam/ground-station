@@ -33,7 +33,7 @@ export function DebugPage() {
   );
 }
 
-export function DebugToolbar() {
+function DebugToolbar() {
   const [currentlySelected, setCurrentlySelected] = useAtom(selectedCardAtom);
   const [open, setOpen] = useState(false);
   return (

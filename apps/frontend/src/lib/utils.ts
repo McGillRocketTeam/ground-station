@@ -36,12 +36,6 @@ export function createId() {
     .join("");
 }
 
-type DisplayNumber = { kind: "number"; value: number };
-type DisplayString = { kind: "string"; value: string };
-type DisplayNone = { kind: "none" };
-
-type Display = DisplayNumber | DisplayString | DisplayNone;
-
 export function stringifyValue(value?: typeof Value.Type, fallback?: string) {
   if (!value) return fallback ?? "Unknown";
   switch (value.type) {
@@ -67,23 +61,6 @@ export function formatUtcDateTime(date: Date | DateTime.DateTime) {
   return date instanceof Date
     ? utcDateTimeFormatter.format(date)
     : DateTime.formatIntl(date, utcDateTimeFormatter);
-}
-
-export function displayValue(value: typeof Value.Type): Display {
-  switch (value.type) {
-    case "FLOAT":
-    case "DOUBLE":
-    case "SINT32":
-    case "UINT32":
-    case "SINT64":
-    case "UINT64":
-      return { kind: "number", value: value.value };
-    case "ENUMERATED":
-    case "AGGREGATE":
-      return { kind: "none" };
-    default:
-      return { kind: "string", value: value.value.toString() };
-  }
 }
 
 export function formatDate(date: Date | DateTime.DateTime) {

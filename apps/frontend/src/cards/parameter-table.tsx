@@ -74,11 +74,12 @@ const ParameterTableSectionSchema = Schema.Struct({
 
 export type ParameterTableSection = typeof ParameterTableSectionSchema.Type;
 
-export const DEFAULT_PARAMETER_TABLE_SECTIONS: ReadonlyArray<ParameterTableSection> =
-  Object.entries(CardEntries).map(([title, parameters]) => ({
-    title,
-    parameters: parameters.map((parameter) => `/${SYSTEM_A_PREFIX}/${parameter}`),
-  }));
+const DEFAULT_PARAMETER_TABLE_SECTIONS: ReadonlyArray<ParameterTableSection> = Object.entries(
+  CardEntries,
+).map(([title, parameters]) => ({
+  title,
+  parameters: parameters.map((parameter) => `/${SYSTEM_A_PREFIX}/${parameter}`),
+}));
 
 export const ParameterTable = makeCard({
   id: "parameter-table",

@@ -4,7 +4,7 @@ import { Atom } from "effect/unstable/reactivity";
 
 const localStorageRuntime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
 
-export const themeSchema = Schema.Literals(["dark", "light", "system"]);
+const themeSchema = Schema.Literals(["dark", "light", "system"]);
 export type Theme = typeof themeSchema.Type;
 
 export const selectedInstanceAtom = Atom.kvs({

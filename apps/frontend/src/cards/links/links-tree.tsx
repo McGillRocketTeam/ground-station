@@ -41,7 +41,7 @@ export function LinksTree({ links }: { links: ReadonlyArray<Link> }) {
   );
 }
 
-export const LinkRows = memo(function LinkRows({
+const LinkRows = memo(function LinkRows({
   links,
   depth,
 }: {

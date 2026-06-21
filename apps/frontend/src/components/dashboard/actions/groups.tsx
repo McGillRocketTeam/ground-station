@@ -35,7 +35,7 @@ import {
   initializeDashboardLayoutHistoryAtom,
 } from "./layout";
 
-export const toggleFullscreenAtom = Atom.fn(() =>
+const toggleFullscreenAtom = Atom.fn(() =>
   Effect.gen(function* () {
     if (document.fullscreenElement) {
       return yield* Effect.promise(() => document.exitFullscreen());

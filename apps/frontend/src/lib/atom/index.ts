@@ -2,7 +2,7 @@ import { ParameterInfo, ParameterValue, YamcsSubscriptions } from "@mrt/yamcs-ef
 import { Effect, Stream } from "effect";
 import { AsyncResult, Atom } from "effect/unstable/reactivity";
 
-export { selectedInstanceAtom, themeAtom, themeSchema, type Theme } from "./frontend";
+export { selectedInstanceAtom, themeAtom, type Theme } from "./frontend";
 export { logValidationFailure, YamcsAtomHttpClient, yamcsBaseUrl } from "./yamcs/runtime";
 export {
   parameterInfoAtom,
@@ -11,11 +11,8 @@ export {
 } from "./yamcs/parameters";
 export {
   commandHistoryEntryAtom,
-  commandInfoAtom,
   commandListAtom,
-  commandsByQualifiedNameAtom,
   commandsSubscriptionAtom,
-  sendCommandAtom,
 } from "./yamcs/commands";
 
 import { selectedInstanceAtom } from "./frontend";

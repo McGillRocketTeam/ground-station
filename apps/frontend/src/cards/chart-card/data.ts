@@ -10,8 +10,8 @@ import type { ChartPoint, ChartViewport } from "./types";
 
 import { DEFAULT_TIME_WINDOW_MINUTES } from "./config";
 
-export const MAX_POINTS = 1000;
-export const DEFAULT_LIVE_WINDOW_MS = DEFAULT_TIME_WINDOW_MINUTES * 60 * 1000;
+const MAX_POINTS = 1000;
+const DEFAULT_LIVE_WINDOW_MS = DEFAULT_TIME_WINDOW_MINUTES * 60 * 1000;
 
 const SAMPLE_COUNT = 5200;
 

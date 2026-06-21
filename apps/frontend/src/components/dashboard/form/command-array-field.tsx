@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/combobox";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
-export const CommandArrayField = Schema.Array(Schema.String);
+const CommandArrayField = Schema.Array(Schema.String);
 
 type CommandDefinition = typeof CommandInfo.Type;
 

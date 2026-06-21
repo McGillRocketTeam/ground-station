@@ -3,7 +3,7 @@ import { Schema } from "effect";
 import { ParameterField } from "@/lib/dashboard-field-types";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
-export const GaugeVisualRangePatternSchema = Schema.Literals([
+const GaugeVisualRangePatternSchema = Schema.Literals([
   "success",
   "success-chevron",
   "yellow",
@@ -12,7 +12,7 @@ export const GaugeVisualRangePatternSchema = Schema.Literals([
   "red-chevron",
 ]);
 
-export const GaugeVisualRangeSchema = Schema.Struct({
+const GaugeVisualRangeSchema = Schema.Struct({
   end: Schema.NumberFromString.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Range End" })),
   pattern: GaugeVisualRangePatternSchema.pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Range Pattern" }),

@@ -164,16 +164,3 @@ export function extractAcknowledgement(
     message: messageValue?.type === "STRING" ? messageValue.value : undefined,
   };
 }
-
-export function formatCommandDate(d: Date) {
-  const now = new Date();
-  const isToday = d.toDateString() === now.toDateString();
-
-  const time = d.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-
-  return isToday ? d.toLocaleTimeString() : d.toLocaleDateString() + ", " + time;
-}

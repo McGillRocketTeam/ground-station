@@ -2,7 +2,7 @@ import { Schema } from "effect";
 
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
-export const ChartSeriesConfigSchema = Schema.Struct({
+const ChartSeriesConfigSchema = Schema.Struct({
   color: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Color" })),
   label: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Label" })),
   offset: Schema.optional(Schema.NumberFromString).pipe(

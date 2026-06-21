@@ -50,8 +50,11 @@ function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type })
         </button>
       </div>
       <div className="grid pb-6 grid-cols-[auto_auto_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[80ch] mx-auto">
-        {procedure.steps.map((_, index) => (
-          <Suspense fallback={<div className="col-span-full">Loading...</div>} key={index}>
+        {procedure.steps.map((step, index) => (
+          <Suspense
+            fallback={<div className="col-span-full">Loading...</div>}
+            key={procedureStepKey(step)}
+          >
             <ProcedureStepView index={index} />
           </Suspense>
         ))}
@@ -176,6 +179,23 @@ function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
       ))}
     </div>
   );
+}
+
+function procedureStepKey(step: typeof ProcedureStep.Type) {
+  if (step.stepNumber !== undefined) {
+    return `${step.type}-${step.stepNumber}`;
+  }
+
+  switch (step.type) {
+    case "note":
+    case "text":
+      return `${step.type}-${step.text}`;
+    case "check":
+    case "verify":
+      return `${step.type}-${step.comment}`;
+    case "command":
+      return `${step.type}-${step.name}`;
+  }
 }
 
 function ProcedureStepView({ index }: { index: number }) {

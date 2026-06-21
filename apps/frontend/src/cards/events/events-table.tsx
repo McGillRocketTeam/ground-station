@@ -25,13 +25,13 @@ import type { Event } from ".";
 
 const HeaderButton = memo(function HeaderButton({
   children,
+  column,
   isSorted,
-  onToggleSort,
   className,
 }: {
   children: React.ReactNode;
+  column: { getIsSorted: () => false | "asc" | "desc"; toggleSorting: (desc?: boolean) => void };
   isSorted: false | "asc" | "desc";
-  onToggleSort: () => void;
   className?: string;
 }) {
   return (
@@ -42,7 +42,7 @@ const HeaderButton = memo(function HeaderButton({
           "flex h-full w-full cursor-pointer flex-row items-center gap-1 uppercase",
           className,
         )}
-        onClick={onToggleSort}
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         {children}
         {isSorted === "asc" ? (
@@ -59,11 +59,7 @@ const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "severity",
     header: ({ column }) => (
-      <HeaderButton
-        className="col-span-2"
-        isSorted={column.getIsSorted()}
-        onToggleSort={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
+      <HeaderButton className="col-span-2" column={column} isSorted={column.getIsSorted()}>
         Severity
       </HeaderButton>
     ),
@@ -71,10 +67,7 @@ const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "source",
     header: ({ column }) => (
-      <HeaderButton
-        isSorted={column.getIsSorted()}
-        onToggleSort={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
+      <HeaderButton column={column} isSorted={column.getIsSorted()}>
         Source
       </HeaderButton>
     ),
@@ -86,11 +79,7 @@ const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "generationTime",
     header: ({ column }) => (
-      <HeaderButton
-        className="justify-end"
-        isSorted={column.getIsSorted()}
-        onToggleSort={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
+      <HeaderButton className="justify-end" column={column} isSorted={column.getIsSorted()}>
         Generation Time
       </HeaderButton>
     ),

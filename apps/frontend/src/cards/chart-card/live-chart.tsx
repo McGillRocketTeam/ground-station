@@ -4,7 +4,15 @@ import { useAtomSet, useAtomSubscribe, useAtomValue } from "@effect/atom-react";
 import * as echarts from "echarts";
 import { graphic } from "echarts";
 import { DateTime } from "effect";
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import type { LiveParameterUpdate } from "@/lib/atom";
 
@@ -237,18 +245,15 @@ export function LiveChart({
     renderSnapshot();
   }, [getLiveViewportFromAllPoints, renderSnapshot, setHistoryViewport]);
 
-  const scheduleHistoryFetch = useCallback(
-    (viewport: ChartViewport) => {
-      if (viewportDebounceRef.current) {
-        clearTimeout(viewportDebounceRef.current);
-      }
+  const scheduleHistoryFetch = useEffectEvent((viewport: ChartViewport) => {
+    if (viewportDebounceRef.current) {
+      clearTimeout(viewportDebounceRef.current);
+    }
 
-      viewportDebounceRef.current = setTimeout(() => {
-        setHistoryViewport(viewport);
-      }, VIEWPORT_FETCH_DEBOUNCE_MS);
-    },
-    [setHistoryViewport],
-  );
+    viewportDebounceRef.current = setTimeout(() => {
+      setHistoryViewport(viewport);
+    }, VIEWPORT_FETCH_DEBOUNCE_MS);
+  });
 
   useLayoutEffect(() => {
     if (!containerRef.current) return;
@@ -398,7 +403,7 @@ export function LiveChart({
       zr.off("globalout", handlePointerUp);
       zr.off("mousewheel", handleWheel);
     };
-  }, [liveWindowMs, scheduleHistoryFetch]);
+  }, [liveWindowMs]);
 
   useEffect(
     () => () => {

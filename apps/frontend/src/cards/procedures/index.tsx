@@ -198,6 +198,12 @@ function ProcedureStepView({ index }: { index: number }) {
         executionStep.isSelected ? "bg-selection-background/30" : "",
       )}
       onClick={() => selectStep(index)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectStep(index);
+        }
+      }}
       role="button"
       tabIndex={0}
     >

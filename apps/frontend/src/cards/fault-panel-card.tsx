@@ -37,8 +37,18 @@ export const FaultPanelCard = makeCard({
 
 type Status = "success" | "error" | "warning" | "none";
 
+function isIlluminated(name: string) {
+  let hash = 0;
+
+  for (const char of name) {
+    hash = (hash * 31 + char.charCodeAt(0)) % 10;
+  }
+
+  return hash === 0;
+}
+
 function Fault({ name }: { name: string }) {
-  const illuminated = Math.random() > 0.9;
+  const illuminated = isIlluminated(name);
   const status: Status = name.includes("ENERGIZED")
     ? "success"
     : name.includes("ARMED")

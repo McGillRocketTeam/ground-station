@@ -109,10 +109,6 @@ function getLiveViewport(
   return createLiveViewport(liveWindowMs, latestPointTime);
 }
 
-function emptySeriesData(): ChartSeriesData {
-  return {};
-}
-
 function snapshotSeriesData(
   archiveData: ChartSeriesData,
   liveData: ChartSeriesData,
@@ -204,9 +200,9 @@ export function LiveChart({
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
-  const archivePointsRef = useRef<ChartSeriesData>(emptySeriesData());
-  const livePointsRef = useRef<ChartSeriesData>(emptySeriesData());
-  const visiblePointsRef = useRef<ChartSeriesData>(emptySeriesData());
+  const archivePointsRef = useRef<ChartSeriesData>({});
+  const livePointsRef = useRef<ChartSeriesData>({});
+  const visiblePointsRef = useRef<ChartSeriesData>({});
   const viewportRef = useRef<ChartViewport | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const viewportDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);

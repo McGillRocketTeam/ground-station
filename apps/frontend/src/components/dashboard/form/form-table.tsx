@@ -49,11 +49,15 @@ export function FormTable<T>({
   onChange: (value: ReadonlyArray<T>) => void;
   value: ReadonlyArray<T>;
 }) {
-  const rowIdsRef = useRef<ReadonlyArray<string>>(value.map(() => createId()));
+  const rowIdsRef = useRef<ReadonlyArray<string>>([]);
   const [history, setHistory] = useState<FormTableHistory<T>>({
     past: [],
     future: [],
   });
+
+  if (rowIdsRef.current.length === 0) {
+    rowIdsRef.current = value.map(() => createId());
+  }
 
   if (rowIdsRef.current.length !== value.length) {
     rowIdsRef.current = value.map((_, index) => rowIdsRef.current[index] ?? createId());

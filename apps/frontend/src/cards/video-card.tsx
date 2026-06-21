@@ -9,5 +9,5 @@ export const VideoCard = makeCard({
   schema: Schema.Struct({
     url: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Video URL" })),
   }),
-  component: (props) => <video src={props.params.url} />,
+  component: (props) => <video aria-label="Video stream" src={props.params.url} />,
 });

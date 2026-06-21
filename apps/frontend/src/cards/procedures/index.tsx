@@ -212,7 +212,8 @@ function ProcedureStepView({ index }: { index: number }) {
   }
 
   return (
-    <div
+    <button
+      type="button"
       className={cn(
         "grid grid-cols-subgrid col-span-full px-2 py-2",
         executionStep.isSelected ? "bg-selection-background/30" : "",
@@ -224,8 +225,6 @@ function ProcedureStepView({ index }: { index: number }) {
           selectStep(index);
         }
       }}
-      role="button"
-      tabIndex={0}
     >
       <div>
         {step.stepNumber}
@@ -320,6 +319,6 @@ function ProcedureStepView({ index }: { index: number }) {
           </div>
         ) : null}
       </div>
-    </div>
+    </button>
   );
 }

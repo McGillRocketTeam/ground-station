@@ -10,6 +10,8 @@ type GaugeProps = {
   label?: string;
 };
 
+const EMPTY_RANGES: ReadonlyArray<GaugeVisualRange> = [];
+
 type Point = {
   x: number;
   y: number;
@@ -207,7 +209,13 @@ function renderVisualRange(range: GaugeVisualRange, min: number, max: number, in
   });
 }
 
-export function Gauge({ min = 0, max = 100, ranges = [], value = 42, label = "PSI" }: GaugeProps) {
+export function Gauge({
+  min = 0,
+  max = 100,
+  ranges = EMPTY_RANGES,
+  value = 42,
+  label = "PSI",
+}: GaugeProps) {
   const angle = valueToAngle(value, min, max);
   const { majorTicks, minorTicks } = tickValues(min, max);
 

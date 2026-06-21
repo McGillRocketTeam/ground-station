@@ -54,6 +54,8 @@ function InputGroupAddon({
         }
         e.currentTarget.parentElement?.querySelector("input")?.focus();
       }}
+      role="button"
+      tabIndex={0}
       {...props}
     />
   );

@@ -198,6 +198,8 @@ function ProcedureStepView({ index }: { index: number }) {
         executionStep.isSelected ? "bg-selection-background/30" : "",
       )}
       onClick={() => selectStep(index)}
+      role="button"
+      tabIndex={0}
     >
       <div>
         {step.stepNumber}

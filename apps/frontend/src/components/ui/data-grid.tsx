@@ -76,6 +76,7 @@ export function DataGridSearch({
 
       {value.length > 0 && (
         <button
+          type="button"
           onClick={() => onChange("")}
           className="absolute inset-y-0 right-0.5 z-10 size-5 cursor-pointer p-1 text-muted-foreground"
         >

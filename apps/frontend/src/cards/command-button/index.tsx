@@ -106,6 +106,7 @@ function CommandButtonTable({ commands: allowedCommands }: { commands?: Readonly
             <DataGridRow key={command.qualifiedName}>
               <div>{formatCommandDisplayName(command.qualifiedName, command)}</div>
               <button
+                type="button"
                 onClick={() => {
                   const extra = targetExtra(target);
 

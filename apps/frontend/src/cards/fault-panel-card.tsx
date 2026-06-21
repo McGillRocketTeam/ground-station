@@ -47,6 +47,7 @@ function Fault({ name }: { name: string }) {
 
   return (
     <button
+      type="button"
       data-illuminated={illuminated}
       className={cn(
         "whitespace-pre-line text-border border text-center grid place-items-center font-mono py-1",

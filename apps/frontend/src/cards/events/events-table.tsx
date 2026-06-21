@@ -37,6 +37,7 @@ const HeaderButton = memo(function HeaderButton({
   return (
     <DataGridHead className={className}>
       <button
+        type="button"
         className={cn(
           "flex h-full w-full cursor-pointer flex-row items-center gap-1 uppercase",
           className,

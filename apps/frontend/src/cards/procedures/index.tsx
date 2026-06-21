@@ -36,16 +36,16 @@ function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type })
   return (
     <div className="h-full min-h-0 overflow-auto">
       <div className="sticky top-0 z-10 flex h-8 bg-background border-b text-sm">
-        <button onClick={() => selectPreviousStep()} className="h-full border-r px-2">
+        <button type="button" onClick={() => selectPreviousStep()} className="h-full border-r px-2">
           Prev
         </button>
-        <button onClick={() => selectNextStep()} className="h-full border-r px-2">
+        <button type="button" onClick={() => selectNextStep()} className="h-full border-r px-2">
           Next
         </button>
-        <button onClick={() => executeStep()} className="h-full border-r px-2">
+        <button type="button" onClick={() => executeStep()} className="h-full border-r px-2">
           Execute
         </button>
-        <button onClick={() => downloadAuditText()} className="h-full border-r px-2">
+        <button type="button" onClick={() => downloadAuditText()} className="h-full border-r px-2">
           Download Log
         </button>
       </div>

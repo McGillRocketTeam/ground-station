@@ -144,6 +144,7 @@ const TableGroup = memo(function TableGroup({
   return (
     <>
       <button
+        type="button"
         onClick={() => setCollapse((prev) => !prev)}
         className="col-span-full border-t border-t-background-secondary-highlight bg-background-secondary text-left text-sm text-white-text hover:bg-background-secondary-highlight"
       >

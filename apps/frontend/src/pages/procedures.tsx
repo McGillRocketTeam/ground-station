@@ -163,6 +163,7 @@ export function ProceduresPage() {
 function ProcedureRow({ step, index }: { step: ProcedureStep; index: number }) {
   return (
     <button
+      type="button"
       className={cn(
         "col-span-full grid cursor-pointer grid-cols-subgrid gap-x-4 border-b p-4 text-left hover:bg-muted",
         step.danger === "WARNING" && "bg-warning/10 hover:bg-warning/30",

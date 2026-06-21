@@ -3,7 +3,7 @@ import { Schema } from "effect";
 import { Cause, Effect, Queue, Scope, Stream } from "effect";
 import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import mqtt from "mqtt";
-import { memo, useEffect, useState } from "react";
+import { memo, useState } from "react";
 
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId } from "@/lib/form";
@@ -140,19 +140,9 @@ const TopicTreeNode = memo(function TopicTreeNode({
   node: TopicNode;
 }) {
   const [expanded, setExpanded] = useState(depth < 2);
-  const [highlighted, setHighlighted] = useState(false);
   const hasChildren = node.children.size > 0;
   const children = Array.from(node.children.values()).sort((a, b) => a.name.localeCompare(b.name));
   const nodeValue = node.value;
-
-  useEffect(() => {
-    if (!nodeValue) return;
-
-    setHighlighted(true);
-    const timeout = setTimeout(() => setHighlighted(false), 300);
-
-    return () => clearTimeout(timeout);
-  }, [nodeValue]);
 
   return (
     <div>
@@ -178,8 +168,9 @@ const TopicTreeNode = memo(function TopicTreeNode({
       </button>
       {node.value ? (
         <div
+          key={nodeValue?.messageCount ?? nodeValue?.lastPayload}
           className="grid h-6 w-max grid-cols-[auto_auto] items-center gap-1 px-1 leading-6 transition-colors duration-300 hover:bg-selection-background data-[highlighted=true]:bg-selection-background/50"
-          data-highlighted={highlighted}
+          data-highlighted={nodeValue !== undefined}
           style={{ paddingLeft: `${(depth + 1) * 14 + 20}px` }}
         >
           <span className="">value =</span>

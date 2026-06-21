@@ -143,15 +143,16 @@ const TopicTreeNode = memo(function TopicTreeNode({
   const [highlighted, setHighlighted] = useState(false);
   const hasChildren = node.children.size > 0;
   const children = Array.from(node.children.values()).sort((a, b) => a.name.localeCompare(b.name));
+  const nodeValue = node.value;
 
   useEffect(() => {
-    if (!node.value) return;
+    if (!nodeValue) return;
 
     setHighlighted(true);
     const timeout = setTimeout(() => setHighlighted(false), 300);
 
     return () => clearTimeout(timeout);
-  }, [node.value?.lastPayload, node.value?.messageCount]);
+  }, [nodeValue]);
 
   return (
     <div>

@@ -2,7 +2,7 @@ import { useAtom } from "@effect/atom-react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -113,7 +113,7 @@ function SerialMonitorCardBody({ scopeId }: { scopeId: string }) {
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const connectedPortRef = useRef<SerialPortLike | null>(null);
 
-  const refreshPorts = async () => {
+  const refreshPorts = useCallback(async () => {
     const serial = getSerialApi();
 
     if (!serial) {
@@ -132,7 +132,7 @@ function SerialMonitorCardBody({ scopeId }: { scopeId: string }) {
     } catch (caught) {
       setError(toErrorMessage(caught));
     }
-  };
+  }, [setConnectRequested, setError, setPorts, setSelectedPort]);
 
   const requestPort = async () => {
     const serial = getSerialApi();
@@ -179,7 +179,7 @@ function SerialMonitorCardBody({ scopeId }: { scopeId: string }) {
       serial.removeEventListener("connect", handlePortChange);
       serial.removeEventListener("disconnect", handlePortChange);
     };
-  }, []);
+  }, [refreshPorts]);
 
   useEffect(() => {
     outputRef.current?.scrollTo({ top: outputRef.current.scrollHeight });

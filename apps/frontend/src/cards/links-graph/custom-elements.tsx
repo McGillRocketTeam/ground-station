@@ -57,8 +57,9 @@ function useSlidingWindowRate(count: number | undefined) {
 
     previousCountRef.current = count;
     deltasRef.current = deltasRef.current.filter((sample) => now - sample.time <= 1000);
-    setRate(deltasRef.current.reduce((sum, sample) => sum + sample.delta, 0));
+  }, [count]);
 
+  useEffect(() => {
     const interval = window.setInterval(() => {
       const tick = Date.now();
 
@@ -67,7 +68,7 @@ function useSlidingWindowRate(count: number | undefined) {
     }, 100);
 
     return () => window.clearInterval(interval);
-  }, [count]);
+  }, []);
 
   return rate;
 }

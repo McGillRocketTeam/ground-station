@@ -1,7 +1,8 @@
 import type * as AtomRegistry from "effect/unstable/reactivity/AtomRegistry";
 import type * as Reactivity from "effect/unstable/reactivity/Reactivity";
 
-import { Parameters, WebSocketClient, YamcsConfig } from "@mrt/yamcs-effect";
+import { BrowserSocket } from "@effect/platform-browser";
+import { Parameters, YamcsConfig, YamcsWebSocketClient } from "@mrt/yamcs-effect";
 import { Effect, Layer } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
@@ -17,12 +18,16 @@ const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) => {
     instance: get(selectedInstanceAtom),
     processor: "realtime",
   });
+  const socketRequirementsLayer = Layer.merge(
+    yamcsConfigLayer,
+    BrowserSocket.layerWebSocketConstructor,
+  );
   const runtimeLayer = get(YamcsAtomHttpClient.runtime.layer);
   const sharedLayer = Layer.merge(
     runtimeLayer,
-    Layer.merge(WebSocketClient.layer, yamcsConfigLayer),
+    Layer.provideMerge(YamcsWebSocketClient.layer, socketRequirementsLayer),
   );
-  const parametersLayer = Layer.provideMerge(Parameters.layer, sharedLayer);
+  const parametersLayer = Layer.provideMerge(Parameters.layer, socketRequirementsLayer);
 
   return Layer.provideMerge(
     Layer.provideMerge(ProcedureExecutor.layer(), ProcedureExecutorLog.layer),

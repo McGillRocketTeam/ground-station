@@ -1,72 +1,79 @@
-import { Config, Data, Effect, Layer, PubSub, Schema, Context, Stream } from "effect";
+import { Context, Data, Effect, Layer, PubSub, Schema, Stream } from "effect";
+import { Socket } from "effect/unstable/socket";
 
+import { YamcsConfig } from "../yamcs-config.ts";
 import { Cancel, type SubscriptionRequest } from "./client-messages.js";
 import { Events, Reply, Messages as ServerMessages, SubscriptionId } from "./server-messages.js";
 
-export interface WebSocketClientService {
+export interface YamcsWebSocketClientService {
   readonly messages: Stream.Stream<typeof ServerMessages.Type>;
-  readonly send: (data: Record<string, any>) => Effect.Effect<SubscriptionId>;
-  readonly sendWithoutReply: (data: Record<string, any>) => Effect.Effect<void>;
-  readonly subscribe: (request: typeof SubscriptionRequest.Type) => Effect.Effect<{
-    call: SubscriptionId;
-    stream: Stream.Stream<typeof Events.Type>;
-  }>;
-  readonly unsubscribe: (call: SubscriptionId) => Effect.Effect<void>;
+  readonly send: (data: Record<string, any>) => Effect.Effect<SubscriptionId, Socket.SocketError>;
+  readonly sendWithoutReply: (data: Record<string, any>) => Effect.Effect<void, Socket.SocketError>;
+  readonly subscribe: (request: typeof SubscriptionRequest.Type) => Effect.Effect<
+    {
+      call: SubscriptionId;
+      stream: Stream.Stream<typeof Events.Type>;
+    },
+    Socket.SocketError
+  >;
+  readonly unsubscribe: (call: SubscriptionId) => Effect.Effect<void, Socket.SocketError>;
 }
 
 export class WebSocketError extends Data.TaggedError("WebSocketError")<{
   readonly cause: unknown;
 }> {}
 
-export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketClientService>()(
-  "@mrt/yamcs-effect/WebSocketClient",
-) {
+export class YamcsWebSocketClient extends Context.Service<
+  YamcsWebSocketClient,
+  YamcsWebSocketClientService
+>()("@mrt/yamcs-effect/YamcsWebSocketClient") {
   static readonly layer = Layer.effect(
     this,
     Effect.gen(function* () {
-      yield* Effect.log("STARING WS");
-      const yamcsUrl = yield* Config.url("YAMCS_URL");
-      const websocketUrl = new URL("api/websocket", yamcsUrl);
-      websocketUrl.protocol = yamcsUrl.protocol === "https:" ? "wss:" : "ws:";
+      const yamcsConfig = yield* YamcsConfig;
+      const websocketUrl = new URL("api/websocket", yamcsConfig.url);
+      websocketUrl.protocol = yamcsConfig.url.protocol === "https:" ? "wss:" : "ws:";
+
+      const socket = yield* Socket.makeWebSocket(websocketUrl.toString());
+      const write = yield* socket.writer;
       let id = SubscriptionId.make(1);
+      const decoder = new TextDecoder();
       const messagePubSub = yield* Effect.acquireRelease(
         PubSub.unbounded<typeof ServerMessages.Type>({ replay: 128 }),
         PubSub.shutdown,
       );
 
-      // Socket will be automatically closed when the scope ends.
-      const ws = yield* Effect.acquireRelease(
-        Effect.try({
-          try: () => new WebSocket(websocketUrl),
-          catch: (cause) => new WebSocketError({ cause }),
-        }),
-        (ws) =>
-          Effect.gen(function* () {
-            yield* Effect.log("Closing Websocket");
-            yield* Effect.sync(() => {
-              ws.close();
-            });
-          }),
-      );
+      const writeMessage = (data: Record<string, any>) => write(JSON.stringify(data));
 
-      ws.addEventListener("message", (event: MessageEvent) => {
-        const parsed = Schema.decodeUnknownOption(ServerMessages)(JSON.parse(event.data as string));
+      yield* socket
+        .runRaw(
+          (payload) =>
+            Effect.sync(() => {
+              const text = typeof payload === "string" ? payload : decoder.decode(payload);
 
-        if (parsed._tag === "Some") {
-          PubSub.publishUnsafe(messagePubSub, parsed.value);
-        }
-      });
+              try {
+                const parsed = Schema.decodeUnknownOption(ServerMessages)(JSON.parse(text));
+
+                if (parsed._tag === "Some") {
+                  PubSub.publishUnsafe(messagePubSub, parsed.value);
+                }
+              } catch (cause) {
+                throw new WebSocketError({ cause });
+              }
+            }),
+          {
+            onOpen: Effect.orDie(
+              Effect.gen(function* () {
+                yield* writeMessage({ id, type: "status" });
+                id++;
+                yield* Effect.log("WebSocket Opened");
+              }),
+            ),
+          },
+        )
+        .pipe(Effect.forkScoped);
 
       const messages = Stream.fromPubSub(messagePubSub);
-
-      // Wait for the open event
-      yield* Effect.callback<void>((resume) => {
-        ws.addEventListener("open", (_event) => {
-          ws.send(JSON.stringify({ id, type: "status" }));
-          id++;
-          resume(Effect.log("WebSocket Opened"));
-        });
-      });
 
       yield* messages.pipe(
         Stream.runForEach((message) =>
@@ -79,14 +86,14 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
         Effect.gen(function* () {
           const messageId = id++;
           yield* Effect.logDebug(`Sending Message ${data.type}`, data);
-          yield* Effect.sync(() => ws.send(JSON.stringify({ ...data, id: messageId })));
+          yield* writeMessage({ ...data, id: messageId });
 
-          // we wait in this effect until we get a reply with the call id
-          // this way we can return it and know the call id for future messages.
           const replyMessage = yield* messages.pipe(
             Stream.filter(Schema.is(Reply)),
-            Stream.filter((m) => m.data.replyTo === messageId),
-            Stream.takeUntil((m) => m.type === "reply" && m.data.replyTo === messageId),
+            Stream.filter((message) => message.data.replyTo === messageId),
+            Stream.takeUntil(
+              (message) => message.type === "reply" && message.data.replyTo === messageId,
+            ),
             Stream.runCollect,
           );
 
@@ -106,7 +113,7 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
         Effect.gen(function* () {
           const messageId = id++;
           yield* Effect.logDebug(`Sending Streaming Message ${data.type}`, data);
-          yield* Effect.sync(() => ws.send(JSON.stringify({ ...data, id: messageId })));
+          yield* writeMessage({ ...data, id: messageId });
         });
 
       const subscribe = Effect.fnUntraced(function* (request: typeof SubscriptionRequest.Type) {
@@ -119,22 +126,18 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
 
         const stream = messages.pipe(
           Stream.filter(Schema.is(Events)),
-          Stream.filter((s) => s.call === call),
+          Stream.filter((message) => message.call === call),
         );
 
         return { call, stream };
       });
 
       const unsubscribe = Effect.fnUntraced(function* (call: SubscriptionId) {
-        yield* Effect.sync(() =>
-          ws.send(
-            JSON.stringify(
-              Cancel.make({
-                type: "cancel",
-                options: { call },
-              }),
-            ),
-          ),
+        yield* writeMessage(
+          Cancel.make({
+            type: "cancel",
+            options: { call },
+          }),
         );
       });
 
@@ -142,3 +145,6 @@ export class WebSocketClient extends Context.Service<WebSocketClient, WebSocketC
     }),
   );
 }
+
+export type WebSocketClientService = YamcsWebSocketClientService;
+export const WebSocketClient = YamcsWebSocketClient;

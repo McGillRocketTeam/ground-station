@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue } from "@effect/atom-react";
 import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import { Check, Search, X } from "lucide-react";
-import { memo, useMemo } from "react";
+import { memo } from "react";
 
 import {
   DataGridBody,
@@ -11,7 +11,7 @@ import {
   DataGridSearch,
 } from "@/components/ui/data-grid";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { YamcsAtomHttpClient, commandsSubscriptionAtom, selectedInstanceAtom } from "@/lib/atom";
+import { commandHistoryEntryAtom, commandListAtom, commandsSubscriptionAtom } from "@/lib/atom";
 import { cn, formatDate, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
@@ -33,22 +33,41 @@ const extraAckColumns = [
   { group: "System B", header: "FC", name: "fc_b" },
 ] as const;
 
+const emptyCommandDisplayMap = new Map<string, string>();
+
+const commandSearchAtom = Atom.make("");
+
+const commandDisplayMapAtom = Atom.make((get) => {
+  const commandDefinitions = get(commandListAtom);
+
+  return commandDefinitions._tag === "Success"
+    ? makeCommandDisplayMap(commandDefinitions.value)
+    : emptyCommandDisplayMap;
+});
+
+const totalCommandCountAtom = Atom.make((get) =>
+  AsyncResult.map(get(commandsSubscriptionAtom), (commands) => commands.length),
+);
+
+const filteredCommandIdsAtom = Atom.make((get) => {
+  const commandSearchText = get(commandSearchAtom).trim().toLowerCase();
+  const commandDisplayMap = get(commandDisplayMapAtom);
+
+  return AsyncResult.map(get(commandsSubscriptionAtom), (commands) =>
+    commands
+      .filter((command) => {
+        const label = commandDisplayMap.get(command.commandName) ?? command.commandName;
+        return label.toLowerCase().includes(commandSearchText);
+      })
+      .map((command) => command.id),
+  );
+});
+
 export function CommandHistoryTable() {
-  const instance = useAtomValue(selectedInstanceAtom);
-  const commandHistory = useAtomValue(commandsSubscriptionAtom);
-  const commandDefinitions = useAtomValue(
-    YamcsAtomHttpClient.query("mdb", "listCommands", {
-      params: { instance },
-      query: {},
-    }),
-  );
-  const commandDisplayMap = useMemo(
-    () =>
-      commandDefinitions._tag === "Success"
-        ? makeCommandDisplayMap(commandDefinitions.value.commands)
-        : new Map<string, string>(),
-    [commandDefinitions],
-  );
+  const commandCount = useAtomValue(totalCommandCountAtom);
+  const filteredCommandIds = useAtomValue(filteredCommandIdsAtom);
+  const commandDisplayMap = useAtomValue(commandDisplayMapAtom);
+  const totalCommandCount = commandCount._tag === "Success" ? commandCount.value : 0;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -56,13 +75,13 @@ export function CommandHistoryTable() {
         <div
           className={cn(
             "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(9,2.125rem)_auto] gap-px rounded-none",
-            (commandHistory._tag === "Initial" || commandHistory._tag === "Failure") &&
+            (filteredCommandIds._tag === "Initial" || filteredCommandIds._tag === "Failure") &&
               "min-h-full",
           )}
         >
           <Header />
 
-          {AsyncResult.builder(commandHistory)
+          {AsyncResult.builder(filteredCommandIds)
             .onInitial(() => (
               <div className="col-span-full min-h-full animate-pulse text-center font-mono text-muted-foreground uppercase">
                 Loading Command History
@@ -73,8 +92,12 @@ export function CommandHistoryTable() {
                 {error.toString()}
               </pre>
             ))
-            .onSuccess((commands) => (
-              <Body commands={commands} commandDisplayMap={commandDisplayMap} />
+            .onSuccess((commandIds) => (
+              <Body
+                commandIds={commandIds}
+                totalCommandCount={totalCommandCount}
+                commandDisplayMap={commandDisplayMap}
+              />
             ))
             .render()}
         </div>
@@ -84,94 +107,103 @@ export function CommandHistoryTable() {
 }
 
 const Body = memo(function Body({
-  commands,
+  commandIds,
+  totalCommandCount,
   commandDisplayMap,
 }: {
-  commands: CommandHistoryEntry[];
+  commandIds: string[];
+  totalCommandCount: number;
   commandDisplayMap: ReadonlyMap<string, string>;
 }) {
-  const commandSearchText = useAtomValue(commandSearchAtom);
-  const filteredCommands = useMemo(
-    () =>
-      commands.filter((cmd) => {
-        const label = commandDisplayMap.get(cmd.commandName) ?? cmd.commandName;
-        return label.toLowerCase().includes(commandSearchText.toLowerCase());
-      }),
-    [commands, commandDisplayMap, commandSearchText],
-  );
-
   return (
     <DataGridBody className="text-sm">
-      {commands.length === 0 ? (
+      {totalCommandCount === 0 ? (
         <div className="col-span-full grid min-h-full place-items-center font-mono text-muted-foreground uppercase">
           No commands sent yet
         </div>
-      ) : filteredCommands.length === 0 ? (
+      ) : commandIds.length === 0 ? (
         <div className="col-span-full grid min-h-full place-items-center font-mono text-muted-foreground uppercase">
           No commands match the current search
         </div>
       ) : null}
 
-      {filteredCommands.map((command) => (
-        <CommandRow key={command.id} command={command} commandDisplayMap={commandDisplayMap} />
+      {commandIds.map((commandId) => (
+        <CommandRow key={commandId} commandId={commandId} commandDisplayMap={commandDisplayMap} />
       ))}
     </DataGridBody>
   );
 });
 
 const CommandRow = memo(function CommandRow({
-  command,
+  commandId,
   commandDisplayMap,
 }: {
-  command: CommandHistoryEntry;
+  commandId: string;
   commandDisplayMap: ReadonlyMap<string, string>;
 }) {
-  const commandLabel = commandDisplayMap.get(command.commandName) ?? command.commandName;
-  const rowHasNokAck = hasNokAck(command);
+  const command = useAtomValue(commandHistoryEntryAtom(commandId));
 
-  return (
-    <Popover>
-      <PopoverTrigger
-        payload={command}
-        nativeButton={false}
-        render={
-          <DataGridRow
-            className={cn(
-              "group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
-              rowHasNokAck &&
-                "*:bg-error *:text-error-foreground hover:*:bg-error data-popup-open:*:bg-error",
-            )}
-          >
-            <div className="col-span-2 text-right">{formatDate(command.generationTime)}</div>
-            <div className="line-clamp-1 no-scrollbar overflow-x-scroll">{commandLabel}</div>
-            <div className="text-center">
-              {stringifyValue(extractAttribute(command, "Command_Id"), "")}
-            </div>
-            <div className="text-center">
-              {stringifyValue(extractAttribute(command, "Sequence_Count"), "")}
-            </div>
+  return AsyncResult.builder(command)
+    .onInitial(() => null)
+    .onError(() => null)
+    .onSuccess((command) => {
+      if (!command) {
+        return null;
+      }
 
-            <AckCell command={command} name="Queued" errorRow={rowHasNokAck} />
-            <AckCell command={command} name="Released" errorRow={rowHasNokAck} />
-            <AckCell command={command} name="Sent" errorRow={rowHasNokAck} />
-            {extraAckColumns.map((ack) => (
-              <AckCell key={ack.name} command={command} name={ack.name} errorRow={rowHasNokAck} />
-            ))}
-            <AckCell
-              command={command}
-              name="CommandComplete"
-              customPrefix
-              errorRow={rowHasNokAck}
-            />
-          </DataGridRow>
-        }
-      />
+      const commandLabel = commandDisplayMap.get(command.commandName) ?? command.commandName;
+      const rowHasNokAck = hasNokAck(command);
 
-      <PopoverContent>
-        <CommandDetail command={command} commandLabel={commandLabel} />
-      </PopoverContent>
-    </Popover>
-  );
+      return (
+        <Popover>
+          <PopoverTrigger
+            payload={command}
+            nativeButton={false}
+            render={
+              <DataGridRow
+                className={cn(
+                  "group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
+                  rowHasNokAck &&
+                    "*:bg-error *:text-error-foreground hover:*:bg-error data-popup-open:*:bg-error",
+                )}
+              >
+                <div className="col-span-2 text-right">{formatDate(command.generationTime)}</div>
+                <div className="line-clamp-1 no-scrollbar overflow-x-scroll">{commandLabel}</div>
+                <div className="text-center">
+                  {stringifyValue(extractAttribute(command, "Command_Id"), "")}
+                </div>
+                <div className="text-center">
+                  {stringifyValue(extractAttribute(command, "Sequence_Count"), "")}
+                </div>
+
+                <AckCell command={command} name="Queued" errorRow={rowHasNokAck} />
+                <AckCell command={command} name="Released" errorRow={rowHasNokAck} />
+                <AckCell command={command} name="Sent" errorRow={rowHasNokAck} />
+                {extraAckColumns.map((ack) => (
+                  <AckCell
+                    key={ack.name}
+                    command={command}
+                    name={ack.name}
+                    errorRow={rowHasNokAck}
+                  />
+                ))}
+                <AckCell
+                  command={command}
+                  name="CommandComplete"
+                  customPrefix
+                  errorRow={rowHasNokAck}
+                />
+              </DataGridRow>
+            }
+          />
+
+          <PopoverContent>
+            <CommandDetail command={command} commandLabel={commandLabel} />
+          </PopoverContent>
+        </Popover>
+      );
+    })
+    .render();
 });
 
 const AckCell = memo(function AckCell({
@@ -209,8 +241,6 @@ const AckCell = memo(function AckCell({
     </div>
   );
 });
-
-const commandSearchAtom = Atom.make("");
 
 const SearchInput = memo(function SearchInput() {
   const [commandSearchText, setCommandSearchText] = useAtom(commandSearchAtom);

@@ -1,4 +1,5 @@
 import { Context, DateTime, Effect, Layer, Schema, Stream } from "effect";
+import { Socket } from "effect/unstable/socket";
 
 import type { QualifiedName } from "./schema.js";
 
@@ -11,7 +12,7 @@ import {
   SubscribeEventsRequest,
   type SubscriptionRequest,
 } from "./websocket/client-messages.js";
-import { WebSocketClient } from "./websocket/client.js";
+import { YamcsWebSocketClient } from "./websocket/client.js";
 import {
   TimeEvent,
   LinkEvent,
@@ -23,23 +24,35 @@ import {
 import { YamcsConfig } from "./yamcs-config.js";
 
 export interface YamcsSubscriptionsService {
-  readonly time: Stream.Stream<(typeof TimeEvent.Type)["data"], Schema.SchemaError>;
-  readonly links: Stream.Stream<(typeof LinkEvent.Type)["data"]["links"], Schema.SchemaError>;
+  readonly time: Stream.Stream<
+    (typeof TimeEvent.Type)["data"],
+    Schema.SchemaError | Socket.SocketError
+  >;
+  readonly links: Stream.Stream<
+    (typeof LinkEvent.Type)["data"]["links"],
+    Schema.SchemaError | Socket.SocketError
+  >;
   readonly commands: (
     priorCommands: ReadonlyArray<typeof import("./schema.js").CommandHistoryEntry.Type>,
   ) => Stream.Stream<
     Array<typeof import("./schema.js").StreamingCommandHisotryEntry.Type>,
-    Schema.SchemaError
+    Schema.SchemaError | Socket.SocketError
   >;
   readonly parameter: (
     qualifiedName: QualifiedName,
-  ) => Stream.Stream<typeof ParameterValue.Type, Schema.SchemaError>;
+  ) => Stream.Stream<typeof ParameterValue.Type, Schema.SchemaError | Socket.SocketError>;
   readonly events: (
     priorEvents: ReadonlyArray<typeof import("./schema.js").Event.Type>,
-  ) => Stream.Stream<Array<(typeof EventsEvent.Type)["data"]>, Schema.SchemaError>;
+  ) => Stream.Stream<
+    Array<(typeof EventsEvent.Type)["data"]>,
+    Schema.SchemaError | Socket.SocketError
+  >;
   readonly websocket: (
     type: typeof SubscriptionRequest.Type,
-  ) => Stream.Stream<typeof import("./websocket/server-messages.js").Events.Type>;
+  ) => Stream.Stream<
+    typeof import("./websocket/server-messages.js").Events.Type,
+    Socket.SocketError
+  >;
 }
 
 /**
@@ -47,7 +60,7 @@ export interface YamcsSubscriptionsService {
  * YAMCS real-time data. Each method returns a Stream that manages its own
  * WebSocket subscription lifecycle (subscribe on start, unsubscribe on end).
  *
- * This service depends on `WebSocketClient` for WebSocket subscriptions.
+ * This service depends on `YamcsWebSocketClient` for WebSocket subscriptions.
  * The `commands` and `events` streams also fetch prior data via HTTP,
  * requiring `HttpClient.HttpClient` in their context.
  */
@@ -56,7 +69,7 @@ export class YamcsSubscriptions extends Context.Service<
   YamcsSubscriptionsService
 >()("@mrt/yamcs-effect/YamcsSubscriptions", {
   make: Effect.gen(function* () {
-    const ws = yield* WebSocketClient;
+    const ws = yield* YamcsWebSocketClient;
     const yamcsConfig = yield* YamcsConfig;
 
     /**
@@ -75,7 +88,7 @@ export class YamcsSubscriptions extends Context.Service<
         return stream.pipe(
           Stream.mapEffect((m) => Schema.decodeUnknownEffect(TimeEvent)(m)),
           Stream.map((m) => m.data),
-          Stream.ensuring(ws.unsubscribe(call)),
+          Stream.ensuring(Effect.orElseSucceed(ws.unsubscribe(call), () => undefined)),
         );
       }),
     );
@@ -93,7 +106,7 @@ export class YamcsSubscriptions extends Context.Service<
         return stream.pipe(
           Stream.mapEffect((m) => Schema.decodeUnknownEffect(LinkEvent)(m)),
           Stream.map((m) => m.data.links),
-          Stream.ensuring(ws.unsubscribe(call)),
+          Stream.ensuring(Effect.orElseSucceed(ws.unsubscribe(call), () => undefined)),
         );
       }),
     );
@@ -126,7 +139,7 @@ export class YamcsSubscriptions extends Context.Service<
           const dataStream = stream.pipe(
             Stream.mapEffect((m) => Schema.decodeUnknownEffect(CommandHistoryEvent)(m)),
             Stream.map((m) => m.data),
-            Stream.ensuring(ws.unsubscribe(call)),
+            Stream.ensuring(Effect.orElseSucceed(ws.unsubscribe(call), () => undefined)),
           );
 
           return dataStream.pipe(
@@ -195,7 +208,7 @@ export class YamcsSubscriptions extends Context.Service<
               ),
             ),
             Stream.map((a) => a[qualifiedName] as typeof ParameterValue.Type),
-            Stream.ensuring(ws.unsubscribe(call)),
+            Stream.ensuring(Effect.orElseSucceed(ws.unsubscribe(call), () => undefined)),
           );
         }),
       );
@@ -218,7 +231,7 @@ export class YamcsSubscriptions extends Context.Service<
           return stream.pipe(
             Stream.mapEffect((m) => Schema.decodeUnknownEffect(EventsEvent)(m)),
             Stream.scan(initial, (allEvents, event) => [...allEvents, event.data]),
-            Stream.ensuring(ws.unsubscribe(call)),
+            Stream.ensuring(Effect.orElseSucceed(ws.unsubscribe(call), () => undefined)),
           );
         }),
       );

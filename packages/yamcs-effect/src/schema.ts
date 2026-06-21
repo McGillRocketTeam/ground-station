@@ -184,12 +184,12 @@ export interface SpaceSystemInfo extends Schema.Struct.Type<typeof spaceSystemIn
   readonly sub?: ReadonlyArray<SpaceSystemInfo> | undefined;
 }
 
-export const SpaceSystemInfo = Schema.Struct({
+export const SpaceSystemInfo: Schema.Codec<SpaceSystemInfo> = Schema.Struct({
   ...spaceSystemInfoFields,
   sub: Schema.optional(
     Schema.Array(
-      // Define `subcategories` using recursion
-      Schema.suspend((): Schema.Schema<SpaceSystemInfo> => SpaceSystemInfo),
+      // Recursive schemas should suspend a concrete codec, not the type-only Schema view.
+      Schema.suspend((): Schema.Codec<SpaceSystemInfo> => SpaceSystemInfo),
     ),
   ),
 });

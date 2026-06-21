@@ -1,10 +1,11 @@
 import { Context, Data, Effect, Layer, RcMap, Schema, Scope, Semaphore, Stream } from "effect";
 import { HttpApiClient } from "effect/unstable/httpapi";
+import { Socket } from "effect/unstable/socket";
 
 import { YamcsApi } from "../http/index.ts";
 import { ParameterInfo, type QualifiedName, Value } from "../schema.ts";
 import { SubscribeParameterRequest } from "../websocket/client-messages.ts";
-import { WebSocketClient } from "../websocket/client.ts";
+import { YamcsWebSocketClient } from "../websocket/client.ts";
 import {
   ParameterEvent,
   type ParameterValue,
@@ -49,13 +50,17 @@ export class Parameters extends Context.Service<
     ) => Effect.Effect<typeof ParameterInfo.Type, ParameterNotFound>;
     readonly subscribe: (
       parameter: QualifiedName,
-    ) => Effect.Effect<ParameterSubscription, ParameterNotFound | Schema.SchemaError, Scope.Scope>;
+    ) => Effect.Effect<
+      ParameterSubscription,
+      ParameterNotFound | Schema.SchemaError | Socket.SocketError,
+      Scope.Scope
+    >;
   }
 >()("@mrt/yamcs-effect/Parameters") {
   static readonly layer = Layer.effect(
     Parameters,
     Effect.gen(function* () {
-      const websocketClient = yield* WebSocketClient;
+      const websocketClient = yield* YamcsWebSocketClient;
       const yamcsConfig = yield* YamcsConfig;
 
       const httpClient = yield* HttpApiClient.make(YamcsApi);
@@ -223,7 +228,7 @@ export class Parameters extends Context.Service<
       const subscriptionMap = yield* RcMap.make<
         QualifiedName,
         ParameterSubscription,
-        ParameterNotFound | Schema.SchemaError,
+        ParameterNotFound | Schema.SchemaError | Socket.SocketError,
         Scope.Scope
       >({
         lookup: (qualifiedName) =>
@@ -243,12 +248,12 @@ export class Parameters extends Context.Service<
 
               return { info, updates };
             }),
-            () => unsubscribeParameter(qualifiedName),
+            () => Effect.orElseSucceed(unsubscribeParameter(qualifiedName), () => undefined),
           ),
       });
 
       const subscribe = (qualifiedName: QualifiedName) => RcMap.get(subscriptionMap, qualifiedName);
       return { all, get, subscribe };
     }),
-  );
+  ).pipe(Layer.provide(YamcsWebSocketClient.layer));
 }

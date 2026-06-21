@@ -5,9 +5,9 @@ import {
   CommandHistoryEvent,
   ProcedureStep,
   StreamingCommandHisotryEntry,
-  WebSocketClient,
-  YamcsConfig,
   Parameters,
+  YamcsConfig,
+  YamcsWebSocketClient,
 } from "@mrt/yamcs-effect";
 import {
   Cause,
@@ -516,7 +516,7 @@ export class ProcedureExecutor extends Context.Service<
     readonly execute: () => Effect.Effect<
       void,
       never,
-      YamcsAtomHttpClient | WebSocketClient | AtomRegistryType.AtomRegistry
+      YamcsAtomHttpClient | YamcsWebSocketClient | AtomRegistryType.AtomRegistry
     >;
     readonly renderAuditText: () => Effect.Effect<string>;
     readonly selectStep: (index: number) => Effect.Effect<void>;

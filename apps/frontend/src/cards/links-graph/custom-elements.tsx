@@ -44,9 +44,9 @@ function useSlidingWindowRate(count: number | undefined) {
   const previousCountRef = useRef<number | undefined>(undefined);
   const [rate, setRate] = useState(0);
 
-  useEffect(() => {
-    const now = Date.now();
+  const now = Date.now();
 
+  if (count !== previousCountRef.current) {
     if (count !== undefined && previousCountRef.current !== undefined) {
       const delta = count - previousCountRef.current;
 
@@ -57,7 +57,7 @@ function useSlidingWindowRate(count: number | undefined) {
 
     previousCountRef.current = count;
     deltasRef.current = deltasRef.current.filter((sample) => now - sample.time <= 1000);
-  }, [count]);
+  }
 
   useEffect(() => {
     const interval = window.setInterval(() => {

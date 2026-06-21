@@ -1,7 +1,7 @@
 import type { IDockviewHeaderActionsProps } from "dockview-react";
 
 import { PlusIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   Combobox,
@@ -39,12 +39,6 @@ function AddCardDialog({
   const [selectedCard, setSelectedCard] = useState<(typeof CardArray)[number] | null>(
     CardArray[0] ?? null,
   );
-
-  useEffect(() => {
-    if (open) {
-      setSelectedCard(CardArray[0] ?? null);
-    }
-  }, [open]);
 
   const selectedCardName = useMemo(() => selectedCard?.name ?? "", [selectedCard]);
 
@@ -133,7 +127,12 @@ export function DashboardPlus(props: IDockviewHeaderActionsProps) {
         <PlusIcon className="size-4" />
       </button>
 
-      <AddCardDialog open={open} onOpenChange={setOpen} props={props} />
+      <AddCardDialog
+        key={open ? "open" : "closed"}
+        open={open}
+        onOpenChange={setOpen}
+        props={props}
+      />
     </>
   );
 }

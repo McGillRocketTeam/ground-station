@@ -5,7 +5,7 @@ import { Schema, SchemaAST } from "effect";
 
 import { FormMaxAnnotationId, FormMinAnnotationId, formTitle, formType } from "@/lib/form";
 
-import { Field, FieldError, FieldLabel } from "../../ui/field";
+import { Field, FieldError, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
 import { DashboardChartSeriesField, type DashboardChartSeriesFieldApi } from "./chart-series-field";
 import {
@@ -191,10 +191,10 @@ export function DashboardCardField({
         field.state.meta.isTouched && (!field.state.meta.isValid || Boolean(coordinateError))
       }
     >
-      <FieldLabel htmlFor={field.name}>
+      <label className={fieldLabelClassName} htmlFor={field.name}>
         {formTitle(fieldSchema)}
         {optional ? <span className="ml-1 text-muted-foreground">(optional)</span> : null}
-      </FieldLabel>
+      </label>
       {(() => {
         switch (type) {
           case "parameter":

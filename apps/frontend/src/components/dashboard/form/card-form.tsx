@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { type CardId, CardSchemaMap } from "@/lib/cards";
 
-import { Field, FieldError, FieldGroup, FieldLabel } from "../../ui/field";
+import { Field, FieldError, FieldGroup, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
 import { DashboardCardField } from "./card-field";
 
@@ -121,7 +121,9 @@ export function DashboardCardForm({
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor={`${formId}-title`}>Title</FieldLabel>
+          <label className={fieldLabelClassName} htmlFor={`${formId}-title`}>
+            Title
+          </label>
           <Input
             id={`${formId}-title`}
             name="title"

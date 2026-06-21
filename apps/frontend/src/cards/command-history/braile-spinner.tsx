@@ -24,8 +24,8 @@ export function BrailleSpinner({
   }, [intervalMs]);
 
   return (
-    <span className={className} aria-label={ariaLabel} role="status">
+    <output className={className} aria-label={ariaLabel}>
       {BRAILLE_FRAMES[frame]}
-    </span>
+    </output>
   );
 }

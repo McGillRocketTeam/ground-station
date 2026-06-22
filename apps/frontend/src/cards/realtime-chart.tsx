@@ -7,6 +7,7 @@ import uPlot, { type AlignedData } from "uplot";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { atomRegistry } from "@/lib/atom-registry";
 import { makeCard } from "@/lib/cards";
+import { cn } from "@/lib/utils";
 
 import {
   ChartCardConfigSchema,
@@ -19,7 +20,9 @@ export const RealtimeChartCard = makeCard({
   id: "realtime-chart-card",
   name: "Realtime Chart",
   schema: ChartCardConfigSchema,
-  component: (props) => <Plot seriesConfigs={props.params.series ?? DEFAULT_SERIES_CONFIGS} />,
+  component: (props) => (
+    <RealtimePlot seriesConfigs={props.params.series ?? DEFAULT_SERIES_CONFIGS} />
+  ),
 });
 
 const DEFAULT_CHART_WIDTH = 620;
@@ -95,7 +98,13 @@ function buildAlignedData(
   return aligned;
 }
 
-function Plot({ seriesConfigs }: { seriesConfigs: ReadonlyArray<ChartSeriesConfig> }) {
+export function RealtimePlot({
+  className,
+  seriesConfigs,
+}: {
+  className?: string;
+  seriesConfigs: ReadonlyArray<ChartSeriesConfig>;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -199,7 +208,7 @@ function Plot({ seriesConfigs }: { seriesConfigs: ReadonlyArray<ChartSeriesConfi
   }, [seriesConfigs]);
 
   return (
-    <div className="h-full w-full" ref={containerRef}>
+    <div className={cn("h-full w-full", className)} ref={containerRef}>
       <div ref={chartRef} />
     </div>
   );

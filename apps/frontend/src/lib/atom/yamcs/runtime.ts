@@ -9,11 +9,11 @@ import {
 } from "@mrt/yamcs-effect";
 import { ConfigProvider, Effect, Layer, Logger, Schedule, Tracer } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
-import { Atom, AtomHttpApi, AtomRegistry, Reactivity } from "effect/unstable/reactivity";
+import { Atom, AtomHttpApi } from "effect/unstable/reactivity";
 
 import { selectedInstanceAtom } from "../frontend";
 
-type AtomRuntimeContext = AtomRegistry.AtomRegistry | Reactivity.Reactivity;
+// type AtomRuntimeContext = AtomRegistry.AtomRegistry | Reactivity.Reactivity;
 
 const transformYamcsHttpClient = (client: HttpClient.HttpClient) =>
   client.pipe(
@@ -97,9 +97,5 @@ export const yamcsSubscriptionRuntime = YamcsAtomHttpClient.runtime.factory((get
     Layer.merge(socketRequirementsLayer, yamcsHttpClientLayer),
   );
 
-  return Layer.mergeAll(subscriptionsLayer, commandsLayer, parametersLayer) as Layer.Layer<
-    any,
-    any,
-    AtomRuntimeContext
-  >;
+  return Layer.mergeAll(subscriptionsLayer, commandsLayer, parametersLayer);
 });

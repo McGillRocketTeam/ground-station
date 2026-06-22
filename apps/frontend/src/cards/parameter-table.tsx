@@ -1,3 +1,4 @@
+import { Popover } from "@base-ui/react";
 import { useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
@@ -5,65 +6,11 @@ import { memo, useState, type ReactNode } from "react";
 
 import type { LiveParameterUpdate } from "@/lib/atom";
 
+import { parameterDetailPopoverHandle } from "@/components/parameter-detail";
 import { parameterInfoAtom, parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 import { cn } from "@/lib/utils";
-
-const SYSTEM_A_PREFIX = "SystemB/Rocket/FlightComputer";
-
-const CardEntries = {
-  "FLIGHT ATOMIC": [
-    "flight_stage",
-    "barometer_altitude_from_pad",
-    "barometer_altitude_from_sea_level",
-    "apogee_from_ground",
-    "fc_pressure",
-    "fc_temp",
-    "gps_latitude",
-    "gps_longitude",
-    "gps_altitude",
-    "gps_time_last_update",
-    "vertical_speed",
-    "acceleration_x",
-    "acceleration_y",
-    "acceleration_z",
-    "gyro_rate_x",
-    "gyro_rate_y",
-    "gyro_rate_z",
-    "fc_rssi",
-    "fc_snr",
-    "battery_voltage",
-    "battery_current_draw",
-    "flags",
-    "flags_post_pad",
-    "flags_bool_lead_pad",
-    "flight_atomic_flag",
-    "states_atomic_flag",
-    "seq",
-    "padding",
-  ],
-  "RADIO ATOMIC": ["call_sign", "radio_atomic_flag"],
-  "PROPULSION ATOMIC": [
-    "cc_pressure",
-    "tank_pressure",
-    "tank_temp",
-    "vent_temp",
-    "prop_atomic_flag",
-    "prop_energized_electric",
-    "mov_hall_state",
-    "drogue_armed_SW",
-    "drogue_energized_SW",
-    "fdov_armed_SW",
-    "fdov_energized_SW",
-    "main_armed_SW",
-    "main_energized_SW",
-    "mov_armed_logical_SW",
-    "mov_energized_SW",
-    "vent_armed_SW",
-    "vent_energized_SW",
-  ],
-};
 
 const ParameterTableSectionSchema = Schema.Struct({
   parameters: Schema.Array(Schema.String).pipe(
@@ -73,13 +20,6 @@ const ParameterTableSectionSchema = Schema.Struct({
 });
 
 export type ParameterTableSection = typeof ParameterTableSectionSchema.Type;
-
-const DEFAULT_PARAMETER_TABLE_SECTIONS: ReadonlyArray<ParameterTableSection> = Object.entries(
-  CardEntries,
-).map(([title, parameters]) => ({
-  title,
-  parameters: parameters.map((parameter) => `/${SYSTEM_A_PREFIX}/${parameter}`),
-}));
 
 export const ParameterTable = makeCard({
   id: "parameter-table",
@@ -92,20 +32,19 @@ export const ParameterTable = makeCard({
       }),
     ),
   }),
-  component: (props) => {
-    const sections = props.params.sections ?? DEFAULT_PARAMETER_TABLE_SECTIONS;
-
+  component: ({ params }) => {
     return (
       <div className="h-full overflow-auto">
         <div className="grid grid-cols-[1.5rem_minmax(12rem,1fr)_minmax(8rem,0.7fr)_minmax(8rem,0.7fr)] gap-px font-mono">
           <TableHeader />
-          {sections.map((section) => (
-            <TableGroup key={section.title} name={section.title}>
-              {section.parameters.map((parameter) => (
-                <TableRow key={parameter} parameter={parameter} />
-              ))}
-            </TableGroup>
-          ))}
+          {params.sections &&
+            params.sections.map((section) => (
+              <TableGroup key={section.title} name={section.title}>
+                {section.parameters.map((parameter) => (
+                  <TableRow key={parameter} parameter={parameter} />
+                ))}
+              </TableGroup>
+            ))}
         </div>
       </div>
     );
@@ -170,15 +109,19 @@ const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
   const info = useAtomSuspense(parameterInfoAtom(parameter)).value;
 
   return (
-    <div className="col-span-full grid grid-cols-subgrid text-sm *:bg-background *:px-1 hover:*:bg-selection-background">
+    <Popover.Trigger
+      handle={parameterDetailPopoverHandle}
+      payload={parameter}
+      className="col-span-full grid grid-cols-subgrid text-sm *:bg-background *:px-1 hover:*:bg-selection-background data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]"
+    >
       <div />
-      <div className="line-clamp-1 text-ellipsis" title={parameter}>
+      <div className="line-clamp-1 text-ellipsis text-left" title={parameter}>
         {info.shortDescription ?? info.qualifiedName}
       </div>
       <Value name={parameter.replace("SystemB", "SystemA")} />
       {parameter.includes("SystemA") && <Value name={parameter.replace("SystemA", "SystemB")} />}
       {/* <div /> */}
-    </div>
+    </Popover.Trigger>
   );
 });
 

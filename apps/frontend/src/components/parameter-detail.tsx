@@ -25,8 +25,21 @@ export function ParameterDetail({
     .onInitial(() => <div>Loading...</div>)
     .onError((error) => <div>{error.message}</div>)
     .onSuccess((info) => (
-      <div className={cn("grid grid-cols-[auto_1fr] gap-x-4 gap-y-2", className)}>
+      <div className={cn("grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 ", className)}>
         <div className="col-span-full text-sm">Metadata</div>
+        {info.shortDescription && (
+          <>
+            <Label>Name</Label>
+            <LabelValue>{info.shortDescription}</LabelValue>
+          </>
+        )}
+        {info.longDescription && (
+          <>
+            <Label>Description</Label>
+            <LabelValue>{info.longDescription}</LabelValue>
+          </>
+        )}
+
         <Label>Parameter</Label>
         <LabelValue>{info.name}</LabelValue>
         <Label>System</Label>
@@ -34,16 +47,30 @@ export function ParameterDetail({
         <Label>Source</Label>
         <LabelValue>{info.dataSource}</LabelValue>
 
-        <div className="col-span-full">{info.longDescription}</div>
+        <Separator className="col-span-full" />
+
+        {info.type.dataEncoding && (
+          <>
+            <div className="col-span-full text-sm">Data Encoding</div>
+            <Label>Size in Bits</Label>
+            <LabelValue>{info.type.dataEncoding.sizeInBits ?? "unknown"}</LabelValue>
+            <Label>Byte Order</Label>
+            <LabelValue>
+              {info.type.dataEncoding.littleEndian ? "Little endian" : "Big endian"}
+            </LabelValue>
+            <Label>Encoding</Label>
+            <LabelValue>{info.type.dataEncoding.encoding ?? "unknown"}</LabelValue>
+          </>
+        )}
 
         <Separator className="col-span-full" />
 
         <div className="col-span-full text-sm">Live Value</div>
         <RealtimePlot
-          className="w-md h-72 mb-4 col-span-full"
+          className="col-span-full h-52 mb-4"
           seriesConfigs={[
             {
-              color: "#00FF00",
+              color: "#FD9900",
               label: info.shortDescription ?? info.name,
               parameter: qualifiedName,
             },
@@ -55,7 +82,7 @@ export function ParameterDetail({
 }
 
 function Label({ children }: { children: ReactNode }) {
-  return <div>{children}</div>;
+  return <div className="text-nowrap">{children}</div>;
 }
 
 function LabelValue({ children }: { children: ReactNode }) {

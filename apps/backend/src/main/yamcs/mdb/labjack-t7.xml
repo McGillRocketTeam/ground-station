@@ -240,13 +240,13 @@
                     </TriggerSet>
                 </MathOperation>
             </MathAlgorithm>
-            <!-- AIN6-10: Amazon pressure transducers — y = 396.36*v - 182.71 -->
+            <!-- AIN6-10: Amazon pressure transducers — y = 396.36*v - 182.71 Kulite PT: y=268.25x - 482 -->
             <MathAlgorithm name="calibrated_pressure_ain6_psi">
                 <MathOperation outputParameterRef="calibrated_pressure_ain6_psi">
                     <ParameterInstanceRefOperand parameterRef="AIN6"/>
-                    <ValueOperand>396.36</ValueOperand>
+                    <ValueOperand>268.25</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>182.71</ValueOperand>
+                    <ValueOperand>482</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN6"/>
@@ -256,9 +256,9 @@
             <MathAlgorithm name="calibrated_pressure_ain7_psi">
                 <MathOperation outputParameterRef="calibrated_pressure_ain7_psi">
                     <ParameterInstanceRefOperand parameterRef="AIN7"/>
-                    <ValueOperand>396.36</ValueOperand>
+                    <ValueOperand>268.25</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>182.71</ValueOperand>
+                    <ValueOperand>482</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN7"/>

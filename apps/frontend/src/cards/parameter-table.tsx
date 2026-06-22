@@ -151,6 +151,8 @@ const Value = memo(function Value({ name }: { name: string }) {
           {"value" in value.value.engValue
             ? value.value.engValue.value.toLocaleString()
             : "Unknown Value Type"}
+            {" "}
+            {value.info.type.unitSet?.map((a) => a.unit).join("")}
         </div>
       </>
     ),

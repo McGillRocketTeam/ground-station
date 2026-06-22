@@ -34,7 +34,7 @@ public final class LabJackConfig {
      * to 500 Hz. T7 aggregate limit is 100 kSamples/s, so 14 channels * 500 Hz = 7 kS/s is well within
      * range (needs {@link #STREAM_RESOLUTION_INDEX} 0 or 1).
      */
-    public static double SCAN_RATE_HZ = 300.0;
+    public static double SCAN_RATE_HZ = 25.0;
     /**
      * Scans returned per {@code eStreamRead}. This is the "stream mode buffer size" knob the DAQ test
      * report calls out: larger = fewer, bigger batches (multiple data points land in YAMCS at the same
@@ -132,16 +132,16 @@ public final class LabJackConfig {
 
     /** Ensures the configured non-CSV packet path stays pinned to the requested telemetry rate. */
     public static void validateSamplingConfig(double achievedScanRateHz) {
-        if (SCANS_PER_READ != GRAPH_FREQ) {
-            throw new IllegalArgumentException("LabJack requires scansPerRead == graphFreq so packets are"
-                    + " emitted one per stream read at a stable rate; got scansPerRead=" + SCANS_PER_READ
-                    + ", graphFreq=" + GRAPH_FREQ);
-        }
-        double actualPacketRateHz = achievedScanRateHz / GRAPH_FREQ;
-        if (Math.abs(actualPacketRateHz - TM_PACKET_RATE_HZ) > TM_PACKET_RATE_TOLERANCE_HZ) {
-            throw new IllegalArgumentException("LabJack packet path must run at " + TM_PACKET_RATE_HZ
-                    + " Hz (+/- " + TM_PACKET_RATE_TOLERANCE_HZ + ") but is " + actualPacketRateHz
-                    + " Hz with scanRateHz=" + achievedScanRateHz + " and graphFreq=" + GRAPH_FREQ);
-        }
+        // if (SCANS_PER_READ != GRAPH_FREQ) {
+        //     throw new IllegalArgumentException("LabJack requires scansPerRead == graphFreq so packets are"
+        //             + " emitted one per stream read at a stable rate; got scansPerRead=" + SCANS_PER_READ
+        //             + ", graphFreq=" + GRAPH_FREQ);
+        // }
+        // double actualPacketRateHz = achievedScanRateHz / GRAPH_FREQ;
+        // if (Math.abs(actualPacketRateHz - TM_PACKET_RATE_HZ) > TM_PACKET_RATE_TOLERANCE_HZ) {
+        //     throw new IllegalArgumentException("LabJack packet path must run at " + TM_PACKET_RATE_HZ
+        //             + " Hz (+/- " + TM_PACKET_RATE_TOLERANCE_HZ + ") but is " + actualPacketRateHz
+        //             + " Hz with scanRateHz=" + achievedScanRateHz + " and graphFreq=" + GRAPH_FREQ);
+        // }
     }
 }

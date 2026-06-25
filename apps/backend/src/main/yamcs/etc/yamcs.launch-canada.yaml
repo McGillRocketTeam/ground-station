@@ -139,10 +139,19 @@ dataLinks:
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
+
+
   - name: SystemB/Pad/Radio
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_b_pad_radio_realtime
     tcStream: tc_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
+  - name: DAQ/Pad/Thermocouple
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: daq_thermocouple_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -167,6 +176,24 @@ mdb:
   - type: xtce
     args:
       file: mdb/commands.xml
+
+
+  - type: emptyNode
+    spec: "DAQ"
+    subLoaders:
+      - type: emptyNode
+        spec: "Pad"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/thermocouple.xml
+
+  - type: xtce
+    spec: "LabJack"
+    args:
+      file: mdb/labjack-t7.xml
+
+
   - type: emptyNode
     spec: "SystemA"
     subLoaders:
@@ -212,10 +239,6 @@ mdb:
             args:
               file: mdb/radio.xml
   - type: xtce
-    spec: "LabJack"
-    args:
-      file: mdb/labjack-t7.xml
-  - type: xtce
     spec: "ControlBox"
     args:
       file: mdb/controlbox.xml
@@ -249,6 +272,11 @@ streamConfig:
     - name: "tm_controlBox"
       processor: "realtime"
       rootContainer: "/ControlBox/ControlBoxPacket"
+
+    # Thermocouple
+    - name: "daq_thermocouple_realtime"
+      processor: "realtime"
+      rootContinaer: "/DAQ/Pad/Thermocouple/ThermocoupleAggregatePacket"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]

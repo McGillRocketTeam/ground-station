@@ -190,8 +190,6 @@ See https://github.com/yamcs/pymdb
               <ThisParameterOperand/>
               <ValueOperand>100</ValueOperand>
               <Operator>/</Operator>
-              <ValueOperand>40</ValueOperand>
-              <Operator>-</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -489,7 +487,7 @@ See https://github.com/yamcs/pymdb
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
+              <ValueOperand>10</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
@@ -521,7 +519,7 @@ See https://github.com/yamcs/pymdb
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
+              <ValueOperand>10</ValueOperand>
               <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>

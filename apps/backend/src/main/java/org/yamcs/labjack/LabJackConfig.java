@@ -41,7 +41,7 @@ public final class LabJackConfig {
      * timestamp); smaller = lower latency. eStreamRead blocks until this many scans are buffered, so at
      * 300 Hz a value of 12 yields 25 reads/s (~40 ms batches).
      */
-    public static int SCANS_PER_READ = 12;
+    public static int SCANS_PER_READ = 6;
     /** 0 = max speed/lowest resolution (required to reach the higher scan rates), up to 8 = slowest. */
     public static int STREAM_RESOLUTION_INDEX = 0;
     /** Per-channel settling time; 0 = auto. Increase only if STREAM_SCAN_OVERLAP warnings appear. */

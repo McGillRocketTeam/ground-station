@@ -150,9 +150,8 @@ const Value = memo(function Value({ name }: { name: string }) {
         <div className={cn("line-clamp-1 text-right text-ellipsis", double && "col-span-2")}>
           {"value" in value.value.engValue
             ? value.value.engValue.value.toLocaleString()
-            : "Unknown Value Type"}
-            {" "}
-            {value.info.type.unitSet?.map((a) => a.unit).join("")}
+            : "Unknown Value Type"}{" "}
+          {value.info.type.unitSet?.map((a) => a.unit).join("")}
         </div>
       </>
     ),

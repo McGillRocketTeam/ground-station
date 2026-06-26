@@ -189,7 +189,6 @@ public class WifiAntennaLink extends AbstractLink {
       } else {
         detailedStatus = "Wifi antenna API poll failed for " + ipAddress + ": " + e.getMessage();
       }
-      log.warn(detailedStatus, e);
     }
   }
 

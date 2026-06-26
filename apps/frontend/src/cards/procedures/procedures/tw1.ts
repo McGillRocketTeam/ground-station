@@ -71,13 +71,13 @@ export const TW1 = ProcedureStack.make({
       type: "text",
       stepNumber: 11,
       role: "AVC & PRC",
-      text: "Screw the F/DOV wires into the FDOV terminal block on Prop Bottom. The FDOV terminal block is the big two pin terminal block closet to the Prop Top-to-Prop Bottom wire harness connector. There is no wire polarity.",
+      text: "Screw the F/DOV wires into the FDOV terminal block on Prop Bottom. The FDOV terminal block is the big 2-pin terminal block closest to the top right corner of the PCB. There is no wire polarity.",
     }),
     ProcedureStep.make({
       type: "text",
       stepNumber: 12,
       role: "AVC & PRC",
-      text: "Screw the MOV wires into the MOV terminal block on Prop Bottom. The MOV terminal block is the terminal big 2 pin terminal block closest to the top right corner of the PCB. There is no wire polarity.",
+      text: "Screw the MOV wires into the MOV terminal block on Prop Bottom. The MOV terminal block is the terminal big 2-pin terminal block closest to the Prop Top-to-Prop Bottom wire harness connector. There is no wire polarity.",
     }),
     ProcedureStep.make({
       type: "text",
@@ -310,39 +310,26 @@ export const TW1 = ProcedureStack.make({
       ],
     }),
     ProcedureStep.make({
-      type: "command",
-      stepNumber: 29,
-      role: "CSH",
-      name: "/FlightComputer/reset_prop_boards_valve_state",
-      comment: "Press the command stack button to Reset Propulsion Valve States.",
-    }),
-    ProcedureStep.make({
-      type: "text",
-      stepNumber: 30,
-      role: "CSC",
-      text: "Confirm that the completion ACK is received.",
-    }),
-    ProcedureStep.make({
       type: "note",
       text: "Basic Vent Valve Verification",
       color: "#FFF798",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 31,
+      stepNumber: 29,
       role: "PRC",
       text: "Place 2 fingers on the vent valve to feel for gate actuation.",
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 32,
+      stepNumber: 30,
       role: "CSH",
       name: "/FlightComputer/vent_valve_energize",
       comment: "Set the Vent Valve switch to ENERGIZED.",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 33,
+      stepNumber: 31,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -378,7 +365,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 34,
+      stepNumber: 32,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
@@ -388,14 +375,14 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 35,
+      stepNumber: 33,
       role: "CSH",
       name: "/FlightComputer/vent_valve_de-energize",
       comment: "Set the Vent Valve switch to DE-ENERGIZED.",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 36,
+      stepNumber: 34,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -431,7 +418,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 37,
+      stepNumber: 35,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
@@ -441,20 +428,20 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 38,
+      stepNumber: 36,
       role: "CSH",
       name: "/FlightComputer/reset_av",
       comment: "Press the command stack button to Reset AV.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 39,
+      stepNumber: 37,
       role: "AVC",
       text: "Confirm FC-A reboots.\nConfirm FC-B reboots.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 40,
+      stepNumber: 38,
       role: "CSC",
       text: "Confirm the ACK for the Reset AV command.",
     }),
@@ -465,20 +452,20 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 41,
+      stepNumber: 39,
       role: "PRC",
       text: "Place 2 fingers on the MOV to feel for gate actuation.",
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 42,
+      stepNumber: 40,
       role: "CSH",
       comment: "Insert and turn the key switch clockwise to switch MOV to ARMED.",
       name: "/FlightComputer/mov_arming",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 43,
+      stepNumber: 41,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -507,7 +494,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 44,
+      stepNumber: 42,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -517,14 +504,14 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 45,
+      stepNumber: 43,
       role: "CSC",
       comment: "Press the Launch button.",
       name: "/FlightComputer/launch",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 46,
+      stepNumber: 44,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -534,26 +521,26 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 47,
+      stepNumber: 45,
       role: "PRC",
       text: "Confirm that the MOV solenoid de-energizes after 5 seconds.",
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 48,
+      stepNumber: 46,
       role: "CSH",
       comment: "Turn the key switch counter clockwise to switch MOV to DISARMED.",
       name: "/FlightComputer/mov_disarming",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 49,
+      stepNumber: 47,
       role: "CSH",
       text: "Remove the key from the key switch.",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 50,
+      stepNumber: 48,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -582,7 +569,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 51,
+      stepNumber: 49,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -597,20 +584,20 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 52,
+      stepNumber: 50,
       role: "PRC",
       text: "Place 2 fingers on the F/DOV to feel for gate actuation.",
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 53,
+      stepNumber: 51,
       role: "CSH",
       name: "/FlightComputer/fdov_energize",
       comment: "Set the F/DOV switch to ENERGIZED.",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 54,
+      stepNumber: 52,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -646,7 +633,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 55,
+      stepNumber: 53,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -656,14 +643,14 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 56,
+      stepNumber: 54,
       role: "CSH",
       name: "/FlightComputer/fdov_de-energize",
       comment: "Set the F/DOV switch to DE-ENERGIZED.",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 57,
+      stepNumber: 55,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -699,7 +686,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 58,
+      stepNumber: 56,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -714,14 +701,14 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 59,
+      stepNumber: 57,
       role: "CSH",
       name: "/FlightComputer/mov_arming",
       comment: "Insert and turn the key switch clockwise to switch MOV to ARMED.",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 60,
+      stepNumber: 58,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -750,7 +737,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 61,
+      stepNumber: 59,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -760,16 +747,63 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 62,
+      stepNumber: 60,
       role: "CSH",
-      name: "/FlightComputer/mov_disarming",
-      comment: "Turn the key switch counter clockwise to switch MOV to DISARMED.",
+      name: "/FlightComputer/fdov_energize",
+      comment: "Set the F/DOV switch to ENERGIZED.",
+    }),
+    ProcedureStep.make({
+      type: "verify",
+      stepNumber: 61,
+      role: "CSC",
+      presentation: {
+        type: "truthTable",
+        columns: [
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
+        ],
+      },
+      condition: [
+        {
+          parameter: "/SystemA/Rocket/FlightComputer/fdov_energized_SW",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "logicalEnergized" },
+        },
+        {
+          parameter: "/SystemA/Rocket/FlightComputer/fdov_energizedGate_HW",
+          operator: "eq",
+          value: true,
+          display: { row: "F/DOV", column: "energizeGate" },
+        },
+        {
+          parameter: "/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW",
+          operator: "eq",
+          value: false,
+          display: { row: "F/DOV", column: "energizeCurrent" },
+        },
+      ],
+      delay: 0,
+      comment:
+        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
     }),
     ProcedureStep.make({
       type: "text",
+      stepNumber: 62,
+      role: "AVC",
+      text: [
+        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
+        "  Channel  CON  GATE  EN  ARM",
+        "  CH2      on   on    on  on",
+      ].join("\n"),
+    }),
+    ProcedureStep.make({
+      type: "command",
       stepNumber: 63,
       role: "CSH",
-      text: "Remove the key from the key switch.",
+      name: "/FlightComputer/vent_valve_energize",
+      comment: "Set the Vent switch to ENERGIZED.",
     }),
     ProcedureStep.make({
       type: "verify",
@@ -778,22 +812,29 @@ export const TW1 = ProcedureStack.make({
       presentation: {
         type: "truthTable",
         columns: [
-          { id: "logicalArm", label: "armed_SW" },
-          { id: "electricalArm", label: "armed_HW" },
+          { id: "logicalEnergized", label: "Logical Energize" },
+          { id: "energizeGate", label: "Energize Gate" },
+          { id: "energizeCurrent", label: "Energize Current" },
         ],
       },
       condition: [
         {
-          parameter: "/SystemA/Rocket/FlightComputer/mov_armed_logical_SW",
+          parameter: "/SystemA/Rocket/FlightComputer/vent_energized_SW",
           operator: "eq",
-          value: false,
-          display: { row: "MOV", column: "logicalArm" },
+          value: true,
+          display: { row: "Vent", column: "logicalEnergized" },
         },
         {
-          parameter: "/SystemA/Rocket/FlightComputer/mov_armed_electrical_HW",
+          parameter: "/SystemA/Rocket/FlightComputer/vent_energizedGate_HW",
+          operator: "eq",
+          value: true,
+          display: { row: "Vent", column: "energizeGate" },
+        },
+        {
+          parameter: "/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW",
           operator: "eq",
           value: false,
-          display: { row: "MOV", column: "electricalArm" },
+          display: { row: "Vent", column: "energizeCurrent" },
         },
       ],
       delay: 0,
@@ -805,112 +846,6 @@ export const TW1 = ProcedureStack.make({
       stepNumber: 65,
       role: "AVC",
       text: [
-        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
-        "  Channel  ARM  GATE  EN  CON",
-        "  CH1      off  off   off on",
-      ].join("\n"),
-    }),
-    ProcedureStep.make({
-      type: "command",
-      stepNumber: 66,
-      role: "CSH",
-      name: "/FlightComputer/fdov_energize",
-      comment: "Set the F/DOV switch to ENERGIZED.",
-    }),
-    ProcedureStep.make({
-      type: "verify",
-      stepNumber: 67,
-      role: "CSC",
-      presentation: {
-        type: "truthTable",
-        columns: [
-          { id: "logicalEnergized", label: "Logical Energize" },
-          { id: "energizeGate", label: "Energize Gate" },
-          { id: "energizeCurrent", label: "Energize Current" },
-        ],
-      },
-      condition: [
-        {
-          parameter: "/SystemA/Rocket/FlightComputer/fdov_energized_SW",
-          operator: "eq",
-          value: true,
-          display: { row: "F/DOV", column: "logicalEnergized" },
-        },
-        {
-          parameter: "/SystemA/Rocket/FlightComputer/fdov_energizedGate_HW",
-          operator: "eq",
-          value: true,
-          display: { row: "F/DOV", column: "energizeGate" },
-        },
-        {
-          parameter: "/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW",
-          operator: "eq",
-          value: false,
-          display: { row: "F/DOV", column: "energizeCurrent" },
-        },
-      ],
-      delay: 0,
-      comment:
-        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
-    }),
-    ProcedureStep.make({
-      type: "text",
-      stepNumber: 68,
-      role: "AVC",
-      text: [
-        "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
-        "  Channel  CON  GATE  EN  ARM",
-        "  CH2      on   on    on  on",
-      ].join("\n"),
-    }),
-    ProcedureStep.make({
-      type: "command",
-      stepNumber: 69,
-      role: "CSH",
-      name: "/FlightComputer/vent_valve_energize",
-      comment: "Set the Vent switch to ENERGIZED.",
-    }),
-    ProcedureStep.make({
-      type: "verify",
-      stepNumber: 70,
-      role: "CSC",
-      presentation: {
-        type: "truthTable",
-        columns: [
-          { id: "logicalEnergized", label: "Logical Energize" },
-          { id: "energizeGate", label: "Energize Gate" },
-          { id: "energizeCurrent", label: "Energize Current" },
-        ],
-      },
-      condition: [
-        {
-          parameter: "/SystemA/Rocket/FlightComputer/vent_energized_SW",
-          operator: "eq",
-          value: true,
-          display: { row: "Vent", column: "logicalEnergized" },
-        },
-        {
-          parameter: "/SystemA/Rocket/FlightComputer/vent_energizedGate_HW",
-          operator: "eq",
-          value: true,
-          display: { row: "Vent", column: "energizeGate" },
-        },
-        {
-          parameter: "/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW",
-          operator: "eq",
-          value: false,
-          display: { row: "Vent", column: "energizeCurrent" },
-        },
-      ],
-      delay: 0,
-      comment:
-        "Confirm that the completion ACK is received.\nConfirm the valve states are as follows:",
-    }),
-    ProcedureStep.make({
-      type: "text",
-      stepNumber: 71,
-      role: "AVC",
-      text: [
         "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
         "  Channel  CON  GATE  EN  ARM",
         "  CH1      on   on    on  on",
@@ -918,14 +853,27 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "command",
-      stepNumber: 72,
+      stepNumber: 66,
+      role: "CSH",
+      comment: "Press the Launch button.",
+      name: "/FlightComputer/launch",
+    }),
+    ProcedureStep.make({
+      type: "text",
+      stepNumber: 67,
+      role: "PRC",
+      text: "Confirm MOV actuation.",
+    }),
+    ProcedureStep.make({
+      type: "command",
+      stepNumber: 68,
       role: "CSH",
       name: "/FlightComputer/emergency_stop",
       comment: "Press the E-Stop Button.",
     }),
     ProcedureStep.make({
       type: "verify",
-      stepNumber: 73,
+      stepNumber: 69,
       role: "CSC",
       presentation: {
         type: "truthTable",
@@ -979,7 +927,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 74,
+      stepNumber: 70,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -989,7 +937,7 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 75,
+      stepNumber: 71,
       role: "AVC",
       text: [
         "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
@@ -999,49 +947,49 @@ export const TW1 = ProcedureStack.make({
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 76,
+      stepNumber: 72,
       role: "AVC",
       text: "Turn off the Power Supply.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 77,
+      stepNumber: 73,
       role: "AVC",
       text: "Disconnect the Power Umbilical-Power Supply cable.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 78,
+      stepNumber: 74,
       role: "AVC & PRC",
       text: "Connect the Umbilical Panel to the Vent Radax using 4 6-32 fasteners.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 79,
+      stepNumber: 75,
       role: "AVC",
       text: "Connect the Male Power Umbilical connector to the rocket.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 80,
+      stepNumber: 76,
       role: "AVC",
       text: "Connect the Male Power Umbilical harness to a DC power supply.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 81,
+      stepNumber: 77,
       role: "PRC",
       text: "Lubricate the male QC on the F/DOV with Krytox.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 82,
+      stepNumber: 78,
       role: "AEC & PRC",
       text: "Secure panels to radaxes excluding the panels covering the prop boards, ensure all vent lines are routed out of the panels and are covered loosely to prevent dust from entering the lines.",
     }),
     ProcedureStep.make({
       type: "text",
-      stepNumber: 83,
+      stepNumber: 79,
       role: "AEC & PRC",
       text: "ENSURE THAT THE MANUAL DUMP VALVE IS CLOSED.",
     }),

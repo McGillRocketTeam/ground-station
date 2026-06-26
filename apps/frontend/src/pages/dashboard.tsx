@@ -22,7 +22,6 @@ import "./dashboard.css";
 import { DashboardPlus } from "@/components/dashboard/plus";
 import { DashboardTab } from "@/components/dashboard/tab";
 import { ParameterDetail, parameterDetailPopoverHandle } from "@/components/parameter-detail";
-import { Dialog } from "@/components/ui/dialog";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { CardComponentMap, getCardActionsForPanel } from "@/lib/cards";
 import {

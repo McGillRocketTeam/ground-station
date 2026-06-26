@@ -49,7 +49,7 @@ function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type })
           Download Log
         </button>
       </div>
-      <div className="grid pb-6 grid-cols-[auto_auto_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[80ch] mx-auto">
+      <div className="grid pb-6 grid-cols-[auto_auto_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[85ch] mx-auto">
         {procedure.steps.map((step, index) => (
           <Suspense
             fallback={<div className="col-span-full">Loading...</div>}
@@ -215,7 +215,7 @@ function ProcedureStepView({ index }: { index: number }) {
     <button
       type="button"
       className={cn(
-        "grid grid-cols-subgrid col-span-full px-2 py-2",
+        "grid grid-cols-subgrid col-span-full px-2 py-2 text-left",
         executionStep.isSelected ? "bg-selection-background/30" : "",
       )}
       onClick={() => selectStep(index)}
@@ -230,7 +230,7 @@ function ProcedureStepView({ index }: { index: number }) {
         {step.stepNumber}
         {step.stepNumber && "."}
       </div>
-      <div className="pr-2">{step.role}</div>
+      <div className="max-w-[6ch] pr-2 text-center">{step.role}</div>
       <div className="space-y-2">
         {(() => {
           switch (step.type) {
@@ -241,7 +241,7 @@ function ProcedureStepView({ index }: { index: number }) {
             case "verify":
               return (
                 <>
-                  <div className="whitespace-pre-line text-pretty">
+                  <div className="whitespace-pre-line text-pretty text-left">
                     {step.comment}
                     {step.presentation?.type === "truthTable" && <TruthTable step={step} />}
                   </div>

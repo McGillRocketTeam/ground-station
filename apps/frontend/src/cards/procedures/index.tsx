@@ -230,7 +230,7 @@ function ProcedureStepView({ index }: { index: number }) {
         {step.stepNumber}
         {step.stepNumber && "."}
       </div>
-      <div className="pr-2 text-center">{step.role}</div>
+      <div className="pr-2 text-center min-w-[6ch]">{step.role}</div>
       <div className="space-y-2">
         {(() => {
           switch (step.type) {

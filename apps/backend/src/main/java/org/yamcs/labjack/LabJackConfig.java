@@ -95,12 +95,8 @@ public final class LabJackConfig {
     public static int WATCHDOG_TIMEOUT_S = 300; // 5 minutes
 
     // ---- Connection / recovery -----------------------------------------------------------------
-    /** Delay between connection attempts while the LabJack is absent (ms). */
-    public static long CONNECT_RETRY_MS = 2000;
-    /** Initial backoff after a stream failure before attempting to re-open (ms). */
-    public static long RECONNECT_BACKOFF_MS = 1000;
-    /** Upper bound for the exponential reconnect backoff (ms). */
-    public static long RECONNECT_BACKOFF_MAX_MS = 10_000;
+    /** Delay between connect/reconnect attempts while the LabJack is absent (ms). */
+    public static long CONNECT_RETRY_MS = 1000;
 
     // ---- CSV -----------------------------------------------------------------------------------
     /** Directory (relative to the YAMCS working dir) for the full-rate local CSV records. */

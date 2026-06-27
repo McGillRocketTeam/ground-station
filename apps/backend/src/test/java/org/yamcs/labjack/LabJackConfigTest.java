@@ -31,8 +31,8 @@ class LabJackConfigTest {
     }
 
     @Test
-    void packetSamplingDefaultsToExactlyTwentyFiveHertz() {
-        assertEquals(12, LabJackConfig.SCANS_PER_READ);
+    void packetSamplingDefaultsMatchCheckedInConfig() {
+        assertEquals(6, LabJackConfig.SCANS_PER_READ);
         assertEquals(12, LabJackConfig.GRAPH_FREQ);
         assertEquals(25.0, LabJackConfig.TM_PACKET_RATE_HZ);
         assertDoesNotThrow(() -> LabJackConfig.validateSamplingConfig(LabJackConfig.SCAN_RATE_HZ));

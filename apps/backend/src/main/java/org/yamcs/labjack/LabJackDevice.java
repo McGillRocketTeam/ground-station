@@ -38,6 +38,7 @@ public class LabJackDevice {
             1239, // RECONNECT_FAILED
             1240, // CONNECTION_HAS_YIELDED_RECONNECT_FAILED
             1242, // STREAM_FLUSH_TIMEOUT
+            1263, // NO_RESPONSE_BYTES_RECEIVED
             1302, // COULD_NOT_START_STREAM
             1303  // STREAM_NOT_RUNNING
     );

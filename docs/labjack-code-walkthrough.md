@@ -46,9 +46,8 @@
 | Realtime decimation | `GRAPH_FREQ = 1` (every scan) | `LabJackConfig.GRAPH_FREQ` |
 | Full-rate archive | `ARCHIVE_FULL_RATE = false` | `LabJackConfig.ARCHIVE_FULL_RATE` (off for tonight) |
 | Watchdog timeout | **300 s** | `LabJackConfig.WATCHDOG_TIMEOUT_S` |
-| Connect retry | 2 000 ms | `LabJackConfig.CONNECT_RETRY_MS` |
-| Reconnect backoff | 1 000 → 10 000 ms (exponential) | `LabJackConfig.RECONNECT_BACKOFF_MS / _MAX_MS` |
-| Disconnect-class LJM codes | 1224, 1225, 1227, 1233, 1239, 1240, 1242, 1302, 1303 | `LabJackDevice.DISCONNECT_ERRORS` (names in `libs/LJM.java`) |
+| Connect/reconnect retry | 1 000 ms | `LabJackConfig.CONNECT_RETRY_MS` |
+| Disconnect-class LJM codes | 1224, 1225, 1227, 1233, 1239, 1240, 1242, 1263, 1302, 1303 | `LabJackDevice.DISCONNECT_ERRORS` (names in `libs/LJM.java`) |
 
 ### Watchdog registers (T7 datasheet §23) — exact values written
 
@@ -105,7 +104,7 @@ This is the exact call order from backend start to streaming.
        4. `device.setAllDigitalLow()` → write 0 to DIO 0..22 (safe state on every connect).
        5. `device.startStream()` → build scan list `[0,2,…,26]`, `eStreamStop` (clear leftovers),
           set `STREAM_RESOLUTION_INDEX`/`STREAM_SETTLING_US`, `eStreamStart(30, 14, scanList, 300.0)`.
-       - success → state `STREAMING`; failure → log, `device.close()`, retry after backoff.
+        - success → state `STREAMING`; failure → log, `device.close()`, retry after 1 s.
      - Device open → **`acquireOnce()`** (steady state, §4).
    - The loop is wrapped so a missing/incompatible native library (`LinkageError`) is caught, logged
      with an actionable message, and the link stays `UNAVAILABLE` — **the backend is unaffected**.
@@ -147,9 +146,9 @@ Per batch (~every 100 ms at 300 Hz):
 
 **Recovery** (the headline bug fix — testable tonight): if the T7 is powered off mid-stream,
 `eStreamRead` throws an `LJMException` with a disconnect-class code (e.g. `SOCKET_LEVEL_ERROR 1233`,
-`RECONNECT_FAILED 1239`, `STREAM_NOT_RUNNING 1303`) → `run()` → `isDisconnectError` true →
+`NO_RESPONSE_BYTES_RECEIVED 1263`, `RECONNECT_FAILED 1239`, `STREAM_NOT_RUNNING 1303`) → `run()` → `isDisconnectError` true →
 `enterReconnecting()` (stop + close, state `RECONNECTING`) → loop retries `open → configure → startStream`
-with exponential backoff (1→10 s). When the T7 returns, streaming + CSV resume automatically. (The old
+every 1 s. When the T7 returns, streaming + CSV resume automatically. (The old
 code got permanently stuck here.)
 
 ---

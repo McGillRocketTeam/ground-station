@@ -70,7 +70,7 @@ function ProcedureView({ procedureType }: { procedureType: ProcedureType }) {
           Download Log
         </button>
       </div>
-      <div className="grid pb-6 grid-cols-[auto_6ch_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[100ch] mx-auto">
+      <div className="grid pb-6 grid-cols-[auto_8ch_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[100ch] mx-auto">
         {procedureExecutionState.steps.map((step, index) => (
           <Suspense
             fallback={<div className="col-span-full">Loading...</div>}
@@ -257,7 +257,7 @@ function ProcedureStepView({ index }: { index: number }) {
         {step.stepNumber}
         {step.stepNumber && "."}
       </div>
-      <div className="pr-2 text-center min-w-[6ch]">{step.role}</div>
+      <div className="pr-2 text-center min-w-[8ch]">{step.role}</div>
       <div className="space-y-2">
         {(() => {
           switch (step.type) {

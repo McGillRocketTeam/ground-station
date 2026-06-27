@@ -183,7 +183,6 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
 
     @Override
     public void run() {
-        long backoff = LabJackConfig.RECONNECT_BACKOFF_MS;
         try {
             // First LJM call on this (background) thread: forces JNA to load LabJackM.dll now. If the
             // native library is missing/incompatible it throws an UnsatisfiedLinkError (a LinkageError,
@@ -196,12 +195,8 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
                     }
                     if (tryConnect()) {
                         state = State.STREAMING;
-                        backoff = LabJackConfig.RECONNECT_BACKOFF_MS;
                     } else {
-                        long wait = (state == State.RECONNECTING)
-                                ? backoff : LabJackConfig.CONNECT_RETRY_MS;
-                        sleep(wait);
-                        backoff = Math.min(backoff * 2, LabJackConfig.RECONNECT_BACKOFF_MAX_MS);
+                        sleep(LabJackConfig.CONNECT_RETRY_MS);
                     }
                     continue;
                 }

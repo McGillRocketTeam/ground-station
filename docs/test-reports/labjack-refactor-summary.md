@@ -34,7 +34,7 @@ preserves existing behaviour, fixes the known bugs, and is ready for the HIL tes
 
 ## Tunables (`LabJackConfig`)
 `SCAN_RATE_HZ` (300 MVP → 500 perf), `SCANS_PER_READ` (stream buffer), `GRAPH_FREQ` (UI decimation),
-`ARCHIVE_FULL_RATE` + `ARCHIVE_STREAM`, `WATCHDOG_TIMEOUT_S`, reconnect backoff, `CSV_DIR`.
+`ARCHIVE_FULL_RATE` + `ARCHIVE_STREAM`, `WATCHDOG_TIMEOUT_S`, connect/reconnect retry, `CSV_DIR`.
 
 ## Verified now
 - `mvn compile` / `mvn test-compile` → BUILD SUCCESS (offline, JDK 21 target).

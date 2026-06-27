@@ -505,11 +505,7 @@ export const VerifyStep = Schema.Struct({
   timeout: Schema.optional(Schema.Int),
 });
 
-export const CommandStep = Schema.Struct({
-  type: Schema.Literal("command"),
-  comment: Schema.optional(Schema.String),
-  role: Schema.optional(Schema.String),
-  stepNumber: Schema.optional(Schema.Number),
+export const ProcedureCommand = Schema.Struct({
   name: Schema.String,
   namespace: Schema.optional(Schema.String),
   arguments: Schema.optional(
@@ -531,6 +527,24 @@ export const CommandStep = Schema.Struct({
   stream: Schema.optional(Schema.String),
   advancement: Schema.optional(Advancement),
 });
+
+const CommandStepBaseFields = {
+  type: Schema.Literal("command"),
+  comment: Schema.optional(Schema.String),
+  role: Schema.optional(Schema.String),
+  stepNumber: Schema.optional(Schema.Number),
+} as const;
+
+export const CommandStep = Schema.Union([
+  Schema.Struct({
+    ...CommandStepBaseFields,
+    ...ProcedureCommand.fields,
+  }),
+  Schema.Struct({
+    ...CommandStepBaseFields,
+    commands: Schema.NonEmptyArray(ProcedureCommand),
+  }),
+]);
 
 export const ProcedureStep = Schema.Union([TextStep, NoteStep, CheckStep, VerifyStep, CommandStep]);
 

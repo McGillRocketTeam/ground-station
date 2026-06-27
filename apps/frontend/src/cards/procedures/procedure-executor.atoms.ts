@@ -8,6 +8,8 @@ import { Atom } from "effect/unstable/reactivity";
 
 import { selectedInstanceAtom, YamcsAtomHttpClient, yamcsBaseUrl } from "@/lib/atom";
 
+import type { ProcedureType } from "./procedure-stacks";
+
 import { ProcedureExecutor, ProcedureExecutorLog } from "./procedure-executor";
 
 type ProcedureRuntimeContext = AtomRegistry.AtomRegistry | Reactivity.Reactivity;
@@ -35,7 +37,7 @@ const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) => {
   ) as Layer.Layer<any, any, ProcedureRuntimeContext>;
 });
 
-const procedureExecutionStateAtom = procedureRuntime.subscriptionRef(
+export const procedureExecutionStateAtom = procedureRuntime.subscriptionRef(
   ProcedureExecutor.use((executor) => Effect.succeed(executor.state)),
 );
 
@@ -65,6 +67,10 @@ export const downloadProcedureAuditTextAtom = procedureRuntime.fn<void>()(() =>
       URL.revokeObjectURL(url);
     });
   }),
+);
+
+export const setProcedureTypeAtom = procedureRuntime.fn<ProcedureType>()((procedureType) =>
+  ProcedureExecutor.use((executor) => executor.setProcedure(procedureType)),
 );
 
 export const selectProcedureStepAtom = procedureRuntime.fn<number>()((index) =>

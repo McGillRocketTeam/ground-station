@@ -3,6 +3,7 @@ import type { AtomRegistry as AtomRegistryType } from "effect/unstable/reactivit
 import {
   type QualifiedName,
   CommandHistoryEvent,
+  ProcedureCommand,
   ProcedureStep,
   StreamingCommandHisotryEntry,
   Parameters,
@@ -28,7 +29,7 @@ import { AtomRegistry } from "effect/unstable/reactivity";
 import { commandsSubscriptionAtom, YamcsAtomHttpClient } from "@/lib/atom";
 import { stringifyValue } from "@/lib/utils";
 
-import { TW1 } from "./procedures/tw1";
+import { getProcedureStack, ProcedureTypeSchema, type ProcedureType } from "./procedure-stacks";
 
 const ExecutionStepState = Schema.Literals(["initial", "running", "completed", "failed"]);
 type ExecutionStepState = typeof ExecutionStepState.Type;
@@ -70,15 +71,65 @@ const StepLiveData = Schema.Union([EmptyStepLiveData, CommandStepLiveData, Verif
 type StepLiveData = typeof StepLiveData.Type;
 
 type CommandHistoryEntry = (typeof CommandHistoryEvent.Type)["data"];
+type ProcedureCommandSpec = typeof ProcedureCommand.Type;
+type CommandStep = Extract<typeof ProcedureStep.Type, { type: "command" }>;
 type VerifyStep = Extract<typeof ProcedureStep.Type, { type: "verify" }>;
 type VerifyCondition = VerifyStep["condition"][number];
 
 interface SelectedCommandStep {
   readonly stepIndex: number;
-  readonly commandName: string;
+  readonly commandNames: ReadonlyArray<string>;
+  readonly nextCommandIndex: number;
   readonly selectedAt: DateTime.Utc;
   readonly trackedCommandId: string | null;
 }
+
+const getProcedureCommandList = (step: CommandStep): ReadonlyArray<ProcedureCommandSpec> =>
+  "commands" in step
+    ? step.commands
+    : [
+        {
+          name: step.name,
+          namespace: step.namespace,
+          arguments: step.arguments,
+          extraOptions: step.extraOptions,
+          stream: step.stream,
+          advancement: step.advancement,
+        },
+      ];
+
+const commandArgumentsToRecord = (arguments_: ProcedureCommandSpec["arguments"]) => {
+  if (!arguments_ || arguments_.length === 0) {
+    return undefined;
+  }
+
+  return Object.fromEntries(arguments_.map((argument) => [argument.name, argument.value]));
+};
+
+const commandExtraOptionsToRecord = (extraOptions: ProcedureCommandSpec["extraOptions"]) => {
+  if (!extraOptions || extraOptions.length === 0) {
+    return undefined;
+  }
+
+  const entries = extraOptions.flatMap((option) =>
+    option.id === undefined || option.value === undefined
+      ? []
+      : [[option.id, option.value] as const],
+  );
+
+  return entries.length === 0 ? undefined : Object.fromEntries(entries);
+};
+
+const commandPayloadFromSpec = (command: ProcedureCommandSpec) => {
+  const args = commandArgumentsToRecord(command.arguments);
+  const extra = commandExtraOptionsToRecord(command.extraOptions);
+
+  return {
+    ...(args ? { args } : {}),
+    ...(extra ? { extra } : {}),
+    ...(command.stream ? { stream: command.stream } : {}),
+  };
+};
 
 const ProcedureAuditEventType = Schema.Literals([
   "stepSelected",
@@ -145,6 +196,7 @@ export class ProcedureExecutorLog extends Context.Service<
   {
     readonly entries: SubscriptionRef.SubscriptionRef<ReadonlyArray<ProcedureAuditEntry>>;
     readonly append: (entry: ProcedureAuditEntry) => Effect.Effect<void>;
+    readonly clear: Effect.Effect<void>;
     readonly renderText: Effect.Effect<string>;
   }
 >()("@mrt/frontend/ProcedureExecutorLog") {
@@ -155,6 +207,7 @@ export class ProcedureExecutorLog extends Context.Service<
 
       const append = (entry: ProcedureAuditEntry) =>
         SubscriptionRef.update(entries, (current) => [...current, entry]);
+      const clear = SubscriptionRef.set(entries, []);
 
       const renderText = Effect.map(SubscriptionRef.get(entries), (entries) =>
         entries
@@ -165,7 +218,7 @@ export class ProcedureExecutorLog extends Context.Service<
           .join("\n"),
       );
 
-      return { entries, append, renderText };
+      return { entries, append, clear, renderText };
     }),
   );
 }
@@ -173,6 +226,7 @@ export class ProcedureExecutorLog extends Context.Service<
 export class ProcedureExecutionState extends Schema.Class<ProcedureExecutionState>(
   "ProcedureExecutionState",
 )({
+  procedureType: ProcedureTypeSchema,
   currentStepIndex: Schema.Number,
   steps: Schema.Array(ExecutionStep),
 }) {}
@@ -264,7 +318,7 @@ const clampStepIndex = (steps: ReadonlyArray<ExecutionStep>, index: number): num
 const isCommandExecutionStep = (
   step: ExecutionStep | undefined,
 ): step is ExecutionStep & {
-  readonly meta: Extract<typeof ProcedureStep.Type, { type: "command" }>;
+  readonly meta: CommandStep;
 } => step?.meta.type === "command";
 
 const formatVerifyOperator = (operator: VerifyCondition["operator"]) => {
@@ -519,6 +573,7 @@ export class ProcedureExecutor extends Context.Service<
       YamcsAtomHttpClient | YamcsWebSocketClient | AtomRegistryType.AtomRegistry
     >;
     readonly renderAuditText: () => Effect.Effect<string>;
+    readonly setProcedure: (procedureType: ProcedureType) => Effect.Effect<void>;
     readonly selectStep: (index: number) => Effect.Effect<void>;
     readonly selectNextStep: () => Effect.Effect<void>;
     readonly selectPreviousStep: () => Effect.Effect<void>;
@@ -532,14 +587,29 @@ export class ProcedureExecutor extends Context.Service<
         const registry = yield* AtomRegistry.AtomRegistry;
         const state = yield* SubscriptionRef.make(
           ProcedureExecutionState.make({
+            procedureType: "tw1",
             currentStepIndex: 0,
-            steps: TW1.steps.map(ExecutionStep.fromProcedureStep),
+            steps: getProcedureStack("tw1").steps.map(ExecutionStep.fromProcedureStep),
           }),
         );
         const log = yield* ProcedureExecutorLog;
         const selectedCommandStep = yield* SubscriptionRef.make<Option.Option<SelectedCommandStep>>(
           Option.none(),
         );
+
+        const setProcedure = (procedureType: ProcedureType) =>
+          Effect.gen(function* () {
+            yield* SubscriptionRef.set(
+              state,
+              ProcedureExecutionState.make({
+                procedureType,
+                currentStepIndex: 0,
+                steps: getProcedureStack(procedureType).steps.map(ExecutionStep.fromProcedureStep),
+              }),
+            );
+            yield* SubscriptionRef.set(selectedCommandStep, Option.none());
+            yield* log.clear;
+          });
 
         const syncSelectedCommandStep = (selectedAt: DateTime.Utc) =>
           Effect.gen(function* () {
@@ -555,26 +625,38 @@ export class ProcedureExecutor extends Context.Service<
               selectedCommandStep,
               Option.some({
                 stepIndex: executionState.currentStepIndex,
-                commandName: step.meta.name,
+                commandNames: getProcedureCommandList(step.meta).map((command) => command.name),
+                nextCommandIndex: 0,
                 selectedAt,
                 trackedCommandId: null,
               }),
             );
           });
 
-        const setTrackedCommandId = (stepIndex: number, commandId: string) =>
+        const updateSelectedCommandStep = (
+          stepIndex: number,
+          f: (selected: SelectedCommandStep) => SelectedCommandStep,
+        ) =>
           SubscriptionRef.update(selectedCommandStep, (current) =>
             Option.match(current, {
               onNone: () => Option.none(),
               onSome: (selected) =>
-                selected.stepIndex === stepIndex
-                  ? Option.some({
-                      ...selected,
-                      trackedCommandId: commandId,
-                    })
-                  : current,
+                selected.stepIndex === stepIndex ? Option.some(f(selected)) : current,
             }),
           );
+
+        const setTrackedCommandId = (stepIndex: number, commandId: string) =>
+          updateSelectedCommandStep(stepIndex, (selected) => ({
+            ...selected,
+            trackedCommandId: commandId,
+          }));
+
+        const advanceSelectedCommand = (stepIndex: number, nextCommandIndex: number) =>
+          updateSelectedCommandStep(stepIndex, (selected) => ({
+            ...selected,
+            nextCommandIndex,
+            trackedCommandId: null,
+          }));
 
         const recordStepChange = (
           index: number,
@@ -703,6 +785,22 @@ export class ProcedureExecutor extends Context.Service<
 
           return Effect.succeed(result);
         };
+
+        const issueProcedureCommand = (command: ProcedureCommandSpec) =>
+          Effect.gen(function* () {
+            const yamcsConfig = yield* YamcsConfig;
+
+            return yield* YamcsAtomHttpClient.use((client) =>
+              client.command.issueCommand({
+                params: {
+                  name: command.name,
+                  instance: yamcsConfig.instance,
+                  processor: yamcsConfig.processor,
+                },
+                payload: commandPayloadFromSpec(command),
+              }),
+            );
+          });
 
         const updateVerifyConditionAt = (
           index: number,
@@ -861,28 +959,28 @@ export class ProcedureExecutor extends Context.Service<
             }
             case "command":
               return Effect.gen(function* () {
-                const yamcsConfig = yield* YamcsConfig;
+                const commands = getProcedureCommandList(step);
 
-                const cmd = yield* YamcsAtomHttpClient.use((client) =>
-                  client.command.issueCommand({
-                    params: {
-                      name: step.name,
-                      instance: yamcsConfig.instance,
-                      processor: yamcsConfig.processor,
-                    },
-                    payload: {},
-                  }),
-                );
+                for (const [commandIndex, command] of commands.entries()) {
+                  const cmd = yield* issueProcedureCommand(command);
 
-                yield* setTrackedCommandId(index, cmd.id);
+                  yield* setTrackedCommandId(index, cmd.id);
 
-                yield* recordStepChange(index, "stepLiveMessageUpdated", `Sent ${cmd.id}`, (step) =>
-                  setStepLiveMessage(step, `Sent ${cmd.id}`),
-                );
+                  yield* recordStepChange(
+                    index,
+                    "stepLiveMessageUpdated",
+                    `Sent ${cmd.id}`,
+                    (step) => setStepLiveMessage(step, `Sent ${cmd.id}`),
+                  );
 
-                const result = yield* awaitCommandResult(cmd.id, index);
+                  const result = yield* awaitCommandResult(cmd.id, index);
 
-                return yield* validateCommandResult(result);
+                  yield* validateCommandResult(result);
+
+                  if (commandIndex < commands.length - 1) {
+                    yield* advanceSelectedCommand(index, commandIndex + 1);
+                  }
+                }
               });
           }
         };
@@ -907,9 +1005,15 @@ export class ProcedureExecutor extends Context.Service<
                 return;
               }
 
+              const commandName = selected.value.commandNames[selected.value.nextCommandIndex];
+
+              if (!commandName) {
+                return;
+              }
+
               const candidate = commands.find(
                 (command) =>
-                  command.commandName === selected.value.commandName &&
+                  command.commandName === commandName &&
                   command.id !== selected.value.trackedCommandId &&
                   DateTime.toEpochMillis(command.generationTime) >=
                     DateTime.toEpochMillis(selected.value.selectedAt),
@@ -942,6 +1046,13 @@ export class ProcedureExecutor extends Context.Service<
               );
 
               if (Exit.isSuccess(exit)) {
+                const nextCommandIndex = selected.value.nextCommandIndex + 1;
+
+                if (nextCommandIndex < selected.value.commandNames.length) {
+                  yield* advanceSelectedCommand(selected.value.stepIndex, nextCommandIndex);
+                  return;
+                }
+
                 yield* recordStepOutcome(
                   selected.value.stepIndex,
                   "stepCompleted",
@@ -1019,6 +1130,7 @@ export class ProcedureExecutor extends Context.Service<
           state,
           execute,
           renderAuditText,
+          setProcedure,
           selectStep,
           selectNextStep,
           selectPreviousStep,

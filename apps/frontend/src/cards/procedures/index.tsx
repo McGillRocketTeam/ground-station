@@ -1,37 +1,58 @@
 import { useAtomSet, useAtomSuspense } from "@effect/atom-react";
-import { ProcedureStack, ProcedureStep } from "@mrt/yamcs-procedures";
+import { ProcedureStep } from "@mrt/yamcs-procedures";
 import { Schema } from "effect";
-import { Fragment, Suspense } from "react";
+import { Fragment, Suspense, useEffect } from "react";
 
 import { BrailleSpinner } from "@/cards/command-history/braile-spinner";
 import { AckRow, FCAckRow } from "@/cards/command-history/command-detail";
 import { collectAcks } from "@/cards/command-history/utils";
 import { makeCard } from "@/lib/cards";
+import { FormTitleAnnotationId } from "@/lib/form";
 import { cn } from "@/lib/utils";
 
 import { CommandStepLiveData, VerifyStepLiveData } from "./procedure-executor";
 import {
   downloadProcedureAuditTextAtom,
   executeProcedureStepAtom,
+  procedureExecutionStateAtom,
   procedureExecutionStepAtom,
+  setProcedureTypeAtom,
   selectNextProcedureStepAtom,
   selectProcedureStepAtom,
   selectPreviousProcedureStepAtom,
 } from "./procedure-executor.atoms";
-import { TW1 } from "./procedures/tw1";
+import { ProcedureTypeSchema, type ProcedureType } from "./procedure-stacks";
 
 export const ProceduresCard = makeCard({
   id: "procedures-card",
   name: "Procedures Card",
-  schema: Schema.Struct({}),
-  component: () => <ProcedureView procedure={TW1} />,
+  schema: Schema.Struct({
+    procedureType: Schema.optional(ProcedureTypeSchema).pipe(
+      Schema.annotate({
+        [FormTitleAnnotationId]: "Procedure Type",
+      }),
+    ),
+  }),
+  component: (props) => <ProcedureView procedureType={props.params.procedureType ?? "tw1"} />,
 });
 
-function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type }) {
+function ProcedureView({ procedureType }: { procedureType: ProcedureType }) {
   const selectNextStep = useAtomSet(selectNextProcedureStepAtom);
   const selectPreviousStep = useAtomSet(selectPreviousProcedureStepAtom);
   const executeStep = useAtomSet(executeProcedureStepAtom);
   const downloadAuditText = useAtomSet(downloadProcedureAuditTextAtom);
+  const setProcedureType = useAtomSet(setProcedureTypeAtom);
+  const procedureExecutionState = useAtomSuspense(procedureExecutionStateAtom).value;
+
+  useEffect(() => {
+    setProcedureType(procedureType);
+  }, [procedureType, setProcedureType]);
+
+  if (procedureExecutionState.procedureType !== procedureType) {
+    return (
+      <div className="grid h-full place-items-center text-sm text-muted-foreground">Loading...</div>
+    );
+  }
 
   return (
     <div className="h-full min-h-0 overflow-auto">
@@ -49,11 +70,11 @@ function ProcedureView({ procedure }: { procedure: typeof ProcedureStack.Type })
           Download Log
         </button>
       </div>
-      <div className="grid pb-6 grid-cols-[auto_6ch_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[85ch] mx-auto">
-        {procedure.steps.map((step, index) => (
+      <div className="grid pb-6 grid-cols-[auto_6ch_1fr] gap-x-2 font-mono text-sm text-orange-text max-w-[100ch] mx-auto">
+        {procedureExecutionState.steps.map((step, index) => (
           <Suspense
             fallback={<div className="col-span-full">Loading...</div>}
-            key={procedureStepKey(step)}
+            key={procedureStepKey(step.meta, index)}
           >
             <ProcedureStepView index={index} />
           </Suspense>
@@ -181,7 +202,7 @@ function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
   );
 }
 
-function procedureStepKey(step: typeof ProcedureStep.Type) {
+function procedureStepKey(step: typeof ProcedureStep.Type, index: number) {
   if (step.stepNumber !== undefined) {
     return `${step.type}-${step.stepNumber}`;
   }
@@ -193,8 +214,14 @@ function procedureStepKey(step: typeof ProcedureStep.Type) {
     case "check":
     case "verify":
       return `${step.type}-${step.comment}`;
-    case "command":
-      return `${step.type}-${step.name}`;
+    case "command": {
+      const commandKey =
+        "commands" in step ? step.commands.map((command) => command.name).join(",") : step.name;
+
+      return `${step.type}-${index}-${commandKey}`;
+    }
+    default:
+      return `${step.type}-${index}`;
   }
 }
 
@@ -205,7 +232,7 @@ function ProcedureStepView({ index }: { index: number }) {
 
   if (step.type === "note") {
     return (
-      <div className="col-span-full text-center text-black" style={{ background: step.color }}>
+      <div className="col-span-full text-center text-black px-1" style={{ background: step.color }}>
         {step.text}
       </div>
     );

@@ -375,9 +375,9 @@ function renderRadioLinkNode(
 function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
   const linkResult = useAtomValue(singleLinkSubscriptionAtom(data.qualifiedName));
   const isWifiAntennaNode =
-    data.qualifiedName === "PAD Wifi Antenna (Client)" ||
-    data.qualifiedName === "CS WiFi Antenna (Access Point)";
-  const parameterName = useConnectedStationsParameter("CS WiFi Antenna (Access Point)");
+    data.qualifiedName === "EGSE/Pad/WifiAntenna" ||
+    data.qualifiedName === "EGSE/ControlStation/WifiAntenna";
+  const parameterName = useConnectedStationsParameter("EGSE/ControlStation/WifiAntenna");
   const fallbackNodeClass =
     linkResult._tag === "Success"
       ? linkResult.value

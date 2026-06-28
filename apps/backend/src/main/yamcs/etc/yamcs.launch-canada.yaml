@@ -114,13 +114,13 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
 
-  - name: PAD Wifi Antenna (Client)
+  - name: EGSE/Pad/WifiAntenna
     class: org.yamcs.mrt.links.WifiAntennaLink
     ipAddress: 192.168.0.254
     username: mrt
     password: H0tFire!
 
-  - name: CS WiFi Antenna (Access Point)
+  - name: EGSE/ControlStation/WifiAntenna
     class: org.yamcs.mrt.links.WifiAntennaLink
     ipAddress: 192.168.0.253
     username: mrt

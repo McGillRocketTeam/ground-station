@@ -20,6 +20,7 @@ import org.yamcs.logging.Log;
  */
 public class LabJackDevice {
     private static final Log log = new Log(LabJackDevice.class);
+    private static final double LJM_DUMMY_VALUE = -9999.0;
 
     // LabJack Modbus register bases (T7). DIO# lives at 2000+#, DAC# at 1000+(#*2).
     private static final int DIO_REGISTER_BASE = 2000;
@@ -46,6 +47,8 @@ public class LabJackDevice {
     private int handle = 0;
     private boolean open = false;
     private boolean streaming = false;
+
+    public record StreamRead(double[] data, int deviceScanBacklog, int ljmScanBacklog, int dummySamples) {}
 
     /** True if the given LJM error code indicates the device link dropped (stream must be re-established). */
     public static boolean isDisconnectError(int ljmError) {
@@ -171,10 +174,20 @@ public class LabJackDevice {
      *
      * @return flat array of {@code SCANS_PER_READ * NUM_ANALOG_PINS} values, scan-major
      */
-    public double[] readStream() {
+    public StreamRead readStream() {
         double[] data = new double[LabJackConfig.SCANS_PER_READ * LabJackConfig.NUM_ANALOG_PINS];
-        LJM.eStreamRead(handle, data, new IntByReference(0), new IntByReference(0));
-        return data;
+        IntByReference deviceScanBacklog = new IntByReference(0);
+        IntByReference ljmScanBacklog = new IntByReference(0);
+        LJM.eStreamRead(handle, data, deviceScanBacklog, ljmScanBacklog);
+
+        int dummySamples = 0;
+        for (double value : data) {
+            if (value == LJM_DUMMY_VALUE) {
+                dummySamples++;
+            }
+        }
+
+        return new StreamRead(data, deviceScanBacklog.getValue(), ljmScanBacklog.getValue(), dummySamples);
     }
 
     /** Stops stream mode (best-effort). */

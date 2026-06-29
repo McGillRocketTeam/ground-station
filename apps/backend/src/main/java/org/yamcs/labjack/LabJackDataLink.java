@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import libs.LJMException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.TmPacket;
@@ -74,12 +75,19 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
     private ScheduledExecutorService csvExecutor;
     private LabJackCsvWriter csvWriter;
     private final Queue<CsvEntry> csvQueue = new ConcurrentLinkedQueue<>();
+    private final AtomicInteger csvQueueDepth = new AtomicInteger();
 
     private int graphCounter = 0;
     private int seqNum = 0;
     private boolean watchdogConfigured = false; // flash-backed; write once per session, not per reconnect
     private volatile byte[] lastDigital = new byte[LabJackPacket.DIGITAL_BYTES];
     private double actualScanRateHz = LabJackConfig.SCAN_RATE_HZ;
+    private int maxDeviceScanBacklog = 0;
+    private int maxLjmScanBacklog = 0;
+    private int maxCsvQueueDepth = 0;
+    private int lastLoggedCsvQueueDepth = 0;
+    private long lastBacklogLogMs = 0;
+    private long lastHealthyStreamLogMs = 0;
 
     // Optional full-rate archive (ARCHIVE_FULL_RATE)
     private Stream archiveStream;
@@ -127,6 +135,12 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
         graphCounter = 0;
         actualScanRateHz = LabJackConfig.SCAN_RATE_HZ;
         watchdogConfigured = false;
+        maxDeviceScanBacklog = 0;
+        maxLjmScanBacklog = 0;
+        maxCsvQueueDepth = 0;
+        lastLoggedCsvQueueDepth = 0;
+        lastBacklogLogMs = 0;
+        lastHealthyStreamLogMs = 0;
         // NOTE: do not touch LJM here — this runs on the YAMCS service-init thread. The first native
         // call (which forces loading LabJackM.dll) happens on the acquisition thread in run(), so a
         // missing native library degrades the link gracefully instead of failing backend startup.
@@ -203,12 +217,14 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
                 try {
                     acquireOnce();
                 } catch (LJMException e) {
+                    String classification = classifyLjmError(e.getError());
                     if (LabJackDevice.isDisconnectError(e.getError())) {
-                        log.warn("LabJack stream lost (LJM " + e.getError() + ": " + e.getMessage()
-                                + "); re-establishing");
+                        log.warn("LabJack stream lost (LJM " + e.getError() + ", " + classification + ": "
+                                + e.getMessage() + "); re-establishing");
                         enterReconnecting();
                     } else {
-                        log.error("Transient LabJack error (LJM " + e.getError() + "): " + e.getMessage());
+                        log.error("Transient LabJack error (LJM " + e.getError() + ", " + classification
+                                + "): " + e.getMessage());
                     }
                 } catch (Exception e) {
                     log.error("Unexpected LabJack error; re-establishing: " + e.getMessage());
@@ -244,6 +260,11 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
                     + LabJackConfig.NUM_ANALOG_PINS + " AIN, " + LabJackConfig.SCANS_PER_READ
                     + " scans/read, packetRate=" + LabJackConfig.TM_PACKET_RATE_HZ + " Hz)");
             return true;
+        } catch (LJMException e) {
+            log.warn("LabJack connect attempt failed (LJM " + e.getError() + ", "
+                    + classifyLjmError(e.getError()) + "): " + e.getMessage());
+            device.close();
+            return false;
         } catch (Exception e) {
             log.warn("LabJack connect attempt failed: " + e.getMessage());
             device.close();
@@ -259,7 +280,9 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
 
     /** Reads one stream batch + the digital state and publishes/records the scans. */
     private void acquireOnce() {
-        double[] batch = device.readStream(); // throws LJMException on disconnect
+        LabJackDevice.StreamRead streamRead = device.readStream(); // throws LJMException on disconnect
+        double[] batch = streamRead.data();
+        logStreamTelemetry(streamRead);
 
         // Command-response digital read: also the traffic that keeps the watchdog fed. A transient
         // failure reuses the last value; a disconnect-class failure propagates to trigger reconnect.
@@ -281,6 +304,14 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
 
             dataIn(1, packet.length);
             csvQueue.add(new CsvEntry(now, packet)); // full rate -> CSV
+            int csvDepth = csvQueueDepth.incrementAndGet();
+            if (csvDepth > maxCsvQueueDepth) {
+                maxCsvQueueDepth = csvDepth;
+                if (csvDepth >= 1000 && csvDepth - lastLoggedCsvQueueDepth >= 1000) {
+                    lastLoggedCsvQueueDepth = csvDepth;
+                    log.warn("LabJack CSV queue depth high: " + csvDepth + " pending rows");
+                }
+            }
 
             if (LabJackConfig.ARCHIVE_FULL_RATE) {
                 emitToArchive(now, packet); // full rate -> YAMCS archive
@@ -329,9 +360,53 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
     private void drainCsv() {
         CsvEntry e;
         while ((e = csvQueue.poll()) != null) {
+            csvQueueDepth.decrementAndGet();
             csvWriter.writeRow(e.receptionTime(), e.packet());
         }
         csvWriter.flush();
+    }
+
+    private void logStreamTelemetry(LabJackDevice.StreamRead streamRead) {
+        int deviceScanBacklog = streamRead.deviceScanBacklog();
+        int ljmScanBacklog = streamRead.ljmScanBacklog();
+        int dummySamples = streamRead.dummySamples();
+
+        maxDeviceScanBacklog = Math.max(maxDeviceScanBacklog, deviceScanBacklog);
+        maxLjmScanBacklog = Math.max(maxLjmScanBacklog, ljmScanBacklog);
+
+        long now = System.currentTimeMillis();
+        boolean backlogPresent = deviceScanBacklog > 0 || ljmScanBacklog > 0;
+        boolean shouldLogBacklog = backlogPresent && (lastBacklogLogMs == 0 || now - lastBacklogLogMs >= 5000);
+        if (shouldLogBacklog) {
+            lastBacklogLogMs = now;
+            log.warn("LabJack stream backlog: device=" + deviceScanBacklog
+                    + " scans, ljm=" + ljmScanBacklog + " scans, csvQueue=" + csvQueueDepth.get()
+                    + ", maxDevice=" + maxDeviceScanBacklog + ", maxLjm=" + maxLjmScanBacklog + ")");
+        }
+
+        if (dummySamples > 0) {
+            log.warn("LabJack stream returned " + dummySamples + " dummy samples (-9999.0); deviceBacklog="
+                    + deviceScanBacklog + ", ljmBacklog=" + ljmScanBacklog + ", csvQueue="
+                    + csvQueueDepth.get());
+        }
+
+        if (!backlogPresent && dummySamples == 0 && (lastHealthyStreamLogMs == 0 || now - lastHealthyStreamLogMs >= 30000)) {
+            lastHealthyStreamLogMs = now;
+            log.info("LabJack stream healthy: deviceBacklog=" + deviceScanBacklog + ", ljmBacklog="
+                    + ljmScanBacklog + ", csvQueue=" + csvQueueDepth.get() + ", maxDevice="
+                    + maxDeviceScanBacklog + ", maxLjm=" + maxLjmScanBacklog + ", maxCsvQueue="
+                    + maxCsvQueueDepth);
+        }
+    }
+
+    private static String classifyLjmError(int errorCode) {
+        return switch (errorCode) {
+            case 1301 -> "ljm_buffer_full_host_not_keeping_up";
+            case 1320 -> "digital_auto_recovery_detected_device_buffer_overflow";
+            case 2942 -> "stream_scan_overlap_sample_rate_too_high";
+            case 1224, 1225, 1227, 1233, 1239, 1240, 1242, 1263, 1302, 1303 -> "disconnect_or_stream_stopped";
+            default -> "unclassified";
+        };
     }
 
     // ---- Commands ------------------------------------------------------------------------------

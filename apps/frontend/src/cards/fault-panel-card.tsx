@@ -62,7 +62,8 @@ function Fault({ name }: { name: string }) {
       className={cn(
         "whitespace-pre-line text-border border text-center grid place-items-center font-mono py-1",
         status === "success" && "data-[illuminated=true]:text-success",
-        status === "error" && "data-[illuminated=true]:text-error",
+        status === "error" &&
+          "data-[illuminated=true]:text-error border-current border-2 bg-current/10",
         status === "warning" && "data-[illuminated=true]:text-warning",
       )}
     >

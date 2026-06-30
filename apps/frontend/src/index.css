@@ -218,6 +218,21 @@
   background-color: transparent;
 }
 
+.braille-spinner {
+  display: inline-grid;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.braille-spinner__frames {
+  display: block;
+  animation-name: braille-spinner-frames;
+  animation-timing-function: steps(10, end);
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
 @keyframes fault-panel-blink {
   0%,
   49.999% {
@@ -231,6 +246,12 @@
     color: var(--color-error);
     border-color: currentColor;
     background-color: transparent;
+  }
+}
+
+@keyframes braille-spinner-frames {
+  to {
+    transform: translateY(-10em);
   }
 }
 

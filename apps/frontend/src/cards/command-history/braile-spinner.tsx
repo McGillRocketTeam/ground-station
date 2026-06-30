@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-
 const BRAILLE_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+const BRAILLE_LOOP_FRAMES = [...BRAILLE_FRAMES, BRAILLE_FRAMES[0]];
 
 type BrailleSpinnerProps = {
   intervalMs?: number;
@@ -13,19 +12,20 @@ export function BrailleSpinner({
   className,
   ariaLabel = "Loading",
 }: BrailleSpinnerProps) {
-  const [frame, setFrame] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setFrame((prev) => (prev + 1) % BRAILLE_FRAMES.length);
-    }, intervalMs);
-
-    return () => clearInterval(id);
-  }, [intervalMs]);
+  const durationMs = intervalMs * BRAILLE_FRAMES.length;
 
   return (
-    <output className={className} aria-label={ariaLabel}>
-      {BRAILLE_FRAMES[frame]}
+    <output className={className} aria-label={ariaLabel} role="status" aria-live="off">
+      <span className="sr-only">{ariaLabel}</span>
+      <span className="braille-spinner" aria-hidden="true">
+        <span className="braille-spinner__frames" style={{ animationDuration: `${durationMs}ms` }}>
+          {BRAILLE_LOOP_FRAMES.map((frame, index) => (
+            <span key={`${frame}-${index}`} className="block h-[1em] leading-none">
+              {frame}
+            </span>
+          ))}
+        </span>
+      </span>
     </output>
   );
 }

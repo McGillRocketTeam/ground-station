@@ -12,7 +12,8 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.YConfiguration;
 import org.yamcs.labjack.LabJackConfig;
-import org.yamcs.labjack.LabJackDataLink;
+import org.yamcs.labjack.LabJackLink;
+import org.yamcs.labjack.LabJackLinkRegistry;
 import org.yamcs.logging.Log;
 import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
@@ -307,9 +308,9 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private void handleEmergencyStop() {
     log.warn("EMERGENCY STOP ACTIVATED - setting all digital pins to LOW");
 
-    LabJackDataLink labJack = LabJackDataLink.getInstance();
+    LabJackLink labJack = LabJackLinkRegistry.get();
     if (labJack == null) {
-      log.error("E-stop: LabJackDataLink instance not available");
+      log.error("E-stop: LabJack link instance not available");
       return;
     }
 

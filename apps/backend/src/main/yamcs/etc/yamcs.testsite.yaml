@@ -54,7 +54,7 @@ dataLinks:
     tcStream: tc_realtime
 
   - name: LabJack
-    class: org.yamcs.labjack.LabJackDataLink
+    class: org.yamcs.labjack2.LabJackDataLinkV2
     tmStream: tm_labJack
     tcStream: tc_labJack
     # The LabJack packet is a raw 59-byte payload (14 float32 AIN + 3 DIO bytes): no header, no

@@ -46,7 +46,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  * </ul>
  * Hardware tunables live in {@link LabJackConfig}. Sensor calibration is in the MDB, not here.
  */
-public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
+public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable, LabJackLink {
 
     private enum State { DISCONNECTED, CONNECTING, STREAMING, RECONNECTING }
 
@@ -61,6 +61,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
 
     public LabJackDataLink() {
         instance = this;
+        LabJackLinkRegistry.set(this);
     }
 
     public static LabJackDataLink getInstance() {
@@ -186,6 +187,7 @@ public class LabJackDataLink extends AbstractTcTmParamLink implements Runnable {
             device.close();
         }
         state = State.DISCONNECTED;
+        LabJackLinkRegistry.clear(this);
     }
 
     /** Overridable so tests can inject a fake device (no hardware / no Mockito needed). */

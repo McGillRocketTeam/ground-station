@@ -23,7 +23,7 @@ services:
 
 dataLinks:
   - name: LabJack
-    class: org.yamcs.labjack.LabJackDataLink
+    class: org.yamcs.labjack2.LabJackDataLinkV2
     tmStream: tm_labJack
     tcStream: tc_labJack
     packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
@@ -274,7 +274,7 @@ streamConfig:
       rootContainer: "/ControlBox/ControlBoxPacket"
 
     # Thermocouple
-    - name: "EGSE_thermocouple_realtime"
+    - name: "egse_thermocouple_realtime"
       processor: "realtime"
       rootContainer: "/EGSE/Pad/Thermocouple/ThermocoupleAggregatePacket"
 

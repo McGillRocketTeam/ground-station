@@ -471,10 +471,10 @@ See https://github.com/yamcs/pymdb
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>0.412</ValueOperand>
-              <Operator>*</Operator>
-              <ValueOperand>185.3</ValueOperand>
+              <ValueOperand>469.22</ValueOperand>
               <Operator>-</Operator>
+              <ValueOperand>2.4813</ValueOperand>
+              <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -483,12 +483,12 @@ See https://github.com/yamcs/pymdb
         <UnitSet>
           <Unit form="calibrated">C</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>10</ValueOperand>
-              <Operator>/</Operator>
+              <ValueOperand>100</ValueOperand>
+              <Operator>-</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -515,7 +515,7 @@ See https://github.com/yamcs/pymdb
         <UnitSet>
           <Unit form="calibrated">C</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>

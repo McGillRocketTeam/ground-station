@@ -103,7 +103,7 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
             case "UNAVAIL" -> Status.UNAVAIL;
             default -> Status.UNAVAIL;
           };
-      log.info("{} {} {}", topic, payload, status);
+      // log.info("{} {} {}", topic, payload, status);
     }
   }
 

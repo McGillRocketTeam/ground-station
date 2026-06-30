@@ -482,7 +482,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     boolean ackFlag = ((flags >> target.ackFlagBitIndex()) & 1) == 1;
     boolean completionRejected = ((flags >> DEFAULT_COMMAND_FLAG_BIT_INDEX) & 1) == 1;
     String flagBits = String.format("%8s", Integer.toBinaryString(flags & 0xFF)).replace(' ', '0');
-    log.info("Received FC flags from {}: {}", target.name(), flagBits);
+    // log.info("Received FC flags from {}: {}", target.name(), flagBits);
     if (!ackFlag) {
       return null;
     }

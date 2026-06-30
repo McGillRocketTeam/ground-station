@@ -281,6 +281,7 @@ See https://github.com/yamcs/pymdb
           </DefaultCalibrator>
         </FloatDataEncoding>
       </FloatParameterType>
+      <BooleanParameterType name="gps_locked" initialValue="False" zeroStringValue="False" oneStringValue="True"/>
       <FloatParameterType name="gps_longitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg</Unit>
@@ -664,6 +665,10 @@ See https://github.com/yamcs/pymdb
       </Parameter>
       <Parameter name="gps_latitude" parameterTypeRef="gps_latitude" shortDescription="GPS Latitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_locked" parameterTypeRef="gps_locked" shortDescription="GPS Locked">
+        <LongDescription>Derived GPS activity state based on GPS freshness and coordinate validity.</LongDescription>
+        <ParameterProperties dataSource="derived" persistence="true"/>
       </Parameter>
       <Parameter name="gps_longitude" parameterTypeRef="gps_longitude" shortDescription="GPS Longitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
@@ -1552,6 +1557,29 @@ See https://github.com/yamcs/pymdb
         </EntryList>
       </SequenceContainer>
     </ContainerSet>
+    <AlgorithmSet>
+      <CustomAlgorithm name="gps_locked" shortDescription="GPS Locked">
+        <LongDescription>Reports GPS active when the fix is fresh and coordinates are within valid latitude/longitude bounds.</LongDescription>
+        <AlgorithmText language="JavaScript">var hasRecentUpdate = gps_time_last_update !== -1 &amp;&amp; gps_time_last_update &lt;= 30;
+var validLatitude = gps_latitude &gt;= -90 &amp;&amp; gps_latitude &lt;= 90;
+var validLongitude = gps_longitude &gt;= -180 &amp;&amp; gps_longitude &lt;= 180;
+gps_locked.value = hasRecentUpdate &amp;&amp; validLatitude &amp;&amp; validLongitude;
+gps_locked.updated = true;</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="gps_time_last_update" instance="0" inputName="gps_time_last_update"/>
+          <InputParameterInstanceRef parameterRef="gps_latitude" instance="0" inputName="gps_latitude"/>
+          <InputParameterInstanceRef parameterRef="gps_longitude" instance="0" inputName="gps_longitude"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="gps_locked" outputName="gps_locked"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="gps_time_last_update"/>
+          <OnParameterUpdateTrigger parameterRef="gps_latitude"/>
+          <OnParameterUpdateTrigger parameterRef="gps_longitude"/>
+        </TriggerSet>
+      </CustomAlgorithm>
+    </AlgorithmSet>
   </TelemetryMetaData>
   <CommandMetaData/>
 </SpaceSystem>

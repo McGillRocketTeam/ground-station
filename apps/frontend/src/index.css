@@ -10,7 +10,7 @@
   font-display: swap;
   src:
     local("B612 Mono"),
-    url("/fonts/B612Mono-Regular.ttf") format("truetype");
+    url("/fonts/B612-Regular.ttf") format("truetype");
 }
 
 @font-face {
@@ -20,7 +20,7 @@
   font-display: swap;
   src:
     local("B612 Mono Bold"),
-    url("/fonts/B612Mono-Bold.ttf") format("truetype");
+    url("/fonts/B612-Bold.ttf") format("truetype");
 }
 
 @font-face {
@@ -30,7 +30,7 @@
   font-display: swap;
   src:
     local("B612 Mono Italic"),
-    url("/fonts/B612Mono-Italic.ttf") format("truetype");
+    url("/fonts/B612-Italic.ttf") format("truetype");
 }
 
 @font-face {
@@ -40,7 +40,7 @@
   font-display: swap;
   src:
     local("B612 Mono Bold Italic"),
-    url("/fonts/B612Mono-BoldItalic.ttf") format("truetype");
+    url("/fonts/B612-BoldItalic.ttf") format("truetype");
 }
 
 @custom-variant dark (&:is(.dark *));

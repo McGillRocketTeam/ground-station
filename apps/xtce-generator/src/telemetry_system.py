@@ -28,6 +28,48 @@ class TelemetrySystem(FlightSystem):
         self.param_dict = None
         self.frame_container = None
 
+    def make_gps_locked_algorithm(self) -> Y.Algorithm:
+        gps_locked = Y.BooleanParameter(
+            system=self.sys,
+            name="gps_locked",
+            data_source=Y.DataSource.DERIVED,
+            initial_value=False,
+            short_description="GPS Locked",
+            long_description="Derived GPS activity state based on GPS freshness and coordinate validity.",
+        )
+
+        return Y.Algorithm(
+            system=self.sys,
+            name="gps_locked",
+            short_description="GPS Locked",
+            long_description="Reports GPS active when the fix is fresh and coordinates are within valid latitude/longitude bounds.",
+            language="JavaScript",
+            text=(
+                "var hasRecentUpdate = gps_time_last_update !== -1 && gps_time_last_update <= 30;\n"
+                "var validLatitude = gps_latitude >= -90 && gps_latitude <= 90;\n"
+                "var validLongitude = gps_longitude >= -180 && gps_longitude <= 180;\n"
+                "gps_locked.value = hasRecentUpdate && validLatitude && validLongitude;\n"
+                "gps_locked.updated = true;"
+            ),
+            inputs=[
+                Y.InputParameter("gps_time_last_update", name="gps_time_last_update"),
+                Y.InputParameter("gps_latitude", name="gps_latitude"),
+                Y.InputParameter("gps_longitude", name="gps_longitude"),
+            ],
+            outputs=[Y.OutputParameter(gps_locked, name="gps_locked")],
+            triggers=[
+                Y.ParameterTrigger("gps_time_last_update"),
+                Y.ParameterTrigger("gps_latitude"),
+                Y.ParameterTrigger("gps_longitude"),
+            ],
+        )
+
+    def create_hard_coded_algorithms(self) -> list[Y.Algorithm]:
+        if self.frame_container is None:
+            raise ValueError("Atomics must be created before hard-coded algorithms.")
+
+        return [self.make_gps_locked_algorithm()]
+
     @staticmethod
     def set_param_calibrator(row: dict[str, Any]):
         cal = row["Calibration Function f(x)"]
@@ -425,3 +467,7 @@ class TelemetrySystem(FlightSystem):
         print(" - Creating Atomics...")
         (self.frame_container, atomics) = self.create_atomics()
         print(f"   Created {len(atomics)} Atomics")
+
+        print(" - Creating Hard-Coded Algorithms...")
+        algorithms = self.create_hard_coded_algorithms()
+        print(f"   Created {len(algorithms)} Hard-Coded Algorithms")

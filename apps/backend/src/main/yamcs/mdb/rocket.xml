@@ -226,6 +226,7 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="fdov_energized_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
+      <BooleanParameterType name="fdov_open" initialValue="False" zeroStringValue="False" oneStringValue="True"/>
       <IntegerParameterType name="flags" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
@@ -392,6 +393,7 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="mov_hall_state" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
+      <BooleanParameterType name="mov_open" initialValue="False" zeroStringValue="False" oneStringValue="True"/>
       <IntegerParameterType name="padding" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
@@ -488,8 +490,8 @@ See https://github.com/yamcs/pymdb
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>100</ValueOperand>
-              <Operator>-</Operator>
+              <ValueOperand>10</ValueOperand>
+              <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
@@ -512,6 +514,7 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="vent_energized_SW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
+      <BooleanParameterType name="vent_open" initialValue="False" zeroStringValue="False" oneStringValue="True"/>
       <FloatParameterType name="vent_temp" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">C</Unit>
@@ -639,6 +642,10 @@ See https://github.com/yamcs/pymdb
       <Parameter name="fdov_energized_SW" parameterTypeRef="fdov_energized_SW" shortDescription="F/DOV: Logical Energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="fdov_open" parameterTypeRef="fdov_open" shortDescription="F/DOV: Open">
+        <LongDescription>Derived F/DOV physical state based off reported states.</LongDescription>
+        <ParameterProperties dataSource="derived" persistence="true"/>
+      </Parameter>
       <Parameter name="flags" parameterTypeRef="flags" shortDescription="Packet Flags">
         <LongDescription>A.S.T.R.A. Packet Flags</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
@@ -732,6 +739,10 @@ See https://github.com/yamcs/pymdb
         <LongDescription>Calculated from hall state sensor voltage.</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="mov_open" parameterTypeRef="mov_open" shortDescription="MOV: Open">
+        <LongDescription>Derived MOV physical state based off reported states.</LongDescription>
+        <ParameterProperties dataSource="derived" persistence="true"/>
+      </Parameter>
       <Parameter name="padding" parameterTypeRef="padding" shortDescription="Padding">
         <LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
@@ -811,6 +822,7 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="tank_temp" parameterTypeRef="tank_temp" shortDescription="Tank Temperature (prop bottom)">
+        <LongDescription>From the prop bottom controller</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="vent_armed_HW" parameterTypeRef="vent_armed_HW" shortDescription="Vent: electrical armed">
@@ -831,7 +843,12 @@ See https://github.com/yamcs/pymdb
       <Parameter name="vent_energized_SW" parameterTypeRef="vent_energized_SW" shortDescription="Vent: logical energized">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="vent_open" parameterTypeRef="vent_open" shortDescription="Vent: Open">
+        <LongDescription>Derived vent valve physical state based off reported states.</LongDescription>
+        <ParameterProperties dataSource="derived" persistence="true"/>
+      </Parameter>
       <Parameter name="vent_temp" parameterTypeRef="vent_temp" shortDescription="Vent Valve Temperature">
+        <LongDescription>From the prop top controller </LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="vertical_speed" parameterTypeRef="vertical_speed" shortDescription="Vertical Speed (descent rate)">
@@ -1274,21 +1291,6 @@ See https://github.com/yamcs/pymdb
       </SequenceContainer>
       <SequenceContainer name="payload_atomic" abstract="false">
         <EntryList>
-          <ParameterRefEntry parameterRef="payload_atomic_bool_lead_pad">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_ok">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>7</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_sampling">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>6</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="payload_freq_x">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
@@ -1322,6 +1324,21 @@ See https://github.com/yamcs/pymdb
           <ParameterRefEntry parameterRef="payload_time_elapsed">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_atomic_bool_lead_pad">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>128</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_ok">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>135</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_sampling">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>134</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>
@@ -1558,11 +1575,25 @@ See https://github.com/yamcs/pymdb
       </SequenceContainer>
     </ContainerSet>
     <AlgorithmSet>
+      <CustomAlgorithm name="fdov_open" shortDescription="F/DOV Open">
+        <LongDescription>Reports if the F/DOV is open based on its reported states.</LongDescription>
+        <AlgorithmText language="JavaScript">fdov_open.value = !fdov_energizedCurrent_HW.value;
+fdov_open.updated = true;</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="fdov_energizedCurrent_HW" instance="0" inputName="fdov_energizedCurrent_HW"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="fdov_open" outputName="fdov_open"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="fdov_energizedCurrent_HW"/>
+        </TriggerSet>
+      </CustomAlgorithm>
       <CustomAlgorithm name="gps_locked" shortDescription="GPS Locked">
         <LongDescription>Reports GPS active when the fix is fresh and coordinates are within valid latitude/longitude bounds.</LongDescription>
-        <AlgorithmText language="JavaScript">var hasRecentUpdate = gps_time_last_update !== -1 &amp;&amp; gps_time_last_update &lt;= 30;
-var validLatitude = gps_latitude &gt;= -90 &amp;&amp; gps_latitude &lt;= 90;
-var validLongitude = gps_longitude &gt;= -180 &amp;&amp; gps_longitude &lt;= 180;
+        <AlgorithmText language="JavaScript">var hasRecentUpdate = gps_time_last_update.value !== -1 &amp;&amp; gps_time_last_update.value &lt;= 30;
+var validLatitude = gps_latitude.value &gt;= -90 &amp;&amp; gps_latitude.value &lt;= 90;
+var validLongitude = gps_longitude.value &gt;= -180 &amp;&amp; gps_longitude.value &lt;= 180;
 gps_locked.value = hasRecentUpdate &amp;&amp; validLatitude &amp;&amp; validLongitude;
 gps_locked.updated = true;</AlgorithmText>
         <InputSet>
@@ -1577,6 +1608,34 @@ gps_locked.updated = true;</AlgorithmText>
           <OnParameterUpdateTrigger parameterRef="gps_time_last_update"/>
           <OnParameterUpdateTrigger parameterRef="gps_latitude"/>
           <OnParameterUpdateTrigger parameterRef="gps_longitude"/>
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="mov_open" shortDescription="MOV Open">
+        <LongDescription>Reports if the MOV is open based on its reported states.</LongDescription>
+        <AlgorithmText language="JavaScript">mov_open.value = mov_energizedCurrent_HW.value;
+mov_open.updated = true;</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="mov_energizedCurrent_HW" instance="0" inputName="mov_energizedCurrent_HW"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="mov_open" outputName="mov_open"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="mov_energizedCurrent_HW"/>
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="vent_open" shortDescription="Vent Open">
+        <LongDescription>Reports if the vent valve is open based on its reported states.</LongDescription>
+        <AlgorithmText language="JavaScript">vent_open.value = !vent_energizedCurrent_HW.value;
+vent_open.updated = true;</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="vent_energizedCurrent_HW" instance="0" inputName="vent_energizedCurrent_HW"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="vent_open" outputName="vent_open"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="vent_energizedCurrent_HW"/>
         </TriggerSet>
       </CustomAlgorithm>
     </AlgorithmSet>

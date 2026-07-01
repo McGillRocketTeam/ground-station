@@ -34,6 +34,8 @@
     "dockview-react": "^4.13.1",
     "echarts": "^6.0.0",
     "effect": "catalog:",
+    "gojs": "^4.0.1",
+    "gojs-react": "^1.1.3",
     "lucide-react": "^0.563.0",
     "maplibre-gl": "^5.17.0",
     "mqtt": "^5.15.0",

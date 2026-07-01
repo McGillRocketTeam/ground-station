@@ -41,7 +41,7 @@ const yamcsHttpClientLayer: Layer.Layer<HttpClient.HttpClient> = Layer.provideMe
   BrowserHttpClient.layerFetch as Layer.Layer<HttpClient.HttpClient>,
 );
 
-const frontendRuntimeFactory = Atom.context({ memoMap: Atom.defaultMemoMap });
+export const frontendRuntimeFactory = Atom.context({ memoMap: Atom.defaultMemoMap });
 function resolveRuntimeUrl(url: string): string {
   const parsedUrl = new URL(url);
 

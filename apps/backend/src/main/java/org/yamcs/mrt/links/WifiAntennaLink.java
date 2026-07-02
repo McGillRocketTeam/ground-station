@@ -2,8 +2,6 @@ package org.yamcs.mrt.links;
 
 import static org.yamcs.parameter.SystemParametersService.getPV;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,16 +17,19 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersService;
-import org.yamcs.protobuf.Yamcs.Value.Type;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersService;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.UnitType;
+
+import com.google.gson.Gson;
 
 public class WifiAntennaLink extends AbstractLink {
   private static final int POLL_INTERVAL_SECONDS = 1;
@@ -428,15 +429,12 @@ public class WifiAntennaLink extends AbstractLink {
   private record ApiResponse<T>(T body, String cookie, String rawBody) {}
 
   private static final class VersionResponse {
-    Boolean success;
     Boolean timeout;
     Integer status;
     Integer failedCount;
-    Integer lockTime;
   }
 
   private static final class InfoResponse {
-    Boolean success;
     Boolean timeout;
 
     InfoDataResponse data;

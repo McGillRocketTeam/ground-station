@@ -22,7 +22,7 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
-  - name: LabJack
+  - name: EGSE/Pad/LabJack
     class: org.yamcs.labjack2.LabJackDataLinkV2
     tmStream: tm_labJack
     tcStream: tc_labJack
@@ -30,7 +30,7 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: -1
       seqCountOffset: -1
-  - name: ControlBox
+  - name: EGSE/ControlStation/ControlBox
     class: org.yamcs.mrt.links.ControlBoxLink
     tmStream: tm_controlBox
     labJackCommands:
@@ -52,7 +52,7 @@ dataLinks:
 
       - switchName: panel_7_switch_1
         pin: 5 # LA DIS POLARITY
-        
+
       - switchName: panel_6_switch_1
         pin: 20 # IGN +
 
@@ -83,7 +83,7 @@ dataLinks:
       - switchName: panel_1_switch_estop
         onCommand: emergency_stop
         offCommand: emergency_cancel
-        
+
       - switchName: panel_2_switch_launch
         onCommand: launch
         offCommand: ""
@@ -187,11 +187,18 @@ mdb:
           - type: xtce
             args:
               file: mdb/thermocouple.xml
+          - type: xtce
+            args:
+              file: mdb/labjack-t7.xml
 
-  - type: xtce
-    spec: "LabJack"
-    args:
-      file: mdb/labjack-t7.xml
+      - type: emptyNode
+        spec: "ControlStation"
+        subLoaders:
+          - type: xtce
+            spec: "ControlBox"
+            args:
+              file: mdb/controlbox.xml
+
 
 
   - type: emptyNode
@@ -238,10 +245,6 @@ mdb:
           - type: xtce
             args:
               file: mdb/radio.xml
-  - type: xtce
-    spec: "ControlBox"
-    args:
-      file: mdb/controlbox.xml
 
 # Configuration for streams created at server startup
 streamConfig:
@@ -268,10 +271,10 @@ streamConfig:
     # Labjack
     - name: "tm_labJack"
       processor: "realtime"
-      rootContainer: "/LabJackT7/LabJackPacket"
+      rootContainer: "/EGSE/Pad/LabJack/LabJackPacket"
     - name: "tm_controlBox"
       processor: "realtime"
-      rootContainer: "/ControlBox/ControlBoxPacket"
+      rootContainer: "/EGSE/ControlStation/ControlBox/ControlBoxPacket"
 
     # Thermocouple
     - name: "egse_thermocouple_realtime"
@@ -291,4 +294,4 @@ streamConfig:
       tcPatterns: [".*/Radio/.*"]
     - name: "tc_labJack"
       processor: "realtime"
-      tcPatterns: ["/LabJackT7/.*"]
+      tcPatterns: [".*/LabJack/.*"]

@@ -1,401 +1,395 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem name="LabJackT7"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/XTCE/20180204"
-             xsi:schemaLocation="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd ">
-    <TelemetryMetaData>
-        <ParameterTypeSet>
-            <EnumeratedParameterType name="digital_pin_state">
-                <UnitSet/>
-                <IntegerDataEncoding encoding="unsigned" sizeInBits="1"/>
-                <EnumerationList>
-                    <Enumeration value="0" label="low"/>
-                    <Enumeration value="1" label="high"/>
-                </EnumerationList>
-            </EnumeratedParameterType>
-
-            <FloatParameterType name="float_32">
-                <FloatDataEncoding encoding="IEEE754_1985"/>
-            </FloatParameterType>
-        </ParameterTypeSet>
-        <ParameterSet>
-            <!-- Raw AIN channels -->
-            <Parameter name="AIN0"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN1"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN2"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN3"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN4"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN5"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN6"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN7"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN8"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN9"  parameterTypeRef="float_32"/>
-            <Parameter name="AIN10" parameterTypeRef="float_32"/>
-            <Parameter name="AIN11" parameterTypeRef="float_32"/>
-            <Parameter name="AIN12" parameterTypeRef="float_32"/>
-            <Parameter name="AIN13" parameterTypeRef="float_32"/>
-
-            <!-- Digital pins -->
-            <Parameter name="FIO0" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="FIO1" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="FIO2" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="FIO3" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="FIO4" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="FIO5" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="FIO6" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="FIO7" parameterTypeRef="digital_pin_state"/>
-
-            <Parameter name="EIO0" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="EIO1" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="EIO2" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="EIO3" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="EIO4" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="EIO5" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="EIO6" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="EIO7" parameterTypeRef="digital_pin_state"/>
-
-            <Parameter name="CIO0" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="CIO1" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="CIO2" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="CIO3" parameterTypeRef="digital_pin_state"/>
-
-            <Parameter name="MIO0" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="MIO1" parameterTypeRef="digital_pin_state"/>
-            <Parameter name="MIO2" parameterTypeRef="digital_pin_state"/>
-
-            <!-- Calibrated derived parameters -->
-            <!-- AIN0: CC pressure,  y = 95.167*v - 79.167 -->
-            <Parameter name="calibrated_cc_pressure_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <!-- AIN1: identity (y = v) -->
-            <Parameter name="calibrated_ain1" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <!-- AIN2: thrust,  y = 868.62*v - 86.008 -->
-            <Parameter name="calibrated_thrust_newtons" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <!-- AIN3: weight,  y = 868.62*v - 86.008 -->
-            <Parameter name="calibrated_weight_newtons" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <!-- AIN4: identity (y = v) -->
-            <Parameter name="calibrated_ain4" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <!-- AIN5: identity (y = v) -->
-            <Parameter name="calibrated_ain5" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <!-- AIN6-10: Amazon pressure transducers,  y = 396.36*v - 182.71 -->
-            <Parameter name="calibrated_pressure_ain6_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <Parameter name="calibrated_pressure_ain7_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <Parameter name="calibrated_pressure_ain8_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <Parameter name="calibrated_pressure_ain9_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <Parameter name="calibrated_pressure_ain10_psi" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <!-- AIN11-13: identity (y = v) -->
-            <Parameter name="calibrated_ain11" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <Parameter name="calibrated_ain12" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-            <Parameter name="calibrated_ain13" parameterTypeRef="float_32">
-                <ParameterProperties dataSource="derived" readOnly="true"/>
-            </Parameter>
-        </ParameterSet>
-        <ContainerSet>
-            <SequenceContainer name="LabJackPacket">
-                <EntryList>
-                    <ParameterRefEntry parameterRef="AIN0"/>
-                    <ParameterRefEntry parameterRef="AIN1"/>
-                    <ParameterRefEntry parameterRef="AIN2"/>
-                    <ParameterRefEntry parameterRef="AIN3"/>
-                    <ParameterRefEntry parameterRef="AIN4"/>
-                    <ParameterRefEntry parameterRef="AIN5"/>
-                    <ParameterRefEntry parameterRef="AIN6"/>
-                    <ParameterRefEntry parameterRef="AIN7"/>
-                    <ParameterRefEntry parameterRef="AIN8"/>
-                    <ParameterRefEntry parameterRef="AIN9"/>
-                    <ParameterRefEntry parameterRef="AIN10"/>
-                    <ParameterRefEntry parameterRef="AIN11"/>
-                    <ParameterRefEntry parameterRef="AIN12"/>
-                    <ParameterRefEntry parameterRef="AIN13"/>
-
-                    <ParameterRefEntry parameterRef="FIO0"/>
-                    <ParameterRefEntry parameterRef="FIO1"/>
-                    <ParameterRefEntry parameterRef="FIO2"/>
-                    <ParameterRefEntry parameterRef="FIO3"/>
-                    <ParameterRefEntry parameterRef="FIO4"/>
-                    <ParameterRefEntry parameterRef="FIO5"/>
-                    <ParameterRefEntry parameterRef="FIO6"/>
-                    <ParameterRefEntry parameterRef="FIO7"/>
-
-                    <ParameterRefEntry parameterRef="EIO0"/>
-                    <ParameterRefEntry parameterRef="EIO1"/>
-                    <ParameterRefEntry parameterRef="EIO2"/>
-                    <ParameterRefEntry parameterRef="EIO3"/>
-                    <ParameterRefEntry parameterRef="EIO4"/>
-                    <ParameterRefEntry parameterRef="EIO5"/>
-                    <ParameterRefEntry parameterRef="EIO6"/>
-                    <ParameterRefEntry parameterRef="EIO7"/>
-
-                    <ParameterRefEntry parameterRef="CIO0"/>
-                    <ParameterRefEntry parameterRef="CIO1"/>
-                    <ParameterRefEntry parameterRef="CIO2"/>
-                    <ParameterRefEntry parameterRef="CIO3"/>
-
-                    <ParameterRefEntry parameterRef="MIO0"/>
-                    <ParameterRefEntry parameterRef="MIO1"/>
-                    <ParameterRefEntry parameterRef="MIO2"/>
-                </EntryList>
-            </SequenceContainer>
-        </ContainerSet>
-        <AlgorithmSet>
-            <!-- AIN0: CC pressure — y = 95.167*v - 79.167 -->
-            <MathAlgorithm name="calibrated_cc_pressure_psi">
-                <MathOperation outputParameterRef="calibrated_cc_pressure_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN0"/>
-                    <ValueOperand>1389.7</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>13.78</ValueOperand>
-                    <Operator>+</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN0"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN1: identity -->
-            <MathAlgorithm name="calibrated_ain1">
-                <MathOperation outputParameterRef="calibrated_ain1">
-                    <ParameterInstanceRefOperand parameterRef="AIN1"/>
-                    <ValueOperand>1</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>0</ValueOperand>
-                    <Operator>+</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN1"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN3: thrust -->
-            <MathAlgorithm name="calibrated_thrust_newtons">
-                <MathOperation outputParameterRef="calibrated_thrust_newtons">
-                    <ParameterInstanceRefOperand parameterRef="AIN3"/>
-                    <ValueOperand>8521.6</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>210</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN3"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN2: weight -->
-            <MathAlgorithm name="calibrated_weight_newtons">
-                <MathOperation outputParameterRef="calibrated_weight_newtons">
-                    <ParameterInstanceRefOperand parameterRef="AIN2"/>
-                    <ValueOperand>26</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>1.73</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN2"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN4: identity -->
-            <MathAlgorithm name="calibrated_ain4">
-                <MathOperation outputParameterRef="calibrated_ain4">
-                    <ParameterInstanceRefOperand parameterRef="AIN4"/>
-                    <ValueOperand>1</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>0</ValueOperand>
-                    <Operator>+</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN4"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN5: identity -->
-            <MathAlgorithm name="calibrated_ain5">
-                <MathOperation outputParameterRef="calibrated_ain5">
-                    <ParameterInstanceRefOperand parameterRef="AIN5"/>
-                    <ValueOperand>1</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>0</ValueOperand>
-                    <Operator>+</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN5"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN6-10: Amazon pressure transducers — y = 396.36*v - 182.71 Kulite PT: y=268.25x - 482 -->
-            <MathAlgorithm name="calibrated_pressure_ain6_psi">
-                <MathOperation outputParameterRef="calibrated_pressure_ain6_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN6"/>
-                    <ValueOperand>268.25</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>482</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN6"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_pressure_ain7_psi">
-                <MathOperation outputParameterRef="calibrated_pressure_ain7_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN7"/>
-                    <ValueOperand>268.25</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>482</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN7"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_pressure_ain8_psi">
-                <MathOperation outputParameterRef="calibrated_pressure_ain8_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN8"/>
-                    <ValueOperand>396.36</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>182.71</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN8"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_pressure_ain9_psi">
-                <MathOperation outputParameterRef="calibrated_pressure_ain9_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN9"/>
-                    <ValueOperand>396.36</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>189.71</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN9"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_pressure_ain10_psi">
-                <MathOperation outputParameterRef="calibrated_pressure_ain10_psi">
-                    <ParameterInstanceRefOperand parameterRef="AIN10"/>
-                    <ValueOperand>396.36</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>172.71</ValueOperand>
-                    <Operator>-</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN10"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <!-- AIN11-13: identity -->
-            <MathAlgorithm name="calibrated_ain11">
-                <MathOperation outputParameterRef="calibrated_ain11">
-                    <ParameterInstanceRefOperand parameterRef="AIN11"/>
-                    <ValueOperand>1</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>0</ValueOperand>
-                    <Operator>+</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN11"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_ain12">
-                <MathOperation outputParameterRef="calibrated_ain12">
-                    <ParameterInstanceRefOperand parameterRef="AIN12"/>
-                    <ValueOperand>1</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>0</ValueOperand>
-                    <Operator>+</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN12"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-            <MathAlgorithm name="calibrated_ain13">
-                <MathOperation outputParameterRef="calibrated_ain13">
-                    <ParameterInstanceRefOperand parameterRef="AIN13"/>
-                    <ValueOperand>1</ValueOperand>
-                    <Operator>*</Operator>
-                    <ValueOperand>0</ValueOperand>
-                    <Operator>+</Operator>
-                    <TriggerSet>
-                        <OnParameterUpdateTrigger parameterRef="AIN13"/>
-                    </TriggerSet>
-                </MathOperation>
-            </MathAlgorithm>
-        </AlgorithmSet>
-    </TelemetryMetaData>
-    <CommandMetaData>
-        <ArgumentTypeSet>
-            <EnumeratedArgumentType name="digital_pin_state">
-                <IntegerDataEncoding sizeInBits="1"/>
-                <EnumerationList>
-                    <Enumeration value="0" label="LOW"/>
-                    <Enumeration value="1" label="HIGH"/>
-                </EnumerationList>
-            </EnumeratedArgumentType>
-            <FloatArgumentType name="DAC_voltage">
-                <UnitSet>
-                    <Unit>V</Unit>
-                </UnitSet>
-                <FloatDataEncoding/>
-                <ValidRangeSet>
-                    <ValidRange minInclusive="0.00" maxInclusive="5.00"/>
-                </ValidRangeSet>
-            </FloatArgumentType>
-            <IntegerArgumentType name="digital_pin_number" signed="false" sizeInBits="8">
-                <IntegerDataEncoding/>
-                <ValidRangeSet>
-                    <ValidRange minInclusive="0" maxInclusive="22"/>
-                </ValidRangeSet>
-            </IntegerArgumentType>
-            <IntegerArgumentType name="DAC_pin_number" signed="false" sizeInBits="8">
-                <IntegerDataEncoding/>
-                <ValidRangeSet>
-                    <ValidRange minInclusive="0" maxInclusive="1"/>
-                </ValidRangeSet>
-            </IntegerArgumentType>
-        </ArgumentTypeSet>
-        <MetaCommandSet>
-            <MetaCommand name="write_digital_pin">
-                <ArgumentList>
-                    <Argument name="pin_number" argumentTypeRef="digital_pin_number" shortDescription="Pin number of the digital pin (0-22)"/>
-                    <Argument name="pin_state" argumentTypeRef="digital_pin_state" shortDescription="State to write to digital pin (HIGH/LOW)"/>
-                </ArgumentList>
-                <CommandContainer name="write_digital_pin">
-                    <EntryList>
-                        <ArgumentRefEntry argumentRef="pin_state"/>
-                        <ArgumentRefEntry argumentRef="pin_number"/>
-                    </EntryList>
-                </CommandContainer>
-            </MetaCommand>
-            <MetaCommand name="write_DAC_pin">
-                <ArgumentList>
-                    <Argument name="pin_number" argumentTypeRef="DAC_pin_number" shortDescription="Pin number of the DAC pin (0-1)"/>
-                    <Argument name="pin_voltage" argumentTypeRef="DAC_voltage" shortDescription="Voltage to set DAC pin to (0-5)"/>
-                </ArgumentList>
-                <CommandContainer name="write_DAC_pin">
-                    <EntryList>
-                        <ArgumentRefEntry argumentRef="pin_voltage"/>
-                        <ArgumentRefEntry argumentRef="pin_number"/>
-                    </EntryList>
-                </CommandContainer>
-            </MetaCommand>
-        </MetaCommandSet>
-    </CommandMetaData>
+<SpaceSystem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/XTCE/20180204" name="LabJack" xsi:schemaLocation="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd ">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <EnumeratedParameterType name="digital_pin_state">
+        <UnitSet/>
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="1"/>
+        <EnumerationList>
+          <Enumeration value="0" label="low"/>
+          <Enumeration value="1" label="high"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <FloatParameterType name="float_32">
+        <FloatDataEncoding encoding="IEEE754_1985"/>
+      </FloatParameterType>
+      <FloatParameterType name="float_32_psi">
+        <UnitSet>
+          <Unit form="calibrated">psi</Unit>
+        </UnitSet>
+        <FloatDataEncoding encoding="IEEE754_1985"/>
+      </FloatParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <!-- Raw AIN channels -->
+      <Parameter name="AIN0" parameterTypeRef="float_32"/>
+      <Parameter name="AIN1" parameterTypeRef="float_32"/>
+      <Parameter name="AIN2" parameterTypeRef="float_32"/>
+      <Parameter name="AIN3" parameterTypeRef="float_32"/>
+      <Parameter name="AIN4" parameterTypeRef="float_32"/>
+      <Parameter name="AIN5" parameterTypeRef="float_32"/>
+      <Parameter name="AIN6" parameterTypeRef="float_32"/>
+      <Parameter name="AIN7" parameterTypeRef="float_32"/>
+      <Parameter name="AIN8" parameterTypeRef="float_32"/>
+      <Parameter name="AIN9" parameterTypeRef="float_32"/>
+      <Parameter name="AIN10" parameterTypeRef="float_32"/>
+      <Parameter name="AIN11" parameterTypeRef="float_32"/>
+      <Parameter name="AIN12" parameterTypeRef="float_32"/>
+      <Parameter name="AIN13" parameterTypeRef="float_32"/>
+      <!-- Digital pins -->
+      <Parameter name="FIO0" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="FIO1" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="FIO2" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="FIO3" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="FIO4" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="FIO5" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="FIO6" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="FIO7" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO0" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO1" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO2" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO3" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO4" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO5" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO6" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="EIO7" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="CIO0" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="CIO1" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="CIO2" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="CIO3" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="MIO0" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="MIO1" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="MIO2" parameterTypeRef="digital_pin_state"/>
+      <!-- Calibrated derived parameters -->
+      <!-- AIN0: CC pressure,  y = 95.167*v - 79.167 -->
+      <Parameter name="calibrated_cc_pressure_psi" parameterTypeRef="float_32_psi">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <!-- AIN1: identity (y = v) -->
+      <Parameter name="calibrated_ain1" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <!-- AIN2: thrust,  y = 868.62*v - 86.008 -->
+      <Parameter name="calibrated_thrust_newtons" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <!-- AIN3: weight,  y = 868.62*v - 86.008 -->
+      <Parameter name="calibrated_weight_newtons" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <!-- AIN4: identity (y = v) -->
+      <Parameter name="calibrated_ain4" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <!-- AIN5: identity (y = v) -->
+      <Parameter name="calibrated_ain5" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <!-- AIN6-10: Amazon pressure transducers,  y = 396.36*v - 182.71 -->
+      <Parameter name="post_fill_pressure_psi" parameterTypeRef="float_32_psi" shortDescription="Post-Fill Pressure">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <Parameter name="pre_fill_pressure_psi" parameterTypeRef="float_32_psi" shortDescription="Pre-Fill Pressure">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <Parameter name="calibrated_pressure_ain8_psi" parameterTypeRef="float_32_psi">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <Parameter name="calibrated_pressure_ain9_psi" parameterTypeRef="float_32_psi">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <Parameter name="calibrated_pressure_ain10_psi" parameterTypeRef="float_32_psi">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <!-- AIN11-13: identity (y = v) -->
+      <Parameter name="calibrated_ain11" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <Parameter name="calibrated_ain12" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <Parameter name="calibrated_ain13" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="LabJackPacket">
+        <EntryList>
+          <ParameterRefEntry parameterRef="AIN0"/>
+          <ParameterRefEntry parameterRef="AIN1"/>
+          <ParameterRefEntry parameterRef="AIN2"/>
+          <ParameterRefEntry parameterRef="AIN3"/>
+          <ParameterRefEntry parameterRef="AIN4"/>
+          <ParameterRefEntry parameterRef="AIN5"/>
+          <ParameterRefEntry parameterRef="AIN6"/>
+          <ParameterRefEntry parameterRef="AIN7"/>
+          <ParameterRefEntry parameterRef="AIN8"/>
+          <ParameterRefEntry parameterRef="AIN9"/>
+          <ParameterRefEntry parameterRef="AIN10"/>
+          <ParameterRefEntry parameterRef="AIN11"/>
+          <ParameterRefEntry parameterRef="AIN12"/>
+          <ParameterRefEntry parameterRef="AIN13"/>
+          <ParameterRefEntry parameterRef="FIO0"/>
+          <ParameterRefEntry parameterRef="FIO1"/>
+          <ParameterRefEntry parameterRef="FIO2"/>
+          <ParameterRefEntry parameterRef="FIO3"/>
+          <ParameterRefEntry parameterRef="FIO4"/>
+          <ParameterRefEntry parameterRef="FIO5"/>
+          <ParameterRefEntry parameterRef="FIO6"/>
+          <ParameterRefEntry parameterRef="FIO7"/>
+          <ParameterRefEntry parameterRef="EIO0"/>
+          <ParameterRefEntry parameterRef="EIO1"/>
+          <ParameterRefEntry parameterRef="EIO2"/>
+          <ParameterRefEntry parameterRef="EIO3"/>
+          <ParameterRefEntry parameterRef="EIO4"/>
+          <ParameterRefEntry parameterRef="EIO5"/>
+          <ParameterRefEntry parameterRef="EIO6"/>
+          <ParameterRefEntry parameterRef="EIO7"/>
+          <ParameterRefEntry parameterRef="CIO0"/>
+          <ParameterRefEntry parameterRef="CIO1"/>
+          <ParameterRefEntry parameterRef="CIO2"/>
+          <ParameterRefEntry parameterRef="CIO3"/>
+          <ParameterRefEntry parameterRef="MIO0"/>
+          <ParameterRefEntry parameterRef="MIO1"/>
+          <ParameterRefEntry parameterRef="MIO2"/>
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+    <AlgorithmSet>
+      <!-- AIN0: CC pressure — y = 95.167*v - 79.167 -->
+      <MathAlgorithm name="calibrated_cc_pressure_psi">
+        <MathOperation outputParameterRef="calibrated_cc_pressure_psi">
+          <ParameterInstanceRefOperand parameterRef="AIN0"/>
+          <ValueOperand>1389.7</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>13.78</ValueOperand>
+          <Operator>+</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN0"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <!-- AIN1: identity -->
+      <MathAlgorithm name="calibrated_ain1">
+        <MathOperation outputParameterRef="calibrated_ain1">
+          <ParameterInstanceRefOperand parameterRef="AIN1"/>
+          <ValueOperand>1</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>0</ValueOperand>
+          <Operator>+</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN1"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <!-- AIN3: thrust -->
+      <MathAlgorithm name="calibrated_thrust_newtons">
+        <MathOperation outputParameterRef="calibrated_thrust_newtons">
+          <ParameterInstanceRefOperand parameterRef="AIN3"/>
+          <ValueOperand>8521.6</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>210</ValueOperand>
+          <Operator>-</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN3"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <!-- AIN2: weight -->
+      <MathAlgorithm name="calibrated_weight_newtons">
+        <MathOperation outputParameterRef="calibrated_weight_newtons">
+          <ParameterInstanceRefOperand parameterRef="AIN2"/>
+          <ValueOperand>26</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>1.73</ValueOperand>
+          <Operator>-</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN2"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <!-- AIN4: identity -->
+      <MathAlgorithm name="calibrated_ain4">
+        <MathOperation outputParameterRef="calibrated_ain4">
+          <ParameterInstanceRefOperand parameterRef="AIN4"/>
+          <ValueOperand>1</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>0</ValueOperand>
+          <Operator>+</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN4"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <!-- AIN5: identity -->
+      <MathAlgorithm name="calibrated_ain5">
+        <MathOperation outputParameterRef="calibrated_ain5">
+          <ParameterInstanceRefOperand parameterRef="AIN5"/>
+          <ValueOperand>1</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>0</ValueOperand>
+          <Operator>+</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN5"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <!-- AIN6: Post-Fill Pressure; AIN7-10: pressure transducers — Kulite PT: y=268.25x - 482 -->
+      <MathAlgorithm name="post_fill_pressure_psi">
+        <MathOperation outputParameterRef="post_fill_pressure_psi">
+          <ParameterInstanceRefOperand parameterRef="AIN6"/>
+          <ValueOperand>268.25</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>482</ValueOperand>
+          <Operator>-</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN6"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <MathAlgorithm name="pre_fill_pressure_psi">
+        <MathOperation outputParameterRef="pre_fill_pressure_psi">
+          <ParameterInstanceRefOperand parameterRef="AIN7"/>
+          <ValueOperand>268.25</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>482</ValueOperand>
+          <Operator>-</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN7"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <MathAlgorithm name="calibrated_pressure_ain8_psi">
+        <MathOperation outputParameterRef="calibrated_pressure_ain8_psi">
+          <ParameterInstanceRefOperand parameterRef="AIN8"/>
+          <ValueOperand>396.36</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>182.71</ValueOperand>
+          <Operator>-</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN8"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <MathAlgorithm name="calibrated_pressure_ain9_psi">
+        <MathOperation outputParameterRef="calibrated_pressure_ain9_psi">
+          <ParameterInstanceRefOperand parameterRef="AIN9"/>
+          <ValueOperand>396.36</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>189.71</ValueOperand>
+          <Operator>-</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN9"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <MathAlgorithm name="calibrated_pressure_ain10_psi">
+        <MathOperation outputParameterRef="calibrated_pressure_ain10_psi">
+          <ParameterInstanceRefOperand parameterRef="AIN10"/>
+          <ValueOperand>396.36</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>172.71</ValueOperand>
+          <Operator>-</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN10"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <!-- AIN11-13: identity -->
+      <MathAlgorithm name="calibrated_ain11">
+        <MathOperation outputParameterRef="calibrated_ain11">
+          <ParameterInstanceRefOperand parameterRef="AIN11"/>
+          <ValueOperand>1</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>0</ValueOperand>
+          <Operator>+</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN11"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <MathAlgorithm name="calibrated_ain12">
+        <MathOperation outputParameterRef="calibrated_ain12">
+          <ParameterInstanceRefOperand parameterRef="AIN12"/>
+          <ValueOperand>1</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>0</ValueOperand>
+          <Operator>+</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN12"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+      <MathAlgorithm name="calibrated_ain13">
+        <MathOperation outputParameterRef="calibrated_ain13">
+          <ParameterInstanceRefOperand parameterRef="AIN13"/>
+          <ValueOperand>1</ValueOperand>
+          <Operator>*</Operator>
+          <ValueOperand>0</ValueOperand>
+          <Operator>+</Operator>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN13"/>
+          </TriggerSet>
+        </MathOperation>
+      </MathAlgorithm>
+    </AlgorithmSet>
+  </TelemetryMetaData>
+  <CommandMetaData>
+    <ArgumentTypeSet>
+      <EnumeratedArgumentType name="digital_pin_state">
+        <IntegerDataEncoding sizeInBits="1"/>
+        <EnumerationList>
+          <Enumeration value="0" label="LOW"/>
+          <Enumeration value="1" label="HIGH"/>
+        </EnumerationList>
+      </EnumeratedArgumentType>
+      <FloatArgumentType name="DAC_voltage">
+        <UnitSet>
+          <Unit>V</Unit>
+        </UnitSet>
+        <FloatDataEncoding/>
+        <ValidRangeSet>
+          <ValidRange minInclusive="0.00" maxInclusive="5.00"/>
+        </ValidRangeSet>
+      </FloatArgumentType>
+      <IntegerArgumentType name="digital_pin_number" signed="false" sizeInBits="8">
+        <IntegerDataEncoding/>
+        <ValidRangeSet>
+          <ValidRange minInclusive="0" maxInclusive="22"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <IntegerArgumentType name="DAC_pin_number" signed="false" sizeInBits="8">
+        <IntegerDataEncoding/>
+        <ValidRangeSet>
+          <ValidRange minInclusive="0" maxInclusive="1"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+    </ArgumentTypeSet>
+    <MetaCommandSet>
+      <MetaCommand name="write_digital_pin">
+        <ArgumentList>
+          <Argument name="pin_number" argumentTypeRef="digital_pin_number" shortDescription="Pin number of the digital pin (0-22)"/>
+          <Argument name="pin_state" argumentTypeRef="digital_pin_state" shortDescription="State to write to digital pin (HIGH/LOW)"/>
+        </ArgumentList>
+        <CommandContainer name="write_digital_pin">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="pin_state"/>
+            <ArgumentRefEntry argumentRef="pin_number"/>
+          </EntryList>
+        </CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="write_DAC_pin">
+        <ArgumentList>
+          <Argument name="pin_number" argumentTypeRef="DAC_pin_number" shortDescription="Pin number of the DAC pin (0-1)"/>
+          <Argument name="pin_voltage" argumentTypeRef="DAC_voltage" shortDescription="Voltage to set DAC pin to (0-5)"/>
+        </ArgumentList>
+        <CommandContainer name="write_DAC_pin">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="pin_voltage"/>
+            <ArgumentRefEntry argumentRef="pin_number"/>
+          </EntryList>
+        </CommandContainer>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
 </SpaceSystem>

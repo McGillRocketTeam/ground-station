@@ -1,0 +1,7 @@
+This app vendors EcoFlow BLE protocol code derived from:
+
+https://github.com/rabits/ha-ef-ble
+
+The upstream project is licensed under the Apache License 2.0. The vendored code
+is located in vendor/ecoflow_ble and has been copied for standalone MQTT bridge
+usage without Home Assistant.

@@ -10,6 +10,7 @@ import {
   Stream,
   SubscriptionRef,
 } from "effect";
+import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 import { HttpApiClient } from "effect/unstable/httpapi";
 import { Socket } from "effect/unstable/socket";
 
@@ -106,7 +107,15 @@ export class Commands extends Context.Service<
       Effect.gen(function* () {
         const websocketClient = yield* YamcsWebSocketClient;
         const yamcsConfig = yield* YamcsConfig;
-        const httpClient = yield* HttpApiClient.make(YamcsApi);
+        const httpClient = yield* HttpApiClient.make(YamcsApi, {
+          transformClient: (client) =>
+            HttpClient.mapRequest(client, (request) =>
+              HttpClientRequest.setUrl(
+                request,
+                new URL(request.url.replaceAll("%3A", ":"), yamcsConfig.url).toString(),
+              ),
+            ),
+        });
 
         const { commands: all } = yield* httpClient.mdb.listCommands({
           params: { instance: yamcsConfig.instance },

@@ -1,4 +1,4 @@
-import { YamcsApi } from "@mrt/yamcs-effect";
+import { YamcsApi, YamcsConfig } from "@mrt/yamcs-effect";
 import { Config, Context, Effect, Layer } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 import { HttpApiClient } from "effect/unstable/httpapi";
@@ -12,10 +12,10 @@ export interface YamcsProcessorTarget {
 
 export const YamcsClient = Context.Service<YamcsClient>("@mrt/ops-simulator/YamcsClient");
 
+const INSTANCE = Config.string("YAMCS_INSTANCE").pipe(Config.withDefault("launch-canada-sim"));
+
 export const loadYamcsProcessorTarget = Effect.gen(function* () {
-  const instance = yield* Config.string("YAMCS_INSTANCE").pipe(
-    Config.withDefault("launch-canada-sim"),
-  );
+  const instance = yield* INSTANCE;
   const processor = yield* Config.string("YAMCS_PROCESSOR").pipe(Config.withDefault("realtime"));
 
   return {
@@ -23,6 +23,18 @@ export const loadYamcsProcessorTarget = Effect.gen(function* () {
     processor,
   } satisfies YamcsProcessorTarget;
 });
+
+export const yamcsConfigLayer = Layer.effect(
+  YamcsConfig,
+  Effect.gen(function* () {
+    const instance = yield* INSTANCE;
+    return {
+      url: new URL("http://localhost:8090"),
+      instance,
+      processor: "realtime",
+    };
+  }),
+);
 
 export const YamcsClientLive = Layer.effect(
   YamcsClient,

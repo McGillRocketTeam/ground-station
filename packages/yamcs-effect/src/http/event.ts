@@ -34,7 +34,7 @@ export const eventGroup = HttpApiGroup.make("event")
     }),
   )
   .add(
-    HttpApiEndpoint.post("listEventsWithPayload", "/archive/:instance/events:list", {
+    HttpApiEndpoint.post("listEventsWithPayload", "/archive/:instance/events%3Alist", {
       params: { instance: Schema.String },
       payload: Schema.UndefinedOr(Schema.Struct(ListEventsOptions)),
       success: ListEventsResponse,

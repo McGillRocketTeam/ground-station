@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
-import { ParameterSample, QualifiedName } from "../schema.js";
+import { BatchSetParameterValuesRequest, ParameterSample, QualifiedName } from "../schema.js";
 
 const ParameterSampleField = Schema.Literals([
   "time",
@@ -21,24 +21,40 @@ const GetSamplesResponse = Schema.Struct({
   sample: Schema.Array(ParameterSample),
 });
 
-export const parameterGroup = HttpApiGroup.make("parameter").add(
-  HttpApiEndpoint.get("getSamples", "/archive/:instance/parameters/:parameterName/samples", {
-    params: {
-      instance: Schema.String,
-      parameterName: QualifiedName,
-    },
-    query: {
-      start: Schema.String,
-      stop: Schema.optional(Schema.String),
-      count: Schema.optional(Schema.NumberFromString),
-      fields: Schema.optional(Schema.Array(ParameterSampleField)),
-      gapTime: Schema.optional(Schema.NumberFromString),
-      source: Schema.optional(SamplesSource),
-      useRawValue: Schema.optional(Schema.Boolean),
-    },
-    success: GetSamplesResponse,
-    error: [HttpApiError.NotFound],
-  }),
-);
+export const parameterGroup = HttpApiGroup.make("parameter")
+  .add(
+    HttpApiEndpoint.get("getSamples", "/archive/:instance/parameters/:parameterName/samples", {
+      params: {
+        instance: Schema.String,
+        parameterName: QualifiedName,
+      },
+      query: {
+        start: Schema.String,
+        stop: Schema.optional(Schema.String),
+        count: Schema.optional(Schema.NumberFromString),
+        fields: Schema.optional(Schema.Array(ParameterSampleField)),
+        gapTime: Schema.optional(Schema.NumberFromString),
+        source: Schema.optional(SamplesSource),
+        useRawValue: Schema.optional(Schema.Boolean),
+      },
+      success: GetSamplesResponse,
+      error: [HttpApiError.NotFound],
+    }),
+  )
+  .add(
+    HttpApiEndpoint.post(
+      "batchSetParameterValues",
+      "/processors/:instance/:processor/parameters%3AbatchSet",
+      {
+        params: {
+          instance: Schema.String,
+          processor: Schema.String,
+        },
+        payload: BatchSetParameterValuesRequest,
+        success: Schema.Void,
+        error: [HttpApiError.NotFound],
+      },
+    ),
+  );
 
 export default parameterGroup;

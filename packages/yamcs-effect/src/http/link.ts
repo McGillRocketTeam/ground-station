@@ -26,7 +26,7 @@ export const linkGroup = HttpApiGroup.make("link")
     }),
   )
   .add(
-    HttpApiEndpoint.post("enableLink", "/links/:instance/:link:enable", {
+    HttpApiEndpoint.post("enableLink", "/links/:instance/:link%3Aenable", {
       params: {
         instance: Schema.String,
         link: QualifiedName,
@@ -36,7 +36,7 @@ export const linkGroup = HttpApiGroup.make("link")
     }),
   )
   .add(
-    HttpApiEndpoint.post("disableLink", "/links/:instance/:link:disable", {
+    HttpApiEndpoint.post("disableLink", "/links/:instance/:link%3Adisable", {
       params: {
         instance: Schema.String,
         link: QualifiedName,
@@ -46,7 +46,7 @@ export const linkGroup = HttpApiGroup.make("link")
     }),
   )
   .add(
-    HttpApiEndpoint.post("resetCounters", "/links/:instance/:link:resetCounters", {
+    HttpApiEndpoint.post("resetCounters", "/links/:instance/:link%3AresetCounters", {
       params: {
         instance: Schema.String,
         link: QualifiedName,

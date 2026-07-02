@@ -29,8 +29,7 @@
     "@effect/language-service": "catalog:",
     "@types/node": "latest",
     "oxfmt": "catalog:",
-    "oxlint": "catalog:",
-    "tsx": "^4.21.0"
+    "oxlint": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

@@ -311,6 +311,17 @@ export type Value =
   | { readonly type: "AGGREGATE" };
 export const Value: Schema.Codec<Value, unknown> = ValueSchema;
 
+export const SetParameterValueRequest = Schema.Struct({
+  id: NamedObjectId,
+  value: Value,
+  generationTime: Schema.optional(Schema.String),
+  expiresIn: Schema.optional(Schema.String),
+});
+
+export const BatchSetParameterValuesRequest = Schema.Struct({
+  request: Schema.Array(SetParameterValueRequest),
+});
+
 const CommandHistoryAttributeSchema = Schema.Struct({
   name: Schema.String,
   value: Value,

@@ -1,5 +1,6 @@
 import { Commands, Parameters } from "@mrt/yamcs-effect";
 import { Context, Effect, Layer, PubSub, Stream, SubscriptionRef } from "effect";
+import { value } from "effect/Redacted";
 
 import { frontendRuntimeFactory, yamcsSubscriptionRuntime } from "@/lib/atom/yamcs/runtime";
 
@@ -89,8 +90,24 @@ export type PIDDiagramModel = {
 const initialNodeDataArray: Array<NodeData> = [
   { key: "N2O", category: "tank", label: "N₂O", loc: "-20 0" },
   { key: "V-21", category: "valve", loc: "100 40", angle: 90, state: "OPEN" },
-  { key: "V-22", category: "ball-valve", loc: "260 140", angle: 0, letter: "E", state: "OPEN" },
-  { key: "V-23", category: "ball-valve", loc: "360 40", angle: 90, letter: "E", state: "OPEN" },
+  {
+    key: "V-22",
+    category: "ball-valve",
+    loc: "260 140",
+    angle: 0,
+    letter: "E",
+    state: "OPEN",
+    qualifiedName: "/EGSE/Pad/LabJack/FIO0",
+  },
+  {
+    key: "V-23",
+    category: "ball-valve",
+    loc: "360 40",
+    angle: 90,
+    letter: "E",
+    state: "OPEN",
+    qualifiedName: "/EGSE/Pad/LabJack/FIO1",
+  },
   { key: "V-24", category: "valve", loc: "460 40", angle: 90, state: "OPEN" },
   {
     key: "TT-I0",
@@ -105,13 +122,14 @@ const initialNodeDataArray: Array<NodeData> = [
     loc: "160 180",
     label: "PT I-1",
     decimals: 0,
+    qualifiedName: "/EGSE/Pad/LabJack/pre_fill_pressure_psi",
   },
   {
     key: "PT-I2",
     category: "readout",
     loc: "410 180",
     label: "PT I-2",
-    qualifiedName: "/SystemA/Rocket/FlightComputer/tank_pressure",
+    qualifiedName: "/EGSE/Pad/LabJack/post_fill_pressure_psi",
     decimals: 0,
   },
   { key: "PIPE-MID-0", category: "pipe-end", loc: "40 140" },
@@ -232,7 +250,7 @@ function extractBooleanValue(value: { readonly engValue?: unknown; readonly rawV
       : undefined;
   const raw = engValue ?? rawValue;
 
-  return typeof raw === "boolean" ? raw : undefined;
+  return typeof raw === "string" ? raw === "high" : undefined;
 }
 
 function extractUnit(info: {

@@ -3,7 +3,7 @@ import { HttpApiClient } from "effect/unstable/httpapi";
 import { Socket } from "effect/unstable/socket";
 
 import { YamcsApi } from "../http/index.ts";
-import { ParameterInfo, type QualifiedName, Value } from "../schema.ts";
+import { ParameterInfo, type QualifiedName } from "../schema.ts";
 import { SubscribeParameterRequest } from "../websocket/client-messages.ts";
 import { YamcsWebSocketClient } from "../websocket/client.ts";
 import {
@@ -12,13 +12,6 @@ import {
   type SubscriptionId,
 } from "../websocket/server-messages.ts";
 import { YamcsConfig } from "../yamcs-config.ts";
-
-const parameterValueContentEquivalence = Schema.toEquivalence(
-  Schema.Struct({
-    rawValue: Schema.optional(Value),
-    engValue: Value,
-  }),
-);
 
 export class ParameterNotFound extends Data.TaggedError("ParameterNotFound")<{
   readonly qualifiedName: QualifiedName;

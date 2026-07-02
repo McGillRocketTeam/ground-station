@@ -200,6 +200,37 @@ importers:
         specifier: ^7.2.4
         version: 7.3.1(@types/node@24.10.9)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.3)
 
+  apps/ops-simulator:
+    dependencies:
+      '@effect/platform-node':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.57(effect@4.0.0-beta.57)(ioredis@5.9.3)
+      '@mrt/yamcs-effect':
+        specifier: workspace:*
+        version: link:../../packages/yamcs-effect
+      bit-buffer:
+        specifier: ^0.3.0
+        version: 0.3.0
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-beta.57
+      mqtt:
+        specifier: ^5.15.0
+        version: 5.15.0
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+    devDependencies:
+      '@types/node':
+        specifier: latest
+        version: 26.1.0
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.35.0
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.50.0
+
   apps/simulator:
     dependencies:
       '@effect/platform-node':
@@ -230,9 +261,6 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.50.0
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
 
   apps/tui:
     dependencies:
@@ -283,9 +311,6 @@ importers:
       '@types/node':
         specifier: latest
         version: 26.1.0
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -326,9 +351,6 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.50.0
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
 
 packages:
 
@@ -4809,7 +4831,7 @@ snapshots:
 
   '@types/readable-stream@4.0.23':
     dependencies:
-      '@types/node': 24.10.9
+      '@types/node': 26.1.0
 
   '@types/supercluster@7.1.3':
     dependencies:
@@ -4819,7 +4841,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.10.9
+      '@types/node': 26.1.0
 
   '@vis.gl/react-mapbox@8.1.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
@@ -4976,7 +4998,7 @@ snapshots:
 
   bun-types@1.3.14:
     dependencies:
-      '@types/node': 24.10.9
+      '@types/node': 26.1.0
 
   bundle-name@4.1.0:
     dependencies:
@@ -5469,6 +5491,7 @@ snapshots:
   get-tsconfig@4.13.0:
     dependencies:
       resolve-pkg-maps: 1.0.0
+    optional: true
 
   get-value@2.0.6: {}
 
@@ -6163,7 +6186,8 @@ snapshots:
 
   resolve-from@4.0.0: {}
 
-  resolve-pkg-maps@1.0.0: {}
+  resolve-pkg-maps@1.0.0:
+    optional: true
 
   resolve-protobuf-schema@2.1.0:
     dependencies:
@@ -6472,6 +6496,7 @@ snapshots:
       get-tsconfig: 4.13.0
     optionalDependencies:
       fsevents: 2.3.3
+    optional: true
 
   turbo-darwin-64@2.7.6:
     optional: true

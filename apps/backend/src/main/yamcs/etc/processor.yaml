@@ -53,6 +53,28 @@ launch-canada-realtime:
     recordInitialValues: true
     recordLocalValues: true
 
+launch-canada-sim-realtime:
+  services:
+    - class: org.yamcs.StreamTmPacketProvider
+      args:
+        streams: [
+          "tm_stream"
+        ]
+    - class: org.yamcs.StreamTcCommandReleaser
+    - class: org.yamcs.tctm.StreamParameterProvider
+    - class: org.yamcs.algorithms.AlgorithmManager
+    - class: org.yamcs.parameter.LocalParameterManager
+  config:
+    subscribeAll: true
+    allowContainerlessCommands: true
+    alarm:
+      parameterCheck: true
+      parameterServer: enabled
+    tmProcessor:
+      ignoreOutOfContainerEntries: false
+    recordInitialValues: true
+    recordLocalValues: true
+
 
 # Used to perform step-by-step archive replays to displays, etc
 Archive:

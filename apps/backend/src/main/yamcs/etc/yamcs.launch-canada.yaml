@@ -93,6 +93,14 @@ dataLinks:
       timestampOffset: -1
       seqCountOffset: -1
 
+
+  - name: EGSE/ControlStation/EcoFlowMax
+    class: org.yamcs.mrt.links.AstraGenericTmLink
+    stream: egse_ecoflow_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -249,6 +257,9 @@ mdb:
 # Configuration for streams created at server startup
 streamConfig:
   tm:
+    - name: "egse_ecoflow_realtime"
+      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+      processor: "realtime"
     - name: "system_a_fc_realtime"
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"

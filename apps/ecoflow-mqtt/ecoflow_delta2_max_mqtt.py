@@ -48,6 +48,14 @@ class MqttPublisher:
 
         self._client.enable_logger(LOGGER.getChild("mqtt"))
 
+        base_topic = args.base_topic.rstrip("/")
+        self._client.will_set(
+            f"{base_topic}/status",
+            payload="NOK",
+            qos=1,
+            retain=args.retain,
+        )
+
     def connect(self) -> None:
         self._client.connect(
             host=self._args.mqtt_host,
@@ -82,7 +90,7 @@ class DeviceTopicPublisher:
 
     @property
     def topic_root(self) -> str:
-        return f"{self._base_topic}/{self._device.serial_number}"
+        return self._base_topic
 
     def attach(self) -> None:
         for field in self._device._fields:
@@ -91,23 +99,18 @@ class DeviceTopicPublisher:
                 field.public_name,
             )
 
-    def publish_metadata(self) -> None:
-        self._mqtt.publish(f"{self.topic_root}/availability", "online")
-        self._mqtt.publish(
-            f"{self.topic_root}/info",
-            {
-                "name": self._device.name,
-                "device": self._device.device,
-                "address": self._device.address,
-                "serial_number": self._device.serial_number,
-            },
-        )
+    def publish_status(self, status: str, detail: str) -> None:
+        self._mqtt.publish(f"{self.topic_root}/status", status)
+        self._mqtt.publish(f"{self.topic_root}/detail", detail)
 
-    async def publish_snapshot(self) -> None:
-        self._mqtt.publish(f"{self.topic_root}/state", self.snapshot())
+    def publish_telemetry(self) -> None:
+        self._mqtt.publish(f"{self.topic_root}/telemetry", self.snapshot())
 
     def publish_offline(self) -> None:
-        self._mqtt.publish(f"{self.topic_root}/availability", "offline")
+        self.publish_status(
+            "NOK",
+            "EcoFlow DELTA 2 Max is disconnected. The publisher will keep scanning and reconnect when the device is available.",
+        )
 
     def snapshot(self) -> dict[str, Any]:
         return {
@@ -116,12 +119,8 @@ class DeviceTopicPublisher:
             if getattr(self._device, field.public_name) is not None
         }
 
-    def _field_callback(self, field_name: str):
-        def callback(value: Any) -> None:
-            self._mqtt.publish(
-                f"{self.topic_root}/fields/{field_name}",
-                _serialize_value(value),
-            )
+    def _field_callback(self, _field_name: str):
+        def callback(_value: Any) -> None:
             self._schedule_snapshot_publish()
 
         return callback
@@ -135,9 +134,18 @@ class DeviceTopicPublisher:
 
     def _create_snapshot_task(self) -> None:
         self._snapshot_pending = False
-        task = self._loop.create_task(self.publish_snapshot())
+        task = self._loop.create_task(self._publish_telemetry_async())
         self._pending_tasks.add(task)
         task.add_done_callback(self._pending_tasks.discard)
+
+    async def _publish_telemetry_async(self) -> None:
+        self.publish_telemetry()
+
+
+def publish_status(mqtt_publisher: MqttPublisher, base_topic: str, status: str, detail: str) -> None:
+    topic_root = base_topic.rstrip("/")
+    mqtt_publisher.publish(f"{topic_root}/status", status)
+    mqtt_publisher.publish(f"{topic_root}/detail", detail)
 
 
 async def discover_delta2_max(address: str | None, scan_timeout: float) -> Any:
@@ -174,6 +182,12 @@ async def run(args: argparse.Namespace) -> None:
             disconnected = asyncio.Event()
 
             try:
+                publish_status(
+                    mqtt_publisher,
+                    args.base_topic,
+                    "NOK",
+                    "Looking for EcoFlow DELTA 2 Max over BLE. MQTT is connected, but the device is not connected yet.",
+                )
                 device = await discover_delta2_max(args.address, args.scan_timeout)
 
                 def on_disconnect(_exc: Exception | type[Exception] | None) -> None:
@@ -194,13 +208,22 @@ async def run(args: argparse.Namespace) -> None:
 
                 topic_publisher = DeviceTopicPublisher(device, mqtt_publisher, args.base_topic)
                 topic_publisher.attach()
-                topic_publisher.publish_metadata()
-                await topic_publisher.publish_snapshot()
+                topic_publisher.publish_status(
+                    "OK",
+                    "Connected to EcoFlow DELTA 2 Max over BLE and publishing device state to MQTT.",
+                )
+                topic_publisher.publish_telemetry()
 
                 LOGGER.info("Connected and publishing MQTT updates")
                 await disconnected.wait()
                 LOGGER.warning("Device disconnected")
-            except Exception:
+            except Exception as exc:
+                publish_status(
+                    mqtt_publisher,
+                    args.base_topic,
+                    "NOK",
+                    f"EcoFlow DELTA 2 Max publisher failed: {exc}. Retrying in {args.retry_delay} seconds.",
+                )
                 LOGGER.exception("Publisher loop failed")
             finally:
                 if topic_publisher is not None:
@@ -238,8 +261,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--base-topic",
-        default="ecoflow",
-        help="Base MQTT topic. Device topics are published below <base-topic>/<serial>",
+        default="EGSE/ControlStation/EcoFlowMax",
+        help="Base MQTT topic. Astra topics are published below <base-topic>",
     )
     parser.add_argument(
         "--address",
@@ -260,7 +283,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--retry-delay",
         type=int,
-        default=15,
+        default=5,
         help="Delay before retrying after a disconnect or error",
     )
     parser.add_argument(

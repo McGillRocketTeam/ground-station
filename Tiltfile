@@ -91,21 +91,12 @@ if simulator_enabled:
 
 if ecoflow_mqtt_enabled:
 	ecoflow_address_arg = ecoflow_ble_address != '' and ' --address ' + ecoflow_ble_address or ''
-	ecoflow_cmd = os.name == 'nt' and '''powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "
-cd .\\apps\\ecoflow-mqtt
-
-if (!(Test-Path venv)) {{
-    python -m venv venv
-}}
-
-.\\venv\\Scripts\\python -m pip install -r requirements.txt
-.\\venv\\Scripts\\python ecoflow_delta2_max_mqtt.py --user-id {user_id} --mqtt-host {mqtt_host} --mqtt-port {mqtt_port}{address_arg}
-"
-'''.format(
+	ecoflow_windows_address_arg = ecoflow_ble_address != '' and ' -Address ' + ecoflow_ble_address or ''
+	ecoflow_cmd = os.name == 'nt' and '''powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\apps\\ecoflow-mqtt\\run.ps1 -UserId "{user_id}" -MqttHost "{mqtt_host}" -MqttPort {mqtt_port}{address_arg}'''.format(
 		user_id=ecoflow_user_id,
 		mqtt_host=ecoflow_mqtt_host,
 		mqtt_port=ecoflow_mqtt_port,
-		address_arg=ecoflow_address_arg,
+		address_arg=ecoflow_windows_address_arg,
 	) or '''
 set -e
 
@@ -131,6 +122,7 @@ fi
 		deps=[
 			'./apps/ecoflow-mqtt/ecoflow_delta2_max_mqtt.py',
 			'./apps/ecoflow-mqtt/requirements.txt',
+			'./apps/ecoflow-mqtt/run.ps1',
 			'./apps/ecoflow-mqtt/vendor/ecoflow_ble',
 		]
 	)

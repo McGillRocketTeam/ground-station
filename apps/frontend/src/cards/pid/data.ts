@@ -1,6 +1,5 @@
 import { Commands, Parameters } from "@mrt/yamcs-effect";
 import { Context, Effect, Layer, PubSub, Stream, SubscriptionRef } from "effect";
-import { value } from "effect/Redacted";
 
 import { frontendRuntimeFactory, yamcsSubscriptionRuntime } from "@/lib/atom/yamcs/runtime";
 

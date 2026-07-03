@@ -205,6 +205,10 @@ mdb:
           - type: xtce
             args:
               file: mdb/labjack-t7.xml
+          - type: xtce
+            spec: "ToughSwitch"
+            args:
+              file: mdb/toughswitch.xml
 
       - type: emptyNode
         spec: "ControlStation"
@@ -217,6 +221,7 @@ mdb:
             spec: "EcoFlowMax"
             args:
               file: mdb/ecoflow.xml
+
 
 
   - type: emptyNode

@@ -94,9 +94,9 @@ if ecoflow_mqtt_enabled:
 	ecoflow_cmd = os.name == 'nt' and '''
 cd .\\apps\\ecoflow-mqtt
 
-if (!(Test-Path venv)) {
+if (!(Test-Path venv)) {{
     python -m venv venv
-}
+}}
 
 .\\venv\\Scripts\\python -m pip install -r requirements.txt
 .\\venv\\Scripts\\python ecoflow_delta2_max_mqtt.py --user-id {user_id} --mqtt-host {mqtt_host} --mqtt-port {mqtt_port}{address_arg}

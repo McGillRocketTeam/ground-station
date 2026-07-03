@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import json
 import logging
+import struct
 import sys
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,50 @@ from ecoflow_ble.devices.delta2_max import Device as Delta2MaxDevice  # noqa: E4
 LOGGER = logging.getLogger("ecoflow_delta2_max_mqtt")
 
 
+TELEMETRY_PACKET_FIELDS: tuple[tuple[str, str], ...] = (
+    ("ac_output_power", "h"),
+    ("ac_input_voltage", "f"),
+    ("ac_input_current", "f"),
+    ("ac_output_voltage", "f"),
+    ("ac_output_current", "f"),
+    ("battery_level_main", "f"),
+    ("battery_1_enabled", "B"),
+    ("battery_2_enabled", "B"),
+    ("battery_level", "f"),
+    ("input_power", "h"),
+    ("output_power", "h"),
+    ("usbc_output_power", "h"),
+    ("usbc2_output_power", "h"),
+    ("usba_output_power", "h"),
+    ("usba2_output_power", "h"),
+    ("qc_usb1_output_power", "h"),
+    ("qc_usb2_output_power", "h"),
+    ("ac_ports", "B"),
+    ("usb_ports", "B"),
+    ("battery_charge_limit_min", "B"),
+    ("battery_charge_limit_max", "B"),
+    ("remaining_time_charging", "h"),
+    ("remaining_time_discharging", "h"),
+    ("cell_temperature", "h"),
+    ("dc_input_voltage", "f"),
+    ("dc_input_current", "f"),
+    ("dc_12v_port", "B"),
+    ("dc12v_output_voltage", "f"),
+    ("dc12v_output_current", "f"),
+    ("ac_input_power", "h"),
+    ("ac_charging_speed", "h"),
+    ("ac_chg_rated_power", "h"),
+    ("dc_output_power", "h"),
+    ("energy_backup", "B"),
+    ("energy_backup_battery_level", "B"),
+    ("xt60_1_input_power", "h"),
+    ("xt60_2_input_power", "h"),
+    ("max_ac_charging_power", "h"),
+)
+
+TELEMETRY_PACKET_FORMAT = "<" + "".join(format_char for _, format_char in TELEMETRY_PACKET_FIELDS)
+
+
 def _serialize_value(value: Any) -> Any:
     if hasattr(value, "value"):
         return value.value
@@ -40,6 +85,8 @@ def _serialize_value(value: Any) -> Any:
 class MqttPublisher:
     def __init__(self, args: argparse.Namespace) -> None:
         self._args = args
+        self.command_queue: asyncio.Queue[str] = asyncio.Queue()
+        self._loop = asyncio.get_running_loop()
         client_id = args.mqtt_client_id or f"ecoflow-delta2max-{args.user_id}"
         self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
 
@@ -47,13 +94,16 @@ class MqttPublisher:
             self._client.username_pw_set(args.mqtt_username, args.mqtt_password)
 
         self._client.enable_logger(LOGGER.getChild("mqtt"))
+        self._client.on_message = self._on_message
 
         base_topic = args.base_topic.rstrip("/")
+        self._base_topic = base_topic
+        self._commands_topic = f"{base_topic}/commands"
         self._client.will_set(
             f"{base_topic}/status",
             payload="NOK",
             qos=1,
-            retain=args.retain,
+            retain=True,
         )
 
     def connect(self) -> None:
@@ -63,13 +113,17 @@ class MqttPublisher:
             keepalive=self._args.mqtt_keepalive,
         )
         self._client.loop_start()
+        self.clear_retained(f"{self._base_topic}/detail")
+        self.clear_retained(f"{self._base_topic}/telemetry")
+        self.clear_retained(self._commands_topic)
+        self._client.subscribe(self._commands_topic, qos=1)
 
     def disconnect(self) -> None:
         self._client.loop_stop()
         self._client.disconnect()
 
     def publish(self, topic: str, payload: Any, *, retain: bool | None = None) -> None:
-        serialized = payload if isinstance(payload, str) else json.dumps(payload)
+        serialized = payload if isinstance(payload, (bytes, str)) else json.dumps(payload)
         message = self._client.publish(
             topic,
             payload=serialized,
@@ -77,6 +131,24 @@ class MqttPublisher:
             retain=self._args.retain if retain is None else retain,
         )
         message.wait_for_publish()
+
+    def clear_retained(self, topic: str) -> None:
+        message = self._client.publish(topic, payload=b"", qos=1, retain=True)
+        message.wait_for_publish()
+
+    def publish_ack(self, status: str, detail: str) -> None:
+        self.publish(
+            f"{self._base_topic}/acks",
+            {"status": status, "detail": detail},
+            retain=False,
+        )
+
+    def _on_message(self, _client: mqtt.Client, _userdata: Any, message: mqtt.MQTTMessage) -> None:
+        if message.topic != self._commands_topic or not message.payload:
+            return
+
+        command = message.payload.decode("utf-8", errors="replace").strip()
+        self._loop.call_soon_threadsafe(self.command_queue.put_nowait, command)
 
 
 class DeviceTopicPublisher:
@@ -87,6 +159,7 @@ class DeviceTopicPublisher:
         self._snapshot_pending = False
         self._pending_tasks: set[asyncio.Task[None]] = set()
         self._loop = asyncio.get_running_loop()
+        self._command_task: asyncio.Task[None] | None = None
 
     @property
     def topic_root(self) -> str:
@@ -98,13 +171,22 @@ class DeviceTopicPublisher:
                 self._field_callback(field.public_name),
                 field.public_name,
             )
+        self._command_task = self._loop.create_task(self._command_loop())
+
+    async def detach(self) -> None:
+        if self._command_task is not None:
+            self._command_task.cancel()
+            try:
+                await self._command_task
+            except asyncio.CancelledError:
+                pass
 
     def publish_status(self, status: str, detail: str) -> None:
-        self._mqtt.publish(f"{self.topic_root}/status", status)
-        self._mqtt.publish(f"{self.topic_root}/detail", detail)
+        self._mqtt.publish(f"{self.topic_root}/status", status, retain=True)
+        self._mqtt.publish(f"{self.topic_root}/detail", detail, retain=False)
 
     def publish_telemetry(self) -> None:
-        self._mqtt.publish(f"{self.topic_root}/telemetry", self.snapshot())
+        self._mqtt.publish(f"{self.topic_root}/telemetry", self.telemetry_packet(), retain=False)
 
     def publish_offline(self) -> None:
         self.publish_status(
@@ -118,6 +200,21 @@ class DeviceTopicPublisher:
             for field in self._device._fields
             if getattr(self._device, field.public_name) is not None
         }
+
+    def telemetry_packet(self) -> bytes:
+        snapshot = self.snapshot()
+        values = [
+            self._packet_value(snapshot.get(field_name, 0), format_char)
+            for field_name, format_char in TELEMETRY_PACKET_FIELDS
+        ]
+        return struct.pack(TELEMETRY_PACKET_FORMAT, *values)
+
+    def _packet_value(self, value: Any, format_char: str) -> int | float:
+        if format_char == "f":
+            return float(value)
+        if format_char == "B":
+            return 1 if bool(value) else 0
+        return int(value)
 
     def _field_callback(self, _field_name: str):
         def callback(_value: Any) -> None:
@@ -141,11 +238,39 @@ class DeviceTopicPublisher:
     async def _publish_telemetry_async(self) -> None:
         self.publish_telemetry()
 
+    async def _command_loop(self) -> None:
+        while True:
+            command = await self._mqtt.command_queue.get()
+            try:
+                await self._handle_command(command)
+            except Exception as exc:
+                LOGGER.exception("EcoFlow command failed: %s", command)
+                self._mqtt.publish_ack("ACK_NOK", f"{command}: {exc}")
+
+    async def _handle_command(self, command: str) -> None:
+        match command.lower().split():
+            case ["ecoflow", "ac", ("on" | "enable")]:
+                await self._device.enable_ac_ports(True)
+            case ["ecoflow", "ac", ("off" | "disable")]:
+                await self._device.enable_ac_ports(False)
+            case ["ecoflow", "usb", ("on" | "enable")]:
+                await self._device.enable_usb_ports(True)
+            case ["ecoflow", "usb", ("off" | "disable")]:
+                await self._device.enable_usb_ports(False)
+            case ["ecoflow", "dc12v", ("on" | "enable")]:
+                await self._device.enable_dc_12v_port(True)
+            case ["ecoflow", "dc12v", ("off" | "disable")]:
+                await self._device.enable_dc_12v_port(False)
+            case _:
+                raise ValueError(f"Unknown command")
+
+        self._mqtt.publish_ack("ACK_OK", command)
+
 
 def publish_status(mqtt_publisher: MqttPublisher, base_topic: str, status: str, detail: str) -> None:
     topic_root = base_topic.rstrip("/")
-    mqtt_publisher.publish(f"{topic_root}/status", status)
-    mqtt_publisher.publish(f"{topic_root}/detail", detail)
+    mqtt_publisher.publish(f"{topic_root}/status", status, retain=True)
+    mqtt_publisher.publish(f"{topic_root}/detail", detail, retain=False)
 
 
 async def discover_delta2_max(address: str | None, scan_timeout: float) -> Any:
@@ -227,6 +352,7 @@ async def run(args: argparse.Namespace) -> None:
                 LOGGER.exception("Publisher loop failed")
             finally:
                 if topic_publisher is not None:
+                    await topic_publisher.detach()
                     topic_publisher.publish_offline()
                 if device is not None:
                     try:

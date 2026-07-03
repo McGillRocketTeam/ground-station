@@ -95,8 +95,9 @@ dataLinks:
 
 
   - name: EGSE/ControlStation/EcoFlowMax
-    class: org.yamcs.mrt.links.AstraGenericTmLink
-    stream: egse_ecoflow_realtime
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: egse_ecoflow_realtime
+    tcStream: tc_ecoflow_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -133,6 +134,12 @@ dataLinks:
     ipAddress: 192.168.0.253
     username: mrt
     password: H0tFire!
+
+  - name: ECSE/Pad/ToughSwitch
+    class: org.yamcs.mrt.links.ToughSwitchLink
+    ipAddress: 192.168.0.251
+    username: ubnt
+    password: ubnt
 
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
@@ -206,7 +213,10 @@ mdb:
             spec: "ControlBox"
             args:
               file: mdb/controlbox.xml
-
+          - type: xtce
+            spec: "EcoFlowMax"
+            args:
+              file: mdb/ecoflow.xml
 
 
   - type: emptyNode
@@ -258,8 +268,9 @@ mdb:
 streamConfig:
   tm:
     - name: "egse_ecoflow_realtime"
-      rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
+      rootContainer: "/EGSE/ControlStation/EcoFlowMax/EcoFlowMaxPacket"
       processor: "realtime"
+
     - name: "system_a_fc_realtime"
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
@@ -306,3 +317,6 @@ streamConfig:
     - name: "tc_labJack"
       processor: "realtime"
       tcPatterns: [".*/LabJack/.*"]
+    - name: "tc_ecoflow_realtime"
+      processor: "realtime"
+      tcPatterns: ["/EGSE/ControlStation/EcoFlowMax/.*"]

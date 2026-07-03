@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="EcoFlowMax">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <BooleanParameterType name="boolean_8">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="int16_watts">
+        <UnitSet>
+          <Unit form="calibrated">W</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="int16_minutes">
+        <UnitSet>
+          <Unit form="calibrated">min</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="int16_minutes_alarm_low">
+        <UnitSet>
+          <Unit form="calibrated">min</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+        <DefaultAlarm>
+          <StaticAlarmRanges>
+            <CriticalRange maxInclusive="180"/>
+            <SevereRange maxInclusive="120"/>
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </IntegerParameterType>
+      <IntegerParameterType name="int16_celsius">
+        <UnitSet>
+          <Unit form="calibrated">C</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="uint8_percent">
+        <UnitSet>
+          <Unit form="calibrated">%</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="float32_volts">
+        <UnitSet>
+          <Unit form="calibrated">V</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <FloatParameterType name="float32_amps">
+        <UnitSet>
+          <Unit form="calibrated">A</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <FloatParameterType name="float32_percent">
+        <UnitSet>
+          <Unit form="calibrated">%</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="ac_output_power" parameterTypeRef="int16_watts" shortDescription="AC output power"/>
+      <Parameter name="ac_input_voltage" parameterTypeRef="float32_volts" shortDescription="AC input voltage"/>
+      <Parameter name="ac_input_current" parameterTypeRef="float32_amps" shortDescription="AC input current"/>
+      <Parameter name="ac_output_voltage" parameterTypeRef="float32_volts" shortDescription="AC output voltage"/>
+      <Parameter name="ac_output_current" parameterTypeRef="float32_amps" shortDescription="AC output current"/>
+      <Parameter name="battery_level_main" parameterTypeRef="float32_percent" shortDescription="Main battery state of charge"/>
+      <Parameter name="battery_1_enabled" parameterTypeRef="boolean_8" shortDescription="Extra battery 1 enabled"/>
+      <Parameter name="battery_2_enabled" parameterTypeRef="boolean_8" shortDescription="Extra battery 2 enabled"/>
+      <Parameter name="battery_level" parameterTypeRef="float32_percent" shortDescription="Overall battery state of charge"/>
+      <Parameter name="input_power" parameterTypeRef="int16_watts" shortDescription="Total input power"/>
+      <Parameter name="output_power" parameterTypeRef="int16_watts" shortDescription="Total output power"/>
+      <Parameter name="usbc_output_power" parameterTypeRef="int16_watts" shortDescription="USB-C output power"/>
+      <Parameter name="usbc2_output_power" parameterTypeRef="int16_watts" shortDescription="USB-C 2 output power"/>
+      <Parameter name="usba_output_power" parameterTypeRef="int16_watts" shortDescription="USB-A output power"/>
+      <Parameter name="usba2_output_power" parameterTypeRef="int16_watts" shortDescription="USB-A 2 output power"/>
+      <Parameter name="qc_usb1_output_power" parameterTypeRef="int16_watts" shortDescription="Quick Charge USB 1 output power"/>
+      <Parameter name="qc_usb2_output_power" parameterTypeRef="int16_watts" shortDescription="Quick Charge USB 2 output power"/>
+      <Parameter name="ac_ports" parameterTypeRef="boolean_8" shortDescription="AC output ports enabled"/>
+      <Parameter name="usb_ports" parameterTypeRef="boolean_8" shortDescription="USB output ports enabled"/>
+      <Parameter name="battery_charge_limit_min" parameterTypeRef="uint8_percent" shortDescription="Minimum battery charge limit"/>
+      <Parameter name="battery_charge_limit_max" parameterTypeRef="uint8_percent" shortDescription="Maximum battery charge limit"/>
+      <Parameter name="remaining_time_charging" parameterTypeRef="int16_minutes" shortDescription="Estimated time remaining while charging"/>
+      <Parameter name="remaining_time_discharging" parameterTypeRef="int16_minutes_alarm_low" shortDescription="Estimated time remaining while discharging"/>
+      <Parameter name="cell_temperature" parameterTypeRef="int16_celsius" shortDescription="Battery cell temperature"/>
+      <Parameter name="dc_input_voltage" parameterTypeRef="float32_volts" shortDescription="DC input voltage"/>
+      <Parameter name="dc_input_current" parameterTypeRef="float32_amps" shortDescription="DC input current"/>
+      <Parameter name="dc_12v_port" parameterTypeRef="boolean_8" shortDescription="12 V DC output port enabled"/>
+      <Parameter name="dc12v_output_voltage" parameterTypeRef="float32_volts" shortDescription="12 V DC output voltage"/>
+      <Parameter name="dc12v_output_current" parameterTypeRef="float32_amps" shortDescription="12 V DC output current"/>
+      <Parameter name="ac_input_power" parameterTypeRef="int16_watts" shortDescription="AC input power"/>
+      <Parameter name="ac_charging_speed" parameterTypeRef="int16_watts" shortDescription="Configured AC charging speed"/>
+      <Parameter name="ac_chg_rated_power" parameterTypeRef="int16_watts" shortDescription="Rated AC charging power"/>
+      <Parameter name="dc_output_power" parameterTypeRef="int16_watts" shortDescription="DC output power"/>
+      <Parameter name="energy_backup" parameterTypeRef="boolean_8" shortDescription="Energy backup mode enabled"/>
+      <Parameter name="energy_backup_battery_level" parameterTypeRef="uint8_percent" shortDescription="Energy backup reserve battery level"/>
+      <Parameter name="xt60_1_input_power" parameterTypeRef="int16_watts" shortDescription="XT60 input 1 power"/>
+      <Parameter name="xt60_2_input_power" parameterTypeRef="int16_watts" shortDescription="XT60 input 2 power"/>
+      <Parameter name="max_ac_charging_power" parameterTypeRef="int16_watts" shortDescription="Maximum AC charging power"/>
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="EcoFlowMaxPacket" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="ac_output_power"/>
+          <ParameterRefEntry parameterRef="ac_input_voltage"/>
+          <ParameterRefEntry parameterRef="ac_input_current"/>
+          <ParameterRefEntry parameterRef="ac_output_voltage"/>
+          <ParameterRefEntry parameterRef="ac_output_current"/>
+          <ParameterRefEntry parameterRef="battery_level_main"/>
+          <ParameterRefEntry parameterRef="battery_1_enabled"/>
+          <ParameterRefEntry parameterRef="battery_2_enabled"/>
+          <ParameterRefEntry parameterRef="battery_level"/>
+          <ParameterRefEntry parameterRef="input_power"/>
+          <ParameterRefEntry parameterRef="output_power"/>
+          <ParameterRefEntry parameterRef="usbc_output_power"/>
+          <ParameterRefEntry parameterRef="usbc2_output_power"/>
+          <ParameterRefEntry parameterRef="usba_output_power"/>
+          <ParameterRefEntry parameterRef="usba2_output_power"/>
+          <ParameterRefEntry parameterRef="qc_usb1_output_power"/>
+          <ParameterRefEntry parameterRef="qc_usb2_output_power"/>
+          <ParameterRefEntry parameterRef="ac_ports"/>
+          <ParameterRefEntry parameterRef="usb_ports"/>
+          <ParameterRefEntry parameterRef="battery_charge_limit_min"/>
+          <ParameterRefEntry parameterRef="battery_charge_limit_max"/>
+          <ParameterRefEntry parameterRef="remaining_time_charging"/>
+          <ParameterRefEntry parameterRef="remaining_time_discharging"/>
+          <ParameterRefEntry parameterRef="cell_temperature"/>
+          <ParameterRefEntry parameterRef="dc_input_voltage"/>
+          <ParameterRefEntry parameterRef="dc_input_current"/>
+          <ParameterRefEntry parameterRef="dc_12v_port"/>
+          <ParameterRefEntry parameterRef="dc12v_output_voltage"/>
+          <ParameterRefEntry parameterRef="dc12v_output_current"/>
+          <ParameterRefEntry parameterRef="ac_input_power"/>
+          <ParameterRefEntry parameterRef="ac_charging_speed"/>
+          <ParameterRefEntry parameterRef="ac_chg_rated_power"/>
+          <ParameterRefEntry parameterRef="dc_output_power"/>
+          <ParameterRefEntry parameterRef="energy_backup"/>
+          <ParameterRefEntry parameterRef="energy_backup_battery_level"/>
+          <ParameterRefEntry parameterRef="xt60_1_input_power"/>
+          <ParameterRefEntry parameterRef="xt60_2_input_power"/>
+          <ParameterRefEntry parameterRef="max_ac_charging_power"/>
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+  <CommandMetaData>
+    <MetaCommandSet>
+      <MetaCommand name="enable_ac_ports" abstract="false" shortDescription="ecoflow ac on">
+        <LongDescription>Enable EcoFlow AC output ports</LongDescription>
+        <CommandContainer name="enable_ac_ports">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="disable_ac_ports" abstract="false" shortDescription="ecoflow ac off">
+        <LongDescription>Disable EcoFlow AC output ports</LongDescription>
+        <CommandContainer name="disable_ac_ports">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="enable_usb_ports" abstract="false" shortDescription="ecoflow usb on">
+        <LongDescription>Enable EcoFlow USB output ports</LongDescription>
+        <CommandContainer name="enable_usb_ports">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="disable_usb_ports" abstract="false" shortDescription="ecoflow usb off">
+        <LongDescription>Disable EcoFlow USB output ports</LongDescription>
+        <CommandContainer name="disable_usb_ports">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="enable_dc12v_port" abstract="false" shortDescription="ecoflow dc12v on">
+        <LongDescription>Enable EcoFlow 12 V DC output port</LongDescription>
+        <CommandContainer name="enable_dc12v_port">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="disable_dc12v_port" abstract="false" shortDescription="ecoflow dc12v off">
+        <LongDescription>Disable EcoFlow 12 V DC output port</LongDescription>
+        <CommandContainer name="disable_dc12v_port">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
+</SpaceSystem>

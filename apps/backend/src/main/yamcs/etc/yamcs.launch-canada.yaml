@@ -135,7 +135,7 @@ dataLinks:
     username: mrt
     password: H0tFire!
 
-  - name: ECSE/Pad/ToughSwitch
+  - name: EGSE/Pad/ToughSwitch
     class: org.yamcs.mrt.links.ToughSwitchLink
     ipAddress: 192.168.0.251
     username: ubnt
@@ -221,9 +221,6 @@ mdb:
             spec: "EcoFlowMax"
             args:
               file: mdb/ecoflow.xml
-
-
-
   - type: emptyNode
     spec: "SystemA"
     subLoaders:

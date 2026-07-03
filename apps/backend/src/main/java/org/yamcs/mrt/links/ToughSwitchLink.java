@@ -35,7 +35,7 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
   private static final int READ_TIMEOUT_MILLIS = 5_000;
   private static final String USER_AGENT =
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0";
-  private static final String PARAMETER_BASE = "/ECSE/Pad/ToughSwitch/";
+  private static final String PARAMETER_BASE = "/EGSE/Pad/ToughSwitch/";
   private static final Gson GSON = new Gson();
 
   private String ipAddress;

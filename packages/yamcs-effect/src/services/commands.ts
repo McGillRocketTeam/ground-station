@@ -119,7 +119,7 @@ export class Commands extends Context.Service<
 
         const { commands: all } = yield* httpClient.mdb.listCommands({
           params: { instance: yamcsConfig.instance },
-          query: { limit: "400" },
+          query: { limit: "900" },
         });
 
         const commandInfoByQualifiedName = new Map(

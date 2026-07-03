@@ -78,11 +78,48 @@ export class Parameters extends Context.Service<
       const parameterCallSemaphore = yield* Semaphore.make(1);
       let activeParameterCall: ActiveParameterCall | undefined;
 
+      const findCandidateParameterNames = (qualifiedName: QualifiedName) => {
+        const requestedLeaf = qualifiedName.split("/").at(-1)?.toLowerCase();
+        const requestedLower = qualifiedName.toLowerCase();
+
+        return all
+          .map((parameter) => parameter.qualifiedName)
+          .filter((candidate) => {
+            const candidateLower = candidate.toLowerCase();
+            const candidateLeaf = candidate.split("/").at(-1)?.toLowerCase();
+
+            return (
+              candidateLower.includes(requestedLower) ||
+              requestedLower.includes(candidateLower) ||
+              (requestedLeaf !== undefined && candidateLeaf === requestedLeaf)
+            );
+          })
+          .slice(0, 20);
+      };
+
+      const logParameterNotFound = (
+        qualifiedName: QualifiedName,
+        context: Record<string, unknown>,
+      ) =>
+        Effect.logWarning("Yamcs parameter not found", {
+          qualifiedName,
+          instance: yamcsConfig.instance,
+          processor: yamcsConfig.processor,
+          yamcsUrl: yamcsConfig.url.toString(),
+          knownParameterCount: all.length,
+          candidateQualifiedNames: findCandidateParameterNames(qualifiedName),
+          ...context,
+        });
+
       const get = (qualifiedName: QualifiedName) =>
         Effect.gen(function* () {
           const parameterInfo = parameterInfoByQualifiedName.get(qualifiedName);
 
           if (parameterInfo === undefined) {
+            yield* logParameterNotFound(qualifiedName, {
+              source: "Parameters.get",
+              lookup: "initial MDB parameter list",
+            });
             return yield* new ParameterNotFound({ qualifiedName });
           }
 
@@ -118,6 +155,10 @@ export class Parameters extends Context.Service<
           const numericId = Array.from(mappingEvents)[0];
 
           if (numericId === undefined) {
+            yield* logParameterNotFound(qualifiedName, {
+              source: "Parameters.subscribe",
+              lookup: "websocket parameter mapping",
+            });
             return yield* new ParameterNotFound({ qualifiedName });
           }
 

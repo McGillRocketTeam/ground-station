@@ -41,13 +41,13 @@ const urrgTopologies: ReadonlyArray<SystemTopology> = [
 
 const topologiesForInstance = (instance: string): ReadonlyArray<SystemTopology> => {
   switch (instance) {
-    case "launch-canada":
+    case "launch-canada-sim":
       return launchCanadaTopologies;
     case "urrg":
       return urrgTopologies;
     default:
       throw new Error(
-        `Unsupported YAMCS instance "${instance}" for @mrt/simulator. Supported instances: launch-canada, urrg.`,
+        `Unsupported YAMCS instance "${instance}" for @mrt/simulator. Supported instances: launch-canada-sim, urrg.`,
       );
   }
 };

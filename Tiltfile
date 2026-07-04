@@ -23,7 +23,7 @@ backend_env = {'MQTT_BROKER_URL': mqtt_broker_url} if use_external_mqtt_broker e
 frontend_mqtt_broker_url = mqtt_broker_url if use_external_mqtt_broker else 'ws://localhost:9001'
 ecoflow_resource_deps = [] if use_external_mqtt_broker else ['mqtt_broker']
 simulator_env = {
-	'YAMCS_INSTANCE': 'launch-canada',
+	'YAMCS_INSTANCE': 'launch-canada-sim',
 	'DATA_MODE': simulator_data_mode,
 }
 

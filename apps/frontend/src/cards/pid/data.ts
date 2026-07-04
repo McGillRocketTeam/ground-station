@@ -6,8 +6,9 @@ import { frontendRuntimeFactory, yamcsSubscriptionRuntime } from "@/lib/atom/yam
 const PRESSURE_TANK_HEIGHT = 120;
 const PRESSURE_TANK_PORT_INSET = 20;
 
-const tankLoc = { x: 850, y: -50 } as const;
-const leftBottomPortY = tankLoc.y + PRESSURE_TANK_HEIGHT / 2 - PRESSURE_TANK_PORT_INSET;
+const tankLoc = { x: 0, y: 0 } as const;
+const leftBottomPortY = tankLoc.y + PRESSURE_TANK_HEIGHT / 2 - PRESSURE_TANK_PORT_INSET + 0.75;
+const leftTopPortY = tankLoc.y - PRESSURE_TANK_HEIGHT / 2 + PRESSURE_TANK_PORT_INSET - 0.75;
 
 type BaseNode = {
   key: string;
@@ -17,6 +18,7 @@ type BaseNode = {
 export type ValveNode = BaseNode & {
   category: "ball-valve" | "valve";
   angle?: number;
+  label?: string;
   letter?: string;
   qualifiedName?: string;
   commandQualifiedName?: string;
@@ -50,6 +52,12 @@ export type PressureTankNode = BaseNode & {
   max?: number;
 };
 
+export type ChevronNode = BaseNode & {
+  category: "chevron";
+  angle?: number;
+  label?: string;
+};
+
 export type ReadoutNode = BaseNode & {
   category: "readout";
   label: string;
@@ -69,10 +77,24 @@ export type PipeEndNode = BaseNode & {
   category: "pipe-end";
 };
 
-export type NodeData = ValveNode | TankNode | PressureTankNode | ReadoutNode | PipeEndNode;
+export type DashedRectangleNode = BaseNode & {
+  category: "dashed-rectangle";
+  width: number;
+  height: number;
+};
+
+export type NodeData =
+  | ValveNode
+  | TankNode
+  | PressureTankNode
+  | ReadoutNode
+  | PipeEndNode
+  | DashedRectangleNode
+  | ChevronNode;
 
 export type LinkData = {
   key: number;
+  category?: "dashed";
   from: string;
   to: string;
   fromPort?: string;
@@ -87,38 +109,122 @@ export type PIDDiagramModel = {
 };
 
 const initialNodeDataArray: Array<NodeData> = [
-  { key: "N2O", category: "tank", label: "N₂O", loc: "-20 0" },
-  { key: "V-21", category: "valve", loc: "100 40", angle: 90, state: "OPEN" },
   {
-    key: "V-22",
-    category: "ball-valve",
-    loc: "260 140",
-    angle: 0,
-    letter: "E",
-    state: "OPEN",
-    qualifiedName: "/EGSE/Pad/LabJack/FIO0",
+    key: "TANK",
+    category: "pressure-tank",
+    loc: `${tankLoc.x} ${tankLoc.y}`,
+    label: "TANK",
+    qualifiedName: "/SystemA/Rocket/FlightComputer/tank_pressure",
+    min: 0,
+    max: 900,
   },
+  {
+    key: "F/DOV",
+    label: "F/DOV\nV-11",
+    category: "ball-valve",
+    loc: `150 ${leftBottomPortY}`,
+    angle: 0,
+    letter: " ",
+    state: "OPEN",
+    qualifiedName: "/SystemA/Rocket/FlightComputer/fdov_open",
+  },
+  {
+    key: "VENT",
+    label: "VENT\nV-12",
+    category: "ball-valve",
+    loc: `${tankLoc.x} -120`,
+    angle: 90,
+    letter: "S",
+    state: "OPEN",
+    qualifiedName: "/SystemA/Rocket/FlightComputer/vent_open",
+  },
+  {
+    key: "VENT-SINK",
+    category: "chevron",
+    loc: `${tankLoc.x} -230`,
+    angle: 90,
+    label: "Environment",
+  },
+  { key: "PIPE-MID-6", category: "pipe-end", loc: `${tankLoc.x} -160` },
+  {
+    key: "MOV",
+    label: "MOV\nV-13",
+    category: "ball-valve",
+    loc: `${tankLoc.x} 120`,
+    angle: 90,
+    letter: " ",
+    state: "CLOSED",
+    qualifiedName: "/SystemA/Rocket/FlightComputer/mov_open",
+  },
+  { key: "MOV-SINK", category: "chevron", loc: `${tankLoc.x} 190`, angle: -90, label: "Exhaust" },
+  { key: "PIPE-MID-0", category: "pipe-end", loc: `500 ${leftBottomPortY}` },
   {
     key: "V-23",
     category: "ball-valve",
-    loc: "360 40",
+    loc: "500 -20",
     angle: 90,
     letter: "E",
     state: "OPEN",
     qualifiedName: "/EGSE/Pad/LabJack/FIO1",
   },
-  { key: "V-24", category: "valve", loc: "460 40", angle: 90, state: "OPEN" },
+  {
+    key: "V-23-SINK",
+    category: "chevron",
+    loc: `500 -80`,
+    angle: 90,
+  },
+  {
+    key: "V-24",
+    category: "ball-valve",
+    loc: "400 -20",
+    angle: 90,
+    state: "CLOSED",
+  },
+  {
+    key: "V-24-SINK",
+    category: "chevron",
+    loc: `400 -80`,
+    angle: 90,
+  },
+  { key: "PIPE-MID-3", category: "pipe-end", loc: `450 ${leftBottomPortY}` },
+  { key: "PIPE-MID-1", category: "pipe-end", loc: `400 ${leftBottomPortY}` },
+  {
+    key: "V-22",
+    category: "ball-valve",
+    loc: `600 ${leftBottomPortY}`,
+    angle: 0,
+    letter: "E",
+    state: "CLOSED",
+    qualifiedName: "/EGSE/Pad/LabJack/FIO0",
+  },
+  {
+    key: "V-21",
+    category: "ball-valve",
+    loc: "710 -20",
+    angle: 90,
+    state: "CLOSED",
+  },
+  {
+    key: "V-21-SINK",
+    category: "chevron",
+    loc: `710 -80`,
+    angle: 90,
+  },
+  { key: "PIPE-MID-2", category: "pipe-end", loc: `710 ${leftBottomPortY}` },
+  { key: "N2O", category: "tank", label: "N₂O", loc: "860 -60" },
+  { key: "PIPE-MID-4", category: "pipe-end", loc: `740 ${leftBottomPortY}` },
+  { key: "PIPE-MID-5", category: "pipe-end", loc: `840 ${leftBottomPortY}` },
   {
     key: "TT-I0",
     category: "readout",
-    loc: "40 180",
+    loc: "840 80",
     label: "TT I-0",
     decimals: 0,
   },
   {
     key: "PT-I1",
     category: "readout",
-    loc: "160 180",
+    loc: "740 80",
     label: "PT I-1",
     decimals: 0,
     qualifiedName: "/EGSE/Pad/LabJack/pre_fill_pressure_psi",
@@ -126,60 +232,100 @@ const initialNodeDataArray: Array<NodeData> = [
   {
     key: "PT-I2",
     category: "readout",
-    loc: "410 180",
+    loc: "450 80",
     label: "PT I-2",
     qualifiedName: "/EGSE/Pad/LabJack/post_fill_pressure_psi",
     decimals: 0,
   },
-  { key: "PIPE-MID-0", category: "pipe-end", loc: "40 140" },
-  { key: "PIPE-MID-1", category: "pipe-end", loc: "160 140" },
-  { key: "PIPE-MID-2", category: "pipe-end", loc: "410 140" },
-  { key: "PIPE-END-1", category: "pipe-end", loc: "500 140" },
-  { key: "PIPE-END-2", category: "pipe-end", loc: "100 140" },
-  { key: "PIPE-END-3", category: "pipe-end", loc: "360 140" },
-  { key: "PIPE-END-4", category: "pipe-end", loc: "460 140" },
   {
-    key: "F/DOV",
-    category: "ball-valve",
-    loc: `700 ${leftBottomPortY + 0.75}`,
-    angle: 0,
-    letter: "P",
-    state: "OPEN",
-    qualifiedName: "/SystemA/Rocket/FlightComputer/fdov_open",
+    key: "TT-I5",
+    category: "readout",
+    loc: `-120 ${leftBottomPortY - 19}`,
+    label: "TT I-5",
+    decimals: 0,
+    qualifiedName: "/SystemA/Rocket/FlightComputer/tank_temp",
   },
   {
-    key: "MOV",
-    category: "ball-valve",
-    loc: `${tankLoc.x} 60`,
-    angle: 90,
-    letter: "P",
-    state: "OPEN",
-    qualifiedName: "/SystemA/Rocket/FlightComputer/mov_open",
+    key: "TT-I3",
+    category: "readout",
+    loc: `-120 ${leftBottomPortY - 19}`,
+    label: "TT I-5",
+    decimals: 0,
+    qualifiedName: "/SystemA/Rocket/FlightComputer/tank_temp",
   },
   {
-    key: "TANK",
-    category: "pressure-tank",
-    loc: `${tankLoc.x} ${tankLoc.y}`,
-    label: "TANK",
-    // qualifiedName: "/SystemA/Rocket/FlightComputer/tank_pressure",
-    qualifiedName: "/EGSE/Pad/LabJack/post_fill_pressure_psi",
-    min: 0,
-    max: 900,
+    key: "PT-I4",
+    category: "readout",
+    loc: `-120 ${leftTopPortY - 19}`,
+    label: "PT I-4",
+    decimals: 0,
+    qualifiedName: "/SystemA/Rocket/FlightComputer/tank_pressure",
+  },
+  {
+    key: "TT-I3",
+    category: "readout",
+    loc: `-120 -179`,
+    label: "TT I-3",
+    decimals: 0,
+    qualifiedName: "/SystemA/Rocket/FlightComputer/vent_temp",
+  },
+  {
+    key: "ROCKET-ZONE",
+    category: "dashed-rectangle",
+    loc: "-180 -220",
+    width: 400,
+    height: 400,
   },
 ];
 
 const initialLinkDataArray: Array<LinkData> = [
-  { key: 1, from: "N2O", to: "V-22", fromSpot: "Bottom", toSpot: "Left" },
-  { key: 2, from: "V-22", to: "PIPE-END-1", fromSpot: "Right", toSpot: "Left" },
-  { key: 3, from: "V-21", to: "PIPE-END-2", fromSpot: "Right", toSpot: "Top" },
-  { key: 4, from: "V-23", to: "PIPE-END-3", fromSpot: "Right", toSpot: "Top" },
-  { key: 5, from: "V-24", to: "PIPE-END-4", fromSpot: "Right", toSpot: "Top" },
-  { key: 6, from: "TT-I0", to: "PIPE-MID-0", fromSpot: "Top", toSpot: "Bottom" },
-  { key: 7, from: "PT-I1", to: "PIPE-MID-1", fromSpot: "Top", toSpot: "Bottom" },
-  { key: 8, from: "PT-I2", to: "PIPE-MID-2", fromSpot: "Top", toSpot: "Bottom" },
-  { key: 9, from: "PIPE-END-4", to: "F/DOV", fromSpot: "Right", toSpot: "Left" },
-  { key: 10, from: "F/DOV", to: "TANK", fromSpot: "Right", toPort: "LeftBottom", toSpot: "Left" },
-  { key: 11, from: "TANK", to: "MOV", fromSpot: "Bottom", toSpot: "Left" },
+  { key: 1, from: "F/DOV", to: "TANK", fromSpot: "Left", toPort: "RightBottom", toSpot: "Right" },
+  { key: 2, from: "TANK", to: "MOV", fromSpot: "Bottom", toSpot: "Left" },
+  { key: 3, from: "PIPE-MID-1", to: "F/DOV", fromSpot: "Left", toSpot: "Right" },
+  { key: 4, from: "PIPE-MID-0", to: "V-23", fromSpot: "Top", toSpot: "Right" },
+  { key: 5, from: "PIPE-MID-0", to: "V-22", fromSpot: "Right", toSpot: "Left" },
+  { key: 6, from: "N2O", to: "PIPE-MID-5", fromSpot: "Bottom", toSpot: "Right" },
+  { key: 7, from: "PIPE-MID-1", to: "V-24", fromSpot: "Top", toSpot: "Right" },
+  { key: 8, from: "V-24", to: "PIPE-MID-3", fromSpot: "Right", toSpot: "Left" },
+  { key: 9, from: "V-22", to: "PIPE-MID-2", fromSpot: "Right", toSpot: "Left" },
+  { key: 10, from: "V-21", to: "PIPE-MID-2", fromSpot: "Right", toSpot: "Top" },
+  { key: 11, from: "PIPE-MID-3", to: "PIPE-MID-0", fromSpot: "Right", toSpot: "Left" },
+  { key: 12, from: "PIPE-MID-2", to: "PIPE-MID-4", fromSpot: "Right", toSpot: "Left" },
+  { key: 13, from: "PIPE-MID-4", to: "PIPE-MID-5", fromSpot: "Right", toSpot: "Left" },
+  {
+    key: 14,
+    from: "PIPE-MID-3",
+    to: "PT-I2",
+    fromSpot: "Bottom",
+    toSpot: "Top",
+    category: "dashed",
+  },
+  {
+    key: 15,
+    from: "PIPE-MID-4",
+    to: "PT-I1",
+    fromSpot: "Bottom",
+    toSpot: "Top",
+    category: "dashed",
+  },
+  {
+    key: 16,
+    from: "PIPE-MID-5",
+    to: "TT-I0",
+    fromSpot: "Bottom",
+    toSpot: "Top",
+    category: "dashed",
+  },
+  { key: 17, from: "TANK", to: "VENT", fromSpot: "Top", toSpot: "Right" },
+  { key: 18, from: "TT-I5", to: "TANK", fromSpot: "Right", toPort: "LeftBottom", toSpot: "Left" },
+  { key: 19, from: "PT-I4", to: "TANK", fromSpot: "Right", toPort: "LeftTop", toSpot: "Left" },
+  { key: 20, from: "VENT", to: "PIPE-MID-6", fromSpot: "Left", toSpot: "Bottom" },
+  { key: 21, from: "TT-I3", to: "PIPE-MID-6", fromSpot: "Right", toSpot: "Left" },
+  { key: 22, from: "MOV", to: "MOV-SINK", fromSpot: "Right", toSpot: "Right" },
+  { key: 23, from: "PIPE-MID-6", to: "VENT-SINK", fromSpot: "TOP", toSpot: "Right" },
+  { key: 24, from: "V-24", to: "V-24-SINK", fromSpot: "Left", toSpot: "Right" },
+  { key: 25, from: "V-23", to: "V-23-SINK", fromSpot: "Left", toSpot: "Right" },
+  { key: 26, from: "V-21", to: "V-21-SINK", fromSpot: "Left", toSpot: "Right" },
 ];
 
 const initialModel: PIDDiagramModel = {

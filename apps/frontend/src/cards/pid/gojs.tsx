@@ -269,6 +269,25 @@ function makeReadoutTemplate() {
     );
 }
 
+function makeDashedRectangleTemplate() {
+  return new go.Node("Spot", {
+    selectable: false,
+    locationSpot: go.Spot.TopLeft,
+  })
+    .bind("location", "loc", go.Point.parse)
+    .add(
+      new go.Shape("Rectangle", {
+        fill: null,
+        stroke: C.outline,
+        strokeWidth: 1.5,
+        strokeDashArray: [5, 3],
+        alignment: go.Spot.Center,
+      })
+        .bind("width", "width")
+        .bind("height", "height"),
+    );
+}
+
 function labelAlignmentForAngle(angle?: number) {
   switch ((((angle ?? 0) % 360) + 360) % 360) {
     case 90:
@@ -285,18 +304,69 @@ function labelAlignmentForAngle(angle?: number) {
 function ballValveLabelAlignmentForAngle(angle?: number) {
   switch ((((angle ?? 0) % 360) + 360) % 360) {
     case 90:
-      return new go.Spot(0, 0.5, -18, 0);
+      return new go.Spot(0, 0.5, -22, 0);
     case 180:
-      return new go.Spot(0.5, 0, 0, -12);
+      return new go.Spot(0.5, 0, 0, -20);
     case 270:
-      return new go.Spot(1, 0.5, 18, 0);
+      return new go.Spot(1, 0.5, 22, 0);
     default:
+      return new go.Spot(0.5, 1, 0, 20);
+  }
+}
+
+function chevronLabelAlignmentForAngle(angle?: number) {
+  switch ((((angle ?? 0) % 360) + 360) % 360) {
+    case 90:
+      return new go.Spot(0.5, 0, 0, -12);
+    case 180:
+      return new go.Spot(1, 0.5, 28, 0);
+    case 270:
       return new go.Spot(0.5, 1, 0, 12);
+    default:
+      return new go.Spot(0, 0.5, -28, 0);
+  }
+}
+
+function chevronLabelAlignmentFocusForAngle(angle?: number) {
+  switch ((((angle ?? 0) % 360) + 360) % 360) {
+    case 90:
+      return go.Spot.Bottom;
+    case 180:
+      return go.Spot.Left;
+    case 270:
+      return go.Spot.Top;
+    default:
+      return go.Spot.Right;
   }
 }
 
 function uprightAngle(angle?: number) {
   return -(((angle ?? 0) % 360) + 360) % 360;
+}
+
+function hasValveLetter(node?: NodeData) {
+  return (
+    (node?.category === "valve" || node?.category === "ball-valve") && Object.hasOwn(node, "letter")
+  );
+}
+
+function valveDisplayText(node?: NodeData) {
+  return node?.category === "valve" || node?.category === "ball-valve"
+    ? (node.label ?? node.key)
+    : "";
+}
+
+function makeLinkTemplate(shape: go.Shape) {
+  return new go.Link({
+    routing: go.Routing.Orthogonal,
+    corner: 0,
+    selectable: false,
+  })
+    .bind("fromPortId", "fromPort")
+    .bind("toPortId", "toPort")
+    .bind("fromSpot", "fromSpot", go.Spot.parse)
+    .bind("toSpot", "toSpot", go.Spot.parse)
+    .add(shape);
 }
 
 function initDiagram(toggleValveInProgram: (key: string) => void) {
@@ -355,9 +425,33 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
             state === "OPEN" ? C.on : C.off,
           ),
         ),
-        new go.TextBlock({ stroke: C.text })
+        new go.TextBlock({ stroke: C.text, textAlign: "center" })
           .bind("alignment", "angle", labelAlignmentForAngle)
           .bind("text", "key"),
+      ),
+  );
+
+  // chevron, endpoint for flow
+  diagram.nodeTemplateMap.add(
+    "chevron",
+    new go.Node("Spot", { locationObjectName: "PORT", locationSpot: go.Spot.Right })
+      .bind("location", "loc", go.Point.parse)
+      .add(
+        new go.Shape({
+          name: "PORT",
+          geometryString: "F1 M0 0 L30 0 L42 10 L30 20 L0 20 z",
+          fill: C.panel2,
+          stroke: C.outline,
+          portId: "",
+        }).bind("angle", "angle"),
+        new go.TextBlock({
+          stroke: C.text,
+          textAlign: "center",
+          maxSize: new go.Size(80, NaN),
+        })
+          .bind("text", "label")
+          .bind("alignment", "angle", chevronLabelAlignmentForAngle)
+          .bind("alignmentFocus", "angle", chevronLabelAlignmentFocusForAngle),
       ),
   );
 
@@ -391,7 +485,7 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
             strokeWidth: 1.5,
             alignment: new go.Spot(0.5, 0, 0, -15),
             alignmentFocus: go.Spot.Top,
-          }),
+          }).bind("visible", "", hasValveLetter),
           new go.Shape("Circle", {
             width: 15,
             height: 15,
@@ -405,6 +499,7 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
             alignment: new go.Spot(0.5, 0, 0, -14),
             alignmentFocus: go.Spot.Bottom,
           })
+            .bind("visible", "", hasValveLetter)
             .bind("angle", "angle", uprightAngle)
             .add(
               new go.Shape("Rectangle", {
@@ -417,19 +512,20 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
               new go.TextBlock({ font: "10px sans-serif", stroke: C.text }).bind(
                 "text",
                 "letter",
-                (letter?: string) => letter ?? "E",
+                (letter?: string) => letter ?? "",
               ),
             ),
         ),
-        new go.TextBlock({ stroke: C.text })
+        new go.TextBlock({ stroke: C.text, textAlign: "center" })
           .bind("alignment", "angle", ballValveLabelAlignmentForAngle)
-          .bind("text", "key"),
+          .bind("text", "", valveDisplayText),
       ),
   );
 
   diagram.nodeTemplateMap.add("tank", makeTankTemplate());
   diagram.nodeTemplateMap.add("pressure-tank", makePressureTankTemplate());
   diagram.nodeTemplateMap.add("readout", makeReadoutTemplate());
+  diagram.nodeTemplateMap.add("dashed-rectangle", makeDashedRectangleTemplate());
 
   diagram.nodeTemplateMap.add(
     "pipe-end",
@@ -439,10 +535,12 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
     })
       .bind("location", "loc", go.Point.parse)
       .add(
-        new go.Shape("Circle", {
-          width: 1,
-          height: 1,
-          opacity: 0,
+        new go.Shape("Square", {
+          width: 3,
+          height: 3,
+          opacity: 100,
+          fill: C.pipe,
+          // fill: "#FF0000",
           strokeWidth: 0,
           portId: "",
           fromSpot: go.Spot.Right,
@@ -451,16 +549,13 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
       ),
   );
 
-  diagram.linkTemplate = new go.Link({
-    routing: go.Routing.Orthogonal,
-    corner: 0,
-    selectable: false,
-  })
-    .bind("fromPortId", "fromPort")
-    .bind("toPortId", "toPort")
-    .bind("fromSpot", "fromSpot", go.Spot.parse)
-    .bind("toSpot", "toSpot", go.Spot.parse)
-    .add(new go.Shape({ stroke: C.pipe, strokeWidth: 3 }));
+  diagram.linkTemplate = makeLinkTemplate(new go.Shape({ stroke: C.pipe, strokeWidth: 3 }));
+  diagram.linkTemplateMap.add(
+    "dashed",
+    makeLinkTemplate(
+      new go.Shape({ stroke: C.panelDk, strokeWidth: 1.5, strokeDashArray: [5, 3] }),
+    ),
+  );
 
   return diagram;
 }

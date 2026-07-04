@@ -69,7 +69,7 @@ export class Parameters extends Context.Service<
 
       const { parameters: all } = yield* httpClient.mdb.listParameters({
         params: { instance: yamcsConfig.instance },
-        query: { limit: "400", details: true },
+        query: { limit: "900", details: true },
       });
 
       const parameterInfoByQualifiedName = new Map(

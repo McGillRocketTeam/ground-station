@@ -1,0 +1,132 @@
+.dv-grid-view,
+.dv-branch-node {
+  --dv-separator-border: var(--color-border);
+}
+
+.vis-timeline {
+  border: 0 !important;
+  color: white;
+}
+
+.vis-panel,
+.vis-panel.vis-background,
+.vis-time-axis,
+.vis-grid,
+.vis-foreground .vis-group {
+  border-color: var(--color-border) !important;
+}
+
+
+.vis-panel.vis-center,
+.vis-panel.vis-left,
+.vis-time-axis .vis-grid.vis-minor,
+.vis-time-axis .vis-grid.vis-major {
+  border-color: var(--color-border) !important;
+}
+
+.vis-panel.vis-background {
+  border-top: 1px var(--color-background-secondary-highlight);
+  border-right: 1px var(--color-background);
+
+  background: var(--color-background-secondary);
+}
+
+.vis-panel.vis-center,
+.vis-panel.vis-left {
+  background: var(--color-background);
+}
+
+.vis-time-axis .vis-text,
+.vis-time-axis .vis-text.vis-major,
+.vis-time-axis .vis-text.vis-minor,
+.vis-label {
+  font-family: var(--font-mono);
+  color: var(--color-white-text) !important;
+  font-size: 0.875rem !important;
+  line-height: 1rem !important;
+}
+
+
+.vis-time-axis {
+  border-top: 1px;
+  border-color: var(--color-background-secondary-highlight);
+  background: var(--color-background-secondary);
+}
+
+.vis-time-axis .vis-text.vis-minor {
+  border-top: 1px solid var(--color-background) !important;
+  border-right: 1px solid var(--color-background) !important;
+  box-shadow: inset 0px 1px 0 var(--color-background-secondary-highlight);
+}
+
+.vis-labelset .vis-label {
+  border-bottom: 0px !important;
+}
+
+.vis-label.vis-group-level-0 {
+  background: var(--color-background-secondary);
+  border-top: 1px solid var(--color-background) !important;
+  border-right: 1px solid var(--color-background) !important;
+  box-shadow: inset 0px 1px 0 var(--color-background-secondary-highlight);
+}
+
+
+.vis-item.vis-range {
+  border-radius: 0 !important;
+  border-color: transparent !important;
+  font-size: 0.875rem;
+  line-height: 1rem;
+}
+
+.vis-item.flight-review-stage-window {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.vis-item.flight-review-stage-window .vis-item-content {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1rem;
+}
+
+.vis-labelset .vis-label .vis-inner {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-size: 0.875rem;
+  line-height: 1rem;
+}
+
+.vis-item.flight-review-telemetry-window {
+  border: 0;
+  border-radius: 0 !important;
+  background: var(--color-selection-background);
+}
+
+.vis-custom-time {
+  width: 3px !important;
+  border: 0 !important;
+  background-color: red !important;
+}
+
+.vis-custom-time > div:first-child {
+  left: -4px !important;
+  width: 8px !important;
+}
+
+.vis-custom-time-marker {
+  top: 8px;
+  padding: 0px 0px;
+  border-radius: 0px;
+  background: gold;
+  color: black;
+  font-size: 9px;
+}
+
+.vis-foreground .vis-group {
+  border-bottom-color: var(--color-border) !important;
+}
+
+.dv-sash {
+  border: 1px var(--color-border);
+  background: var(--color-border);
+}

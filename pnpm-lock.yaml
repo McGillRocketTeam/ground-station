@@ -221,6 +221,9 @@ importers:
         specifier: ^5
         version: 5.9.3
     devDependencies:
+      '@effect/language-service':
+        specifier: 'catalog:'
+        version: 0.83.1
       '@types/node':
         specifier: latest
         version: 26.1.0

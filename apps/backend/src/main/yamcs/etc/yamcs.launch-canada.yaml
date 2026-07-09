@@ -38,22 +38,22 @@ dataLinks:
       - switchName: panel_3_switch_1
         pin: 4 # LA RET POLARITY
 
-      - switchName: panel_3_switch_2
+      - switchName: panel_3_switch_1
         pin: 1 # FIO 1 DUMP
 
-      - switchName: panel_4_switch_2
+      - switchName: panel_4_switch_1
         pin: 0 # FIO 0 FILL
 
-      - switchName: panel_4_switch_1
+      - switchName: panel_3_switch_2
         pin: 6 # LA RET POWER
 
-      - switchName: panel_6_switch_2
+      - switchName: panel_6_switch_1
         pin: 7 # LA DIS POWER
 
-      - switchName: panel_7_switch_1
+      - switchName: panel_6_switch_2
         pin: 5 # LA DIS POLARITY
 
-      - switchName: panel_6_switch_1
+      - switchName: panel_5_switch_2
         pin: 20 # IGN +
 
       # DAQ CONTROL
@@ -72,11 +72,11 @@ dataLinks:
         onCommand: mov_arming
         offCommand: mov_disarming
 
-      - switchName: panel_5_switch_1
+      - switchName: panel_4_switch_2
         onCommand: vent_valve_energize
         offCommand: vent_valve_de-energize
 
-      - switchName: panel_5_switch_2
+      - switchName: panel_5_switch_1
         onCommand: fdov_energize
         offCommand: fdov_de-energize
 

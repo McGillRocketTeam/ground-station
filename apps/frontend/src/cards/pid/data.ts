@@ -165,7 +165,7 @@ const initialNodeDataArray: Array<NodeData> = [
     angle: 90,
     letter: "E",
     state: "OPEN",
-    qualifiedName: "/EGSE/Pad/LabJack/FIO1",
+    qualifiedName: "/EGSE/Pad/LabJack/dump_valve_open",
   },
   {
     key: "V-23-SINK",
@@ -195,7 +195,7 @@ const initialNodeDataArray: Array<NodeData> = [
     angle: 0,
     letter: "E",
     state: "CLOSED",
-    qualifiedName: "/EGSE/Pad/LabJack/FIO0",
+    qualifiedName: "/EGSE/Pad/LabJack/fill_valve_open",
   },
   {
     key: "V-21",
@@ -220,6 +220,8 @@ const initialNodeDataArray: Array<NodeData> = [
     loc: "840 80",
     label: "TT I-0",
     decimals: 0,
+    qualifiedName: "/EGSE/Pad/Thermocouple/tc5_temp",
+    unit: "C"
   },
   {
     key: "PT-I1",

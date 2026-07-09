@@ -37,11 +37,9 @@
       <Parameter name="AIN12" parameterTypeRef="float_32"/>
       <Parameter name="AIN13" parameterTypeRef="float_32"/>
       <!-- Digital pins -->
-      <Parameter name="FIO0" parameterTypeRef="digital_pin_state">
-        <AliasSet>
-          <Alias nameSpace="/EGSE/Pad/LabJack" alias="testing"/>
-        </AliasSet>
-      </Parameter>
+      <Parameter name="FIO0" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="fill_valve_open" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="dump_valve_open" parameterTypeRef="digital_pin_state"/>
       <Parameter name="FIO1" parameterTypeRef="digital_pin_state"/>
       <Parameter name="FIO2" parameterTypeRef="digital_pin_state"/>
       <Parameter name="FIO3" parameterTypeRef="digital_pin_state"/>
@@ -241,7 +239,7 @@
       <!-- AIN6: Post-Fill Pressure; AIN7-10: pressure transducers — Kulite PT: y=268.25x - 482 -->
       <MathAlgorithm name="post_fill_pressure_psi">
         <MathOperation outputParameterRef="post_fill_pressure_psi">
-          <ParameterInstanceRefOperand parameterRef="AIN6"/>
+          <ParameterInstanceRefOperand parameterRef="AIN8"/>
           <ValueOperand>268.25</ValueOperand>
           <Operator>*</Operator>
           <ValueOperand>482</ValueOperand>
@@ -269,6 +267,8 @@
           <ValueOperand>396.36</ValueOperand>
           <Operator>*</Operator>
           <ValueOperand>182.71</ValueOperand>
+          <Operator>-</Operator>
+          <ValueOperand>14</ValueOperand>
           <Operator>-</Operator>
           <TriggerSet>
             <OnParameterUpdateTrigger parameterRef="AIN8"/>
@@ -336,6 +336,34 @@
           </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
+       <CustomAlgorithm name="fill_valve_open" shortDescription="Fill Valve Open">
+        <LongDescription>Reports if the Fill Valve is open based on its reported states.</LongDescription>
+        <AlgorithmText language="JavaScript">fill_valve_open.value = FIO0.value;
+fill_valve_open.updated = true;</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="FIO0" instance="0" inputName="FIO0"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="fill_valve_open" outputName="fill_valve_open"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="FIO0"/>
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="dump_valve_open" shortDescription="Dump Valve Open">
+        <LongDescription>Reports if the Dump Valve is open based on its reported states.</LongDescription>
+        <AlgorithmText language="JavaScript">dump_valve_open.value = FIO1.value === "low" ? "high" : "low";
+dump_valve_open.updated = true;</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="FIO1" instance="0" inputName="FIO1"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="dump_valve_open" outputName="dump_valve_open"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="FIO1"/>
+        </TriggerSet>
+      </CustomAlgorithm>
     </AlgorithmSet>
   </TelemetryMetaData>
   <CommandMetaData>

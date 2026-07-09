@@ -61,7 +61,7 @@
         <ParameterProperties dataSource="ground" persistence="true"/>
       </Parameter>
       <Parameter name="SNR" parameterTypeRef="snr" shortDescription="Radio Signal-to-Noise Ratio"/>
-      <Parameter name="cpu_temperature" parameterTypeRef="snr" shortDescription="Radio CPU Temperature">
+      <Parameter name="cpu_temperature" parameterTypeRef="temperature_c" shortDescription="Radio CPU Temperature">
         <LongDescription>Teensy CPU junction temperature</LongDescription>
       </Parameter>
     </ParameterSet>

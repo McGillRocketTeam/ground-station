@@ -40,14 +40,14 @@ export const disconnectionTestingSteps = [
     role: "CS",
     commands: [
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 5 },
           { name: "pin_state", value: "HIGH" },
         ],
       },
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 7 },
           { name: "pin_state", value: "HIGH" },
@@ -69,14 +69,23 @@ export const disconnectionTestingSteps = [
     role: "CS",
     commands: [
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 4 },
           { name: "pin_state", value: "HIGH" },
         ],
       },
+    ],
+    comment:
+      "Actuate the RET linear actuator to retract by energizing RET Actuator Polarity and RET Actuator Power on the control box, broadcasting a countdown from 3 for both.",
+  }),
+    ProcedureStep.make({
+    type: "command",
+    stepNumber: 47.5,
+    role: "CS",
+    commands: [
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 6 },
           { name: "pin_state", value: "HIGH" },
@@ -84,7 +93,7 @@ export const disconnectionTestingSteps = [
       },
     ],
     comment:
-      "Actuate the RET linear actuator to retract by energizing RET Actuator Polarity and RET Actuator Power on the control box, broadcasting a countdown from 3 for both.",
+      "Actuate Polairty Power",
   }),
   ProcedureStep.make({
     type: "text",
@@ -98,28 +107,28 @@ export const disconnectionTestingSteps = [
     role: "CS",
     commands: [
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 7 },
           { name: "pin_state", value: "LOW" },
         ],
       },
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 6 },
           { name: "pin_state", value: "LOW" },
         ],
       },
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 5 },
           { name: "pin_state", value: "LOW" },
         ],
       },
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 4 },
           { name: "pin_state", value: "LOW" },
@@ -135,14 +144,14 @@ export const disconnectionTestingSteps = [
     role: "CS",
     commands: [
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 4 },
           { name: "pin_state", value: "LOW" },
         ],
       },
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 6 },
           { name: "pin_state", value: "HIGH" },

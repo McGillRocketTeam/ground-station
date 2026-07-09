@@ -464,7 +464,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   }
 
   /**
-   * Issues a /LabJackT7/write_digital_pin command via the Yamcs HTTP API.
+   * Issues a /LabJack/write_digital_pin command via the Yamcs HTTP API.
    *
    * @param pinNumber the LabJack digital pin number (0-22)
    * @param pinState true for HIGH, false for LOW
@@ -482,7 +482,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     String pinStateStr = pinState ? "HIGH" : "LOW";
     String url =
         String.format(
-            "http://localhost:%d/api/processors/%s/%s/commands/LabJackT7/write_digital_pin",
+            "http://localhost:%d/api/processors/%s/%s/commands/EGSE/Pad/LabJack/write_digital_pin",
             YAMCS_HTTP_PORT, YAMCS_INSTANCE, YAMCS_PROCESSOR);
 
     String jsonBody =
@@ -503,7 +503,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   }
 
   /**
-   * Issues a /LabJackT7/write_DAC_pin command via the Yamcs HTTP API.
+   * Issues a /LabJack/write_DAC_pin command via the Yamcs HTTP API.
    *
    * @param pinNumber the LabJack DAC pin number (0 or 1)
    * @param pinState true → 5.0 V, false → 0.0 V
@@ -513,7 +513,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
     float voltage = pinState ? 5.0f : 0.0f;
     String url =
         String.format(
-            "http://localhost:%d/api/processors/%s/%s/commands/LabJackT7/write_DAC_pin",
+            "http://localhost:%d/api/processors/%s/%s/commands/EGSE/Pad/LabJack/write_DAC_pin",
             YAMCS_HTTP_PORT, YAMCS_INSTANCE, YAMCS_PROCESSOR);
 
     String jsonBody =

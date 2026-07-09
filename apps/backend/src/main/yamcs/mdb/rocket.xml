@@ -1577,16 +1577,16 @@ See https://github.com/yamcs/pymdb
     <AlgorithmSet>
       <CustomAlgorithm name="fdov_open" shortDescription="F/DOV Open">
         <LongDescription>Reports if the F/DOV is open based on its reported states.</LongDescription>
-        <AlgorithmText language="JavaScript">fdov_open.value = !fdov_energizedCurrent_HW.value;
+        <AlgorithmText language="JavaScript">fdov_open.value = !fdov_energizedGate_HW.value;
 fdov_open.updated = true;</AlgorithmText>
         <InputSet>
-          <InputParameterInstanceRef parameterRef="fdov_energizedCurrent_HW" instance="0" inputName="fdov_energizedCurrent_HW"/>
+          <InputParameterInstanceRef parameterRef="fdov_energizedGate_HW" instance="0" inputName="fdov_energizedGate_HW"/>
         </InputSet>
         <OutputSet>
           <OutputParameterRef parameterRef="fdov_open" outputName="fdov_open"/>
         </OutputSet>
         <TriggerSet>
-          <OnParameterUpdateTrigger parameterRef="fdov_energizedCurrent_HW"/>
+          <OnParameterUpdateTrigger parameterRef="fdov_energizedGate_HW"/>
         </TriggerSet>
       </CustomAlgorithm>
       <CustomAlgorithm name="gps_locked" shortDescription="GPS Locked">
@@ -1612,30 +1612,30 @@ gps_locked.updated = true;</AlgorithmText>
       </CustomAlgorithm>
       <CustomAlgorithm name="mov_open" shortDescription="MOV Open">
         <LongDescription>Reports if the MOV is open based on its reported states.</LongDescription>
-        <AlgorithmText language="JavaScript">mov_open.value = mov_energizedCurrent_HW.value;
+        <AlgorithmText language="JavaScript">mov_open.value = mov_energizedGate_HW.value;
 mov_open.updated = true;</AlgorithmText>
         <InputSet>
-          <InputParameterInstanceRef parameterRef="mov_energizedCurrent_HW" instance="0" inputName="mov_energizedCurrent_HW"/>
+          <InputParameterInstanceRef parameterRef="mov_energizedGate_HW" instance="0" inputName="mov_energizedGate_HW"/>
         </InputSet>
         <OutputSet>
           <OutputParameterRef parameterRef="mov_open" outputName="mov_open"/>
         </OutputSet>
         <TriggerSet>
-          <OnParameterUpdateTrigger parameterRef="mov_energizedCurrent_HW"/>
+          <OnParameterUpdateTrigger parameterRef="mov_energizedGate_HW"/>
         </TriggerSet>
       </CustomAlgorithm>
       <CustomAlgorithm name="vent_open" shortDescription="Vent Open">
         <LongDescription>Reports if the vent valve is open based on its reported states.</LongDescription>
-        <AlgorithmText language="JavaScript">vent_open.value = !vent_energizedCurrent_HW.value;
+        <AlgorithmText language="JavaScript">vent_open.value = !vent_energizedGate_HW.value;
 vent_open.updated = true;</AlgorithmText>
         <InputSet>
-          <InputParameterInstanceRef parameterRef="vent_energizedCurrent_HW" instance="0" inputName="vent_energizedCurrent_HW"/>
+          <InputParameterInstanceRef parameterRef="vent_energizedGate_HW" instance="0" inputName="vent_energizedGate_HW"/>
         </InputSet>
         <OutputSet>
           <OutputParameterRef parameterRef="vent_open" outputName="vent_open"/>
         </OutputSet>
         <TriggerSet>
-          <OnParameterUpdateTrigger parameterRef="vent_energizedCurrent_HW"/>
+          <OnParameterUpdateTrigger parameterRef="vent_energizedGate_HW"/>
         </TriggerSet>
       </CustomAlgorithm>
     </AlgorithmSet>

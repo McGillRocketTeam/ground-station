@@ -77,14 +77,14 @@ export const simultaneousOperationsSteps = [
     role: "CS",
     commands: [
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 0 },
           { name: "pin_state", value: "HIGH" },
         ],
       },
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 0 },
           { name: "pin_state", value: "LOW" },
@@ -100,14 +100,14 @@ export const simultaneousOperationsSteps = [
     role: "CS to PD",
     commands: [
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 1 },
           { name: "pin_state", value: "HIGH" },
         ],
       },
       {
-        name: "/LabJackT7/write_digital_pin",
+        name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
           { name: "pin_number", value: 1 },
           { name: "pin_state", value: "LOW" },
@@ -225,7 +225,7 @@ export const simultaneousOperationsSteps = [
     type: "command",
     stepNumber: 35,
     role: "CS",
-    name: "/LabJackT7/write_digital_pin",
+    name: "/EGSE/Pad/LabJackT7/write_digital_pin",
     arguments: [
       { name: "pin_number", value: 20 },
       { name: "pin_state", value: "HIGH" },

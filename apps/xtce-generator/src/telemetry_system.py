@@ -81,15 +81,15 @@ class TelemetrySystem(FlightSystem):
             long_description="Reports if the F/DOV is open based on its reported states.",
             language="JavaScript",
             text=(
-                "fdov_open.value = !fdov_energizedCurrent_HW.value;\n"
+                "fdov_open.value = !fdov_energizedGate_HW.value;\n"
                 "fdov_open.updated = true;"
             ),
             inputs=[
-                Y.InputParameter("fdov_energizedCurrent_HW", name="fdov_energizedCurrent_HW"),
+                Y.InputParameter("fdov_energizedGate_HW", name="fdov_energizedGate_HW"),
             ],
             outputs=[Y.OutputParameter(fdov_open, name="fdov_open")],
             triggers=[
-                Y.ParameterTrigger("fdov_energizedCurrent_HW"),
+                Y.ParameterTrigger("fdov_energizedGate_HW"),
             ],
         )
 
@@ -110,15 +110,15 @@ class TelemetrySystem(FlightSystem):
             long_description="Reports if the vent valve is open based on its reported states.",
             language="JavaScript",
             text=(
-                "vent_open.value = !vent_energizedCurrent_HW.value;\n"
+                "vent_open.value = !vent_energizedGate_HW.value;\n"
                 "vent_open.updated = true;"
             ),
             inputs=[
-                Y.InputParameter("vent_energizedCurrent_HW", name="vent_energizedCurrent_HW"),
+                Y.InputParameter("vent_energizedGate_HW", name="vent_energizedGate_HW"),
             ],
             outputs=[Y.OutputParameter(vent_open, name="vent_open")],
             triggers=[
-                Y.ParameterTrigger("vent_energizedCurrent_HW"),
+                Y.ParameterTrigger("vent_energizedGate_HW"),
             ],
         )
 
@@ -139,15 +139,15 @@ class TelemetrySystem(FlightSystem):
             long_description="Reports if the MOV is open based on its reported states.",
             language="JavaScript",
             text=(
-                "mov_open.value = mov_energizedCurrent_HW.value;\n"
+                "mov_open.value = mov_energizedGate_HW.value;\n"
                 "mov_open.updated = true;"
             ),
             inputs=[
-                Y.InputParameter("mov_energizedCurrent_HW", name="mov_energizedCurrent_HW"),
+                Y.InputParameter("mov_energizedGate_HW", name="mov_energizedGate_HW"),
             ],
             outputs=[Y.OutputParameter(mov_open, name="mov_open")],
             triggers=[
-                Y.ParameterTrigger("mov_energizedCurrent_HW"),
+                Y.ParameterTrigger("mov_energizedGate_HW"),
             ],
         )
 

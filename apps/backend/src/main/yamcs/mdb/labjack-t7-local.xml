@@ -22,48 +22,120 @@
     </ParameterTypeSet>
     <ParameterSet>
       <!-- Writable simulator inputs. These keep the same qualified names as launch-canada, but are LOCAL here. -->
-      <Parameter name="AIN0" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN1" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN2" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN3" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN4" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN5" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN6" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN7" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN8" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN9" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN10" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN11" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN12" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="AIN13" parameterTypeRef="float_32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="AIN0" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN1" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN2" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN3" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN4" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN5" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN6" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN7" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN8" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN9" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN10" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN11" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN12" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="AIN13" parameterTypeRef="float_32">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
       <Parameter name="FIO0" parameterTypeRef="digital_pin_state">
         <AliasSet>
           <Alias nameSpace="/EGSE/Pad/LabJack" alias="testing"/>
         </AliasSet>
         <ParameterProperties dataSource="local"/>
       </Parameter>
-      <Parameter name="FIO1" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="FIO2" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="FIO3" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="FIO4" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="FIO5" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="FIO6" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="FIO7" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO0" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO1" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO2" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO3" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO4" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO5" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO6" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="EIO7" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="CIO0" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="CIO1" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="CIO2" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="CIO3" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="MIO0" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="MIO1" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
-      <Parameter name="MIO2" parameterTypeRef="digital_pin_state"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="FIO1" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="FIO2" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="FIO3" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="FIO4" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="FIO5" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="FIO6" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="FIO7" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO0" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO1" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO2" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO3" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO4" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO5" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO6" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="EIO7" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="CIO0" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="CIO1" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="CIO2" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="CIO3" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="MIO0" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="MIO1" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="MIO2" parameterTypeRef="digital_pin_state">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
       <Parameter name="calibrated_cc_pressure_psi" parameterTypeRef="float_32_psi">
         <ParameterProperties dataSource="derived" readOnly="true"/>
       </Parameter>
@@ -115,7 +187,9 @@
           <Operator>*</Operator>
           <ValueOperand>13.78</ValueOperand>
           <Operator>+</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN0"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN0"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_ain1">
@@ -125,7 +199,9 @@
           <Operator>*</Operator>
           <ValueOperand>0</ValueOperand>
           <Operator>+</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN1"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN1"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_thrust_newtons">
@@ -135,7 +211,9 @@
           <Operator>*</Operator>
           <ValueOperand>210</ValueOperand>
           <Operator>-</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN3"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN3"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_weight_newtons">
@@ -145,7 +223,9 @@
           <Operator>*</Operator>
           <ValueOperand>1.73</ValueOperand>
           <Operator>-</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN2"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN2"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_ain4">
@@ -155,7 +235,9 @@
           <Operator>*</Operator>
           <ValueOperand>0</ValueOperand>
           <Operator>+</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN4"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN4"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_ain5">
@@ -165,7 +247,9 @@
           <Operator>*</Operator>
           <ValueOperand>0</ValueOperand>
           <Operator>+</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN5"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN5"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="post_fill_pressure_psi">
@@ -175,7 +259,9 @@
           <Operator>*</Operator>
           <ValueOperand>482</ValueOperand>
           <Operator>-</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN6"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN6"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="pre_fill_pressure_psi">
@@ -185,7 +271,9 @@
           <Operator>*</Operator>
           <ValueOperand>482</ValueOperand>
           <Operator>-</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN7"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN7"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_pressure_ain8_psi">
@@ -195,7 +283,9 @@
           <Operator>*</Operator>
           <ValueOperand>182.71</ValueOperand>
           <Operator>-</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN8"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN8"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_pressure_ain9_psi">
@@ -205,7 +295,9 @@
           <Operator>*</Operator>
           <ValueOperand>189.71</ValueOperand>
           <Operator>-</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN9"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN9"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_pressure_ain10_psi">
@@ -215,7 +307,9 @@
           <Operator>*</Operator>
           <ValueOperand>172.71</ValueOperand>
           <Operator>-</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN10"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN10"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_ain11">
@@ -225,7 +319,9 @@
           <Operator>*</Operator>
           <ValueOperand>0</ValueOperand>
           <Operator>+</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN11"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN11"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_ain12">
@@ -235,7 +331,9 @@
           <Operator>*</Operator>
           <ValueOperand>0</ValueOperand>
           <Operator>+</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN12"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN12"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
       <MathAlgorithm name="calibrated_ain13">
@@ -245,7 +343,9 @@
           <Operator>*</Operator>
           <ValueOperand>0</ValueOperand>
           <Operator>+</Operator>
-          <TriggerSet><OnParameterUpdateTrigger parameterRef="AIN13"/></TriggerSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="AIN13"/>
+          </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
     </AlgorithmSet>

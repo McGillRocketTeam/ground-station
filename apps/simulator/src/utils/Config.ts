@@ -9,7 +9,7 @@ export const YAMCS_URL = Config.nonEmptyString("YAMCS_URL").pipe(
 );
 
 export const YAMCS_INSTANCE = Config.nonEmptyString("YAMCS_INSTANCE").pipe(
-  Config.withDefault("launch-canada-sim"),
+  Config.withDefault("launch-canada"),
 );
 
 export const DATA_MODE = Config.schema(

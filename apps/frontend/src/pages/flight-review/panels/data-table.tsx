@@ -1,7 +1,7 @@
 import { useAtomSuspense } from "@effect/atom-react";
 import { useState, type ReactNode } from "react";
 
-import { flightReplayCurrentPacketAtom, flightReplayStateAtom } from "../data";
+import { flightReplayStateAtom } from "../data";
 
 export function DataTablePanel() {
   const data = useAtomSuspense(flightReplayStateAtom).value;

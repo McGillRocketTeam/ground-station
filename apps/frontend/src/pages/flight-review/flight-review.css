@@ -16,7 +16,6 @@
   border-color: var(--color-border) !important;
 }
 
-
 .vis-panel.vis-center,
 .vis-panel.vis-left,
 .vis-time-axis .vis-grid.vis-minor,
@@ -46,7 +45,6 @@
   line-height: 1rem !important;
 }
 
-
 .vis-time-axis {
   border-top: 1px;
   border-color: var(--color-background-secondary-highlight);
@@ -69,7 +67,6 @@
   border-right: 1px solid var(--color-background) !important;
   box-shadow: inset 0px 1px 0 var(--color-background-secondary-highlight);
 }
-
 
 .vis-item.vis-range {
   border-radius: 0 !important;

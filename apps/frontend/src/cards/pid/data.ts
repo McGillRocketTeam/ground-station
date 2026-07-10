@@ -165,7 +165,7 @@ const initialNodeDataArray: Array<NodeData> = [
     angle: 90,
     letter: "E",
     state: "OPEN",
-    qualifiedName: "/EGSE/Pad/LabJack/dump_valve_open",
+    qualifiedName: "/EGSE/Pad/LabJack/dump_valve_opentilt ",
   },
   {
     key: "V-23-SINK",

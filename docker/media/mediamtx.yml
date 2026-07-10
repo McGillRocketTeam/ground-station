@@ -51,4 +51,5 @@ pathDefaults:
 
 paths:
   rocket-cam:
-    source: rtsp://username:password@camera-host:554/stream
+    source: rtsp://172.20.176.1:7447/6a279030f7df18112745f85d_0
+    rtspTransport: tcp

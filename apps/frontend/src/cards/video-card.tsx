@@ -115,6 +115,33 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function getRenderedVideoSize(video: HTMLVideoElement, container: HTMLDivElement) {
+  const intrinsicWidth = video.videoWidth;
+  const intrinsicHeight = video.videoHeight;
+
+  if (!intrinsicWidth || !intrinsicHeight) {
+    return {
+      width: container.clientWidth,
+      height: container.clientHeight,
+    };
+  }
+
+  const containerAspectRatio = container.clientWidth / container.clientHeight;
+  const videoAspectRatio = intrinsicWidth / intrinsicHeight;
+
+  if (videoAspectRatio > containerAspectRatio) {
+    return {
+      width: container.clientWidth,
+      height: container.clientWidth / videoAspectRatio,
+    };
+  }
+
+  return {
+    width: container.clientHeight * videoAspectRatio,
+    height: container.clientHeight,
+  };
+}
+
 function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string | undefined }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -131,6 +158,30 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
     setIsPanning(false);
     panStateRef.current = null;
   }, [camera, url]);
+
+  function clampOffset(nextOffset: { x: number; y: number }, nextScale: number) {
+    const container = containerRef.current;
+    const video = videoRef.current;
+
+    if (!container || !video || nextScale <= MIN_SCALE) {
+      return { x: 0, y: 0 };
+    }
+
+    const renderedVideoSize = getRenderedVideoSize(video, container);
+    const maxOffsetX = Math.max(
+      0,
+      (renderedVideoSize.width * nextScale - container.clientWidth) / 2,
+    );
+    const maxOffsetY = Math.max(
+      0,
+      (renderedVideoSize.height * nextScale - container.clientHeight) / 2,
+    );
+
+    return {
+      x: clamp(nextOffset.x, -maxOffsetX, maxOffsetX),
+      y: clamp(nextOffset.y, -maxOffsetY, maxOffsetY),
+    };
+  }
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -239,10 +290,13 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
       const anchorY = clientY - rect.top - rect.height / 2;
       const scaleRatio = clampedScale / scale;
 
-      return {
-        x: anchorX - (anchorX - currentOffset.x) * scaleRatio,
-        y: anchorY - (anchorY - currentOffset.y) * scaleRatio,
-      };
+      return clampOffset(
+        {
+          x: anchorX - (anchorX - currentOffset.x) * scaleRatio,
+          y: anchorY - (anchorY - currentOffset.y) * scaleRatio,
+        },
+        clampedScale,
+      );
     });
 
     setScale(clampedScale);
@@ -281,8 +335,13 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
     }
 
     setOffset({
-      x: panState.startOffsetX + event.clientX - panState.originX,
-      y: panState.startOffsetY + event.clientY - panState.originY,
+      ...clampOffset(
+        {
+          x: panState.startOffsetX + event.clientX - panState.originX,
+          y: panState.startOffsetY + event.clientY - panState.originY,
+        },
+        scale,
+      ),
     });
   }
 

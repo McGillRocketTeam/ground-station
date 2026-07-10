@@ -21,7 +21,7 @@ export const pathsGroup = HttpApiGroup.make("Paths")
         itemsPerPage: Schema.optional(Schema.NumberFromString),
       },
       success: S.PathList,
-      error: [S.MediaMtxServerError],
+      error: [S.MediaMtxServerError, S.MediaMtxInvalidRequest],
     }),
   )
   .prefix("/paths");

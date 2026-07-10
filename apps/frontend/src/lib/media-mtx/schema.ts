@@ -9,6 +9,15 @@ export class MediaMtxServerError extends Schema.TaggedErrorClass<MediaMtxServerE
   { httpApiStatus: 500 },
 ) {}
 
+export class MediaMtxInvalidRequest extends Schema.TaggedErrorClass<MediaMtxInvalidRequest>()(
+  "MediaMtxInvalidRequest",
+  {
+    status: Schema.Literal("error"),
+    error: Schema.String,
+  },
+  { httpApiStatus: 500 },
+) {}
+
 export const PathSourceType = Schema.Literals([
   "hlsSource",
   "redirect",

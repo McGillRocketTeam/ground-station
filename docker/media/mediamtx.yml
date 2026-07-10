@@ -51,6 +51,9 @@ pathDefaults:
   recordPath: /recordings/%path/%Y-%m-%d_%H-%M-%S-%f
 
 paths:
-  rocket-cam:
+  medium-double-double:
     source: rtsp://172.20.176.1:7447/6a279030f7df18112745f85d_0
+    rtspTransport: tcp
+  rouge-bol-deux-saveurs:
+    source: rtsp://172.22.144.1:7447/6a278658f7df18112745f857_0
     rtspTransport: tcp

@@ -40,6 +40,8 @@ hlsAlwaysRemux: false
 webrtc: true
 webrtcAddress: :8889
 webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+webrtcAdditionalHosts: [192.168.0.126]
 
 srt: true
 srtAddress: :8890

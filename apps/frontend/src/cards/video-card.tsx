@@ -50,6 +50,10 @@ function resolveVideoUrl(rawUrl: string) {
     url.hostname = window.location.hostname;
   }
 
+  if (!url.pathname.endsWith("/whep")) {
+    url.pathname = `${url.pathname.replace(/\/+$/, "")}/whep`;
+  }
+
   return url;
 }
 

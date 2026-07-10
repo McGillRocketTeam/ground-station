@@ -7,10 +7,24 @@
 logLevel: info
 logDestinations: [stdout]
 
-# Enable these if you want to inspect or automate the server locally.
-api: false
+# Enable these for browser clients and local-network inspection.
+api: true
 metrics: false
 pprof: false
+
+# Allow LAN clients to access HTTP/WebRTC endpoints without localhost-only auth.
+authInternalUsers:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: publish
+        path:
+      - action: read
+        path:
+      - action: playback
+        path:
+      - action: api
 
 # Default protocol listeners.
 rtsp: true

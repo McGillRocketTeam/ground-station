@@ -39,6 +39,20 @@ function normalizeWhepUrl(rawUrl: string) {
   throw new Error(`Unsupported video URL protocol: ${url.protocol}`);
 }
 
+function resolveVideoUrl(rawUrl: string) {
+  const url = normalizeWhepUrl(rawUrl);
+
+  if (
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "0.0.0.0"].includes(url.hostname) &&
+    !["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ) {
+    url.hostname = window.location.hostname;
+  }
+
+  return url;
+}
+
 function waitForIceGatheringComplete(peer: RTCPeerConnection) {
   if (peer.iceGatheringState === "complete") {
     return Promise.resolve();
@@ -96,7 +110,7 @@ function WebRtcVideo({ url }: { url: string }) {
 
     void (async () => {
       try {
-        const whepUrl = normalizeWhepUrl(url);
+        const whepUrl = resolveVideoUrl(url);
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
         await waitForIceGatheringComplete(peer);

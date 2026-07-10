@@ -221,7 +221,7 @@ const initialNodeDataArray: Array<NodeData> = [
     label: "TT I-0",
     decimals: 0,
     qualifiedName: "/EGSE/Pad/Thermocouple/tc5_temp",
-    unit: "C"
+    unit: "C",
   },
   {
     key: "PT-I1",

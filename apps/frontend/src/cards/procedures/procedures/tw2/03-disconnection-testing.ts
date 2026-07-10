@@ -79,7 +79,7 @@ export const disconnectionTestingSteps = [
     comment:
       "Actuate the RET linear actuator to retract by energizing RET Actuator Polarity and RET Actuator Power on the control box, broadcasting a countdown from 3 for both.",
   }),
-    ProcedureStep.make({
+  ProcedureStep.make({
     type: "command",
     stepNumber: 47.5,
     role: "CS",
@@ -92,8 +92,7 @@ export const disconnectionTestingSteps = [
         ],
       },
     ],
-    comment:
-      "Actuate Polairty Power",
+    comment: "Actuate Polairty Power",
   }),
   ProcedureStep.make({
     type: "text",

@@ -1,4 +1,5 @@
 config.define_bool('simulator')
+config.define_bool('media')
 config.define_string('environment')
 config.define_string('simulator_data_mode')
 config.define_string('mqtt_broker_url')
@@ -9,6 +10,7 @@ config.define_string('ecoflow_mqtt_host')
 config.define_string('ecoflow_mqtt_port')
 cfg = config.parse()
 simulator_enabled = cfg.get('simulator', False)
+media_enabled = cfg.get('media', False)
 mrt_environment = cfg.get('environment', 'production')
 simulator_data_mode = cfg.get('simulator_data_mode', 'incremental')
 mqtt_broker_url = cfg.get('mqtt_broker_url', '')
@@ -168,8 +170,16 @@ docker_compose(
 		"./docker/docker-compose.yml"
 )
 
+if media_enabled:
+	docker_compose(
+		"./docker/media/docker-compose.yml"
+	)
+
 # dc_resource("backend", labels=['mrt'])
 dc_resource("mbtileserver", labels=['infrastructure'])
 
 if not use_external_mqtt_broker:
 	dc_resource("mqtt_broker", labels=['infrastructure'])
+
+if media_enabled:
+	dc_resource("mediamtx", labels=['media'])

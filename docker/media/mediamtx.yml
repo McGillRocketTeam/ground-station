@@ -1,0 +1,40 @@
+###############################################
+# MediaMTX configuration for local media work.
+#
+# This is intentionally small and editable. Add or override any setting from:
+# https://mediamtx.org/docs/references/configuration-file
+
+logLevel: info
+logDestinations: [stdout]
+
+# Enable these if you want to inspect or automate the server locally.
+api: false
+metrics: false
+pprof: false
+
+# Default protocol listeners.
+rtsp: true
+rtspAddress: :8554
+
+rtmp: true
+rtmpAddress: :1935
+
+hls: true
+hlsAddress: :8888
+hlsAlwaysRemux: false
+
+webrtc: true
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+
+srt: true
+srtAddress: :8890
+
+pathDefaults:
+  source: publisher
+  record: false
+  recordPath: /recordings/%path/%Y-%m-%d_%H-%M-%S-%f
+
+paths:
+  rocket-cam:
+    source: rtsp://username:password@camera-host:554/stream

@@ -1,6 +1,9 @@
 services:
   mediamtx:
     image: bluenviron/mediamtx:latest
+    environment:
+      # Advertise the host LAN IP(s) to remote WebRTC clients.
+      MTX_WEBRTCADDITIONALHOSTS: ${MEDIAMTX_WEBRTC_ADDITIONAL_HOSTS:-}
     ports:
       - "1935:1935"
       - "8554:8554"

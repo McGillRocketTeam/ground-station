@@ -8,6 +8,7 @@ export const FormMaxAnnotationId: unique symbol = Symbol.for("mrt/form/max") as 
 export type FormType =
   | "unknown"
   | "string"
+  | "camera"
   | "parameter"
   | "parameterArray"
   | "commandArray"

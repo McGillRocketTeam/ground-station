@@ -2,7 +2,9 @@ import { Schema } from "effect";
 import { useEffect, useRef, useState } from "react";
 
 import { makeCard } from "@/lib/cards";
+import { CameraField } from "@/lib/dashboard-field-types";
 import { FormTitleAnnotationId } from "@/lib/form";
+import { mediaMtxWebRtcBaseUrl } from "@/lib/media-mtx/atom";
 
 type ConnectionState = "connecting" | "live" | "error";
 
@@ -10,9 +12,12 @@ export const VideoCard = makeCard({
   id: "video-card",
   name: "Video Card",
   schema: Schema.Struct({
-    url: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "WebRTC / WHEP URL" })),
+    camera: CameraField,
+    url: Schema.optional(Schema.String).pipe(
+      Schema.annotate({ [FormTitleAnnotationId]: "WebRTC / WHEP URL" }),
+    ),
   }),
-  component: (props) => <WebRtcVideo url={props.params.url} />,
+  component: (props) => <WebRtcVideo camera={props.params.camera} url={props.params.url} />,
 });
 
 function normalizeWhepUrl(rawUrl: string) {
@@ -57,6 +62,25 @@ function resolveVideoUrl(rawUrl: string) {
   return url;
 }
 
+function resolveCameraUrl(camera: string) {
+  return new URL(
+    `${camera.replace(/^\/+/, "")}/whep`,
+    `${mediaMtxWebRtcBaseUrl.replace(/\/$/, "")}/`,
+  );
+}
+
+function resolveVideoSource(camera: string | undefined, url: string | undefined) {
+  if (camera) {
+    return resolveCameraUrl(camera);
+  }
+
+  if (url) {
+    return resolveVideoUrl(url);
+  }
+
+  throw new Error("Select a camera or enter a WebRTC / WHEP URL.");
+}
+
 function waitForIceGatheringComplete(peer: RTCPeerConnection) {
   if (peer.iceGatheringState === "complete") {
     return Promise.resolve();
@@ -76,7 +100,7 @@ function waitForIceGatheringComplete(peer: RTCPeerConnection) {
   });
 }
 
-function WebRtcVideo({ url }: { url: string }) {
+function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string | undefined }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -114,7 +138,7 @@ function WebRtcVideo({ url }: { url: string }) {
 
     void (async () => {
       try {
-        const whepUrl = resolveVideoUrl(url);
+        const whepUrl = resolveVideoSource(camera, url);
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
         await waitForIceGatheringComplete(peer);
@@ -168,7 +192,7 @@ function WebRtcVideo({ url }: { url: string }) {
 
       peer.close();
     };
-  }, [url]);
+  }, [camera, url]);
 
   return (
     <div className="relative h-full w-full bg-black">

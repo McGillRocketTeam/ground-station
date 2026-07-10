@@ -7,6 +7,7 @@ import { FormMaxAnnotationId, FormMinAnnotationId, formTitle, formType } from "@
 
 import { Field, FieldError, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
+import { DashboardCameraField, type DashboardCameraFieldApi } from "./camera-field";
 import { DashboardChartSeriesField, type DashboardChartSeriesFieldApi } from "./chart-series-field";
 import {
   DashboardCommandArrayField,
@@ -29,6 +30,9 @@ import {
 const DashboardParameterFieldComponent = DashboardParameterField as unknown as ComponentType<{
   field: DashboardParameterFieldApi;
 }>;
+const DashboardCameraFieldComponent = DashboardCameraField as unknown as ComponentType<{
+  field: DashboardCameraFieldApi;
+}>;
 const DashboardParameterArrayFieldComponent =
   DashboardParameterArrayField as unknown as ComponentType<{
     field: DashboardParameterArrayFieldApi;
@@ -50,6 +54,8 @@ const DashboardParameterTableSectionsFieldComponent =
 
 function getFieldPlaceholder(type: ReturnType<typeof formType>) {
   switch (type) {
+    case "camera":
+      return "Select a camera";
     case "parameter":
       return "Select a parameter";
     case "command":
@@ -197,6 +203,8 @@ export function DashboardCardField({
       </label>
       {(() => {
         switch (type) {
+          case "camera":
+            return <DashboardCameraFieldComponent field={field as DashboardCameraFieldApi} />;
           case "parameter":
             return <DashboardParameterFieldComponent field={field as DashboardParameterFieldApi} />;
           case "parameterArray":

@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router";
 import { DashboardPage } from "@/pages/dashboard";
 import { DebugPage } from "@/pages/debug";
 import { ExportPage } from "@/pages/export";
+import { FlightReviewPage } from "@/pages/flight-review/index";
 import { InstanceProtectedPage } from "@/pages/instance";
 import { ProceduresPage } from "@/pages/procedures";
 
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
       {
         path: "/debug",
         element: <DebugPage />,
+      },
+      {
+        path: "/flight",
+        Component: FlightReviewPage,
       },
     ],
   },

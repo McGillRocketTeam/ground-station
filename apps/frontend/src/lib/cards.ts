@@ -14,6 +14,7 @@ import { FaultPanelCard } from "@/cards/fault-panel-card";
 import { GaugeCard } from "@/cards/gauge";
 import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
+import { LiveChartCard } from "@/cards/live-chart";
 import { MapCard } from "@/cards/map-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
 import { ParameterTable } from "@/cards/parameter-table";
@@ -36,6 +37,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   FaultPanelCard,
   CommandButtonCard,
   GaugeCard,
+  LiveChartCard,
   MqttExplorerCard,
   RealtimeChartCard,
   SerialMonitorCard,

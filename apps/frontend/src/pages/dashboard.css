@@ -325,6 +325,10 @@
   width: 100%;
 }
 
+.dv-grid-view .dv-groupview {
+  border: 1px solid var(--color-border);
+}
+
 .dv-debug .dv-resize-container .dv-resize-handle-top {
   background-color: red;
 }

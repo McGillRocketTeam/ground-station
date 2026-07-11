@@ -1,10 +1,10 @@
-import { useAtomSuspense } from "@effect/atom-react";
+import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { DateTime } from "effect";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { timeSubscriptionAtom } from "@/lib/atom";
+import { redFlagTimeAtom, timeSubscriptionAtom } from "@/lib/atom";
 import { cn, formatDate } from "@/lib/utils";
 
 type MissionTimeData = (typeof import("@mrt/yamcs-effect").TimeEvent.Type)["data"];
@@ -37,6 +37,14 @@ function createTargetTime(date: Date, value: string) {
   return target;
 }
 
+function formatDayKey(date: Date) {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function MissionTime() {
   return (
     <div className="flex flex-col border font-mono text-xs">
@@ -55,11 +63,19 @@ function MissionTime() {
 
 function TMinus() {
   const { value: time } = useAtomSuspense(timeSubscriptionAtom).value as MissionTimeData;
-  const [targetTime, setTargetTime] = useState("");
+  const [redFlagTime, setRedFlagTime] = useAtom(redFlagTimeAtom);
   const missionTime = toDate(time);
+  const missionDay = formatDayKey(missionTime);
+  const targetTime = redFlagTime.day === missionDay ? redFlagTime.time : "";
   const countdown = targetTime
     ? formatCountdown(createTargetTime(missionTime, targetTime).getTime() - missionTime.getTime())
     : "SET RED FLAG";
+
+  useEffect(() => {
+    if (redFlagTime.day && redFlagTime.day !== missionDay) {
+      setRedFlagTime({ day: "", time: "" });
+    }
+  }, [missionDay, redFlagTime.day, setRedFlagTime]);
 
   return (
     <Popover>
@@ -86,7 +102,11 @@ function TMinus() {
           step={1}
           value={targetTime}
           onChange={(event) => {
-            setTargetTime(event.target.value);
+            setRedFlagTime(
+              event.target.value
+                ? { day: missionDay, time: event.target.value }
+                : { day: "", time: "" },
+            );
           }}
         />
       </PopoverContent>

@@ -2,7 +2,13 @@ import { ParameterInfo, ParameterValue, YamcsSubscriptions } from "@mrt/yamcs-ef
 import { Effect, Stream } from "effect";
 import { AsyncResult, Atom } from "effect/unstable/reactivity";
 
-export { selectedInstanceAtom, themeAtom, type Theme } from "./frontend";
+export {
+  redFlagTimeAtom,
+  selectedInstanceAtom,
+  themeAtom,
+  type RedFlagTime,
+  type Theme,
+} from "./frontend";
 export { logValidationFailure, YamcsAtomHttpClient, yamcsBaseUrl } from "./yamcs/runtime";
 export {
   parameterInfoAtom,

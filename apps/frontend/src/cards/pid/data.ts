@@ -398,7 +398,23 @@ function extractBooleanValue(value: { readonly engValue?: unknown; readonly rawV
       : undefined;
   const raw = engValue ?? rawValue;
 
-  return typeof raw === "string" ? raw === "high" : undefined;
+  if (typeof raw === "boolean") {
+    return raw;
+  }
+
+  if (typeof raw === "string") {
+    const normalized = raw.trim().toLowerCase();
+
+    if (normalized === "high" || normalized === "true") {
+      return true;
+    }
+
+    if (normalized === "low" || normalized === "false") {
+      return false;
+    }
+  }
+
+  return undefined;
 }
 
 function extractUnit(info: {

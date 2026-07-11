@@ -26,8 +26,8 @@ export const basicMovVerificationSteps = [
     presentation: {
       type: "truthTable",
       columns: [
-        { id: "logicalArm", label: "armed_SW" },
-        { id: "electricalArm", label: "armed_HW" },
+        { id: "logicalArm", label: "Logical Arm" },
+        { id: "electricalArm", label: "Electrical Arm" },
       ],
     },
     condition: [
@@ -101,8 +101,8 @@ export const basicMovVerificationSteps = [
     presentation: {
       type: "truthTable",
       columns: [
-        { id: "logicalArm", label: "armed_SW" },
-        { id: "electricalArm", label: "armed_HW" },
+        { id: "logicalArm", label: "Logical Arm" },
+        { id: "electricalArm", label: "Electrical Arm" },
       ],
     },
     condition: [

@@ -40,7 +40,7 @@ export const propAvAndTestingSteps = [
     type: "text",
     stepNumber: 6,
     role: "AVC & PRC",
-    text: "Attach the Vent TC to Prop Top. Be careful of wire polarity: red goes to the terminal block pin closest to the TC label, yellow goes to the terminal block pin closest to the corner of the PCB.",
+    text: "Attach the Vent TC to Prop Top. Be careful of wire polarity: red/blue goes to the terminal block pin closest to the TC label, yellow/brown goes to the terminal block pin closest to the corner of the PCB.",
   }),
   ProcedureStep.make({
     type: "text",
@@ -58,7 +58,7 @@ export const propAvAndTestingSteps = [
     type: "text",
     stepNumber: 9,
     role: "AVC & PRC",
-    text: "Screw the Tank TC wires into Prop Bottom. Be careful of wire polarity: red goes to -, black goes to +.",
+    text: "Screw the Tank TC wires into Prop Bottom. Be careful of wire polarity: red goes to +, black goes to -.",
   }),
   ProcedureStep.make({
     type: "text",
@@ -75,7 +75,7 @@ export const propAvAndTestingSteps = [
   ProcedureStep.make({
     type: "text",
     stepNumber: 12,
-    role: "AVC & PRC",
+    role: "AVC",
     text: "Slide Prop Bottom into the Prop Bottom mount.",
   }),
   ProcedureStep.make({

@@ -63,7 +63,7 @@ dataLinks:
       # - switchName: panel_5_switch_2
       #   pin: 3 #F/DOV
 
-      # - switchName: panel_2_switch_launch
+      # - switchName: panel_2_switch_2
       #   pin: 2
 
     # AV CONTROL
@@ -84,7 +84,7 @@ dataLinks:
         onCommand: emergency_stop
         offCommand: emergency_cancel
 
-      - switchName: panel_2_switch_launch
+      - switchName: panel_2_switch_1
         onCommand: launch
         offCommand: ""
 

@@ -70,44 +70,56 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   /**
    * Switch names by byte offset in the ControlBox telemetry packet.
    *
-   * <p>Packet layout (from controlbox.xml): byte 0: panel_1_switch_estop byte 1:
-   * panel_2_switch_launch byte 2: panel_3_switch_1 byte 3: panel_3_switch_2 byte 4:
-   * panel_4_switch_1 byte 5: panel_4_switch_2 byte 6: panel_5_switch_1 byte 7: panel_5_switch_2
-   * byte 8: panel_6_switch_1 byte 9: panel_6_switch_2 byte 10: panel_7_switch_1 byte 11:
-   * panel_7_switch_2 byte 12: panel_8_switch_1 byte 13: panel_9_switch_key byte 14:
-   * panel_8_switch_2 (BLKT)
+   * <p>Packet layout (from controlbox.xml):
+   * byte 0: panel_1_switch_estop
+   * byte 1: panel_2_switch_1 (launch)
+   * byte 2: panel_2_switch_2
+   * byte 3: panel_3_switch_1
+   * byte 4: panel_3_switch_2
+   * byte 5: panel_4_switch_1
+   * byte 6: panel_4_switch_2
+   * byte 7: panel_5_switch_1
+   * byte 8: panel_5_switch_2
+   * byte 9: panel_6_switch_1
+   * byte 10: panel_6_switch_2
+   * byte 11: panel_7_switch_1
+   * byte 12: panel_7_switch_2
+   * byte 13: panel_8_switch_1
+   * byte 14: panel_9_switch_key
+   * byte 15: panel_8_switch_2 (BLKT)
    */
   // @formatter:off
   private static final Map<Integer, String> SWITCH_NAME_MAP =
       Map.ofEntries(
           Map.entry(0,  "panel_1_switch_estop"),
-          Map.entry(1,  "panel_2_switch_launch"),
-          Map.entry(2,  "panel_3_switch_1"),
-          Map.entry(3,  "panel_3_switch_2"),
-          Map.entry(4,  "panel_4_switch_1"),
-          Map.entry(5,  "panel_4_switch_2"),
-          Map.entry(6,  "panel_5_switch_1"),
-          Map.entry(7,  "panel_5_switch_2"),
-          Map.entry(8,  "panel_6_switch_1"),
-          Map.entry(9,  "panel_6_switch_2"),
-          Map.entry(10, "panel_7_switch_1"),
-          Map.entry(11, "panel_7_switch_2"),
-          Map.entry(12, "panel_8_switch_1"),
-          Map.entry(13, "panel_9_switch_key"),
-          Map.entry(14, "panel_8_switch_2")
+          Map.entry(1,  "panel_2_switch_1"),
+          Map.entry(2,  "panel_2_switch_2"),
+          Map.entry(3,  "panel_3_switch_1"),
+          Map.entry(4,  "panel_3_switch_2"),
+          Map.entry(5,  "panel_4_switch_1"),
+          Map.entry(6,  "panel_4_switch_2"),
+          Map.entry(7,  "panel_5_switch_1"),
+          Map.entry(8,  "panel_5_switch_2"),
+          Map.entry(9,  "panel_6_switch_1"),
+          Map.entry(10, "panel_6_switch_2"),
+          Map.entry(11, "panel_7_switch_1"),
+          Map.entry(12, "panel_7_switch_2"),
+          Map.entry(13, "panel_8_switch_1"),
+          Map.entry(14, "panel_9_switch_key"),
+          Map.entry(15, "panel_8_switch_2")
           );
 
   private static final Map<Integer, LabJackCommandMapping> DEFAULT_LABJACK_COMMAND_MAP =
       Map.ofEntries(
           Map.entry(1,  new LabJackCommandMapping(MOV__FIO, false)),
-          Map.entry(2,  new LabJackCommandMapping(RUN__FIO, false)),
-          Map.entry(3,  new LabJackCommandMapping(DUMP_FIO, false)),
-          Map.entry(4,  new LabJackCommandMapping(VENT_FIO, false)),
-          Map.entry(5,  new LabJackCommandMapping(FILL_FIO, false)),
-          Map.entry(6,  new LabJackCommandMapping(PURG_FIO, false)),
-          Map.entry(11, new LabJackCommandMapping(20 + IGNM__MIO, true)),
-          Map.entry(12, new LabJackCommandMapping(20 + IGNP__MIO, true)),
-          Map.entry(14, new LabJackCommandMapping(BLKT_FIO, false))
+          Map.entry(3,  new LabJackCommandMapping(RUN__FIO, false)),
+          Map.entry(4,  new LabJackCommandMapping(DUMP_FIO, false)),
+          Map.entry(5,  new LabJackCommandMapping(VENT_FIO, false)),
+          Map.entry(6,  new LabJackCommandMapping(FILL_FIO, false)),
+          Map.entry(7,  new LabJackCommandMapping(PURG_FIO, false)),
+          Map.entry(12, new LabJackCommandMapping(20 + IGNM__MIO, true)),
+          Map.entry(13, new LabJackCommandMapping(20 + IGNP__MIO, true)),
+          Map.entry(15, new LabJackCommandMapping(BLKT_FIO, false))
           );
 
   // @formatter:on
@@ -117,7 +129,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private record FlightComputerCommandMapping(String onCommand, String offCommand) {}
 
   /** Byte offset treated as the effective arming key switch in the telemetry packet. */
-  private static final int ARMING_KEY_OFFSET = 14;
+  private static final int ARMING_KEY_OFFSET = 15;
 
   /**
    * Switches that require the arming key to be ON before their commands are dispatched. Identified

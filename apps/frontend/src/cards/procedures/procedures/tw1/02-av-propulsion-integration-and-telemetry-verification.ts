@@ -20,9 +20,9 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
     presentation: {
       type: "truthTable",
       columns: [
-        { id: "logicalArm", label: "armed_SW" },
-        { id: "electricalArm", label: "armed_HW" },
-        { id: "continuity", label: "continuity_HW" },
+        { id: "logicalArm", label: "Logical Arm" },
+        { id: "electricalArm", label: "Electrical Arm" },
+        { id: "continuity", label: "Electrical Continuity" },
       ],
     },
     condition: [
@@ -104,7 +104,7 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
     type: "verify",
     stepNumber: 24,
     role: "CSC",
-    comment: "Verify that the Tank Pressure reading is within 0.0 to 20.0 PSI.",
+    comment: "Verify that the Tank Pressure reading is within 0.0 to 20.0PSI.",
     delay: 0,
     condition: [
       {
@@ -123,7 +123,7 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
     type: "verify",
     stepNumber: 25,
     role: "CSC",
-    comment: "Verify that the Vent Temperature reading is within 12.0 to 33.0 C.",
+    comment: "Verify that the Vent Temperature reading is within 12.0 to 33.0C.",
     delay: 0,
     condition: [
       {
@@ -142,7 +142,7 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
     type: "verify",
     stepNumber: 26,
     role: "CSC",
-    comment: "Verify that the Combustion Chamber Pressure reading is within 0.0 to 20.0 PSI.",
+    comment: "Verify that the Combustion Chamber Pressure reading is within 0.0 to 20.0PSI.",
     delay: 0,
     condition: [
       {
@@ -161,7 +161,7 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
     type: "verify",
     stepNumber: 27,
     role: "CSC",
-    comment: "Verify that the Tank Temperature reading is within 12.0 to 33.0 C.",
+    comment: "Verify that the Tank Temperature reading is within 12.0 to 33.0C.",
     delay: 0,
     condition: [
       {

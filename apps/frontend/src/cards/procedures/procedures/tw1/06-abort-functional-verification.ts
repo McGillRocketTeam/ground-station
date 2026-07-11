@@ -20,9 +20,9 @@ export const abortFunctionalVerificationSteps = [
     presentation: {
       type: "truthTable",
       columns: [
-        { id: "logicalArm", label: "armed_SW" },
-        { id: "electricalArm", label: "armed_HW" },
-        { id: "continuity", label: "continuity_HW" },
+        { id: "logicalArm", label: "Logical Arm" },
+        { id: "electricalArm", label: "Electrical Arm" },
+        { id: "continuity", label: "Electrical Continuity" },
       ],
     },
     condition: [
@@ -114,8 +114,8 @@ export const abortFunctionalVerificationSteps = [
     presentation: {
       type: "truthTable",
       columns: [
-        { id: "logicalArm", label: "armed_SW" },
-        { id: "electricalArm", label: "armed_HW" },
+        { id: "logicalArm", label: "Logical Arm" },
+        { id: "electricalArm", label: "Electrical Arm" },
       ],
     },
     condition: [

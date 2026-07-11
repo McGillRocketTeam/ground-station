@@ -10,7 +10,7 @@
       <Parameter parameterTypeRef="boolean" name="panel_1_switch_estop"/>
       <Parameter parameterTypeRef="boolean" name="panel_1_switch_1"/>
       <Parameter parameterTypeRef="boolean" name="panel_2_switch_1"/>
-      <Parameter parameterTypeRef="boolean" name="panel_2_switch_launch"/>
+      <Parameter parameterTypeRef="boolean" name="panel_2_switch_2"/>
       <Parameter parameterTypeRef="boolean" name="panel_3_switch_1"/>
       <Parameter parameterTypeRef="boolean" name="panel_3_switch_2"/>
       <Parameter parameterTypeRef="boolean" name="panel_4_switch_1"/>
@@ -43,7 +43,7 @@
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="panel_2_switch_launch">
+          <ParameterRefEntry parameterRef="panel_2_switch_2">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>

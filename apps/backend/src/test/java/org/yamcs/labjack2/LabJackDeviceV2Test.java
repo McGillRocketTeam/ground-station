@@ -1,6 +1,7 @@
 package org.yamcs.labjack2;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import libs.LJM;
@@ -22,5 +23,10 @@ class LabJackDeviceV2Test {
     @Test
     void noResponseBytesReceivedIsRestartableForStreamReads() {
         assertTrue(LabJackDeviceV2.isRestartableStreamReadError(LJM.Errors.NO_RESPONSE_BYTES_RECEIVED.getValue()));
+    }
+
+    @Test
+    void formatsIpAddressesForLogs() {
+        assertEquals("192.168.1.207", LabJackDeviceV2.ipAddressToString(0xC0A801CF));
     }
 }

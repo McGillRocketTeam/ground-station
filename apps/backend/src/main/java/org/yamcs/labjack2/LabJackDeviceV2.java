@@ -4,6 +4,7 @@ import com.sun.jna.ptr.DoubleByReference;
 import com.sun.jna.ptr.IntByReference;
 import java.util.Arrays;
 import java.util.Set;
+import libs.LJMException;
 import libs.LJM;
 import org.yamcs.logging.Log;
 import org.yamcs.labjack.LabJackPacket;
@@ -94,10 +95,76 @@ public class LabJackDeviceV2 {
     }
 
     public void open() {
-        IntByReference handleRef = new IntByReference();
-        LJM.openS("ANY", "ANY", "ANY", handleRef);
-        handle = handleRef.getValue();
-        open = true;
+        try {
+            IntByReference handleRef = new IntByReference();
+            LJM.openS("ANY", "ANY", "ANY", handleRef);
+            handle = handleRef.getValue();
+            open = true;
+        } catch (LJMException e) {
+            logVisibleDevices("connect failed", e);
+            throw e;
+        }
+    }
+
+    private void logVisibleDevices(String context, LJMException cause) {
+        try {
+            String visibleDevices = discoverVisibleDevices();
+            log.warn("LabJack discovery after " + context + " (" + cause.getMessage() + "): " + visibleDevices);
+        } catch (Exception discoveryError) {
+            log.warn("LabJack discovery failed after " + context + ": " + discoveryError.getMessage());
+        }
+    }
+
+    static String discoverVisibleDevices() {
+        final int maxDevices = 16;
+        IntByReference numFound = new IntByReference();
+        int[] deviceTypes = new int[maxDevices];
+        int[] connectionTypes = new int[maxDevices];
+        int[] serialNumbers = new int[maxDevices];
+        int[] ipAddresses = new int[maxDevices];
+        LJM.listAll(LJM.Constants.dtT7, LJM.Constants.ctANY, numFound, deviceTypes, connectionTypes,
+                serialNumbers, ipAddresses);
+
+        int count = Math.min(numFound.getValue(), maxDevices);
+        if (count == 0) {
+            return "no T7 devices discovered";
+        }
+
+        StringBuilder summary = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                summary.append("; ");
+            }
+            summary.append("serial=").append(serialNumbers[i])
+                    .append(", transport=").append(connectionTypeName(connectionTypes[i]))
+                    .append(", ip=").append(ipAddressToString(ipAddresses[i]))
+                    .append(" (raw=").append(Integer.toUnsignedString(ipAddresses[i])).append(")");
+        }
+        if (numFound.getValue() > maxDevices) {
+            summary.append("; ... ").append(numFound.getValue() - maxDevices).append(" more");
+        }
+        return summary.toString();
+    }
+
+    private static String connectionTypeName(int connectionType) {
+        return switch (connectionType) {
+            case LJM.Constants.ctUSB -> "USB";
+            case LJM.Constants.ctETHERNET -> "ETHERNET";
+            case LJM.Constants.ctWIFI -> "WIFI";
+            case LJM.Constants.ctETHERNET_UDP -> "ETHERNET_UDP";
+            case LJM.Constants.ctWIFI_UDP -> "WIFI_UDP";
+            case LJM.Constants.ctETHERNET_ANY -> "ETHERNET_ANY";
+            case LJM.Constants.ctWIFI_ANY -> "WIFI_ANY";
+            default -> "UNKNOWN(" + connectionType + ")";
+        };
+    }
+
+    static String ipAddressToString(int ipAddress) {
+        long unsigned = Integer.toUnsignedLong(ipAddress);
+        return ((unsigned >>> 24) & 0xFF) + "."
+                + ((unsigned >>> 16) & 0xFF) + "."
+                + ((unsigned >>> 8) & 0xFF) + "."
+                + (unsigned & 0xFF);
     }
 
     public void close() {

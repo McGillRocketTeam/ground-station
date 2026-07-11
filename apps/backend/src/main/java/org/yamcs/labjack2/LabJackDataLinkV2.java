@@ -73,6 +73,7 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
     private volatile int lastDeviceBacklog;
     private volatile int lastLjmBacklog;
     private volatile int lastDummySamples;
+    private int consecutiveStreamReadTimeouts;
 
     private Parameter deviceBacklogParameter;
     private Parameter ljmBacklogParameter;
@@ -159,6 +160,7 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         lastStreamWarningMs = 0;
         nextDigitalFeedMs = 0;
         clearBacklogMetrics();
+        consecutiveStreamReadTimeouts = 0;
         processingQueue.clear();
         device = new LabJackDeviceV2();
 
@@ -283,6 +285,7 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         lastDeviceBacklog = streamRead.deviceBacklog();
         lastLjmBacklog = streamRead.ljmBacklog();
         lastDummySamples = streamRead.dummySamples();
+        consecutiveStreamReadTimeouts = 0;
         logStreamHealth(streamRead);
         refreshDigitalStateIfNeeded();
         processingQueue.add(new BatchEntry(getCurrentTime(), streamRead.data(), lastDigital));
@@ -384,8 +387,19 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
 
     private void handleLjmError(LJMException e) {
         int error = e.getError();
+        if (error == 1263) {
+            consecutiveStreamReadTimeouts++;
+            if (consecutiveStreamReadTimeouts <= 3) {
+                log.warn("LabJack stream read timed out (" + consecutiveStreamReadTimeouts
+                        + "/3); keeping existing stream handle alive");
+                return;
+            }
+        } else {
+            consecutiveStreamReadTimeouts = 0;
+        }
         if (LabJackDeviceV2.isRestartableStreamReadError(error)) {
             if (restartStream()) {
+                consecutiveStreamReadTimeouts = 0;
                 return;
             }
         }
@@ -425,6 +439,7 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
 
     private void reconnect() {
         state = State.RECONNECTING;
+        consecutiveStreamReadTimeouts = 0;
         device.stopStream();
         device.close();
         clearBacklogMetrics();

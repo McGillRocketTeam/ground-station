@@ -36,13 +36,16 @@ dataLinks:
     labJackCommands:
 
       - switchName: panel_3_switch_1
+        pin: 0 # FIO 0 FILL
+
+      - switchName: panel_4_switch_2
+        pin: 6 # LA RET POWER
+
+      - switchName: panel_2_switch_2
         pin: 4 # LA RET POLARITY
 
-      - switchName: panel_3_switch_1
-        pin: 1 # FIO 1 DUMP
-
       - switchName: panel_4_switch_1
-        pin: 0 # FIO 0 FILL
+        pin: 1 # FIO 1 DUMP
 
       - switchName: panel_3_switch_2
         pin: 6 # LA RET POWER
@@ -55,6 +58,10 @@ dataLinks:
 
       - switchName: panel_5_switch_2
         pin: 20 # IGN +
+
+      - switchName: panel_1_switch_1
+        pin: 21 # IGN -
+
 
       # DAQ CONTROL
       # - switchName: panel_5_switch_1
@@ -72,7 +79,7 @@ dataLinks:
         onCommand: mov_arming
         offCommand: mov_disarming
 
-      - switchName: panel_4_switch_2
+      - switchName: panel_3_switch_2
         onCommand: vent_valve_energize
         offCommand: vent_valve_de-energize
 

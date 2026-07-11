@@ -31,7 +31,7 @@ export const initialNodes: CustomNodeType[] = [
     id: "LabJack",
     position: { x: 125, y: -80 },
     data: {
-      qualifiedName: "LabJack",
+      qualifiedName: "EGSE/Pad/LabJack",
       friendlyName: "LabJack\nT7",
       textPosition: "top",
     },

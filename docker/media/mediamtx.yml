@@ -52,8 +52,13 @@ pathDefaults:
 
 paths:
   medium-double-double:
-    source: rtsp://172.20.176.1:7447/6a279030f7df18112745f85d_0
+    source: rtsp://192.168.0.28:7447/6a279030f7df18112745f85d_0
     rtspTransport: tcp
   rouge-bol-deux-saveurs:
-    source: rtsp://172.22.144.1:7447/6a278658f7df18112745f857_0
+    source: rtsp://192.168.0.28:7447/6a278658f7df18112745f857_0
     rtspTransport: tcp
+  Cunegonde-4:
+    source: rtsp://192.168.0.28:7447/6a278c32f7df18112745f85b_0
+    rtspTransport: tcp
+  drone:
+    source: publisher

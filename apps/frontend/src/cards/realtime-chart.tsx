@@ -208,8 +208,10 @@ export function RealtimePlot({
   }, [seriesConfigs]);
 
   return (
-    <div className={cn("h-full w-full", className)} ref={containerRef}>
-      <div ref={chartRef} />
+    <div className="h-full w-full pb-8">
+      <div className={cn("h-full w-full", className)} ref={containerRef}>
+        <div ref={chartRef} />
+      </div>
     </div>
   );
 }

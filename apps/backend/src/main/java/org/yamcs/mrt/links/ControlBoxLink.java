@@ -50,8 +50,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private long lastArmingKeyOnTime = 0;
 
   private static final int YAMCS_HTTP_PORT = 8090;
-  private static final int FILL_FIO = 2;
-  private static final int DUMP_FIO = 3;
+  private static final int FILL_FIO = 0;
+  private static final int DUMP_FIO = 1;
   private static final int PURG_FIO = 5;
   private static final int MOV__FIO = 5;
   private static final int BLKT_FIO = 4;
@@ -72,53 +72,55 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    *
    * <p>Packet layout (from controlbox.xml):
    * byte 0: panel_1_switch_estop
-   * byte 1: panel_2_switch_1 (launch)
-   * byte 2: panel_2_switch_2
-   * byte 3: panel_3_switch_1
-   * byte 4: panel_3_switch_2
-   * byte 5: panel_4_switch_1
-   * byte 6: panel_4_switch_2
-   * byte 7: panel_5_switch_1
-   * byte 8: panel_5_switch_2
-   * byte 9: panel_6_switch_1
-   * byte 10: panel_6_switch_2
-   * byte 11: panel_7_switch_1
-   * byte 12: panel_7_switch_2
-   * byte 13: panel_8_switch_1
-   * byte 14: panel_9_switch_key
+   * byte 1: panel_1_switch_1
+   * byte 2: panel_2_switch_1 (launch)
+   * byte 3: panel_2_switch_2
+   * byte 4: panel_3_switch_1
+   * byte 5: panel_3_switch_2
+   * byte 6: panel_4_switch_1
+   * byte 7: panel_4_switch_2
+   * byte 8: panel_5_switch_1
+   * byte 9: panel_5_switch_2
+   * byte 10: panel_6_switch_1
+   * byte 11: panel_6_switch_2
+   * byte 12: panel_7_switch_1
+   * byte 13: panel_7_switch_2
+   * byte 14: panel_8_switch_1
    * byte 15: panel_8_switch_2 (BLKT)
+   * byte 16: panel_9_switch_key
    */
   // @formatter:off
   private static final Map<Integer, String> SWITCH_NAME_MAP =
       Map.ofEntries(
           Map.entry(0,  "panel_1_switch_estop"),
-          Map.entry(1,  "panel_2_switch_1"),
-          Map.entry(2,  "panel_2_switch_2"),
-          Map.entry(3,  "panel_3_switch_1"),
-          Map.entry(4,  "panel_3_switch_2"),
-          Map.entry(5,  "panel_4_switch_1"),
-          Map.entry(6,  "panel_4_switch_2"),
-          Map.entry(7,  "panel_5_switch_1"),
-          Map.entry(8,  "panel_5_switch_2"),
-          Map.entry(9,  "panel_6_switch_1"),
-          Map.entry(10, "panel_6_switch_2"),
-          Map.entry(11, "panel_7_switch_1"),
-          Map.entry(12, "panel_7_switch_2"),
-          Map.entry(13, "panel_8_switch_1"),
-          Map.entry(14, "panel_9_switch_key"),
-          Map.entry(15, "panel_8_switch_2")
+          Map.entry(1,  "panel_1_switch_1"),
+          Map.entry(2,  "panel_2_switch_1"),
+          Map.entry(3,  "panel_2_switch_2"),
+          Map.entry(4,  "panel_3_switch_1"),
+          Map.entry(5,  "panel_3_switch_2"),
+          Map.entry(6,  "panel_4_switch_1"),
+          Map.entry(7,  "panel_4_switch_2"),
+          Map.entry(8,  "panel_5_switch_1"),
+          Map.entry(9,  "panel_5_switch_2"),
+          Map.entry(10, "panel_6_switch_1"),
+          Map.entry(11, "panel_6_switch_2"),
+          Map.entry(12, "panel_7_switch_1"),
+          Map.entry(13, "panel_7_switch_2"),
+          Map.entry(14, "panel_8_switch_1"),
+          Map.entry(15, "panel_8_switch_2"),
+          Map.entry(16, "panel_9_switch_key")
           );
 
   private static final Map<Integer, LabJackCommandMapping> DEFAULT_LABJACK_COMMAND_MAP =
       Map.ofEntries(
-          Map.entry(1,  new LabJackCommandMapping(MOV__FIO, false)),
-          Map.entry(3,  new LabJackCommandMapping(RUN__FIO, false)),
-          Map.entry(4,  new LabJackCommandMapping(DUMP_FIO, false)),
-          Map.entry(5,  new LabJackCommandMapping(VENT_FIO, false)),
-          Map.entry(6,  new LabJackCommandMapping(FILL_FIO, false)),
-          Map.entry(7,  new LabJackCommandMapping(PURG_FIO, false)),
-          Map.entry(12, new LabJackCommandMapping(20 + IGNM__MIO, true)),
-          Map.entry(13, new LabJackCommandMapping(20 + IGNP__MIO, true)),
+          Map.entry(2,  new LabJackCommandMapping(MOV__FIO, false)),
+          Map.entry(4,  new LabJackCommandMapping(RUN__FIO, false)),
+          Map.entry(5,  new LabJackCommandMapping(DUMP_FIO, false)),
+          Map.entry(6,  new LabJackCommandMapping(VENT_FIO, false)),
+          Map.entry(7,  new LabJackCommandMapping(FILL_FIO, false)),
+          Map.entry(8,  new LabJackCommandMapping(PURG_FIO, false)),
+          Map.entry(13, new LabJackCommandMapping(20 + IGNM__MIO, true)),
+          Map.entry(14, new LabJackCommandMapping(20 + IGNP__MIO, true)),
           Map.entry(15, new LabJackCommandMapping(BLKT_FIO, false))
           );
 
@@ -129,7 +131,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   private record FlightComputerCommandMapping(String onCommand, String offCommand) {}
 
   /** Byte offset treated as the effective arming key switch in the telemetry packet. */
-  private static final int ARMING_KEY_OFFSET = 14;
+  private static final int ARMING_KEY_OFFSET = 16;
 
   /**
    * Switches that require the arming key to be ON before their commands are dispatched. Identified
@@ -138,7 +140,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    */
   private static final Set<Integer> ARMING_KEY_GUARDED_SWITCHES =
       Set.of(
-          1
+          2
           );
 
   /** Byte offset of the emergency stop switch in the telemetry packet. */

@@ -68,7 +68,7 @@ dataLinks:
 
     # AV CONTROL
     flightComputerCommands:
-      - switchName: panel_8_switch_2
+      - switchName: panel_9_switch_key
         onCommand: mov_arming
         offCommand: mov_disarming
 

@@ -58,6 +58,17 @@ public class LabJackDeviceV2 {
     }
 
     /**
+     * Some stream-read failures recover cleanly by restarting the stream on the existing handle instead
+     * of tearing the whole device session down.
+     */
+    public static boolean isRestartableStreamReadError(int error) {
+        return switch (error) {
+            case 1225, 1242, 1263, 1303, STREAM_SCAN_OVERLAP -> true;
+            default -> enumValue(error).map(RESTART_STREAM_ERRORS::contains).orElse(false);
+        };
+    }
+
+    /**
      * Some command-response reads can time out briefly while the stream is otherwise healthy. Treating
      * that as a full disconnect causes the "few packets, then reconnect loop" behavior.
      */

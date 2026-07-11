@@ -384,6 +384,11 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
 
     private void handleLjmError(LJMException e) {
         int error = e.getError();
+        if (LabJackDeviceV2.isRestartableStreamReadError(error)) {
+            if (restartStream()) {
+                return;
+            }
+        }
         if (LabJackDeviceV2.isDisconnectError(error)) {
             log.warn("LabJack disconnected (LJM " + error + " " + LabJackDeviceV2.errorName(error)
                     + ": " + e.getMessage() + ")");
@@ -398,6 +403,24 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         }
         log.error("Transient LabJack error (LJM " + error + " " + LabJackDeviceV2.errorName(error)
                 + "): " + e.getMessage());
+    }
+
+    private boolean restartStream() {
+        try {
+            log.warn("LabJack stream read failed; restarting stream on existing handle");
+            device.stopStream();
+            actualScanRateHz = device.startStream();
+            LabJackConfigV2.validateSamplingConfig(actualScanRateHz);
+            nextDigitalFeedMs = 0;
+            clearBacklogMetrics();
+            state = State.STREAMING;
+            log.info("LabJack stream restarted at " + actualScanRateHz + " Hz");
+            return true;
+        } catch (Exception restartError) {
+            log.warn("LabJack stream restart failed: " + restartError.getMessage() + "; reconnecting");
+            reconnect();
+            return false;
+        }
     }
 
     private void reconnect() {

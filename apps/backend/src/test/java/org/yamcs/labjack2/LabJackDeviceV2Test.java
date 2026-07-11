@@ -18,4 +18,9 @@ class LabJackDeviceV2Test {
         assertFalse(LabJackDeviceV2.isTransientDigitalReadError(LJM.Errors.DEVICE_NOT_FOUND.getValue()));
         assertFalse(LabJackDeviceV2.isTransientDigitalReadError(LJM.Errors.STREAM_NOT_RUNNING.getValue()));
     }
+
+    @Test
+    void noResponseBytesReceivedIsRestartableForStreamReads() {
+        assertTrue(LabJackDeviceV2.isRestartableStreamReadError(LJM.Errors.NO_RESPONSE_BYTES_RECEIVED.getValue()));
+    }
 }

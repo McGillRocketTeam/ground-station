@@ -57,6 +57,14 @@ public class LabJackDeviceV2 {
         return error == STREAM_SCAN_OVERLAP || enumValue(error).map(RESTART_STREAM_ERRORS::contains).orElse(false);
     }
 
+    /**
+     * Some command-response reads can time out briefly while the stream is otherwise healthy. Treating
+     * that as a full disconnect causes the "few packets, then reconnect loop" behavior.
+     */
+    public static boolean isTransientDigitalReadError(int error) {
+        return error == LJM.Errors.NO_RESPONSE_BYTES_RECEIVED.getValue();
+    }
+
     public static String errorName(int error) {
         if (error == STREAM_SCAN_OVERLAP) {
             return "STREAM_SCAN_OVERLAP";

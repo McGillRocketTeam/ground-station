@@ -299,6 +299,12 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
             lastDigital = device.readDigitalState();
             nextDigitalFeedMs = now + LabJackConfigV2.DIGITAL_FEED_INTERVAL_MS;
         } catch (LJMException e) {
+            if (LabJackDeviceV2.isTransientDigitalReadError(e.getError())) {
+                nextDigitalFeedMs = now + LabJackConfigV2.DIGITAL_FEED_INTERVAL_MS;
+                log.warn("Digital read timed out during streaming (LJM " + e.getError() + " "
+                        + LabJackDeviceV2.errorName(e.getError()) + "); reusing last state");
+                return;
+            }
             if (LabJackDeviceV2.isDisconnectError(e.getError()) || LabJackDeviceV2.isRestartStreamError(e.getError())) {
                 throw e;
             }

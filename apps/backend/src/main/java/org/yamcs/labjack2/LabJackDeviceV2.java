@@ -10,6 +10,8 @@ import org.yamcs.logging.Log;
 import org.yamcs.labjack.LabJackPacket;
 
 public class LabJackDeviceV2 {
+    public record PollRead(double[] analogValues, byte[] digitalState) {}
+
     public record StreamRead(double[] data, int deviceBacklog, int ljmBacklog, int dummySamples) {}
 
     private static final Log log = new Log(LabJackDeviceV2.class);
@@ -40,6 +42,8 @@ public class LabJackDeviceV2 {
 
     private int handle;
     private boolean open;
+
+    private static final String[] BASIC_READ_NAMES = buildBasicReadNames();
 
     public static void configureLibraryAutoReconnect() {
         try {
@@ -186,6 +190,38 @@ public class LabJackDeviceV2 {
         }
     }
 
+    /**
+     * Minimal command-response configuration modeled after the official LJM write/read examples.
+     */
+    public void configureBasicReadLoop() {
+        IntByReference errAddr = new IntByReference(-1);
+        int framesPerChannel = 4;
+        String[] names = new String[LabJackConfigV2.NUM_ANALOG_PINS * framesPerChannel];
+        double[] values = new double[names.length];
+        int index = 0;
+        for (int channel = 0; channel < LabJackConfigV2.NUM_ANALOG_PINS; channel++) {
+            names[index] = "AIN" + channel + "_NEGATIVE_CH";
+            values[index++] = 199;
+            names[index] = "AIN" + channel + "_RANGE";
+            values[index++] = LabJackConfigV2.rangeForChannel(channel);
+            names[index] = "AIN" + channel + "_RESOLUTION_INDEX";
+            values[index++] = LabJackConfigV2.STREAM_RESOLUTION_INDEX;
+            names[index] = "AIN" + channel + "_SETTLING_US";
+            values[index++] = LabJackConfigV2.STREAM_SETTLING_US;
+        }
+        LJM.eWriteNames(handle, names.length, names, values, errAddr);
+    }
+
+    public PollRead readBasicLoop() {
+        IntByReference errAddr = new IntByReference(-1);
+        double[] values = new double[BASIC_READ_NAMES.length];
+        LJM.eReadNames(handle, BASIC_READ_NAMES.length, BASIC_READ_NAMES, values, errAddr);
+
+        double[] analogValues = Arrays.copyOf(values, LabJackConfigV2.NUM_ANALOG_PINS);
+        byte[] digitalState = LabJackPacket.encodeDigitalState((long) values[LabJackConfigV2.NUM_ANALOG_PINS]);
+        return new PollRead(analogValues, digitalState);
+    }
+
     public void configureWatchdog() {
         // These *_DEFAULT registers persist on the device, so we set them once per link session.
         LJM.eWriteName(handle, "WATCHDOG_ENABLE_DEFAULT", 0);
@@ -278,5 +314,14 @@ public class LabJackDeviceV2 {
         for (int pin = 0; pin < LabJackConfigV2.NUM_DIGITAL_PINS; pin++) {
             writeDigitalPin(pin, 0);
         }
+    }
+
+    private static String[] buildBasicReadNames() {
+        String[] names = new String[LabJackConfigV2.NUM_ANALOG_PINS + 1];
+        for (int channel = 0; channel < LabJackConfigV2.NUM_ANALOG_PINS; channel++) {
+            names[channel] = "AIN" + channel;
+        }
+        names[LabJackConfigV2.NUM_ANALOG_PINS] = "DIO_STATE";
+        return names;
     }
 }

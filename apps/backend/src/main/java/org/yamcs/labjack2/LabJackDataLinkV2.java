@@ -4,10 +4,8 @@ import static org.yamcs.parameter.SystemParametersService.getPV;
 
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import libs.LJMException;
@@ -43,8 +41,6 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         RECONNECTING
     }
 
-    private record BatchEntry(long receptionTime, double[] data, byte[] digitalState) {}
-
     private record CsvEntry(long receptionTime, byte[] packet) {}
 
     private static final Log log = new Log(LabJackDataLinkV2.class);
@@ -55,25 +51,18 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
 
     private LabJackDeviceV2 device;
     private Thread acquisitionThread;
-    private Thread processingThread;
     private ScheduledExecutorService csvExecutor;
     private LabJackCsvWriterV2 csvWriter;
     private final Queue<CsvEntry> csvQueue = new ConcurrentLinkedQueue<>();
-    private final BlockingQueue<BatchEntry> processingQueue = new LinkedBlockingQueue<>();
 
     private Stream archiveStream;
     private TupleDefinition archiveTupleDef;
 
-    private int graphCounter;
     private int seqNum;
-    private boolean watchdogConfigured;
-    private double actualScanRateHz = LabJackConfigV2.SCAN_RATE_HZ;
-    private long lastStreamWarningMs;
-    private long nextDigitalFeedMs;
+    private double actualScanRateHz = LabJackConfigV2.TM_PACKET_RATE_HZ;
     private volatile int lastDeviceBacklog;
     private volatile int lastLjmBacklog;
     private volatile int lastDummySamples;
-    private int consecutiveStreamReadTimeouts;
 
     private Parameter deviceBacklogParameter;
     private Parameter ljmBacklogParameter;
@@ -109,7 +98,7 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         processingQueueDepthParameter = sysParamService.createSystemParameter(
                 LINK_NAMESPACE + linkName + "/Processing Queue Depth",
                 Type.UINT32,
-                "Number of LabJack batches waiting for packet processing");
+                "Unused in basic polling mode");
     }
 
     @Override
@@ -118,7 +107,7 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         list.add(getPV(deviceBacklogParameter, time, lastDeviceBacklog));
         list.add(getPV(ljmBacklogParameter, time, lastLjmBacklog));
         list.add(getPV(dummySamplesParameter, time, lastDummySamples));
-        list.add(getPV(processingQueueDepthParameter, time, processingQueue.size()));
+        list.add(getPV(processingQueueDepthParameter, time, 0));
     }
 
     @Override
@@ -152,16 +141,10 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
 
         running = true;
         state = State.DISCONNECTED;
-        graphCounter = 0;
         seqNum = 0;
-        actualScanRateHz = LabJackConfigV2.SCAN_RATE_HZ;
-        watchdogConfigured = false;
+        actualScanRateHz = LabJackConfigV2.TM_PACKET_RATE_HZ;
         lastDigital = new byte[LabJackPacket.DIGITAL_BYTES];
-        lastStreamWarningMs = 0;
-        nextDigitalFeedMs = 0;
         clearBacklogMetrics();
-        consecutiveStreamReadTimeouts = 0;
-        processingQueue.clear();
         device = new LabJackDeviceV2();
 
         setupArchiveStream();
@@ -175,8 +158,6 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         });
         csvExecutor.scheduleWithFixedDelay(this::drainCsv, 1000, 500, TimeUnit.MILLISECONDS);
 
-        processingThread = new Thread(this::runProcessingLoop, getClass().getSimpleName() + "-proc");
-        processingThread.start();
         acquisitionThread = new Thread(this, getClass().getSimpleName() + "-acq");
         acquisitionThread.start();
         LabJackLinkRegistry.set(this);
@@ -186,21 +167,11 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         if (!running) {
             return;
         }
-
+        
         running = false;
-        if (device != null) {
-            device.stopStream();
-        }
         if (acquisitionThread != null) {
             try {
                 acquisitionThread.join(2000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-        if (processingThread != null) {
-            try {
-                processingThread.join(2000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -231,9 +202,12 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
                 }
 
                 try {
-                    acquireBatch();
+                    pollOnce();
+                    sleep(pollIntervalMs());
                 } catch (LJMException e) {
-                    handleLjmError(e);
+                    log.warn("LabJack polling failed (LJM " + e.getError() + " "
+                            + LabJackDeviceV2.errorName(e.getError()) + ": " + e.getMessage() + "); reconnecting");
+                    reconnect();
                 } catch (Exception e) {
                     log.error("Unexpected LabJack error; reconnecting: " + e.getMessage());
                     reconnect();
@@ -261,17 +235,11 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
     private boolean tryConnect() {
         try {
             device.open();
-            device.configureAnalogRanges();
-            if (!watchdogConfigured) {
-                device.configureWatchdog();
-                watchdogConfigured = true;
-            }
+            device.configureBasicReadLoop();
             device.setAllDigitalLow();
-            actualScanRateHz = device.startStream();
-            LabJackConfigV2.validateSamplingConfig(actualScanRateHz);
-            log.info("LabJack streaming at " + actualScanRateHz + " Hz ("
-                    + LabJackConfigV2.NUM_ANALOG_PINS + " AIN, " + LabJackConfigV2.SCANS_PER_READ
-                    + " scans/read)");
+            actualScanRateHz = 1000.0 / pollIntervalMs();
+            log.info("LabJack polling at " + actualScanRateHz + " Hz ("
+                    + LabJackConfigV2.NUM_ANALOG_PINS + " AIN + DIO_STATE via eReadNames)");
             return true;
         } catch (Exception e) {
             log.warn("LabJack connect attempt failed: " + e.getMessage());
@@ -280,167 +248,22 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         }
     }
 
-    private void acquireBatch() {
-        LabJackDeviceV2.StreamRead streamRead = device.readStream();
-        lastDeviceBacklog = streamRead.deviceBacklog();
-        lastLjmBacklog = streamRead.ljmBacklog();
-        lastDummySamples = streamRead.dummySamples();
-        consecutiveStreamReadTimeouts = 0;
-        logStreamHealth(streamRead);
-        refreshDigitalStateIfNeeded();
-        processingQueue.add(new BatchEntry(getCurrentTime(), streamRead.data(), lastDigital));
-    }
+    private void pollOnce() {
+        LabJackDeviceV2.PollRead pollRead = device.readBasicLoop();
+        lastDigital = pollRead.digitalState();
+        long now = getCurrentTime();
+        byte[] packet = LabJackPacket.build(pollRead.analogValues(), lastDigital);
 
-    private void refreshDigitalStateIfNeeded() {
-        long now = System.currentTimeMillis();
-        if (now < nextDigitalFeedMs) {
-            return;
+        dataIn(1, packet.length);
+        csvQueue.add(new CsvEntry(now, packet));
+        if (LabJackConfigV2.ARCHIVE_FULL_RATE) {
+            emitToArchive(now, packet);
         }
-
-        try {
-            // Stream traffic does not feed the watchdog; this command-response read does.
-            lastDigital = device.readDigitalState();
-            nextDigitalFeedMs = now + LabJackConfigV2.DIGITAL_FEED_INTERVAL_MS;
-        } catch (LJMException e) {
-            if (LabJackDeviceV2.isTransientDigitalReadError(e.getError())) {
-                nextDigitalFeedMs = now + LabJackConfigV2.DIGITAL_FEED_INTERVAL_MS;
-                log.warn("Digital read timed out during streaming (LJM " + e.getError() + " "
-                        + LabJackDeviceV2.errorName(e.getError()) + "); reusing last state");
-                return;
-            }
-            if (LabJackDeviceV2.isDisconnectError(e.getError()) || LabJackDeviceV2.isRestartStreamError(e.getError())) {
-                throw e;
-            }
-            log.warn("Digital read failed (LJM " + e.getError() + " "
-                    + LabJackDeviceV2.errorName(e.getError()) + "); reusing last state");
-        }
-    }
-
-    private void runProcessingLoop() {
-        while (running || !processingQueue.isEmpty()) {
-            try {
-                BatchEntry entry = processingQueue.poll(250, TimeUnit.MILLISECONDS);
-                if (entry == null) {
-                    continue;
-                }
-                processBatch(entry);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            } catch (Exception e) {
-                log.error("LabJack processing error: " + e.getMessage());
-            }
-        }
-    }
-
-    private void processBatch(BatchEntry entry) {
-        long now = entry.receptionTime();
-        double[] data = entry.data();
-        byte[] digitalState = entry.digitalState();
-        int channels = LabJackConfigV2.NUM_ANALOG_PINS;
-        for (int scan = 0; scan < LabJackConfigV2.SCANS_PER_READ; scan++) {
-            byte[] packet = buildPacket(data, scan * channels, digitalState);
-
-            dataIn(1, packet.length);
-            csvQueue.add(new CsvEntry(now, packet));
-
-            if (LabJackConfigV2.ARCHIVE_FULL_RATE) {
-                emitToArchive(now, packet);
-            }
-            // Realtime/frontend can be decimated without affecting CSV or optional full-rate archive output.
-            if (++graphCounter >= LabJackConfigV2.GRAPH_FREQ) {
-                graphCounter = 0;
-                processPacket(packetPreprocessor.process(new TmPacket(now, packet)));
-            }
-        }
-    }
-
-    private static byte[] buildPacket(double[] batch, int analogOffset, byte[] digitalState) {
-        byte[] packet = new byte[LabJackPacket.PACKET_SIZE];
-        int out = 0;
-        for (int i = 0; i < LabJackConfigV2.NUM_ANALOG_PINS; i++) {
-            int bits = Float.floatToIntBits((float) batch[analogOffset + i]);
-            packet[out++] = (byte) (bits >>> 24);
-            packet[out++] = (byte) (bits >>> 16);
-            packet[out++] = (byte) (bits >>> 8);
-            packet[out++] = (byte) bits;
-        }
-        System.arraycopy(digitalState, 0, packet, out, LabJackPacket.DIGITAL_BYTES);
-        return packet;
-    }
-
-    private void logStreamHealth(LabJackDeviceV2.StreamRead streamRead) {
-        if (streamRead.deviceBacklog() == 0 && streamRead.ljmBacklog() == 0 && streamRead.dummySamples() == 0) {
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-        if (now - lastStreamWarningMs < 5000) {
-            return;
-        }
-
-        lastStreamWarningMs = now;
-        log.warn("LabJack stream backlog: device=" + streamRead.deviceBacklog()
-                + ", ljm=" + streamRead.ljmBacklog()
-                + ", dummySamples=" + streamRead.dummySamples());
-    }
-
-    private void handleLjmError(LJMException e) {
-        int error = e.getError();
-        if (error == 1263) {
-            consecutiveStreamReadTimeouts++;
-            if (consecutiveStreamReadTimeouts <= 3) {
-                log.warn("LabJack stream read timed out (" + consecutiveStreamReadTimeouts
-                        + "/3); keeping existing stream handle alive");
-                return;
-            }
-        } else {
-            consecutiveStreamReadTimeouts = 0;
-        }
-        if (LabJackDeviceV2.isRestartableStreamReadError(error)) {
-            if (restartStream()) {
-                consecutiveStreamReadTimeouts = 0;
-                return;
-            }
-        }
-        if (LabJackDeviceV2.isDisconnectError(error)) {
-            log.warn("LabJack disconnected (LJM " + error + " " + LabJackDeviceV2.errorName(error)
-                    + ": " + e.getMessage() + ")");
-            reconnect();
-            return;
-        }
-        if (LabJackDeviceV2.isRestartStreamError(error)) {
-            log.warn("LabJack stream stopped (LJM " + error + " " + LabJackDeviceV2.errorName(error)
-                    + ": " + e.getMessage() + "); reconnecting");
-            reconnect();
-            return;
-        }
-        log.error("Transient LabJack error (LJM " + error + " " + LabJackDeviceV2.errorName(error)
-                + "): " + e.getMessage());
-    }
-
-    private boolean restartStream() {
-        try {
-            log.warn("LabJack stream read failed; restarting stream on existing handle");
-            device.stopStream();
-            actualScanRateHz = device.startStream();
-            LabJackConfigV2.validateSamplingConfig(actualScanRateHz);
-            nextDigitalFeedMs = 0;
-            clearBacklogMetrics();
-            state = State.STREAMING;
-            log.info("LabJack stream restarted at " + actualScanRateHz + " Hz");
-            return true;
-        } catch (Exception restartError) {
-            log.warn("LabJack stream restart failed: " + restartError.getMessage() + "; reconnecting");
-            reconnect();
-            return false;
-        }
+        processPacket(packetPreprocessor.process(new TmPacket(now, packet)));
     }
 
     private void reconnect() {
         state = State.RECONNECTING;
-        consecutiveStreamReadTimeouts = 0;
-        device.stopStream();
         device.close();
         clearBacklogMetrics();
     }
@@ -583,13 +406,16 @@ public class LabJackDataLinkV2 extends AbstractTcTmParamLink implements Runnable
         if (isDisabled()) {
             return "DISABLED";
         }
-            return switch (state) {
-            case STREAMING -> "OK - streaming at " + actualScanRateHz + " Hz, saving packets at "
-                    + LabJackConfigV2.TM_PACKET_RATE_HZ + " Hz";
+        return switch (state) {
+            case STREAMING -> "OK - polling at " + actualScanRateHz + " Hz";
             case CONNECTING -> "Connecting to LabJack...";
             case RECONNECTING -> "Reconnecting - LabJack link lost";
             case DISCONNECTED -> "Disconnected";
         };
+    }
+
+    private static long pollIntervalMs() {
+        return Math.max(50L, Math.round(1000.0 / Math.max(1.0, LabJackConfigV2.TM_PACKET_RATE_HZ)));
     }
 
     private static void sleep(long ms) {

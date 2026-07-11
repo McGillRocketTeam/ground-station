@@ -31,7 +31,7 @@ rtsp: true
 rtspAddress: :8554
 
 rtmp: true
-rtmpAddress: :1935
+rtmpAddress: :19035
 
 hls: true
 hlsAddress: :8888

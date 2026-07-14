@@ -4,7 +4,7 @@
   "type": "module",
   "module": "src/index.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "node --watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
@@ -21,8 +21,7 @@
   "devDependencies": {
     "@types/node": "latest",
     "oxfmt": "catalog:",
-    "oxlint": "catalog:",
-    "tsx": "^4.21.0"
+    "oxlint": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

@@ -1,0 +1,64 @@
+###############################################
+# MediaMTX configuration for local media work.
+#
+# This is intentionally small and editable. Add or override any setting from:
+# https://mediamtx.org/docs/references/configuration-file
+
+logLevel: info
+logDestinations: [stdout]
+
+# Enable these for browser clients and local-network inspection.
+api: true
+metrics: false
+pprof: false
+
+# Allow LAN clients to access HTTP/WebRTC endpoints without localhost-only auth.
+authInternalUsers:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: publish
+        path:
+      - action: read
+        path:
+      - action: playback
+        path:
+      - action: api
+
+# Default protocol listeners.
+rtsp: true
+rtspAddress: :8554
+
+rtmp: true
+rtmpAddress: :19035
+
+hls: true
+hlsAddress: :8888
+hlsAlwaysRemux: false
+
+webrtc: true
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+
+srt: true
+srtAddress: :8890
+
+pathDefaults:
+  source: publisher
+  record: false
+  recordPath: /recordings/%path/%Y-%m-%d_%H-%M-%S-%f
+
+paths:
+  medium-double-double:
+    source: rtsp://192.168.0.28:7447/6a279030f7df18112745f85d_0
+    rtspTransport: tcp
+  rouge-bol-deux-saveurs:
+    source: rtsp://192.168.0.28:7447/6a278658f7df18112745f857_0
+    rtspTransport: tcp
+  Cunegonde-4:
+    source: rtsp://192.168.0.28:7447/6a278c32f7df18112745f85b_0
+    rtspTransport: tcp
+  drone:
+    source: publisher

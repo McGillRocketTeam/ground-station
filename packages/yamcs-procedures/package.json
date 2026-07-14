@@ -1,8 +1,14 @@
 {
-  "name": "@mrt/procedures",
+  "name": "@mrt/yamcs-procedures",
   "private": true,
   "type": "module",
   "module": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
   "scripts": {
     "build": "tsc -b",
     "fmt": "oxfmt",
@@ -23,8 +29,7 @@
     "@effect/language-service": "catalog:",
     "@types/node": "latest",
     "oxfmt": "catalog:",
-    "oxlint": "catalog:",
-    "tsx": "^4.21.0"
+    "oxlint": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

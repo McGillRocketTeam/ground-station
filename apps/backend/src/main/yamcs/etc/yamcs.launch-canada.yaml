@@ -22,6 +22,93 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
+  - name: EGSE/Pad/LabJack
+    class: org.yamcs.labjack2.LabJackDataLinkV2
+    tmStream: tm_labJack
+    tcStream: tc_labJack
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: -1
+      seqCountOffset: -1
+  - name: EGSE/ControlStation/ControlBox
+    class: org.yamcs.mrt.links.ControlBoxLink
+    tmStream: tm_controlBox
+    labJackCommands:
+
+      - switchName: panel_3_switch_1
+        pin: 0 # FIO 0 FILL
+
+      - switchName: panel_4_switch_2
+        pin: 6 # LA RET POWER
+
+      - switchName: panel_2_switch_2
+        pin: 4 # LA RET POLARITY
+
+      - switchName: panel_4_switch_1
+        pin: 1 # FIO 1 DUMP
+
+      - switchName: panel_3_switch_2
+        pin: 6 # LA RET POWER
+
+      - switchName: panel_6_switch_1
+        pin: 7 # LA DIS POWER
+
+      - switchName: panel_6_switch_2
+        pin: 5 # LA DIS POLARITY
+
+      - switchName: panel_5_switch_2
+        pin: 20 # IGN +
+
+      - switchName: panel_1_switch_1
+        pin: 21 # IGN -
+
+
+      # DAQ CONTROL
+      # - switchName: panel_5_switch_1
+      #   pin: 21 # VENT
+
+      # - switchName: panel_5_switch_2
+      #   pin: 3 #F/DOV
+
+      # - switchName: panel_2_switch_2
+      #   pin: 2
+
+    # AV CONTROL
+    flightComputerCommands:
+      - switchName: panel_9_switch_key
+        onCommand: mov_arming
+        offCommand: mov_disarming
+
+      - switchName: panel_3_switch_2
+        onCommand: vent_valve_energize
+        offCommand: vent_valve_de-energize
+
+      - switchName: panel_5_switch_1
+        onCommand: fdov_energize
+        offCommand: fdov_de-energize
+
+      - switchName: panel_1_switch_estop
+        onCommand: emergency_stop
+        offCommand: emergency_cancel
+
+      - switchName: panel_2_switch_1
+        onCommand: launch
+        offCommand: ""
+
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: -1
+      seqCountOffset: -1
+
+
+  - name: EGSE/ControlStation/EcoFlowMax
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: egse_ecoflow_realtime
+    tcStream: tc_ecoflow_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
   - name: SystemA/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_a_fc_realtime
@@ -43,6 +130,24 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
 
+  - name: EGSE/Pad/WifiAntenna
+    class: org.yamcs.mrt.links.WifiAntennaLink
+    ipAddress: 192.168.0.254
+    username: mrt
+    password: H0tFire!
+
+  - name: EGSE/ControlStation/WifiAntenna
+    class: org.yamcs.mrt.links.WifiAntennaLink
+    ipAddress: 192.168.0.253
+    username: mrt
+    password: H0tFire!
+
+  - name: EGSE/Pad/ToughSwitch
+    class: org.yamcs.mrt.links.ToughSwitchLink
+    ipAddress: 192.168.0.251
+    username: ubnt
+    password: ubnt
+
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_b_fc_realtime
@@ -56,10 +161,19 @@ dataLinks:
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
+
+
   - name: SystemB/Pad/Radio
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_b_pad_radio_realtime
     tcStream: tc_radio_realtime
+    packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
+    packetPreprocessorArgs:
+      timestampOffset: 2
+
+  - name: EGSE/Pad/Thermocouple
+    class: org.yamcs.mrt.links.AstraGenericTmTcLink
+    tmStream: egse_thermocouple_realtime
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -73,13 +187,47 @@ dataLinks:
     targets:
       - name: SystemA
         baseTopic: SystemA/Rocket/FlightComputer
+        radioAckTopics:
+          - SystemA/ControlStation/Radio/acks
       - name: SystemB
         baseTopic: SystemB/Rocket/FlightComputer
+        radioAckTopics:
+          - SystemB/ControlStation/Radio/acks
 
 mdb:
   - type: xtce
     args:
       file: mdb/commands.xml
+
+
+  - type: emptyNode
+    spec: "EGSE"
+    subLoaders:
+      - type: emptyNode
+        spec: "Pad"
+        subLoaders:
+          - type: xtce
+            args:
+              file: mdb/thermocouple.xml
+          - type: xtce
+            args:
+              file: mdb/labjack-t7.xml
+          - type: xtce
+            spec: "ToughSwitch"
+            args:
+              file: mdb/toughswitch.xml
+
+      - type: emptyNode
+        spec: "ControlStation"
+        subLoaders:
+          - type: xtce
+            spec: "ControlBox"
+            args:
+              file: mdb/controlbox.xml
+          - type: xtce
+            spec: "EcoFlowMax"
+            args:
+              file: mdb/ecoflow.xml
   - type: emptyNode
     spec: "SystemA"
     subLoaders:
@@ -128,6 +276,10 @@ mdb:
 # Configuration for streams created at server startup
 streamConfig:
   tm:
+    - name: "egse_ecoflow_realtime"
+      rootContainer: "/EGSE/ControlStation/EcoFlowMax/EcoFlowMaxPacket"
+      processor: "realtime"
+
     - name: "system_a_fc_realtime"
       rootContainer: "/SystemA/Rocket/FlightComputer/FCFrame"
       processor: "realtime"
@@ -147,6 +299,18 @@ streamConfig:
     - name: "system_b_pad_radio_realtime"
       rootContainer: "/SystemB/Pad/Radio/TelemetryPacket"
       processor: "realtime"
+    # Labjack
+    - name: "tm_labJack"
+      processor: "realtime"
+      rootContainer: "/EGSE/Pad/LabJack/LabJackPacket"
+    - name: "tm_controlBox"
+      processor: "realtime"
+      rootContainer: "/EGSE/ControlStation/ControlBox/ControlBoxPacket"
+
+    # Thermocouple
+    - name: "egse_thermocouple_realtime"
+      processor: "realtime"
+      rootContainer: "/EGSE/Pad/Thermocouple/ThermocoupleAggregatePacket"
 
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
@@ -159,3 +323,9 @@ streamConfig:
     - name: "tc_radio_realtime"
       processor: "realtime"
       tcPatterns: [".*/Radio/.*"]
+    - name: "tc_labJack"
+      processor: "realtime"
+      tcPatterns: [".*/LabJack/.*"]
+    - name: "tc_ecoflow_realtime"
+      processor: "realtime"
+      tcPatterns: ["/EGSE/ControlStation/EcoFlowMax/.*"]

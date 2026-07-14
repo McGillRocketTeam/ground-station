@@ -1,0 +1,278 @@
+from bleak.backends.device import BLEDevice
+from bleak.backends.scanner import AdvertisementData
+
+from ..commands import TimeCommands
+from ..devicebase import DeviceBase
+from ..entity import controls
+from ..entity.base import dynamic
+from ..packet import Packet
+from ..pb import pr705_pb2
+from ..props import (
+    ProtobufProps,
+    computed_field,
+    pb_field,
+    proto_attr_mapper,
+    repeated_pb_field_type,
+)
+from ..props.enums import IntFieldValue
+from ..props.transforms import flow_is_on, out_power, pround
+
+pb = proto_attr_mapper(pr705_pb2.DisplayPropertyUpload)
+
+
+class DcChargingType(IntFieldValue):
+    UNKNOWN = -1
+
+    AUTO = 0
+    CAR = 1
+    SOLAR = 2
+
+
+class _StatField(
+    repeated_pb_field_type(
+        list_field=pb.display_statistics_sum.list_info,
+        value_field=lambda x: x.statistics_content,
+        per_item=True,
+    )
+):
+    stat: pr705_pb2.STATISTICS_OBJECT
+
+    def get_value(self, item: pr705_pb2.StatisticsRecordItem) -> int | None:
+        return item.statistics_content if item.statistics_object == self.stat else None
+
+
+class Device(DeviceBase, ProtobufProps):
+    """River 3"""
+
+    SN_PREFIX = (b"R651", b"R653", b"R654", b"R655")
+    NAME_PREFIX = "EF-R3"
+
+    battery_level = pb_field(pb.cms_batt_soc)
+
+    ac_input_power = pb_field(pb.pow_get_ac_in, pround(2))
+    ac_input_energy = _StatField(pr705_pb2.STATISTICS_OBJECT_AC_IN_ENERGY)
+
+    ac_output_power = pb_field(pb.pow_get_ac_out, out_power)
+    ac_output_energy = _StatField(pr705_pb2.STATISTICS_OBJECT_AC_OUT_ENERGY)
+
+    input_power = pb_field(pb.pow_in_sum_w)
+    output_power = pb_field(pb.pow_out_sum_w)
+
+    dc_input_power = pb_field(pb.pow_get_pv)
+    dc_input_energy = _StatField(pr705_pb2.STATISTICS_OBJECT_PV_IN_ENERGY)
+
+    dc12v_output_power = pb_field(pb.pow_get_12v, out_power)
+    dc12v_output_energy = _StatField(pr705_pb2.STATISTICS_OBJECT_DC12V_OUT_ENERGY)
+
+    usbc_output_power = pb_field(pb.pow_get_typec1, out_power)
+    usbc_output_energy = _StatField(pr705_pb2.STATISTICS_OBJECT_TYPEC_OUT_ENERGY)
+
+    usba_output_power = pb_field(pb.pow_get_qcusb1, out_power)
+    usba_output_energy = _StatField(pr705_pb2.STATISTICS_OBJECT_USBA_OUT_ENERGY)
+
+    ac_charging_speed = pb_field(pb.plug_in_info_ac_in_chg_pow_max)
+    max_ac_charging_power = pb_field(pb.plug_in_info_ac_in_chg_hal_pow_max)
+
+    plugged_in_ac = pb_field(pb.plug_in_info_ac_charger_flag)
+    energy_backup = pb_field(pb.energy_backup_en)
+    energy_backup_battery_level = pb_field(pb.energy_backup_start_soc)
+    battery_input_power = pb_field(pb.pow_get_bms, lambda value: max(0, value))
+    battery_output_power = pb_field(pb.pow_get_bms, lambda value: -min(0, value))
+
+    battery_charge_limit_min = pb_field(pb.cms_min_dsg_soc)
+    battery_charge_limit_max = pb_field(pb.cms_max_chg_soc)
+
+    cell_temperature = pb_field(pb.bms_max_cell_temp)
+
+    dc_12v_port = pb_field(pb.flow_info_12v, flow_is_on)
+    ac_ports = pb_field(pb.flow_info_ac_out, flow_is_on)
+
+    dc_charging_type = pb_field(pb.pv_chg_type, DcChargingType.from_value)
+    dc_charging_max_amps = pb_field(pb.plug_in_info_pv_dc_amp_max)
+
+    remaining_time_charging = pb_field(pb.cms_chg_rem_time)
+    remaining_time_discharging = pb_field(pb.cms_dsg_rem_time)
+
+    error_code = pb_field(pb.errcode)
+    _pcs_fan_level = pb_field(pb.pcs_fan_level)
+
+    @computed_field
+    def error_occurred(self) -> bool:
+        return bool(self.error_code)
+
+    @computed_field
+    def fan_running(self) -> bool | None:
+        if self._pcs_fan_level is None:
+            return None
+        return self._pcs_fan_level > 0
+
+    @computed_field
+    def input_energy(self) -> int | None:
+        if self.ac_input_energy is not None and self.dc_input_energy is not None:
+            return self.ac_input_energy + self.dc_input_energy
+        return None
+
+    @computed_field
+    def output_energy(self) -> int | None:
+        if (
+            self.ac_output_energy is not None
+            and self.usba_output_energy is not None
+            and self.usbc_output_energy is not None
+            and self.dc12v_output_energy is not None
+        ):
+            return (
+                self.ac_output_energy
+                + self.usba_output_energy
+                + self.usbc_output_energy
+                + self.dc12v_output_energy
+            )
+        return None
+
+    def __init__(
+        self, ble_dev: BLEDevice, adv_data: AdvertisementData, sn: str
+    ) -> None:
+        super().__init__(ble_dev, adv_data, sn)
+        self._time_commands = TimeCommands(self)
+
+    @classmethod
+    def check(cls, sn):
+        return sn[:4] in cls.SN_PREFIX
+
+    @property
+    def device(self):
+        model = ""
+        match self._sn[:4]:
+            case "R653":
+                model = "(230Wh)"
+            case "R654":
+                model = "UPS (230Wh)"
+            case "R651":
+                model = "(245Wh)"
+            case "R655":
+                model = "UPS (245Wh)"
+        return f"River 3 {model}".strip()
+
+    async def packet_parse(self, data: bytes):
+        return Packet.from_bytes(data, xor_payload=True)
+
+    async def data_parse(self, packet: Packet):
+        processed = False
+        self.reset_updated()
+
+        if packet.src == 0x02 and packet.cmd_set == 0xFE and packet.cmd_id == 0x15:
+            self.update_from_bytes(pr705_pb2.DisplayPropertyUpload, packet.payload)
+            processed = True
+        elif (
+            packet.src == 0x35
+            and packet.cmd_set == 0x01
+            and packet.cmd_id == Packet.NET_BLE_COMMAND_CMD_SET_RET_TIME
+        ):
+            # Device requested for time and timezone offset, so responding with that
+            # otherwise it will not be able to send us predictions and config data
+            if len(packet.payload) == 0:
+                self._time_commands.async_send_all()
+            processed = True
+
+        self._notify_updated()
+
+        return processed
+
+    async def _send_config_packet(self, message):
+        payload = message.SerializeToString()
+        packet = Packet(0x20, 0x02, 0xFE, 0x11, payload, 0x01, 0x01, 0x13)
+        await self._conn.sendPacket(packet)
+
+    @controls.battery(
+        energy_backup_battery_level,
+        min=dynamic(battery_charge_limit_min),
+        max=dynamic(battery_charge_limit_max),
+        availability=dynamic(energy_backup),
+    )
+    async def set_energy_backup_battery_level(self, value: float):
+        config = pr705_pb2.ConfigWrite()
+        config.cfg_energy_backup.energy_backup_en = True
+        config.cfg_energy_backup.energy_backup_start_soc = int(value)
+        await self._send_config_packet(config)
+        return True
+
+    @controls.switch(energy_backup)
+    async def enable_energy_backup(self, enabled: bool):
+        config = pr705_pb2.ConfigWrite()
+        config.cfg_energy_backup.energy_backup_en = enabled
+        soc = int(self.battery_level or 50)
+        config.cfg_energy_backup.energy_backup_start_soc = max(min(soc + 1, 100), 0)
+        await self._send_config_packet(config)
+
+    @controls.switch(dc_12v_port)
+    async def enable_dc_12v_port(self, enabled: bool):
+        await self._send_config_packet(
+            pr705_pb2.ConfigWrite(cfg_dc_12v_out_open=enabled)
+        )
+
+    @controls.switch(ac_ports, enabled=False)
+    async def enable_ac_ports(self, enabled: bool):
+        await self._send_config_packet(pr705_pb2.ConfigWrite(cfg_ac_out_open=enabled))
+
+    @controls.battery(
+        battery_charge_limit_min,
+        max=dynamic(battery_charge_limit_max),
+    )
+    async def set_battery_charge_limit_min(self, limit: float):
+        if (
+            self.battery_charge_limit_max is not None
+            and limit > self.battery_charge_limit_max
+        ):
+            return False
+
+        await self._send_config_packet(
+            pr705_pb2.ConfigWrite(cfg_min_dsg_soc=int(limit))
+        )
+        return True
+
+    @controls.battery(
+        battery_charge_limit_max,
+        min=dynamic(battery_charge_limit_min),
+    )
+    async def set_battery_charge_limit_max(self, limit: float):
+        if (
+            self.battery_charge_limit_min is not None
+            and limit < self.battery_charge_limit_min
+        ):
+            return False
+
+        await self._send_config_packet(
+            message=pr705_pb2.ConfigWrite(cfg_max_chg_soc=int(limit))
+        )
+        return True
+
+    @controls.power(
+        ac_charging_speed,
+        max=dynamic(max_ac_charging_power),
+    )
+    async def set_ac_charging_speed(self, value: float):
+        await self.set_battery_charge_limit_max(12)
+
+        if (
+            self.max_ac_charging_power is None
+            or value > self.max_ac_charging_power
+            or value < 0
+        ):
+            return False
+
+        await self._send_config_packet(
+            pr705_pb2.ConfigWrite(cfg_plug_in_info_ac_in_chg_pow_max=int(value))
+        )
+        return True
+
+    @controls.select(dc_charging_type, options=DcChargingType)
+    async def set_dc_charging_type(self, state: DcChargingType):
+        await self._send_config_packet(
+            pr705_pb2.ConfigWrite(cfg_pv_chg_type=state.value)
+        )
+
+    @controls.current(dc_charging_max_amps, max=8)
+    async def set_dc_charging_amps_max(self, value: float):
+        await self._send_config_packet(
+            pr705_pb2.ConfigWrite(cfg_plug_in_info_pv_dc_amp_max=int(value))
+        )
+        return True

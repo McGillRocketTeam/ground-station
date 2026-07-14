@@ -2,18 +2,13 @@ import type { CommandInfo } from "@mrt/yamcs-effect";
 
 type CommandDefinition = typeof CommandInfo.Type;
 
-export function formatCommandDisplayName(
-  qualifiedName: string,
-  command?: CommandDefinition,
-) {
+export function formatCommandDisplayName(qualifiedName: string, command?: CommandDefinition) {
   if (!command) {
     return qualifiedName;
   }
 
   const title = command.longDescription ?? command.qualifiedName;
-  return command.shortDescription
-    ? `${title} (${command.shortDescription})`
-    : title;
+  return command.shortDescription ? `${title} (${command.shortDescription})` : title;
 }
 
 export function makeCommandDisplayMap(

@@ -4,7 +4,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 
-import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
+import { parameterListAtom } from "@/lib/atom";
 import { ParameterField } from "@/lib/dashboard-field-types";
 
 import {
@@ -16,9 +16,7 @@ import {
   ComboboxList,
 } from "../../ui/combobox";
 
-export type DashboardParameterFieldValue = Schema.Codec.Encoded<
-  typeof ParameterField
->;
+export type DashboardParameterFieldValue = Schema.Codec.Encoded<typeof ParameterField>;
 
 export type DashboardParameterFieldApi = AnyFieldApi & {
   state: AnyFieldApi["state"] & {
@@ -27,11 +25,7 @@ export type DashboardParameterFieldApi = AnyFieldApi & {
   handleChange: (value: DashboardParameterFieldValue) => void;
 };
 
-export function DashboardParameterField({
-  field,
-}: {
-  field: DashboardParameterFieldApi;
-}) {
+export function DashboardParameterField({ field }: { field: DashboardParameterFieldApi }) {
   return (
     <ParameterSelector
       id={field.name}
@@ -53,22 +47,16 @@ export function ParameterSelector({
   value: DashboardParameterFieldValue | null;
   onChange: (value: DashboardParameterFieldValue) => void;
 }) {
-  const instance = useAtomValue(selectedInstanceAtom);
-
-  const parametersResult = useAtomValue(
-    YamcsAtomHttpClient.query("mdb", "listParameters", {
-      params: { instance },
-      query: {},
-    }),
-  );
+  const parametersResult = useAtomValue(parameterListAtom);
 
   return AsyncResult.builder(parametersResult)
     .onInitial(() => <div>Loading Parameter Selector...</div>)
-    .onSuccess(({ parameters }) => {
-      const parameterOptions: ReadonlyArray<DashboardParameterFieldValue> =
-        parameters.map((parameter) => ({
+    .onSuccess((parameters) => {
+      const parameterOptions: ReadonlyArray<DashboardParameterFieldValue> = parameters.map(
+        (parameter) => ({
           qualifiedName: parameter.qualifiedName,
-        }));
+        }),
+      );
 
       const parameterLabels = new Map(
         parameters.map((parameter) => [
@@ -80,9 +68,7 @@ export function ParameterSelector({
       return (
         <Combobox<DashboardParameterFieldValue>
           id={id}
-          isItemEqualToValue={(item, value) =>
-            item.qualifiedName === value.qualifiedName
-          }
+          isItemEqualToValue={(item, value) => item.qualifiedName === value.qualifiedName}
           itemToStringLabel={(item) =>
             parameterLabels.get(item.qualifiedName) ?? item.qualifiedName
           }
@@ -102,8 +88,7 @@ export function ParameterSelector({
             <ComboboxList>
               {(item: DashboardParameterFieldValue) => (
                 <ComboboxItem key={item.qualifiedName} value={item}>
-                  {parameterLabels.get(item.qualifiedName) ??
-                    item.qualifiedName}
+                  {parameterLabels.get(item.qualifiedName) ?? item.qualifiedName}
                 </ComboboxItem>
               )}
             </ComboboxList>

@@ -1,9 +1,5 @@
 import { Schema } from "effect";
-import {
-  HttpApiGroup,
-  HttpApiEndpoint,
-  HttpApiError,
-} from "effect/unstable/httpapi";
+import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
 import * as yamcs from "../schema.js";
 
@@ -43,7 +39,10 @@ export const mdbGroup = HttpApiGroup.make("mdb")
       params: { instance: Schema.String },
       query: {
         q: Schema.optional(Schema.String),
+        next: Schema.optional(Schema.String),
+        pos: Schema.optional(Schema.String),
         limit: Schema.optional(Schema.String),
+        details: Schema.optional(Schema.Boolean),
       },
       success: ListParametersResponse,
       error: [HttpApiError.NotFound],
@@ -81,18 +80,14 @@ export const mdbGroup = HttpApiGroup.make("mdb")
     }),
   )
   .add(
-    HttpApiEndpoint.get(
-      "getSpaceSystem",
-      "/mdb/:instance/space-systems/:name",
-      {
-        params: {
-          instance: Schema.String,
-          name: yamcs.QualifiedName,
-        },
-        success: yamcs.SpaceSystemInfo,
-        error: [HttpApiError.NotFound],
+    HttpApiEndpoint.get("getSpaceSystem", "/mdb/:instance/space-systems/:name", {
+      params: {
+        instance: Schema.String,
+        name: yamcs.QualifiedName,
       },
-    ),
+      success: yamcs.SpaceSystemInfo,
+      error: [HttpApiError.NotFound],
+    }),
   )
   .add(
     HttpApiEndpoint.get("listSpaceSystems", "/mdb/:instance/space-systems", {

@@ -3,6 +3,24 @@ import type { ECharts } from "echarts";
 import type { ChartSeriesConfig } from "./config";
 import type { ChartSeriesData } from "./types";
 
+type ChartThemeColors = {
+  axis: string;
+  border: string;
+  muted: string;
+  surface: string;
+};
+
+function getChartThemeColors(container: HTMLElement): ChartThemeColors {
+  const styles = getComputedStyle(container);
+
+  return {
+    axis: styles.getPropertyValue("--card-foreground").trim(),
+    border: styles.getPropertyValue("--border").trim(),
+    muted: styles.getPropertyValue("--muted-foreground").trim(),
+    surface: styles.getPropertyValue("--card").trim(),
+  };
+}
+
 function toAvgData(points: ChartSeriesData[string] = []) {
   const data: Array<[number, number | null]> = [];
 
@@ -72,11 +90,7 @@ export function updateChartData(
   });
 }
 
-export function setChartViewport(
-  chart: ECharts | null,
-  start: number,
-  end: number,
-) {
+export function setChartViewport(chart: ECharts | null, start: number, end: number) {
   chart?.setOption({
     xAxis: {
       max: end,
@@ -85,10 +99,68 @@ export function setChartViewport(
   });
 }
 
-export function resizeChart(
-  chart: ECharts | null,
-  size?: { height: number; width: number },
-) {
+export function applyChartTheme(chart: ECharts | null, container: HTMLElement | null) {
+  if (!chart || !container) return;
+
+  const colors = getChartThemeColors(container);
+
+  chart.setOption({
+    legend: {
+      textStyle: {
+        color: colors.muted,
+      },
+    },
+    tooltip: {
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      textStyle: {
+        color: colors.axis,
+      },
+    },
+    xAxis: {
+      axisLabel: {
+        color: colors.muted,
+      },
+      axisLine: {
+        lineStyle: {
+          color: colors.border,
+        },
+      },
+      axisTick: {
+        lineStyle: {
+          color: colors.border,
+        },
+      },
+      splitLine: {
+        lineStyle: {
+          color: colors.border,
+        },
+      },
+    },
+    yAxis: {
+      axisLabel: {
+        color: colors.muted,
+      },
+      axisLine: {
+        lineStyle: {
+          color: colors.border,
+        },
+      },
+      axisTick: {
+        lineStyle: {
+          color: colors.border,
+        },
+      },
+      splitLine: {
+        lineStyle: {
+          color: colors.border,
+        },
+      },
+    },
+  });
+}
+
+export function resizeChart(chart: ECharts | null, size?: { height: number; width: number }) {
   requestAnimationFrame(() => {
     if (size) {
       chart?.resize(size);

@@ -14,11 +14,31 @@ yarn-error.log*
 
 dist
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+pip-wheel-metadata/
+*.egg-info/
+
 docker/assets/*
 !docker/assets/maps/
 docker/assets/maps/*
 !docker/assets/maps/.gitkeep
 !docker/assets/maps/README.md
+
+docker/media/recordings/*
+!docker/media/recordings/.gitkeep
 
 # Runtime data
 pids

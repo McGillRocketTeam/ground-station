@@ -17,9 +17,14 @@ export const ParameterField = Schema.Struct({
   }),
 );
 
-export const ParameterArrayField = Schema.Array(
-  Schema.Struct({ NamedObjectId }),
-).pipe(
+export const CameraField = Schema.String.pipe(
+  Schema.annotate({
+    [FormTitleAnnotationId]: "Camera",
+    [FormTypeAnnotationId]: "camera",
+  }),
+);
+
+export const ParameterArrayField = Schema.Array(Schema.Struct({ NamedObjectId })).pipe(
   Schema.annotate({
     [FormTitleAnnotationId]: "Parameters",
     [FormTypeAnnotationId]: "parameterArray",

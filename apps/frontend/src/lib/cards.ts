@@ -1,5 +1,5 @@
 import type { IDockviewPanel, IDockviewPanelProps } from "dockview-react";
-import type { ComponentType, ErrorInfo, ReactNode } from "react";
+import type { ComponentProps, ErrorInfo, FunctionComponent, ReactNode } from "react";
 
 import { Schema } from "effect";
 import { Component, createElement } from "react";
@@ -10,13 +10,20 @@ import { ChartCard } from "@/cards/chart-card";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
 import { EventsCard } from "@/cards/events";
+import { FaultPanelCard } from "@/cards/fault-panel-card";
 import { GaugeCard } from "@/cards/gauge";
 import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
+import { LiveChartCard } from "@/cards/live-chart";
 import { MapCard } from "@/cards/map-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
 import { ParameterTable } from "@/cards/parameter-table";
+import { PIDCard } from "@/cards/pid";
+import { ProceduresCard } from "@/cards/procedures";
+import { RealtimeChartCard } from "@/cards/realtime-chart";
+import { SerialMonitorCard } from "@/cards/serial-monitor";
 import { TextCard } from "@/cards/text-card";
+import { VideoCard } from "@/cards/video-card";
 
 // Source of truth - add all cards here
 export const CardArray: CardDefinition<string, any>[] = [
@@ -27,24 +34,26 @@ export const CardArray: CardDefinition<string, any>[] = [
   MapCard,
   LinksCard,
   EventsCard,
+  FaultPanelCard,
   CommandButtonCard,
   GaugeCard,
+  LiveChartCard,
   MqttExplorerCard,
+  RealtimeChartCard,
+  SerialMonitorCard,
+  VideoCard,
+  PIDCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,
+  ProceduresCard,
 ] as const;
 
-export interface CardDefinition<
-  Id extends string,
-  T extends Schema.Struct.Fields,
-> {
+export interface CardDefinition<Id extends string, T extends Schema.Struct.Fields> {
   id: Id;
   name: string;
   schema: Schema.Struct<T>;
   actions?: (panel: IDockviewPanel) => ReadonlyArray<DashboardActionGroup>;
-  component: ComponentType<
-    IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>
-  >;
+  component: FunctionComponent<IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>>;
 }
 
 class CardErrorBoundary extends Component<
@@ -74,8 +83,7 @@ class CardErrorBoundary extends Component<
       return createElement(
         "div",
         {
-          className:
-            "text-error grid h-full place-items-center p-4 font-mono text-xs uppercase",
+          className: "text-error grid h-full place-items-center p-4 font-mono text-xs uppercase",
         },
         `${this.props.cardName} failed to render: ${this.state.error.message}`,
       );
@@ -85,10 +93,9 @@ class CardErrorBoundary extends Component<
   }
 }
 
-export function makeCard<
-  const Id extends string,
-  T extends Schema.Struct.Fields,
->(props: CardDefinition<Id, T>): CardDefinition<Id, T> {
+export function makeCard<const Id extends string, T extends Schema.Struct.Fields>(
+  props: CardDefinition<Id, T>,
+): CardDefinition<Id, T> {
   const CardComponent = props.component;
 
   return {
@@ -106,9 +113,7 @@ type Cards = (typeof CardArray)[number];
 export type CardId = Cards["id"];
 type GetCard<Id extends CardId> = Extract<Cards, { id: Id }>;
 
-export const CardDefinitionMap = Object.fromEntries(
-  CardArray.map((card) => [card.id, card]),
-) as {
+const CardDefinitionMap = Object.fromEntries(CardArray.map((card) => [card.id, card])) as {
   [K in CardId]: GetCard<K>;
 };
 
@@ -116,15 +121,11 @@ export function isCardId(value: string): value is CardId {
   return value in CardDefinitionMap;
 }
 
-export const CardSchemaMap = Object.fromEntries(
-  CardArray.map((c) => [c.id, c.schema]),
-) as {
+export const CardSchemaMap = Object.fromEntries(CardArray.map((c) => [c.id, c.schema])) as {
   [K in CardId]: GetCard<K>["schema"];
 };
 
-export const CardComponentMap = Object.fromEntries(
-  CardArray.map((c) => [c.id, c.component]),
-) as {
+export const CardComponentMap = Object.fromEntries(CardArray.map((c) => [c.id, c.component])) as {
   [K in CardId]: GetCard<K>["component"];
 };
 
@@ -141,11 +142,7 @@ export function getCardActionsForPanel(
 }
 
 // Get schema type for a specific card
-export type CardSchemaType<Id extends CardId> = Schema.Schema.Type<
-  GetCard<Id>["schema"]
->;
+export type CardSchemaType<Id extends CardId> = Schema.Schema.Type<GetCard<Id>["schema"]>;
 
 // Get props type for a specific card's component
-export type CardProps<Id extends CardId> = Parameters<
-  GetCard<Id>["component"]
->[0];
+export type CardProps<Id extends CardId> = ComponentProps<GetCard<Id>["component"]>;

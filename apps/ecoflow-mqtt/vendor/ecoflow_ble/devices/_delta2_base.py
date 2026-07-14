@@ -1,0 +1,229 @@
+from ..devicebase import DeviceBase
+from ..entity import controls
+from ..entity.base import dynamic
+from ..model import (
+    AllKitDetailData,
+    BaseMpptHeart,
+    BasePdHeart,
+    DirectBmsMDeltaHeartbeatPack,
+    DirectEmsDeltaHeartbeatPack,
+    DirectInvDeltaHeartbeatPack,
+)
+from ..packet import Packet
+from ..props import Field
+from ..props.raw_data_field import dataclass_attr_mapper, raw_field
+from ..props.raw_data_props import RawDataProps
+from ..props.transforms import pdiv, pround
+
+
+class _BmsHeartbeatBatteryMain(DirectBmsMDeltaHeartbeatPack):
+    pass
+
+
+class _BmsHeartbeatBattery1(DirectBmsMDeltaHeartbeatPack):
+    pass
+
+
+class _BmsHeartbeatBattery2(DirectBmsMDeltaHeartbeatPack):
+    pass
+
+
+pb_pd = dataclass_attr_mapper(BasePdHeart)
+pb_mppt = dataclass_attr_mapper(BaseMpptHeart)
+pb_ems = dataclass_attr_mapper(DirectEmsDeltaHeartbeatPack)
+pb_bms = dataclass_attr_mapper(_BmsHeartbeatBatteryMain)
+pb_bms_1 = dataclass_attr_mapper(_BmsHeartbeatBattery1)
+pb_bms_2 = dataclass_attr_mapper(_BmsHeartbeatBattery2)
+pb_inv = dataclass_attr_mapper(DirectInvDeltaHeartbeatPack)
+
+
+class Delta2Base(DeviceBase, RawDataProps):
+    ac_output_power = raw_field(pb_inv.output_watts).default_when_missing(0)
+    ac_input_voltage = raw_field(pb_inv.ac_in_vol, pdiv(1000, 2)).default_when_missing(
+        0
+    )
+    ac_input_current = raw_field(pb_inv.ac_in_amp, pdiv(1000, 2)).default_when_missing(
+        0,
+    )
+    ac_output_voltage = raw_field(
+        pb_inv.inv_out_vol, pdiv(1000, 2)
+    ).default_when_missing(0)
+    ac_output_current = raw_field(
+        pb_inv.inv_out_amp, pdiv(1000, 2)
+    ).default_when_missing(0)
+
+    battery_level_main = raw_field(pb_bms.f32_show_soc, pround(2))
+
+    battery_1_enabled = Field[bool]()
+    battery_1_battery_level = Field[float]()
+    battery_1_cell_temperature = raw_field(pb_bms_1.max_cell_temp)
+    battery_1_sn = Field[str]()
+
+    battery_2_enabled = Field[bool]()
+    battery_2_battery_level = Field[float]()
+    battery_2_cell_temperature = raw_field(pb_bms_2.max_cell_temp)
+    battery_2_sn = Field[str]()
+
+    battery_level = raw_field(pb_ems.f32_lcd_show_soc, pround(2))
+
+    input_power = raw_field(pb_pd.watts_in_sum)
+    output_power = raw_field(pb_pd.watts_out_sum)
+
+    usbc_output_power = raw_field(pb_pd.typec1_watts)
+    usbc2_output_power = raw_field(pb_pd.typec2_watts)
+    usba_output_power = raw_field(pb_pd.usb1_watt)
+    usba2_output_power = raw_field(pb_pd.usb2_watt)
+    qc_usb1_output_power = raw_field(pb_pd.qc_usb1_watt)
+    qc_usb2_output_power = raw_field(pb_pd.qc_usb2_watt)
+
+    ac_ports = raw_field(pb_inv.cfg_ac_enabled, lambda x: x == 1).default_when_missing(
+        False
+    )
+    usb_ports = raw_field(pb_pd.dc_out_state, lambda x: x == 1)
+
+    battery_charge_limit_min = raw_field(pb_ems.min_dsg_soc)
+    battery_charge_limit_max = raw_field(pb_ems.max_charge_soc)
+
+    remaining_time_charging = raw_field(pb_ems.chg_remain_time)
+    remaining_time_discharging = raw_field(pb_ems.dsg_remain_time)
+
+    cell_temperature = raw_field(pb_bms.max_cell_temp)
+
+    dc_input_voltage = raw_field(pb_mppt.in_vol, pdiv(1000, 2))
+    dc_input_current = raw_field(pb_mppt.in_amp, pdiv(1000, 2))
+
+    dc_12v_port = raw_field(pb_pd.car_state, lambda x: x == 1)
+    dc12v_output_voltage = raw_field(pb_mppt.car_out_vol, pdiv(1000, 2))
+    dc12v_output_current = raw_field(pb_mppt.car_out_amp, pdiv(1000, 2))
+
+    @property
+    def pd_heart_type(self):
+        return BasePdHeart
+
+    @property
+    def mppt_heart_type(self):
+        return BaseMpptHeart
+
+    @classmethod
+    def check(cls, sn):
+        return sn[:4] in cls.SN_PREFIX
+
+    @property
+    def device(self):
+        model = "2"
+        match self._sn[:4]:
+            case "D361":
+                model = "3 1500"
+            case "R351" | "R354":
+                model = "2 Max"
+
+        return f"Delta {model}"
+
+    @property
+    def packet_version(self):
+        return 2
+
+    async def data_parse(self, packet: Packet) -> bool:
+        """Process the incoming notifications from the device"""
+
+        processed = False
+        self.reset_updated()
+
+        match packet.src, packet.cmd_set, packet.cmd_id:
+            case 0x02, 0x20, 0x02:
+                self.update_from_bytes(self.pd_heart_type, packet.payload)
+                processed = True
+            case 0x03, 0x03, 0x0E:
+                kit_data = self.update_from_bytes(AllKitDetailData, packet.payload)
+                if kit_data is not None:
+                    self._update_extra_batteries(kit_data)
+                processed = True
+            case 0x03, 0x20, 0x02:
+                self.update_from_bytes(DirectEmsDeltaHeartbeatPack, packet.payload)
+                processed = True
+            case 0x03, 0x20, 0x32:
+                self.update_from_bytes(_BmsHeartbeatBatteryMain, packet.payload)
+                processed = True
+            case 0x06, 0x20, 0x32:
+                self.update_from_bytes(_BmsHeartbeatBattery1, packet.payload)
+                processed = True
+            case 0x04, _, 0x02:
+                self.update_from_bytes(DirectInvDeltaHeartbeatPack, packet.payload)
+                processed = True
+            case 0x05, 0x20, 0x02:
+                self.update_from_bytes(self.mppt_heart_type, packet.payload)
+                processed = True
+
+        self._notify_updated()
+
+        return processed
+
+    @property
+    def ac_commands_dst(self) -> int:
+        return 0x05
+
+    @controls.switch(usb_ports)
+    async def enable_usb_ports(self, enabled: bool):
+        packet = Packet(0x21, 0x02, 0x20, 0x22, enabled.to_bytes(), version=0x02)
+        await self._conn.sendPacket(packet)
+
+    @controls.switch(dc_12v_port)
+    async def enable_dc_12v_port(self, enabled: bool):
+        packet = Packet(
+            0x21,
+            0x05,
+            0x20,
+            0x51,
+            enabled.to_bytes(),
+            version=0x02,
+        )
+        await self._conn.sendPacket(packet)
+
+    @controls.outlet(ac_ports)
+    async def enable_ac_ports(self, enabled: bool):
+        payload = bytes([1 if enabled else 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
+        packet = Packet(0x21, self.ac_commands_dst, 0x20, 0x42, payload, version=0x02)
+        await self._conn.sendPacket(packet)
+
+    @controls.battery(battery_charge_limit_max, min=dynamic(battery_charge_limit_min))
+    async def set_battery_charge_limit_max(self, limit: float):
+        if (
+            self.battery_charge_limit_min is not None
+            and limit < self.battery_charge_limit_min
+        ):
+            return False
+        packet = Packet(0x21, 0x03, 0x20, 0x31, int(limit).to_bytes(), version=0x02)
+        await self._conn.sendPacket(packet)
+        return True
+
+    @controls.battery(battery_charge_limit_min, max=dynamic(battery_charge_limit_max))
+    async def set_battery_charge_limit_min(self, limit: float):
+        if (
+            self.battery_charge_limit_max is not None
+            and limit > self.battery_charge_limit_max
+        ):
+            return False
+        packet = Packet(0x21, 0x03, 0x20, 0x33, int(limit).to_bytes(), version=0x02)
+        await self._conn.sendPacket(packet)
+        return True
+
+    def _update_extra_batteries(self, kit_data: AllKitDetailData):
+        battery_entity_map = [
+            {
+                "enabled": Delta2Base.battery_1_enabled,
+                "sn": Delta2Base.battery_1_sn,
+                "level": Delta2Base.battery_1_battery_level,
+            },
+            {
+                "enabled": Delta2Base.battery_2_enabled,
+                "sn": Delta2Base.battery_2_sn,
+                "level": Delta2Base.battery_2_battery_level,
+            },
+        ]
+        for i, kit in enumerate(kit_data.kit_base_info):
+            battery_dict = battery_entity_map[i]
+            available = kit.avai_flag
+            self.set_value(battery_dict["enabled"], bool(available))
+            if available:
+                self.set_value(battery_dict["sn"], kit.sn.decode())
+                self.set_value(battery_dict["level"], round(kit.f32_soc, 2))

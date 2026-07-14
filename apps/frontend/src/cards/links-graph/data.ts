@@ -3,16 +3,39 @@ import type { BuiltInEdge, Edge, Node } from "@xyflow/react";
 export type RadioLinkNodeData = {
   qualifiedName: string;
   friendlyName: string;
-  textPosition: "top" | "bottom";
+  textPosition: "top" | "bottom" | "right";
+};
+
+export type LinkEdgeData = {
+  qualifiedName?: string;
+};
+
+export type WifiAntennaEdgeData = {
+  sourceQualifiedName: string;
+  connectedStationsLinkName: string;
+  flip?: boolean;
 };
 
 export type RadioLinkNode = Node<RadioLinkNodeData, "radioLink">;
 export type GroundStationNode = Node<{}, "groundStation">;
 
 export type CustomNodeType = RadioLinkNode | GroundStationNode;
-export type CustomEdgeType = Edge<{}, "link"> | BuiltInEdge;
+export type CustomEdgeType =
+  | Edge<LinkEdgeData, "link">
+  | Edge<WifiAntennaEdgeData, "wifiAntenna">
+  | BuiltInEdge;
 
 export const initialNodes: CustomNodeType[] = [
+  {
+    type: "radioLink",
+    id: "LabJack",
+    position: { x: 125, y: -80 },
+    data: {
+      qualifiedName: "EGSE/Pad/LabJack",
+      friendlyName: "LabJack\nT7",
+      textPosition: "top",
+    },
+  },
   {
     type: "radioLink",
     id: "SystemA/Pad/Radio",
@@ -35,8 +58,28 @@ export const initialNodes: CustomNodeType[] = [
   },
   {
     type: "radioLink",
+    id: "EGSE/Pad/WifiAntenna",
+    position: { x: 125, y: 180 },
+    data: {
+      qualifiedName: "EGSE/Pad/WifiAntenna",
+      friendlyName: "Pad WiFi\nAntenna",
+      textPosition: "right",
+    },
+  },
+  {
+    type: "radioLink",
+    id: "EGSE/ControlStation/WifiAntenna",
+    position: { x: 125, y: 360 },
+    data: {
+      qualifiedName: "EGSE/ControlStation/WifiAntenna",
+      friendlyName: "CS WiFi\nAntenna",
+      textPosition: "right",
+    },
+  },
+  {
+    type: "radioLink",
     id: "SystemA/ControlStation/Radio",
-    position: { x: 0, y: 400 },
+    position: { x: 0, y: 720 },
     data: {
       qualifiedName: "SystemA/ControlStation/Radio",
       friendlyName: "System A\nControl Station\nRadio",
@@ -44,46 +87,66 @@ export const initialNodes: CustomNodeType[] = [
     },
   },
   {
+    type: "groundStation",
+    id: "groundStation",
+    position: { x: 125, y: 540 },
+    data: {},
+  },
+  {
     type: "radioLink",
     id: "SystemB/ControlStation/Radio",
-    position: { x: 250, y: 400 },
+    position: { x: 250, y: 720 },
     data: {
       qualifiedName: "SystemB/ControlStation/Radio",
       friendlyName: "System B\nControl Station\nRadio",
       textPosition: "bottom",
     },
   },
-  {
-    type: "groundStation",
-    id: "groundStation",
-    position: { x: 125, y: 225 },
-    data: {},
-  },
 ];
 
 export const initialEdges: CustomEdgeType[] = [
   {
-    id: "SystemA/Pad/Radio->groundStation",
+    id: "SystemA/Pad/Radio->EGSE/Pad/WifiAntenna",
     source: "SystemA/Pad/Radio",
     sourceHandle: "bottom",
-    target: "groundStation",
-    targetHandle: "left-top",
+    target: "EGSE/Pad/WifiAntenna",
+    targetHandle: "left",
     type: "link",
   },
   {
-    id: "SystemB/Pad/Radio->groundStation",
+    id: "SystemB/Pad/Radio->EGSE/Pad/WifiAntenna",
     source: "SystemB/Pad/Radio",
     sourceHandle: "bottom",
-    target: "groundStation",
-    targetHandle: "right-top",
+    target: "EGSE/Pad/WifiAntenna",
+    targetHandle: "right",
     type: "link",
+  },
+  {
+    id: "LabJack->EGSE/Pad/WifiAntenna",
+    source: "LabJack",
+    sourceHandle: "bottom",
+    target: "EGSE/Pad/WifiAntenna",
+    targetHandle: "top",
+    type: "link",
+  },
+  {
+    id: "EGSE/Pad/WifiAntenna->EGSE/ControlStation/WifiAntenna",
+    source: "EGSE/Pad/WifiAntenna",
+    sourceHandle: "bottom",
+    target: "EGSE/ControlStation/WifiAntenna",
+    targetHandle: "top",
+    type: "wifiAntenna",
+    data: {
+      sourceQualifiedName: "EGSE/Pad/WifiAntenna",
+      connectedStationsLinkName: "EGSE/ControlStation/WifiAntenna",
+    },
   },
   {
     id: "SystemA/ControlStation/Radio->groundStation",
     source: "SystemA/ControlStation/Radio",
     sourceHandle: "top",
     target: "groundStation",
-    targetHandle: "left-bottom",
+    targetHandle: "left",
     type: "link",
   },
   {
@@ -91,7 +154,20 @@ export const initialEdges: CustomEdgeType[] = [
     source: "SystemB/ControlStation/Radio",
     sourceHandle: "top",
     target: "groundStation",
-    targetHandle: "right-bottom",
+    targetHandle: "right",
     type: "link",
+  },
+  {
+    id: "groundStation->EGSE/ControlStation/WifiAntenna",
+    source: "groundStation",
+    sourceHandle: "top",
+    target: "EGSE/ControlStation/WifiAntenna",
+    targetHandle: "bottom",
+    type: "wifiAntenna",
+    data: {
+      flip: true,
+      sourceQualifiedName: "EGSE/ControlStation/WifiAntenna",
+      connectedStationsLinkName: "EGSE/ControlStation/WifiAntenna",
+    },
   },
 ];

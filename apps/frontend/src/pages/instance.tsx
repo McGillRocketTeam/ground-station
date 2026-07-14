@@ -16,19 +16,14 @@ import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
 function InstanceSelector() {
   const [instance, setInstance] = useAtom(selectedInstanceAtom);
-  const instancesResult = useAtomValue(
-    YamcsAtomHttpClient.query("instances", "listInstances", {}),
-  );
+  const instancesResult = useAtomValue(YamcsAtomHttpClient.query("instances", "listInstances", {}));
 
   return (
     <div>
       {AsyncResult.builder(instancesResult)
         .onInitial(() => <div>Loading instances...</div>)
         .onSuccess(({ instances }) => (
-          <Select
-            value={instance}
-            onValueChange={(value) => setInstance(value ?? "")}
-          >
+          <Select value={instance} onValueChange={(value) => setInstance(value ?? "")}>
             <SelectTrigger className="w-full max-w-48">
               <SelectValue placeholder="Select an instance" />
             </SelectTrigger>

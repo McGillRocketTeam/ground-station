@@ -59,8 +59,12 @@ dataLinks:
     targets:
       - name: SystemA
         baseTopic: SystemA/Rocket/FlightComputer
+        radioAckTopics:
+          - SystemA/ControlStation/Radio/acks
       - name: SystemB
         baseTopic: SystemB/Rocket/FlightComputer
+        radioAckTopics:
+          - SystemB/ControlStation/Radio/acks
 
 
 mdb:

@@ -4,11 +4,8 @@ import { useAtomValue } from "@effect/atom-react";
 import { Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 
-import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
-import {
-  ParameterArrayField,
-  ParameterField,
-} from "@/lib/dashboard-field-types";
+import { parameterListAtom } from "@/lib/atom";
+import { ParameterArrayField, ParameterField } from "@/lib/dashboard-field-types";
 
 import {
   Combobox,
@@ -19,16 +16,11 @@ import {
   ComboboxList,
 } from "../../ui/combobox";
 
-type DashboardParameterOptionValue = Schema.Codec.Encoded<
-  typeof ParameterField
->;
+type DashboardParameterOptionValue = Schema.Codec.Encoded<typeof ParameterField>;
 
-export type DashboardParameterArrayFieldValue = Schema.Codec.Encoded<
-  typeof ParameterArrayField
->;
+export type DashboardParameterArrayFieldValue = Schema.Codec.Encoded<typeof ParameterArrayField>;
 
-type DashboardParameterArrayItemValue =
-  DashboardParameterArrayFieldValue[number];
+type DashboardParameterArrayItemValue = DashboardParameterArrayFieldValue[number];
 
 export type DashboardParameterArrayFieldApi = AnyFieldApi & {
   state: AnyFieldApi["state"] & {
@@ -41,9 +33,7 @@ function getQualifiedName(item: DashboardParameterArrayItemValue) {
   return item.NamedObjectId.name;
 }
 
-function makeParameterItem(
-  qualifiedName: string,
-): DashboardParameterArrayItemValue {
+function makeParameterItem(qualifiedName: string): DashboardParameterArrayItemValue {
   return {
     NamedObjectId: {
       name: qualifiedName,
@@ -56,22 +46,16 @@ export function DashboardParameterArrayField({
 }: {
   field: DashboardParameterArrayFieldApi;
 }) {
-  const instance = useAtomValue(selectedInstanceAtom);
-
-  const parametersResult = useAtomValue(
-    YamcsAtomHttpClient.query("mdb", "listParameters", {
-      params: { instance },
-      query: {},
-    }),
-  );
+  const parametersResult = useAtomValue(parameterListAtom);
 
   return AsyncResult.builder(parametersResult)
     .onInitial(() => <div>Loading Parameter Selector...</div>)
-    .onSuccess(({ parameters }) => {
-      const parameterOptions: ReadonlyArray<DashboardParameterOptionValue> =
-        parameters.map((parameter) => ({
+    .onSuccess((parameters) => {
+      const parameterOptions: ReadonlyArray<DashboardParameterOptionValue> = parameters.map(
+        (parameter) => ({
           qualifiedName: parameter.qualifiedName,
-        }));
+        }),
+      );
 
       const parameterLabels = new Map(
         parameters.map((parameter) => [
@@ -80,13 +64,9 @@ export function DashboardParameterArrayField({
         ]),
       );
 
-      const selectedParameters = Array.isArray(field.state.value)
-        ? field.state.value
-        : [];
+      const selectedParameters = Array.isArray(field.state.value) ? field.state.value : [];
 
-      const selectedParameterNames = new Set(
-        selectedParameters.map(getQualifiedName),
-      );
+      const selectedParameterNames = new Set(selectedParameters.map(getQualifiedName));
 
       const availableParameterOptions = parameterOptions.filter(
         (parameter) => !selectedParameterNames.has(parameter.qualifiedName),
@@ -96,9 +76,7 @@ export function DashboardParameterArrayField({
         <div className="space-y-3">
           <Combobox<DashboardParameterOptionValue>
             id={field.name}
-            isItemEqualToValue={(item, value) =>
-              item.qualifiedName === value.qualifiedName
-            }
+            isItemEqualToValue={(item, value) => item.qualifiedName === value.qualifiedName}
             itemToStringLabel={(item) =>
               parameterLabels.get(item.qualifiedName) ?? item.qualifiedName
             }
@@ -110,10 +88,7 @@ export function DashboardParameterArrayField({
                 return;
               }
 
-              field.handleChange([
-                ...selectedParameters,
-                makeParameterItem(value.qualifiedName),
-              ]);
+              field.handleChange([...selectedParameters, makeParameterItem(value.qualifiedName)]);
             }}
             value={null}
           >
@@ -130,8 +105,7 @@ export function DashboardParameterArrayField({
               <ComboboxList>
                 {(item: DashboardParameterOptionValue) => (
                   <ComboboxItem key={item.qualifiedName} value={item}>
-                    {parameterLabels.get(item.qualifiedName) ??
-                      item.qualifiedName}
+                    {parameterLabels.get(item.qualifiedName) ?? item.qualifiedName}
                   </ComboboxItem>
                 )}
               </ComboboxList>
@@ -154,9 +128,7 @@ export function DashboardParameterArrayField({
 
                   return (
                     <tr key={qualifiedName}>
-                      <td>
-                        {parameterLabels.get(qualifiedName) ?? qualifiedName}
-                      </td>
+                      <td>{parameterLabels.get(qualifiedName) ?? qualifiedName}</td>
                       <td className="w-0 whitespace-nowrap">
                         <button
                           type="button"
@@ -164,8 +136,7 @@ export function DashboardParameterArrayField({
                             field.handleChange(
                               selectedParameters.filter(
                                 (selectedParameter) =>
-                                  getQualifiedName(selectedParameter) !==
-                                  qualifiedName,
+                                  getQualifiedName(selectedParameter) !== qualifiedName,
                               ),
                             );
                           }}

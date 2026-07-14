@@ -1,18 +1,31 @@
 config.define_bool('simulator')
+config.define_bool('media')
 config.define_string('environment')
 config.define_string('simulator_data_mode')
 config.define_string('mqtt_broker_url')
+config.define_bool('ecoflow_mqtt')
+config.define_string('ecoflow_user_id')
+config.define_string('ecoflow_ble_address')
+config.define_string('ecoflow_mqtt_host')
+config.define_string('ecoflow_mqtt_port')
 cfg = config.parse()
-simulator_enabled = cfg.get('simulator', True)
+simulator_enabled = cfg.get('simulator', False)
+media_enabled = cfg.get('media', False)
 mrt_environment = cfg.get('environment', 'production')
 simulator_data_mode = cfg.get('simulator_data_mode', 'incremental')
 mqtt_broker_url = cfg.get('mqtt_broker_url', '')
+ecoflow_mqtt_enabled = cfg.get('ecoflow_mqtt', False)
+ecoflow_user_id = cfg.get('ecoflow_user_id', '')
+ecoflow_ble_address = cfg.get('ecoflow_ble_address', '')
+ecoflow_mqtt_host = cfg.get('ecoflow_mqtt_host', 'localhost')
+ecoflow_mqtt_port = cfg.get('ecoflow_mqtt_port', '1883')
 use_external_mqtt_broker = mqtt_broker_url != ''
 backend_resource_deps = [] if use_external_mqtt_broker else ['mqtt_broker']
 backend_env = {'MQTT_BROKER_URL': mqtt_broker_url} if use_external_mqtt_broker else {}
 frontend_mqtt_broker_url = mqtt_broker_url if use_external_mqtt_broker else 'ws://localhost:9001'
+ecoflow_resource_deps = [] if use_external_mqtt_broker else ['mqtt_broker']
 simulator_env = {
-	'YAMCS_INSTANCE': 'urrg',
+	'YAMCS_INSTANCE': 'launch-canada',
 	'DATA_MODE': simulator_data_mode,
 }
 
@@ -24,6 +37,9 @@ if mrt_environment != 'development' and mrt_environment != 'production':
 
 if simulator_data_mode != 'random' and simulator_data_mode != 'incremental':
 	fail("Tilt config 'simulator_data_mode' must be either 'random' or 'incremental'")
+
+if ecoflow_mqtt_enabled and ecoflow_user_id == '':
+	fail("Tilt config 'ecoflow_user_id' is required when 'ecoflow_mqtt' is true")
 
 open_frontend_cmd = os.name == 'nt' and "python -m webbrowser http://localhost:5173" or "python3 -m webbrowser http://localhost:5173"
 
@@ -75,6 +91,44 @@ if simulator_enabled:
 			resource_deps=['backend', 'yamcs-effect']
 	)
 
+if ecoflow_mqtt_enabled:
+	ecoflow_address_arg = ecoflow_ble_address != '' and ' --address ' + ecoflow_ble_address or ''
+	ecoflow_windows_address_arg = ecoflow_ble_address != '' and ' -Address ' + ecoflow_ble_address or ''
+	ecoflow_cmd = os.name == 'nt' and '''powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\apps\\ecoflow-mqtt\\run.ps1 -UserId "{user_id}" -MqttHost "{mqtt_host}" -MqttPort {mqtt_port}{address_arg}'''.format(
+		user_id=ecoflow_user_id,
+		mqtt_host=ecoflow_mqtt_host,
+		mqtt_port=ecoflow_mqtt_port,
+		address_arg=ecoflow_windows_address_arg,
+	) or '''
+set -e
+
+cd ./apps/ecoflow-mqtt
+
+if [ ! -d venv ]; then
+    python3 -m venv venv
+fi
+
+./venv/bin/python -m pip install -r requirements.txt
+./venv/bin/python ecoflow_delta2_max_mqtt.py --user-id {user_id} --mqtt-host {mqtt_host} --mqtt-port {mqtt_port}{address_arg}
+'''.format(
+		user_id=ecoflow_user_id,
+		mqtt_host=ecoflow_mqtt_host,
+		mqtt_port=ecoflow_mqtt_port,
+		address_arg=ecoflow_address_arg,
+	)
+	local_resource(
+		'ecoflow-mqtt',
+		serve_cmd=ecoflow_cmd,
+		labels=['infrastructure'],
+		resource_deps=ecoflow_resource_deps,
+		deps=[
+			'./apps/ecoflow-mqtt/ecoflow_delta2_max_mqtt.py',
+			'./apps/ecoflow-mqtt/requirements.txt',
+			'./apps/ecoflow-mqtt/run.ps1',
+			'./apps/ecoflow-mqtt/vendor/ecoflow_ble',
+		]
+	)
+
 local_resource(
     'xtce-generator',
 		labels=['infrastructure'],
@@ -116,8 +170,16 @@ docker_compose(
 		"./docker/docker-compose.yml"
 )
 
+if media_enabled:
+	docker_compose(
+		"./docker/media/docker-compose.yml"
+	)
+
 # dc_resource("backend", labels=['mrt'])
 dc_resource("mbtileserver", labels=['infrastructure'])
 
 if not use_external_mqtt_broker:
 	dc_resource("mqtt_broker", labels=['infrastructure'])
+
+if media_enabled:
+	dc_resource("mediamtx", labels=['media'])

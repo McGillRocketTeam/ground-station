@@ -2,6 +2,10 @@
   animation: links-graph-edge-flow 0.9s linear infinite;
 }
 
+.links-graph__edge-path--reverse {
+  animation-direction: reverse;
+}
+
 @keyframes links-graph-edge-flow {
   from {
     stroke-dashoffset: 0;

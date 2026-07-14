@@ -1,9 +1,5 @@
 import { Schema } from "effect";
-import {
-  HttpApiGroup,
-  HttpApiEndpoint,
-  HttpApiError,
-} from "effect/unstable/httpapi";
+import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
 import { YamcsInstance } from "../schema.js";
 

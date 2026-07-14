@@ -1,10 +1,6 @@
 import { useAtom, useAtomSet } from "@effect/atom-react";
 import { BrowserKeyValueStore } from "@effect/platform-browser";
-import {
-  DockviewReact,
-  themeAbyssSpaced,
-  type DockviewReadyEvent,
-} from "dockview-react";
+import { DockviewReact, themeAbyssSpaced, type DockviewReadyEvent } from "dockview-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { useEffect } from "react";
@@ -25,6 +21,8 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import "./dashboard.css";
 import { DashboardPlus } from "@/components/dashboard/plus";
 import { DashboardTab } from "@/components/dashboard/tab";
+import { ParameterDetail, parameterDetailPopoverHandle } from "@/components/parameter-detail";
+import { Popover, PopoverContent } from "@/components/ui/popover";
 import { CardComponentMap, getCardActionsForPanel } from "@/lib/cards";
 import {
   dashboardStorageKey,
@@ -33,6 +31,7 @@ import {
   readPersistedDashboardLayout,
   snapshotDockviewLayout,
 } from "@/lib/dashboard-layout";
+import { createId } from "@/lib/utils";
 
 const runtime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage);
 
@@ -48,9 +47,7 @@ export function DashboardPage() {
   const setActivePanel = useAtomSet(activePanelAtom);
   const setCurrentCardActions = useAtomSet(currentCardActionsAtom);
   const [layout, setLayout] = useAtom(dashboardLocalStorage);
-  const initializeDashboardLayoutHistory = useAtomSet(
-    initializeDashboardLayoutHistoryAtom,
-  );
+  const initializeDashboardLayoutHistory = useAtomSet(initializeDashboardLayoutHistoryAtom);
   const pushDashboardLayoutHistory = useAtomSet(pushDashboardLayoutHistoryAtom);
 
   useEffect(() => {
@@ -87,9 +84,7 @@ export function DashboardPage() {
 
     const persistedLayout =
       readPersistedDashboardLayout() ??
-      (isSerializedDockviewLayout(layout)
-        ? snapshotDockviewLayout(layout)
-        : undefined);
+      (isSerializedDockviewLayout(layout) ? snapshotDockviewLayout(layout) : undefined);
 
     if (persistedLayout) {
       setLayout(persistedLayout);
@@ -106,27 +101,27 @@ export function DashboardPage() {
     event.api.addPanel({
       title: "Parameter Table",
       component: "parameter-table",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
     // event.api.addPanel({
     //   title: "Command History",
     //   component: "command-history",
-    //   id: crypto.randomUUID(),
+    //   id: createId(),
     // });
     event.api.addPanel({
       title: "Events",
       component: "events",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
     event.api.addPanel({
       title: "Links",
       component: "links",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
     // event.api.addPanel({
     //   title: "Map",
     //   component: "map-card",
-    //   id: crypto.randomUUID(),
+    //   id: createId(),
     //   params: {
     //     latitude: 45.5017,
     //     longitude: -73.5673,
@@ -135,7 +130,7 @@ export function DashboardPage() {
     event.api.addPanel({
       title: "Command Buttons",
       component: "command-button",
-      id: crypto.randomUUID(),
+      id: createId(),
     });
 
     const initialLayout = snapshotDockviewLayout(event.api.toJSON());
@@ -158,6 +153,15 @@ export function DashboardPage() {
         />
       </div>
       {/* These are not visible components */}
+      <Popover handle={parameterDetailPopoverHandle}>
+        {({ payload }) =>
+          payload && (
+            <PopoverContent>
+              <ParameterDetail className="w-md" qualifiedName={payload} />
+            </PopoverContent>
+          )
+        }
+      </Popover>
       <EditPanelDialog />
       <DashboardCommandMenu />
       <DashboardKeybinds />

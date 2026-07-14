@@ -1,13 +1,11 @@
 realtime:
   services:
+    # No explicit "streams:" list on purpose: StreamTmPacketProvider automatically subscribes to
+    # every TM stream the running instance tags with processor: "realtime" in its streamConfig
+    # (yamcs-core merges an explicit list with the tagged ones; a listed stream that an instance
+    # does NOT declare is a fatal ConfigurationException). urrg tags system_a/b_fc/radio_realtime,
+    # testsite tags tm_433/tm_903/tm_daq/tm_labJack — both resolve correctly without a list here.
     - class: org.yamcs.StreamTmPacketProvider
-      args:
-        streams: [
-          "system_a_radio_realtime",
-          "system_a_fc_realtime", 
-          "system_b_radio_realtime", 
-          "system_b_fc_realtime"
-        ]
     - class: org.yamcs.StreamTcCommandReleaser
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager
@@ -39,6 +37,28 @@ launch-canada-realtime:
           "system_b_fc_realtime",
           "system_b_controlstation_radio_realtime",
           "system_b_pad_radio_realtime"
+        ]
+    - class: org.yamcs.StreamTcCommandReleaser
+    - class: org.yamcs.tctm.StreamParameterProvider
+    - class: org.yamcs.algorithms.AlgorithmManager
+    - class: org.yamcs.parameter.LocalParameterManager
+  config:
+    subscribeAll: true
+    allowContainerlessCommands: true
+    alarm:
+      parameterCheck: true
+      parameterServer: enabled
+    tmProcessor:
+      ignoreOutOfContainerEntries: false
+    recordInitialValues: true
+    recordLocalValues: true
+
+launch-canada-sim-realtime:
+  services:
+    - class: org.yamcs.StreamTmPacketProvider
+      args:
+        streams: [
+          "tm_stream"
         ]
     - class: org.yamcs.StreamTcCommandReleaser
     - class: org.yamcs.tctm.StreamParameterProvider

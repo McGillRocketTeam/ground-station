@@ -1,10 +1,9 @@
 package org.yamcs.mrt.links;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import java.nio.charset.StandardCharsets;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.ConfigurationException;
@@ -12,6 +11,9 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class AstraGenericTmTcLink extends AbstractAstraGenericTmTcLink {
   private static final Gson GSON = new Gson();

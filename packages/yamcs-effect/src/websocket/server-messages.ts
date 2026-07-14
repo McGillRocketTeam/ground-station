@@ -1,12 +1,6 @@
 import { Schema } from "effect";
 
-import {
-  LinkInfo,
-  NamedObjectId,
-  StreamingCommandHisotryEntry,
-  Value,
-  Event,
-} from "../schema.js";
+import { LinkInfo, NamedObjectId, StreamingCommandHisotryEntry, Value, Event } from "../schema.js";
 
 export const SubscriptionId = Schema.Int.pipe(Schema.brand("SubscriptionId"));
 
@@ -89,30 +83,24 @@ const ParameterValueSchema = Schema.Struct({
 });
 
 export type ParameterValue = typeof ParameterValueSchema.Type;
-export const ParameterValue: Schema.Codec<ParameterValue, unknown> =
-  ParameterValueSchema;
+export const ParameterValue: Schema.Codec<ParameterValue, unknown> = ParameterValueSchema;
 
 const PrameterDataEventSchema = Schema.Struct({
   values: Schema.Array(ParameterValue),
 });
 
 export type PrameterDataEvent = typeof PrameterDataEventSchema.Type;
-export const PrameterDataEvent: Schema.Codec<PrameterDataEvent, unknown> =
-  PrameterDataEventSchema;
+export const PrameterDataEvent: Schema.Codec<PrameterDataEvent, unknown> = PrameterDataEventSchema;
 
 export const ParmeterInfoEvent = Schema.Struct({
   mapping: Schema.Record(Schema.String, NamedObjectId),
   // info: Schema.Record({ key: Schema.Number, value: ParameterInfo }),
 });
 
-const ParameterEventSchema = Schema.Union([
-  ParmeterInfoEvent,
-  PrameterDataEvent,
-]);
+const ParameterEventSchema = Schema.Union([ParmeterInfoEvent, PrameterDataEvent]);
 
 export type ParameterEvent = typeof ParameterEventSchema.Type;
-export const ParameterEvent: Schema.Codec<ParameterEvent, unknown> =
-  ParameterEventSchema;
+export const ParameterEvent: Schema.Codec<ParameterEvent, unknown> = ParameterEventSchema;
 
 export const EventsEvent = Schema.Struct({
   type: Schema.Literal("events"),

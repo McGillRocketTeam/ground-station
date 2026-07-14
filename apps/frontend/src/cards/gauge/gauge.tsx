@@ -10,6 +10,8 @@ type GaugeProps = {
   label?: string;
 };
 
+const EMPTY_RANGES: ReadonlyArray<GaugeVisualRange> = [];
+
 type Point = {
   x: number;
   y: number;
@@ -35,6 +37,10 @@ const GEOMETRY: GaugeGeometry = {
   viewBoxWidth: 320,
 };
 
+const ANIMATION_DURATION_MS = 300;
+const NUMBER_FLOW_EASING =
+  "linear(0,.005,.019,.039,.066,.096,.129,.165,.202,.24,.278,.316,.354,.39,.426,.461,.494,.526,.557,.586,.614,.64,.665,.689,.711,.731,.751,.769,.786,.802,.817,.831,.844,.856,.867,.877,.887,.896,.904,.912,.919,.925,.931,.937,.942,.947,.951,.955,.959,.962,.965,.968,.971,.973,.976,.978,.98,.981,.983,.984,.986,.987,.988,.989,.99,.991,.992,.992,.993,.994,.994,.995,.995,.996,.996,.9963,.9967,.9969,.9972,.9975,.9977,.9979,.9981,.9982,.9984,.9985,.9987,.9988,.9989,1)";
+
 function polarToCartesian(radius: number, angleDegrees: number): Point {
   const angleRadians = ((angleDegrees - 90) * Math.PI) / 180;
 
@@ -58,9 +64,7 @@ function arcPath(radius: number, startAngle: number, endAngle: number): string {
 
 function valueToAngle(value: number, min: number, max: number) {
   const ratio = Math.min(1, Math.max(0, (value - min) / (max - min)));
-  return (
-    GEOMETRY.startAngle + (GEOMETRY.endAngle - GEOMETRY.startAngle) * ratio
-  );
+  return GEOMETRY.startAngle + (GEOMETRY.endAngle - GEOMETRY.startAngle) * ratio;
 }
 
 function niceStep(range: number, targetTicks: number) {
@@ -68,22 +72,14 @@ function niceStep(range: number, targetTicks: number) {
   const magnitude = 10 ** Math.floor(Math.log10(roughStep));
   const normalized = roughStep / magnitude;
   const niceNormalized =
-    normalized <= 1
-      ? 1
-      : normalized <= 2
-        ? 2
-        : normalized <= 2.5
-          ? 2.5
-          : normalized <= 5
-            ? 5
-            : 10;
+    normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 2.5 ? 2.5 : normalized <= 5 ? 5 : 10;
 
   return niceNormalized * magnitude;
 }
 
 function tickValues(min: number, max: number) {
   const majorStep = niceStep(max - min, 5);
-  const minorStep = majorStep / 5;
+  const minorStep = majorStep / 8;
   const majorTicks: number[] = [];
   const minorTicks: number[] = [];
   const firstMajor = Math.ceil(min / majorStep) * majorStep;
@@ -95,9 +91,7 @@ function tickValues(min: number, max: number) {
 
   for (let value = firstMinor; value <= max; value += minorStep) {
     const rounded = Number(value.toFixed(10));
-    const isMajor = majorTicks.some(
-      (majorTick) => Math.abs(majorTick - rounded) < minorStep / 10,
-    );
+    const isMajor = majorTicks.some((majorTick) => Math.abs(majorTick - rounded) < minorStep / 10);
 
     if (!isMajor) {
       minorTicks.push(rounded);
@@ -169,12 +163,7 @@ function isChevronPattern(pattern: GaugeVisualRangePattern) {
   return pattern.endsWith("-chevron");
 }
 
-function renderVisualRange(
-  range: GaugeVisualRange,
-  min: number,
-  max: number,
-  index: number,
-) {
+function renderVisualRange(range: GaugeVisualRange, min: number, max: number, index: number) {
   const start = Math.max(min, Math.min(max, range.start));
   const end = Math.max(min, Math.min(max, range.end));
   if (start === end) return null;
@@ -188,11 +177,7 @@ function renderVisualRange(
       <path
         key={`${range.start}-${range.end}-${range.pattern}-${index}`}
         className={className}
-        d={arcPath(
-          GEOMETRY.radius + 20,
-          valueToAngle(from, min, max),
-          valueToAngle(to, min, max),
-        )}
+        d={arcPath(GEOMETRY.radius + 20, valueToAngle(from, min, max), valueToAngle(to, min, max))}
         fill="none"
         strokeLinecap="butt"
         strokeWidth="8"
@@ -227,7 +212,7 @@ function renderVisualRange(
 export function Gauge({
   min = 0,
   max = 100,
-  ranges = [],
+  ranges = EMPTY_RANGES,
   value = 42,
   label = "PSI",
 }: GaugeProps) {
@@ -248,11 +233,7 @@ export function Gauge({
       />
       <path
         className="stroke-muted/40"
-        d={arcPath(
-          GEOMETRY.radius + 20,
-          GEOMETRY.startAngle,
-          GEOMETRY.endAngle,
-        )}
+        d={arcPath(GEOMETRY.radius + 20, GEOMETRY.startAngle, GEOMETRY.endAngle)}
         fill="none"
         strokeLinecap="butt"
         strokeWidth="18"
@@ -260,11 +241,7 @@ export function Gauge({
 
       <path
         className="stroke-primary/25"
-        d={arcPath(
-          GEOMETRY.radius + 20,
-          GEOMETRY.startAngle,
-          GEOMETRY.endAngle,
-        )}
+        d={arcPath(GEOMETRY.radius + 20, GEOMETRY.startAngle, GEOMETRY.endAngle)}
         fill="none"
         strokeLinecap="butt"
         strokeWidth="8"
@@ -312,7 +289,7 @@ export function Gauge({
       <g textAnchor="middle">
         {majorTicks.map((tickValue) => {
           const tickAngle = valueToAngle(tickValue, min, max);
-          const position = polarToCartesian(GEOMETRY.radius - 34, tickAngle);
+          const position = polarToCartesian(GEOMETRY.radius - 42, tickAngle);
 
           return (
             <text
@@ -328,24 +305,17 @@ export function Gauge({
       </g>
 
       <g
-        className="transition-transform duration-200 ease-out"
+        className="transition-transform duration-300"
         style={{
           transform: `rotate(${angle}deg)`,
           transformBox: "view-box",
           transformOrigin: `${GEOMETRY.centerX}px ${GEOMETRY.centerY}px`,
+          transitionTimingFunction: NUMBER_FLOW_EASING,
         }}
       >
-        <path
-          className="fill-muted-foreground dark:fill-primary"
-          d={needlePath(0)}
-        />
+        <path className="fill-muted-foreground dark:fill-primary" d={needlePath(0)} />
       </g>
-      <circle
-        className="fill-foreground"
-        cx={GEOMETRY.centerX}
-        cy={GEOMETRY.centerY}
-        r="9"
-      />
+      <circle className="fill-foreground" cx={GEOMETRY.centerX} cy={GEOMETRY.centerY} r="9" />
 
       <g transform="translate(122 193)">
         <text
@@ -359,11 +329,7 @@ export function Gauge({
       </g>
 
       <g transform="translate(92 232)">
-        <rect
-          className="fill-background stroke-border"
-          width="136"
-          height="42"
-        />
+        <rect className="fill-background stroke-primary" width="136" height="42" />
         <foreignObject width="136" height="42">
           <div className="grid h-full place-items-center font-mono text-[25px] leading-none text-foreground">
             <NumberFlow
@@ -373,6 +339,10 @@ export function Gauge({
                 useGrouping: true,
               }}
               trend={0}
+              transformTiming={{
+                duration: ANIMATION_DURATION_MS,
+                easing: NUMBER_FLOW_EASING,
+              }}
               value={value}
             />
           </div>

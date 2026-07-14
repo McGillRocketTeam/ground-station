@@ -1,24 +1,34 @@
 import "@xyflow/react/dist/style.css";
-import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
+import { Background, BackgroundVariant, ReactFlow, type ReactFlowInstance } from "@xyflow/react";
 import { Schema } from "effect";
+import { useEffect, useRef } from "react";
 
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { makeCard } from "@/lib/cards";
 
+import type { CustomEdgeType, CustomNodeType } from "./data";
+
 import { LinkDetail } from "../links/link-detail";
-import {
-  edgeTypes,
-  linksPopover,
-  nodeTypes,
-  noopNodeClick,
-} from "./custom-elements";
+import { edgeTypes, linksPopover, nodeTypes, noopNodeClick } from "./custom-elements";
 import { initialEdges, initialNodes } from "./data";
 
 export const LinksGraphCard = makeCard({
   id: "links-graph-card",
   name: "Links Graph",
   schema: Schema.Struct({}),
-  component: () => {
+  component: (props) => {
+    const flowRef = useRef<ReactFlowInstance<CustomNodeType, CustomEdgeType> | null>(null);
+
+    useEffect(() => {
+      const disposable = props.api.onDidDimensionsChange(() => {
+        flowRef.current?.fitView();
+      });
+
+      return () => {
+        disposable.dispose();
+      };
+    }, [props.api]);
+
     return (
       <div className="h-full w-full">
         <Popover handle={linksPopover}>
@@ -37,6 +47,9 @@ export const LinksGraphCard = makeCard({
           edgeTypes={edgeTypes}
           nodes={initialNodes}
           edges={initialEdges}
+          onInit={(flow) => {
+            flowRef.current = flow;
+          }}
           onNodeClick={noopNodeClick}
           nodesDraggable={false}
           nodesConnectable={false}
@@ -49,11 +62,7 @@ export const LinksGraphCard = makeCard({
           preventScrolling={false}
           fitView
         >
-          <Background
-            color="var(--color-border)"
-            size={5}
-            variant={BackgroundVariant.Cross}
-          />
+          <Background color="var(--color-border)" size={5} variant={BackgroundVariant.Cross} />
         </ReactFlow>
       </div>
     );

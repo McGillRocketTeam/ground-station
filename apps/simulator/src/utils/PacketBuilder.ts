@@ -1,12 +1,7 @@
 import { BitStream, BitView } from "bit-buffer";
 import { Effect } from "effect";
 
-import type {
-  Container,
-  ContainerEntry,
-  DataEncoding,
-  Parameter,
-} from "./Container.ts";
+import type { Container, ContainerEntry, DataEncoding, Parameter } from "./Container.ts";
 
 import { DataGenerator, type GeneratedFieldValue } from "./DataGenerator.ts";
 
@@ -24,11 +19,7 @@ type ResolvedEntries = {
 type NumberGeneratorFactory = {
   readonly forParameter: (
     parameter: Parameter,
-  ) => Effect.Effect<
-    Effect.Effect<GeneratedFieldValue, never, never>,
-    never,
-    never
-  >;
+  ) => Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never>;
 };
 
 const encodeIntegerValue = (
@@ -55,20 +46,13 @@ const writeField = (
   switch (encoding.type) {
     case "INTEGER":
       if (typeof value !== "number") {
-        throw new TypeError(
-          `Expected numeric value for ${encoding.type} field`,
-        );
+        throw new TypeError(`Expected numeric value for ${encoding.type} field`);
       }
-      stream.writeBits(
-        encodeIntegerValue(encoding, value),
-        encoding.sizeInBits,
-      );
+      stream.writeBits(encodeIntegerValue(encoding, value), encoding.sizeInBits);
       break;
     case "FLOAT": {
       if (typeof value !== "number") {
-        throw new TypeError(
-          `Expected numeric value for ${encoding.type} field`,
-        );
+        throw new TypeError(`Expected numeric value for ${encoding.type} field`);
       }
       const byteOffset = offset / 8;
       if (encoding.sizeInBits === 64) {
@@ -123,11 +107,7 @@ const resolveEntries = (
       }
 
       if (entry.container) {
-        const resolved = yield* resolveEntries(
-          entry.container.entry,
-          offset,
-          gen,
-        );
+        const resolved = yield* resolveEntries(entry.container.entry, offset, gen);
         fields.push(...resolved.fields);
         cursor = Math.max(cursor, resolved.cursor);
       }

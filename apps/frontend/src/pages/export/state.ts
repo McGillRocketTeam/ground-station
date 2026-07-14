@@ -1,11 +1,11 @@
 import { StreamArchiveHeader } from "@mrt/yamcs-effect";
-import { Effect, Schema } from "effect";
+import { Data, Effect, Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
-export const exportFormSchema = Schema.Struct({
-  instance: Schema.String.check(
-    Schema.isMinLength(1, { message: "Instance is required" }),
-  ),
+import { yamcsBaseUrl } from "@/lib/atom";
+
+const exportFormSchema = Schema.Struct({
+  instance: Schema.String.check(Schema.isMinLength(1, { message: "Instance is required" })),
   startDate: Schema.DateTimeUtcFromDate,
   endDate: Schema.DateTimeUtcFromDate,
   header: StreamArchiveHeader,
@@ -18,9 +18,12 @@ export type CsvPreviewModel = {
   rows: ReadonlyArray<ReadonlyArray<string>>;
 };
 
-export function makeDefaultExportFormValues(
-  instance: string,
-): ExportFormValues {
+class ExportPreviewRequestError extends Data.TaggedError("ExportPreviewRequestError")<{
+  readonly message: string;
+  readonly cause?: unknown;
+}> {}
+
+export function makeDefaultExportFormValues(instance: string): ExportFormValues {
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - 3 * 60 * 60 * 1000);
 
@@ -45,7 +48,7 @@ export const exportPreviewUrlAtom = Atom.make((get) => {
 
   const url = new URL(
     `/api/archive/${encodeURIComponent(options.instance)}:exportParameterValues`,
-    import.meta.env.YAMCS_URL,
+    yamcsBaseUrl,
   );
 
   url.searchParams.set("start", options.startDate.toISOString());
@@ -68,15 +71,20 @@ export const exportPreviewCsvAtom = Atom.make((get) =>
         const response = await fetch(url);
 
         if (!response.ok) {
-          throw new Error(
-            `StatusCode error (${response.status} ${response.statusText} ${url})`,
-          );
+          throw new ExportPreviewRequestError({
+            message: `StatusCode error (${response.status} ${response.statusText} ${url})`,
+          });
         }
 
         return response.text();
       },
       catch: (error) =>
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof ExportPreviewRequestError
+          ? error
+          : new ExportPreviewRequestError({
+              message: `Failed to load export preview from ${url}`,
+              cause: error,
+            }),
     });
   }),
 );
@@ -96,10 +104,7 @@ export const exportPreviewModelAtom = Atom.make((get): CsvPreviewModel => {
   return parseCsvPreview(csvResult.value, header === "NONE");
 });
 
-function parseCsvPreview(
-  csv: string,
-  isHeaderHidden: boolean,
-): CsvPreviewModel {
+function parseCsvPreview(csv: string, isHeaderHidden: boolean): CsvPreviewModel {
   const rows = parseCsvRows(csv);
 
   if (rows.length === 0) {
@@ -113,9 +118,7 @@ function parseCsvPreview(
     const width = rows.reduce((max, row) => Math.max(max, row.length), 0);
 
     return {
-      columns: Array.from({ length: width }, (_, index) =>
-        spreadsheetColumnName(index),
-      ),
+      columns: Array.from({ length: width }, (_, index) => spreadsheetColumnName(index)),
       rows,
     };
   }

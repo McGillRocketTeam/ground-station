@@ -4,26 +4,15 @@ import { MqttConnection } from "./utils/MqttConnection.ts";
 
 export type AstraPayload = string | Uint8Array;
 
-export const AstraStatus = Schema.Literals([
-  "DISABLED",
-  "OK",
-  "UNAVAIL",
-  "FAILED",
-]);
+export const AstraStatus = Schema.Literals(["DISABLED", "OK", "UNAVAIL", "FAILED"]);
 
 export type AstraStatus = typeof AstraStatus.Type;
 
-export const AstraDetail = Schema.String.check(
-  Schema.isMinLength(1),
-  Schema.isMaxLength(240),
-);
+export const AstraDetail = Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(240));
 
 export type AstraDetail = typeof AstraDetail.Type;
 
-export const AstraCommandText = Schema.String.check(
-  Schema.isMinLength(1),
-  Schema.isMaxLength(120),
-);
+export const AstraCommandText = Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(120));
 
 export type AstraCommandText = typeof AstraCommandText.Type;
 
@@ -86,42 +75,26 @@ export interface AstraCommandMessage {
 }
 
 export interface AstraPublisher {
-  readonly publish: (
-    topic: string,
-    message: AstraPayload,
-  ) => Effect.Effect<boolean>;
-  readonly publishStatus: (
-    endpoint: AstraEndpoint,
-    status: AstraStatus,
-  ) => Effect.Effect<boolean>;
-  readonly publishDetail: (
-    endpoint: AstraEndpoint,
-    detail: AstraDetail,
-  ) => Effect.Effect<boolean>;
+  readonly publish: (topic: string, message: AstraPayload) => Effect.Effect<boolean>;
+  readonly publishStatus: (endpoint: AstraEndpoint, status: AstraStatus) => Effect.Effect<boolean>;
+  readonly publishDetail: (endpoint: AstraEndpoint, detail: AstraDetail) => Effect.Effect<boolean>;
   readonly publishTelemetry: (
     endpoint: AstraEndpoint,
     telemetry: AstraTelemetry,
   ) => Effect.Effect<boolean>;
-  readonly publishAck: (
-    endpoint: AstraEndpoint,
-    ack: AstraAck,
-  ) => Effect.Effect<boolean>;
+  readonly publishAck: (endpoint: AstraEndpoint, ack: AstraAck) => Effect.Effect<boolean>;
 }
 
 export interface AstraCommandRoute<E = never> {
   readonly endpoint: AstraEndpoint;
-  readonly handleCommand: (
-    command: AstraCommandMessage,
-  ) => Effect.Effect<void, E, never>;
+  readonly handleCommand: (command: AstraCommandMessage) => Effect.Effect<void, E, never>;
 }
 
 export interface AstraActorContext<State> extends AstraPublisher {
   readonly actorName: string;
   readonly currentState: Effect.Effect<State>;
   readonly setState: (state: State) => Effect.Effect<void>;
-  readonly updateState: (
-    update: (state: State) => State,
-  ) => Effect.Effect<State>;
+  readonly updateState: (update: (state: State) => State) => Effect.Effect<State>;
 }
 
 export interface AstraActorBehavior<E = never> {
@@ -137,12 +110,7 @@ export interface AstraActor<State, E = never> {
   readonly commandRoutes: ReadonlyArray<AstraCommandRoute<E>>;
 }
 
-export interface AstraActorDefinition<
-  State,
-  MakeE = never,
-  MakeR = never,
-  RunE = never,
-> {
+export interface AstraActorDefinition<State, MakeE = never, MakeR = never, RunE = never> {
   readonly name: string;
   readonly initialState: State;
   readonly make: (
@@ -152,9 +120,7 @@ export interface AstraActorDefinition<
 
 const decodeCommandText = Schema.decodeUnknownOption(AstraCommandText);
 
-const makePublisher = (
-  outgoing: PubSub.PubSub<AstraOutgoingMessage>,
-): AstraPublisher => ({
+const makePublisher = (outgoing: PubSub.PubSub<AstraOutgoingMessage>): AstraPublisher => ({
   publish: (topic, message) => PubSub.publish(outgoing, { topic, message }),
   publishStatus: (endpoint, status) =>
     PubSub.publish(outgoing, { topic: endpoint.status, message: status }),
@@ -169,12 +135,7 @@ const makePublisher = (
     }),
 });
 
-export const makeAstraActor = <
-  State,
-  MakeE = never,
-  MakeR = never,
-  RunE = never,
->(
+export const makeAstraActor = <State, MakeE = never, MakeR = never, RunE = never>(
   definition: AstraActorDefinition<State, MakeE, MakeR, RunE>,
 ): Effect.Effect<AstraActor<State, RunE>, MakeE, MakeR> =>
   Effect.gen(function* () {

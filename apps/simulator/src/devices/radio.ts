@@ -1,4 +1,4 @@
-import { Effect, Schedule } from "effect";
+import { Duration, Effect, Schedule } from "effect";
 
 import {
   makeAstraActor,
@@ -8,6 +8,7 @@ import {
   type AstraDetail,
   type AstraStatus,
 } from "../Simulator.ts";
+import { SIMULATOR_STATE_INTERVAL_MS, SIMULATOR_TELEMETRY_INTERVAL_MS } from "../utils/Config.ts";
 import { getContainer } from "../utils/Container.ts";
 import { makePacketBuilder } from "../utils/PacketBuilder.ts";
 import {
@@ -69,6 +70,8 @@ const initialStateForRole = (role: RadioRole): RadioState => ({
 
 export const makeRadioActor = (options: RadioActorOptions) =>
   Effect.gen(function* () {
+    const telemetryInterval = Duration.millis(yield* SIMULATOR_TELEMETRY_INTERVAL_MS);
+    const stateInterval = Duration.millis(yield* SIMULATOR_STATE_INTERVAL_MS);
     const endpoint = makeAstraEndpoint(options.baseTopic);
     const container = yield* getContainer(options.baseTopic, "TelemetryPacket");
     const buildPacket = yield* makePacketBuilder(container);
@@ -122,10 +125,7 @@ export const makeRadioActor = (options: RadioActorOptions) =>
                     ? null
                     : state.pendingTelemetryAck,
               }));
-              yield* options.flightComputer.publishTelemetryWithAck(
-                actor,
-                pendingAck.cmdId,
-              );
+              yield* options.flightComputer.publishTelemetryWithAck(actor, pendingAck.cmdId);
               return;
             }
 
@@ -169,8 +169,7 @@ export const makeRadioActor = (options: RadioActorOptions) =>
                       ...currentState,
                       mode: "OFF",
                       status: "UNAVAIL",
-                      detail:
-                        "Radio is powered off and not forwarding telemetry.",
+                      detail: "Radio is powered off and not forwarding telemetry.",
                     };
                   default:
                     return {
@@ -195,8 +194,7 @@ export const makeRadioActor = (options: RadioActorOptions) =>
                 yield* actor.updateState((currentState) => ({
                   ...currentState,
                   status: "FAILED",
-                  detail:
-                    "Pad radio received an invalid flight computer command string.",
+                  detail: "Pad radio received an invalid flight computer command string.",
                 }));
                 yield* publishOwnState;
                 return;
@@ -212,8 +210,7 @@ export const makeRadioActor = (options: RadioActorOptions) =>
                 yield* actor.updateState((state) => ({
                   ...state,
                   status: "UNAVAIL",
-                  detail:
-                    "Pad radio cannot forward flight computer commands while powered off.",
+                  detail: "Pad radio cannot forward flight computer commands while powered off.",
                 }));
                 yield* publishOwnState;
                 return;
@@ -260,9 +257,7 @@ export const makeRadioActor = (options: RadioActorOptions) =>
               const ackDelayMillis = yield* Effect.sync(
                 () => 1000 + Math.floor(Math.random() * 2001),
               );
-              const ackReleaseAt = yield* Effect.sync(
-                () => Date.now() + ackDelayMillis,
-              );
+              const ackReleaseAt = yield* Effect.sync(() => Date.now() + ackDelayMillis);
 
               yield* actor.updateState((state) => ({
                 ...state,
@@ -273,19 +268,14 @@ export const makeRadioActor = (options: RadioActorOptions) =>
               }));
 
               yield* Effect.sync(() => {
-                runFork(
-                  publishLinkedFlightComputer.pipe(
-                    Effect.delay(`${ackDelayMillis} millis`),
-                  ),
-                );
+                runFork(publishLinkedFlightComputer.pipe(Effect.delay(`${ackDelayMillis} millis`)));
               });
 
               yield* actor.updateState((state) => ({
                 ...state,
                 mode: "IDLE",
                 status: "OK",
-                detail:
-                  "Pad radio forwarded the latest command and returned to idle.",
+                detail: "Pad radio forwarded the latest command and returned to idle.",
               }));
               yield* publishOwnState;
             });
@@ -310,19 +300,19 @@ export const makeRadioActor = (options: RadioActorOptions) =>
               yield* publishOwnState;
               yield* publishLinkedFlightComputerState;
               yield* publishOwnTelemetry.pipe(
-                Effect.repeat(Schedule.spaced("2 seconds")),
+                Effect.repeat(Schedule.spaced(telemetryInterval)),
                 Effect.forkScoped,
               );
               yield* publishLinkedFlightComputer.pipe(
-                Effect.repeat(Schedule.spaced("2 seconds")),
+                Effect.repeat(Schedule.spaced(telemetryInterval)),
                 Effect.forkScoped,
               );
               yield* publishOwnState.pipe(
-                Effect.repeat(Schedule.spaced("5 seconds")),
+                Effect.repeat(Schedule.spaced(stateInterval)),
                 Effect.forkScoped,
               );
               yield* publishLinkedFlightComputerState.pipe(
-                Effect.repeat(Schedule.spaced("5 seconds")),
+                Effect.repeat(Schedule.spaced(stateInterval)),
                 Effect.forkScoped,
               );
             }),
@@ -338,10 +328,7 @@ export const makeRadioActor = (options: RadioActorOptions) =>
 export const makeRadioSimulator = (options: RadioActorOptions) =>
   makeRadioActor(options).pipe(Effect.flatMap(runAstraActor));
 
-export const makeStandaloneRadioWithFlightComputer = (
-  baseTopic: string,
-  role: RadioRole,
-) =>
+export const makeStandaloneRadioWithFlightComputer = (baseTopic: string, role: RadioRole) =>
   Effect.gen(function* () {
     const systemBase = baseTopic.split("/").slice(0, 1)[0] ?? "System";
     const flightComputer = yield* makeFlightComputerSimulation(

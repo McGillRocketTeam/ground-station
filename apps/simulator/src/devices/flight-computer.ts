@@ -37,9 +37,7 @@ export interface FlightComputerSimulation {
     publisher: AstraPublisher,
     ackId: number,
   ) => Effect.Effect<void>;
-  readonly acceptCommand: (
-    commandText: AstraCommandText,
-  ) => Effect.Effect<void>;
+  readonly acceptCommand: (commandText: AstraCommandText) => Effect.Effect<void>;
 }
 
 const flightComputerCommands = {
@@ -82,9 +80,7 @@ const initialState: FlightComputerState = {
   pendingAckCode: null,
 };
 
-export const parseFlightComputerCommand = (
-  commandText: string,
-): FlightComputerCommand | null => {
+export const parseFlightComputerCommand = (commandText: string): FlightComputerCommand | null => {
   const [idPart, codePart] = commandText.split(",", 2);
 
   if (idPart === undefined || codePart === undefined) {
@@ -94,12 +90,7 @@ export const parseFlightComputerCommand = (
   const cmdId = Number.parseInt(idPart.trim(), 10);
   const code = codePart.trim();
 
-  if (
-    !Number.isInteger(cmdId) ||
-    cmdId < 1 ||
-    cmdId > 255 ||
-    code.length === 0
-  ) {
+  if (!Number.isInteger(cmdId) || cmdId < 1 || cmdId > 255 || code.length === 0) {
     return null;
   }
 
@@ -145,9 +136,7 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
     const container = yield* getContainer(baseTopic, "FCFrame");
     const buildPacket = yield* makePacketBuilder(container);
 
-    const updateState = (
-      update: (currentState: FlightComputerState) => FlightComputerState,
-    ) =>
+    const updateState = (update: (currentState: FlightComputerState) => FlightComputerState) =>
       Ref.modify(state, (currentState) => {
         const nextState = update(currentState);
         return [nextState, nextState] as const;
@@ -160,10 +149,7 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
         yield* publisher.publishDetail(endpoint, currentState.detail);
       });
 
-    const publishTelemetryInternal = (
-      publisher: AstraPublisher,
-      ackId?: number,
-    ) =>
+    const publishTelemetryInternal = (publisher: AstraPublisher, ackId?: number) =>
       Effect.gen(function* () {
         const packet = yield* buildPacket;
         const nextState = yield* updateState((currentState) => {
@@ -191,21 +177,16 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
 
         yield* publisher.publishTelemetry(
           endpoint,
-          ackId === undefined
-            ? packet
-            : injectAckIntoPacketHeader(packet, ackId),
+          ackId === undefined ? packet : injectAckIntoPacketHeader(packet, ackId),
         );
         yield* publisher.publishStatus(endpoint, nextState.status);
         yield* publisher.publishDetail(endpoint, nextState.detail);
       });
 
-    const publishTelemetry = (publisher: AstraPublisher) =>
-      publishTelemetryInternal(publisher);
+    const publishTelemetry = (publisher: AstraPublisher) => publishTelemetryInternal(publisher);
 
-    const publishTelemetryWithAck = (
-      publisher: AstraPublisher,
-      ackId: number,
-    ) => publishTelemetryInternal(publisher, ackId);
+    const publishTelemetryWithAck = (publisher: AstraPublisher, ackId: number) =>
+      publishTelemetryInternal(publisher, ackId);
 
     const acceptCommand = (commandText: AstraCommandText) =>
       Effect.gen(function* () {
@@ -221,9 +202,7 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
         }
 
         const commandDescription =
-          flightComputerCommands[
-            command.code as keyof typeof flightComputerCommands
-          ];
+          flightComputerCommands[command.code as keyof typeof flightComputerCommands];
 
         if (commandDescription === undefined) {
           yield* updateState((currentState) => ({
@@ -237,8 +216,7 @@ export const makeFlightComputerSimulation = (baseTopic: string) =>
         yield* updateState((currentState) => ({
           ...currentState,
           phase: nextPhaseForCommand(currentState.phase, command.code),
-          status:
-            command.code === "pc" || command.code === "pe" ? "FAILED" : "OK",
+          status: command.code === "pc" || command.code === "pe" ? "FAILED" : "OK",
           detail: `Flight computer ${commandDescription} and will report ack ${command.cmdId} in telemetry.`,
           lastCommandId: command.cmdId,
           pendingAckId: command.cmdId,

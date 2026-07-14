@@ -28,6 +28,140 @@ class TelemetrySystem(FlightSystem):
         self.param_dict = None
         self.frame_container = None
 
+    def make_gps_locked_algorithm(self) -> Y.Algorithm:
+        gps_locked = Y.BooleanParameter(
+            system=self.sys,
+            name="gps_locked",
+            data_source=Y.DataSource.DERIVED,
+            initial_value=False,
+            short_description="GPS Locked",
+            long_description="Derived GPS activity state based on GPS freshness and coordinate validity.",
+        )
+
+        return Y.Algorithm(
+            system=self.sys,
+            name="gps_locked",
+            short_description="GPS Locked",
+            long_description="Reports GPS active when the fix is fresh and coordinates are within valid latitude/longitude bounds.",
+            language="JavaScript",
+            text=(
+                "var hasRecentUpdate = gps_time_last_update.value !== -1 && gps_time_last_update.value <= 30;\n"
+                "var validLatitude = gps_latitude.value >= -90 && gps_latitude.value <= 90;\n"
+                "var validLongitude = gps_longitude.value >= -180 && gps_longitude.value <= 180;\n"
+                "gps_locked.value = hasRecentUpdate && validLatitude && validLongitude;\n"
+                "gps_locked.updated = true;"
+            ),
+            inputs=[
+                Y.InputParameter("gps_time_last_update", name="gps_time_last_update"),
+                Y.InputParameter("gps_latitude", name="gps_latitude"),
+                Y.InputParameter("gps_longitude", name="gps_longitude"),
+            ],
+            outputs=[Y.OutputParameter(gps_locked, name="gps_locked")],
+            triggers=[
+                Y.ParameterTrigger("gps_time_last_update"),
+                Y.ParameterTrigger("gps_latitude"),
+                Y.ParameterTrigger("gps_longitude"),
+            ],
+        )
+
+    def make_fdov_open_algorithm(self) -> Y.Algorithm:
+        fdov_open = Y.BooleanParameter(
+            system=self.sys,
+            name="fdov_open",
+            data_source=Y.DataSource.DERIVED,
+            initial_value=False,
+            short_description="F/DOV: Open",
+            long_description="Derived F/DOV physical state based off reported states.",
+        )
+
+        return Y.Algorithm(
+            system=self.sys,
+            name="fdov_open",
+            short_description="F/DOV Open",
+            long_description="Reports if the F/DOV is open based on its reported states.",
+            language="JavaScript",
+            text=(
+                "fdov_open.value = !fdov_energizedGate_HW.value;\n"
+                "fdov_open.updated = true;"
+            ),
+            inputs=[
+                Y.InputParameter("fdov_energizedGate_HW", name="fdov_energizedGate_HW"),
+            ],
+            outputs=[Y.OutputParameter(fdov_open, name="fdov_open")],
+            triggers=[
+                Y.ParameterTrigger("fdov_energizedGate_HW"),
+            ],
+        )
+
+    def make_vent_open_algorithm(self) -> Y.Algorithm:
+        vent_open = Y.BooleanParameter(
+            system=self.sys,
+            name="vent_open",
+            data_source=Y.DataSource.DERIVED,
+            initial_value=False,
+            short_description="Vent: Open",
+            long_description="Derived vent valve physical state based off reported states.",
+        )
+
+        return Y.Algorithm(
+            system=self.sys,
+            name="vent_open",
+            short_description="Vent Open",
+            long_description="Reports if the vent valve is open based on its reported states.",
+            language="JavaScript",
+            text=(
+                "vent_open.value = !vent_energizedGate_HW.value;\n"
+                "vent_open.updated = true;"
+            ),
+            inputs=[
+                Y.InputParameter("vent_energizedGate_HW", name="vent_energizedGate_HW"),
+            ],
+            outputs=[Y.OutputParameter(vent_open, name="vent_open")],
+            triggers=[
+                Y.ParameterTrigger("vent_energizedGate_HW"),
+            ],
+        )
+
+    def make_mov_open_algorithm(self) -> Y.Algorithm:
+        mov_open = Y.BooleanParameter(
+            system=self.sys,
+            name="mov_open",
+            data_source=Y.DataSource.DERIVED,
+            initial_value=False,
+            short_description="MOV: Open",
+            long_description="Derived MOV physical state based off reported states.",
+        )
+
+        return Y.Algorithm(
+            system=self.sys,
+            name="mov_open",
+            short_description="MOV Open",
+            long_description="Reports if the MOV is open based on its reported states.",
+            language="JavaScript",
+            text=(
+                "mov_open.value = mov_energizedGate_HW.value;\n"
+                "mov_open.updated = true;"
+            ),
+            inputs=[
+                Y.InputParameter("mov_energizedGate_HW", name="mov_energizedGate_HW"),
+            ],
+            outputs=[Y.OutputParameter(mov_open, name="mov_open")],
+            triggers=[
+                Y.ParameterTrigger("mov_energizedGate_HW"),
+            ],
+        )
+
+    def create_hard_coded_algorithms(self) -> list[Y.Algorithm]:
+        if self.frame_container is None:
+            raise ValueError("Atomics must be created before hard-coded algorithms.")
+
+        return [
+            self.make_gps_locked_algorithm(),
+            self.make_fdov_open_algorithm(),
+            self.make_vent_open_algorithm(),
+            self.make_mov_open_algorithm(),
+        ]
+
     @staticmethod
     def set_param_calibrator(row: dict[str, Any]):
         cal = row["Calibration Function f(x)"]
@@ -425,3 +559,7 @@ class TelemetrySystem(FlightSystem):
         print(" - Creating Atomics...")
         (self.frame_container, atomics) = self.create_atomics()
         print(f"   Created {len(atomics)} Atomics")
+
+        print(" - Creating Hard-Coded Algorithms...")
+        algorithms = self.create_hard_coded_algorithms()
+        print(f"   Created {len(algorithms)} Hard-Coded Algorithms")

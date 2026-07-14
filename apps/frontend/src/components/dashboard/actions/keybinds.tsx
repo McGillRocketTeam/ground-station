@@ -4,10 +4,7 @@ import { useAtomSet, useAtomSuspense } from "@effect/atom-react";
 import { useHotkey, useHotkeySequence } from "@tanstack/react-hotkeys";
 import { Suspense } from "react";
 
-import type {
-  DashboardAction,
-  DashboardActionGroup,
-} from "@/lib/dashboard-actions";
+import type { DashboardAction, DashboardActionGroup } from "@/lib/dashboard-actions";
 
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 
@@ -39,18 +36,10 @@ export function DashboardKeybinds() {
   );
 }
 
-function DashboardActionKeybinds({
-  groups,
-}: {
-  groups: ReadonlyArray<DashboardActionGroup>;
-}) {
+function DashboardActionKeybinds({ groups }: { groups: ReadonlyArray<DashboardActionGroup> }) {
   return flattenDashboardActionGroups(groups).map((action) =>
     action.shortcut ? (
-      <DashboardActionKeybind
-        action={action}
-        hotkey={action.shortcut}
-        key={action.id}
-      />
+      <DashboardActionKeybind action={action} hotkey={action.shortcut} key={action.id} />
     ) : null,
   );
 }
@@ -85,12 +74,32 @@ function InstanceCommandKeybinds() {
     YamcsAtomHttpClient.query("instances", "listInstances", {}),
   ).value;
 
-  instances.forEach((instance, index) => {
-    useHotkeySequence(["O", "I", (index + 1).toString() as "0"], () => {
-      setSwitchInstanceOpen(false);
-      setInstance(instance.name);
-    });
+  return instances.map((instance, index) => (
+    <InstanceSequenceKeybind
+      index={index}
+      instanceName={instance.name}
+      key={instance.name}
+      setInstance={setInstance}
+      setSwitchInstanceOpen={setSwitchInstanceOpen}
+    />
+  ));
+}
+
+function InstanceSequenceKeybind({
+  index,
+  instanceName,
+  setInstance,
+  setSwitchInstanceOpen,
+}: {
+  index: number;
+  instanceName: string;
+  setInstance: (value: string) => void;
+  setSwitchInstanceOpen: (value: boolean) => void;
+}) {
+  useHotkeySequence(["O", "I", (index + 1).toString() as "0"], () => {
+    setSwitchInstanceOpen(false);
+    setInstance(instanceName);
   });
 
-  return <></>;
+  return null;
 }

@@ -66,6 +66,7 @@ export function DataGridSearch({
   return (
     <DataGridHead className={cn("relative", className)}>
       <input
+        aria-label={placeholder ?? "Search"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -76,6 +77,8 @@ export function DataGridSearch({
 
       {value.length > 0 && (
         <button
+          aria-label="Clear search"
+          type="button"
           onClick={() => onChange("")}
           className="absolute inset-y-0 right-0.5 z-10 size-5 cursor-pointer p-1 text-muted-foreground"
         >

@@ -1,11 +1,6 @@
 import type { ConsequenceLevel } from "@mrt/yamcs-effect";
 
-import {
-  useAtom,
-  useAtomSet,
-  useAtomSuspense,
-  useAtomValue,
-} from "@effect/atom-react";
+import { useAtom, useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { useHotkey, useHotkeySequence } from "@tanstack/react-hotkeys";
 import { Atom } from "effect/unstable/reactivity";
 import { Suspense } from "react";
@@ -55,11 +50,7 @@ export function DashboardCommandMenu() {
       <Suspense>
         <SwitchInstanceDialog />
       </Suspense>
-      <CommandDialog
-        className="w-full sm:max-w-130"
-        open={open}
-        onOpenChange={setOpen}
-      >
+      <CommandDialog className="w-full sm:max-w-130" open={open} onOpenChange={setOpen}>
         <Command>
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>
@@ -89,9 +80,7 @@ function SendCommandDialog() {
   useHotkeySequence(["Space", "S", "C"], () => {
     setOpen((v) => !v);
   });
-  const sendCommand = useAtomSet(
-    YamcsAtomHttpClient.mutation("command", "issueCommand"),
-  );
+  const sendCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
 
   const instance = useAtomValue(selectedInstanceAtom);
   const { commands } = useAtomSuspense(
@@ -130,9 +119,7 @@ function SendCommandDialog() {
                   });
                 }}
               >
-                <CommandConsequenceLevelIcon
-                  level={command.significance?.consequenceLevel}
-                />
+                <CommandConsequenceLevelIcon level={command.significance?.consequenceLevel} />
                 {command.longDescription}
                 <CommandShortcut className="font-mono text-xs uppercase">
                   {command.shortDescription}
@@ -162,11 +149,7 @@ function CommandConsequenceLevelIcon({
   const isDangerLevel = level === "SEVERE" || level === "CRITICAL";
 
   return (
-    <svg
-      aria-hidden="true"
-      className="size-3.5 overflow-visible"
-      viewBox="0 0 18 18"
-    >
+    <svg aria-hidden="true" className="size-3.5 overflow-visible" viewBox="0 0 18 18">
       {[
         { x: 1.5, y: 10.5, height: 6 },
         { x: 7.5, y: 6.5, height: 10 },
@@ -219,25 +202,13 @@ function InstanceCommandGroup() {
 
   return (
     <>
-      <DashboardActionCommandGroups
-        groups={cardGroups}
-        onAction={() => setOpen(false)}
-      />
+      <DashboardActionCommandGroups groups={cardGroups} onAction={() => setOpen(false)} />
       <CommandSeparator />
-      <DashboardActionCommandGroups
-        groups={dashboardGroups}
-        onAction={() => setOpen(false)}
-      />
+      <DashboardActionCommandGroups groups={dashboardGroups} onAction={() => setOpen(false)} />
       <CommandSeparator />
-      <DashboardActionCommandGroups
-        groups={viewGroups}
-        onAction={() => setOpen(false)}
-      />
+      <DashboardActionCommandGroups groups={viewGroups} onAction={() => setOpen(false)} />
       <CommandSeparator />
-      <DashboardActionCommandGroups
-        groups={dataGroups}
-        onAction={() => setOpen(false)}
-      />
+      <DashboardActionCommandGroups groups={dataGroups} onAction={() => setOpen(false)} />
       <CommandSeparator />
       <DashboardActionCommandGroups
         groups={instanceGroups}

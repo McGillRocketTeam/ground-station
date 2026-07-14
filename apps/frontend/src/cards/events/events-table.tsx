@@ -25,23 +25,24 @@ import type { Event } from ".";
 
 const HeaderButton = memo(function HeaderButton({
   children,
+  column,
   isSorted,
-  onToggleSort,
   className,
 }: {
   children: React.ReactNode;
+  column: { getIsSorted: () => false | "asc" | "desc"; toggleSorting: (desc?: boolean) => void };
   isSorted: false | "asc" | "desc";
-  onToggleSort: () => void;
   className?: string;
 }) {
   return (
     <DataGridHead className={className}>
       <button
+        type="button"
         className={cn(
           "flex h-full w-full cursor-pointer flex-row items-center gap-1 uppercase",
           className,
         )}
-        onClick={onToggleSort}
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         {children}
         {isSorted === "asc" ? (
@@ -58,13 +59,7 @@ const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "severity",
     header: ({ column }) => (
-      <HeaderButton
-        className="col-span-2"
-        isSorted={column.getIsSorted()}
-        onToggleSort={() =>
-          column.toggleSorting(column.getIsSorted() === "asc")
-        }
-      >
+      <HeaderButton className="col-span-2" column={column} isSorted={column.getIsSorted()}>
         Severity
       </HeaderButton>
     ),
@@ -72,12 +67,7 @@ const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "source",
     header: ({ column }) => (
-      <HeaderButton
-        isSorted={column.getIsSorted()}
-        onToggleSort={() =>
-          column.toggleSorting(column.getIsSorted() === "asc")
-        }
-      >
+      <HeaderButton column={column} isSorted={column.getIsSorted()}>
         Source
       </HeaderButton>
     ),
@@ -89,13 +79,7 @@ const columns: ColumnDef<Event>[] = [
   {
     accessorKey: "generationTime",
     header: ({ column }) => (
-      <HeaderButton
-        className="justify-end"
-        isSorted={column.getIsSorted()}
-        onToggleSort={() =>
-          column.toggleSorting(column.getIsSorted() === "asc")
-        }
-      >
+      <HeaderButton className="justify-end" column={column} isSorted={column.getIsSorted()}>
         Generation Time
       </HeaderButton>
     ),
@@ -162,12 +146,8 @@ export function EventsTable({ events }: { events: Array<Event> }) {
             <DataGridSearch
               placeholder="Filter messages..."
               className="col-span-4"
-              value={
-                (table.getColumn("message")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(value) =>
-                table.getColumn("message")?.setFilterValue(value)
-              }
+              value={(table.getColumn("message")?.getFilterValue() as string) ?? ""}
+              onChange={(value) => table.getColumn("message")?.setFilterValue(value)}
             />
 
             {table.getHeaderGroups().map((headerGroup) => (
@@ -177,10 +157,7 @@ export function EventsTable({ events }: { events: Array<Event> }) {
                     <Fragment key={header.id}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </Fragment>
                   );
                 })}
@@ -192,17 +169,11 @@ export function EventsTable({ events }: { events: Array<Event> }) {
               table
                 .getRowModel()
                 .rows.map((row) => (
-                  <EventRow
-                    key={row.id}
-                    event={row.original}
-                    isSelected={row.getIsSelected()}
-                  />
+                  <EventRow key={row.id} event={row.original} isSelected={row.getIsSelected()} />
                 ))
             ) : (
               <DataGridRow>
-                <div className="col-span-full grid h-24 place-items-center">
-                  No results.
-                </div>
+                <div className="col-span-full grid h-24 place-items-center">No results.</div>
               </DataGridRow>
             )}
           </DataGridBody>

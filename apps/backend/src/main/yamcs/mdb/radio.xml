@@ -1,114 +1,123 @@
-<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
-	name="Radio">
-	<TelemetryMetaData>
-		<ParameterTypeSet>
-			<IntegerParameterType name="seq" signed="false" sizeInBits="32">
-				<IntegerDataEncoding sizeInBits="16" encoding="unsigned"
-					byteOrder="leastSignificantByteFirst" bitOrder="leastSignificantBitFirst" />
-			</IntegerParameterType>
-			<FloatParameterType name="rssi" sizeInBits="32">
-				<UnitSet>
-					<Unit form="calibrated">dBm</Unit>
-				</UnitSet>
-				<IntegerDataEncoding sizeInBits="8" encoding="unsigned">
-					<DefaultCalibrator>
-						<MathOperationCalibrator>
-							<ThisParameterOperand />
-							<ValueOperand>-2</ValueOperand>
-							<Operator>/</Operator>
-						</MathOperationCalibrator>
-					</DefaultCalibrator>
-				</IntegerDataEncoding>
-				<ValidRange
-					validRangeAppliesToCalibrated="false"
-					minInclusive="0"
-					maxInclusive="255"
-				/>
-			</FloatParameterType>
-			<FloatParameterType name="snr" sizeInBits="32">
-				<UnitSet>
-					<Unit form="calibrated">dB</Unit>
-				</UnitSet>
-				<IntegerDataEncoding sizeInBits="8" encoding="twosComplement"
-					bitOrder="leastSignificantBitFirst">
-					<DefaultCalibrator>
-						<MathOperationCalibrator>
-							<ThisParameterOperand />
-							<ValueOperand>4</ValueOperand>
-							<Operator>/</Operator>
-						</MathOperationCalibrator>
-					</DefaultCalibrator>
-				</IntegerDataEncoding>
-				<ValidRange
-					validRangeAppliesToCalibrated="false"
-					minInclusive="-128"
-					maxInclusive="127"
-				/>
-			</FloatParameterType>
-		</ParameterTypeSet>
-		<ParameterSet>
-			<Parameter name="sequenceNumber" parameterTypeRef="seq" shortDescription="Sequence Number">
-				<LongDescription>A.S.T.R.A. Packet Identifider</LongDescription>
-				<ParameterProperties dataSource="telemetered" persistence="true" />
-			</Parameter>
-
-			<Parameter name="RSSI" parameterTypeRef="rssi"
-				shortDescription="Radio Received Signal Strength Indicator ">
-				<LongDescription>Relative Signal Strength Indicator of the ground radio</LongDescription>
-				<ParameterProperties dataSource="ground" persistence="true" />
-			</Parameter>
-			<Parameter name="SNR" parameterTypeRef="snr" shortDescription="Radio Signal-to-Noise Ratio" />
-		</ParameterSet>
-		<ContainerSet>
-			<SequenceContainer name="TelemetryPacket">
-				<EntryList>
-					<ParameterRefEntry parameterRef="sequenceNumber">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>0</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="RSSI">
-						<LocationInContainerInBits referenceLocation="previousEntry">
-							<FixedValue>0</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="SNR">
-						<LocationInContainerInBits referenceLocation="previousEntry">
-							<FixedValue>0</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-				</EntryList>
-			</SequenceContainer>
-		</ContainerSet>
-	</TelemetryMetaData>
-	<CommandMetaData>
-		<MetaCommandSet>
-			<MetaCommand name="clear_queue" abstract="false" shortDescription="radio clear">
-				<LongDescription>Clear Radio Command Queue</LongDescription>
-				<CommandContainer name="clear_queue">
-					<EntryList />
-				</CommandContainer>
-				<DefaultSignificance consequenceLevel="normal" />
-				<VerifierSet />
-			</MetaCommand>
-			<MetaCommand name="enable_tx" abstract="false" shortDescription="radio settx t">
-				<LongDescription>Enable TX</LongDescription>
-				<CommandContainer name="enable_tx">
-					<EntryList />
-				</CommandContainer>
-				<DefaultSignificance consequenceLevel="normal" />
-				<VerifierSet />
-			</MetaCommand>
-			<MetaCommand name="disable_tx" abstract="false" shortDescription="radio settx f">
-				<LongDescription>Disable TX</LongDescription>
-				<CommandContainer name="disable_tx">
-					<EntryList />
-				</CommandContainer>
-				<DefaultSignificance consequenceLevel="normal" />
-				<VerifierSet />
-			</MetaCommand>
-		</MetaCommandSet>
-	</CommandMetaData>
+<?xml version="1.0"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="Radio">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <IntegerParameterType name="seq" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst" bitOrder="leastSignificantBitFirst"/>
+      </IntegerParameterType>
+      <FloatParameterType name="rssi" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dBm</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>-2</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <ValidRange validRangeAppliesToCalibrated="false" minInclusive="0" maxInclusive="255"/>
+      </FloatParameterType>
+      <FloatParameterType name="snr" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement" bitOrder="leastSignificantBitFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>4</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+        <ValidRange validRangeAppliesToCalibrated="false" minInclusive="-128" maxInclusive="127"/>
+      </FloatParameterType>
+      <FloatParameterType name="temperature_c">
+        <UnitSet>
+          <Unit form="calibrated">C</Unit>
+          <Unit form="raw">centi-C</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement" bitOrder="leastSignificantBitFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>100</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="sequenceNumber" parameterTypeRef="seq" shortDescription="Sequence Number">
+        <LongDescription>A.S.T.R.A. Packet Identifider</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="RSSI" parameterTypeRef="rssi" shortDescription="Radio Received Signal Strength Indicator ">
+        <LongDescription>Relative Signal Strength Indicator of the ground radio</LongDescription>
+        <ParameterProperties dataSource="ground" persistence="true"/>
+      </Parameter>
+      <Parameter name="SNR" parameterTypeRef="snr" shortDescription="Radio Signal-to-Noise Ratio"/>
+      <Parameter name="cpu_temperature" parameterTypeRef="temperature_c" shortDescription="Radio CPU Temperature">
+        <LongDescription>Teensy CPU junction temperature</LongDescription>
+      </Parameter>
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="TelemetryPacket">
+        <EntryList>
+          <ParameterRefEntry parameterRef="sequenceNumber">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="RSSI">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="SNR">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="cpu_temperature">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+  <CommandMetaData>
+    <MetaCommandSet>
+      <MetaCommand name="clear_queue" abstract="false" shortDescription="radio clear">
+        <LongDescription>Clear Radio Command Queue</LongDescription>
+        <CommandContainer name="clear_queue">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="enable_tx" abstract="false" shortDescription="radio settx t">
+        <LongDescription>Enable TX</LongDescription>
+        <CommandContainer name="enable_tx">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="disable_tx" abstract="false" shortDescription="radio settx f">
+        <LongDescription>Disable TX</LongDescription>
+        <CommandContainer name="disable_tx">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
 </SpaceSystem>

@@ -1,9 +1,5 @@
 import { Schema } from "effect";
-import {
-  HttpApiGroup,
-  HttpApiEndpoint,
-  HttpApiError,
-} from "effect/unstable/httpapi";
+import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
 import { LinkInfo, QualifiedName } from "../schema.js";
 
@@ -30,7 +26,7 @@ export const linkGroup = HttpApiGroup.make("link")
     }),
   )
   .add(
-    HttpApiEndpoint.post("enableLink", "/links/:instance/:link:enable", {
+    HttpApiEndpoint.post("enableLink", "/links/:instance/:link%3Aenable", {
       params: {
         instance: Schema.String,
         link: QualifiedName,
@@ -40,7 +36,7 @@ export const linkGroup = HttpApiGroup.make("link")
     }),
   )
   .add(
-    HttpApiEndpoint.post("disableLink", "/links/:instance/:link:disable", {
+    HttpApiEndpoint.post("disableLink", "/links/:instance/:link%3Adisable", {
       params: {
         instance: Schema.String,
         link: QualifiedName,
@@ -50,18 +46,14 @@ export const linkGroup = HttpApiGroup.make("link")
     }),
   )
   .add(
-    HttpApiEndpoint.post(
-      "resetCounters",
-      "/links/:instance/:link:resetCounters",
-      {
-        params: {
-          instance: Schema.String,
-          link: QualifiedName,
-        },
-        success: LinkInfo,
-        error: [HttpApiError.NotFound],
+    HttpApiEndpoint.post("resetCounters", "/links/:instance/:link%3AresetCounters", {
+      params: {
+        instance: Schema.String,
+        link: QualifiedName,
       },
-    ),
+      success: LinkInfo,
+      error: [HttpApiError.NotFound],
+    }),
   );
 
 export default linkGroup;

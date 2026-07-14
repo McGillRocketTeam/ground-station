@@ -37,10 +37,7 @@ export interface StringDataEncoding {
   readonly encoding: string;
 }
 
-export type DataEncoding =
-  | IntegerDataEncoding
-  | FloatDataEncoding
-  | StringDataEncoding;
+export type DataEncoding = IntegerDataEncoding | FloatDataEncoding | StringDataEncoding;
 
 interface EnumValue {
   readonly value: string;
@@ -77,6 +74,31 @@ export interface Container {
   readonly qualifiedName: string;
   readonly entry: ReadonlyArray<ContainerEntry>;
 }
+
+interface WireParameter {
+  readonly name?: string | undefined;
+  readonly qualifiedName?: string | undefined;
+  readonly shortDescription?: string | undefined;
+  readonly dataSource: DataSource;
+  readonly type: ParameterType;
+}
+
+interface WireContainerEntry {
+  readonly locationInBits: number;
+  readonly referenceLocation: "CONTAINER_START" | "PREVIOUS_ENTRY";
+  readonly parameter?: WireParameter | undefined;
+  readonly container?: WireContainer | undefined;
+}
+
+interface WireContainer {
+  readonly name?: string | undefined;
+  readonly qualifiedName?: string | undefined;
+  readonly entry: ReadonlyArray<WireContainerEntry>;
+}
+
+class MdbContainerError extends Schema.TaggedErrorClass<MdbContainerError>()("MdbContainerError", {
+  message: Schema.String,
+}) {}
 
 const DataSourceType: Schema.Schema<DataSource> = Schema.Literals([
   "TELEMETERED",
@@ -134,45 +156,107 @@ const ParameterTypeInfo: Schema.Schema<ParameterType> = Schema.Struct({
   enumValues: Schema.optional(Schema.Array(EnumValueInfo)),
 });
 
-const ParameterInfo: Schema.Schema<Parameter> = Schema.Struct({
-  name: Schema.String,
-  qualifiedName: Schema.String,
+const ParameterInfo: Schema.Schema<WireParameter> = Schema.Struct({
+  name: Schema.optional(Schema.String),
+  qualifiedName: Schema.optional(Schema.String),
   shortDescription: Schema.optional(Schema.String),
   dataSource: DataSourceType,
   type: ParameterTypeInfo,
 });
 
-const ContainerInfo: Schema.Schema<Container> = Schema.suspend(() =>
+const ContainerInfo: Schema.Schema<WireContainer> = Schema.suspend(() =>
   Schema.Struct({
-    name: Schema.String,
-    qualifiedName: Schema.String,
+    name: Schema.optional(Schema.String),
+    qualifiedName: Schema.optional(Schema.String),
     entry: Schema.Array(SequenceEntryInfo),
   }),
 );
 
-const SequenceEntryInfo: Schema.Schema<ContainerEntry> = Schema.Struct({
+const SequenceEntryInfo: Schema.Schema<WireContainerEntry> = Schema.Struct({
   locationInBits: Schema.Number,
   referenceLocation: Schema.Literals(["CONTAINER_START", "PREVIOUS_ENTRY"]),
   parameter: Schema.optional(ParameterInfo),
   container: Schema.optional(ContainerInfo),
 });
 
+const inferName = (qualifiedName: string) => {
+  const segments = qualifiedName.split("/").filter((segment) => segment.length > 0);
+  return segments.at(-1) ?? qualifiedName;
+};
+
+const joinQualifiedName = (parentQualifiedName: string, name: string) =>
+  `${parentQualifiedName.replace(/\/+$/, "")}/${name}`;
+
+const normalizeParameter = (parameter: WireParameter, parentQualifiedName: string): Parameter => {
+  const qualifiedName =
+    parameter.qualifiedName ??
+    (parameter.name ? joinQualifiedName(parentQualifiedName, parameter.name) : parentQualifiedName);
+
+  return {
+    ...parameter,
+    name: parameter.name ?? inferName(qualifiedName),
+    qualifiedName,
+  };
+};
+
+const normalizeContainer = (container: WireContainer, fallbackQualifiedName: string): Container => {
+  const qualifiedName = container.qualifiedName ?? fallbackQualifiedName;
+  const name = container.name ?? inferName(qualifiedName);
+
+  return {
+    ...container,
+    name,
+    qualifiedName,
+    entry: container.entry.map((entry) => ({
+      ...entry,
+      parameter: entry.parameter ? normalizeParameter(entry.parameter, qualifiedName) : undefined,
+      container: entry.container
+        ? normalizeContainer(
+            entry.container,
+            joinQualifiedName(qualifiedName, entry.container.name ?? "container"),
+          )
+        : undefined,
+    })),
+  };
+};
+
 export const getContainer = (basePath: string, containerName: string) =>
   Effect.gen(function* () {
     const baseUrl = yield* YAMCS_URL;
     const instance = yield* YAMCS_INSTANCE;
     const client = yield* HttpClient.HttpClient;
+    const qualifiedName = `/${basePath}/${containerName}`;
+    const url = `${baseUrl}/api/mdb/${instance}/containers/${basePath}/${containerName}`;
 
-    const result = yield* client.get(
-      `${baseUrl}/api/mdb/${instance}/containers/${basePath}/${containerName}`,
-    );
+    const result = yield* client.get(url);
 
     const text = yield* result.text;
 
-    const container = yield* Schema.decodeUnknownEffect(
-      Schema.fromJsonString(ContainerInfo),
-    )(text).pipe(
-      Effect.tapErrorTag("SchemaError", (e) => Effect.logError(e.message)),
+    if (result.status < 200 || result.status >= 300) {
+      return yield* new MdbContainerError({
+        message: [
+          `Failed to load MDB container ${qualifiedName} for instance ${instance}.`,
+          `HTTP ${result.status} from ${url}`,
+          `Response: ${text}`,
+        ].join(" "),
+      });
+    }
+
+    const container = yield* Schema.decodeUnknownEffect(Schema.fromJsonString(ContainerInfo))(
+      text,
+    ).pipe(
+      Effect.map((value) => normalizeContainer(value, `/${basePath}/${containerName}`)),
+      Effect.mapError(
+        (error) =>
+          new MdbContainerError({
+            message: [
+              `Failed to decode MDB container ${qualifiedName} for instance ${instance}.`,
+              `Requested URL: ${url}`,
+              error.message,
+              `Response: ${text}`,
+            ].join(" "),
+          }),
+      ),
     );
 
     return container;

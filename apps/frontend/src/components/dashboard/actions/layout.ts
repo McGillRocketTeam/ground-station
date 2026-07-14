@@ -1,8 +1,4 @@
-import type {
-  DockviewApi,
-  IDockviewPanel,
-  SerializedDockview,
-} from "dockview-react";
+import type { DockviewApi, IDockviewPanel, SerializedDockview } from "dockview-react";
 
 import { Atom } from "effect/unstable/reactivity";
 
@@ -43,47 +39,41 @@ function areLayoutsEqual(
   return serializeLayoutForHistory(left) === serializeLayoutForHistory(right);
 }
 
-export const dashboardDockviewApiAtom = Atom.make<DockviewApi | undefined>(
-  undefined,
-);
+export const dashboardDockviewApiAtom = Atom.make<DockviewApi | undefined>(undefined);
 
 export const dashboardLayoutHistoryAtom = Atom.make<DashboardLayoutHistory>(
   emptyDashboardLayoutHistory,
 );
 
-export const initializeDashboardLayoutHistoryAtom: Atom.Writable<
-  void,
-  SerializedDockview
-> = Atom.writable(
-  () => undefined,
-  (ctx, layout) => {
-    ctx.set(dashboardLayoutHistoryAtom, {
-      past: [],
-      present: layout,
-      future: [],
-    });
-  },
-) as Atom.Writable<void, SerializedDockview>;
+export const initializeDashboardLayoutHistoryAtom: Atom.Writable<void, SerializedDockview> =
+  Atom.writable(
+    () => undefined,
+    (ctx, layout) => {
+      ctx.set(dashboardLayoutHistoryAtom, {
+        past: [],
+        present: layout,
+        future: [],
+      });
+    },
+  ) as Atom.Writable<void, SerializedDockview>;
 
-export const pushDashboardLayoutHistoryAtom: Atom.Writable<
-  void,
-  SerializedDockview
-> = Atom.writable(
-  () => undefined,
-  (ctx, layout) => {
-    const history = ctx.get(dashboardLayoutHistoryAtom);
+export const pushDashboardLayoutHistoryAtom: Atom.Writable<void, SerializedDockview> =
+  Atom.writable(
+    () => undefined,
+    (ctx, layout) => {
+      const history = ctx.get(dashboardLayoutHistoryAtom);
 
-    if (areLayoutsEqual(history.present, layout)) {
-      return;
-    }
+      if (areLayoutsEqual(history.present, layout)) {
+        return;
+      }
 
-    ctx.set(dashboardLayoutHistoryAtom, {
-      past: history.present ? [...history.past, history.present] : history.past,
-      present: layout,
-      future: [],
-    });
-  },
-) as Atom.Writable<void, SerializedDockview>;
+      ctx.set(dashboardLayoutHistoryAtom, {
+        past: history.present ? [...history.past, history.present] : history.past,
+        present: layout,
+        future: [],
+      });
+    },
+  ) as Atom.Writable<void, SerializedDockview>;
 
 export const dashboardUndoAtom: Atom.Writable<void, void> = Atom.writable(
   () => undefined,
@@ -131,6 +121,4 @@ export const dashboardRedoAtom: Atom.Writable<void, void> = Atom.writable(
 
 export const activePanelAtom = Atom.make<IDockviewPanel | undefined>(undefined);
 
-export const currentCardActionsAtom = Atom.make<
-  ReadonlyArray<DashboardActionGroup>
->([]);
+export const currentCardActionsAtom = Atom.make<ReadonlyArray<DashboardActionGroup>>([]);

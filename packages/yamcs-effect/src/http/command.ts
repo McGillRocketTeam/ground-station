@@ -1,15 +1,7 @@
 import { Schema } from "effect";
-import {
-  HttpApiGroup,
-  HttpApiEndpoint,
-  HttpApiError,
-} from "effect/unstable/httpapi";
+import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
-import {
-  CommandHistoryEntry,
-  IssueCommandRequest,
-  IssueCommandResponse,
-} from "../schema.js";
+import { CommandHistoryEntry, IssueCommandRequest, IssueCommandResponse } from "../schema.js";
 
 const ListCommandsResponse = Schema.Struct({
   commands: Schema.optional(Schema.Array(CommandHistoryEntry)),
@@ -36,20 +28,16 @@ export const commandGroup = HttpApiGroup.make("command")
     }),
   )
   .add(
-    HttpApiEndpoint.post(
-      "issueCommand",
-      "/processors/:instance/:processor/commands/:name",
-      {
-        payload: Schema.UndefinedOr(IssueCommandRequest),
-        params: {
-          instance: Schema.String,
-          processor: Schema.String,
-          name: Schema.String,
-        },
-        success: IssueCommandResponse,
-        error: [HttpApiError.NotFound],
+    HttpApiEndpoint.post("issueCommand", "/processors/:instance/:processor/commands/:name", {
+      payload: Schema.UndefinedOr(IssueCommandRequest),
+      params: {
+        instance: Schema.String,
+        processor: Schema.String,
+        name: Schema.String,
       },
-    ),
+      success: IssueCommandResponse,
+      error: [HttpApiError.NotFound],
+    }),
   );
 
 export default commandGroup;

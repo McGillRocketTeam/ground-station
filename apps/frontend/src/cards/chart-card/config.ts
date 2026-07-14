@@ -2,19 +2,19 @@ import { Schema } from "effect";
 
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 
-export const ChartSeriesConfigSchema = Schema.Struct({
-  color: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Color" }),
+const ChartSeriesConfigSchema = Schema.Struct({
+  color: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Color" })),
+  label: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Label" })),
+  offset: Schema.optional(Schema.NumberFromString).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Offset" }),
   ),
-  label: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Label" }),
-  ),
-  parameter: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Parameter" }),
-  ),
+  parameter: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Parameter" })),
 });
 
 export const ChartCardConfigSchema = Schema.Struct({
+  defaultTimeWindowMinutes: Schema.optional(Schema.NumberFromString).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Default Time Window (minutes)" }),
+  ),
   series: Schema.optional(Schema.Array(ChartSeriesConfigSchema)).pipe(
     Schema.annotate({
       [FormTitleAnnotationId]: "Series",
@@ -26,15 +26,19 @@ export const ChartCardConfigSchema = Schema.Struct({
 export type ChartSeriesConfig = typeof ChartSeriesConfigSchema.Type;
 export type ChartCardConfig = typeof ChartCardConfigSchema.Type;
 
+export const DEFAULT_TIME_WINDOW_MINUTES = 15;
+
 export const DEFAULT_SERIES_CONFIGS: ReadonlyArray<ChartSeriesConfig> = [
   {
     color: "#2563eb",
     label: "Acceleration X",
+    offset: 0,
     parameter: "/SystemA/Rocket/FlightComputer/acceleration_x",
   },
   {
     color: "#f97316",
     label: "Acceleration Y",
+    offset: 0,
     parameter: "/SystemA/Rocket/FlightComputer/acceleration_y",
   },
 ];

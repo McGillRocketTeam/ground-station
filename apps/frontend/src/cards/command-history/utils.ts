@@ -8,10 +8,7 @@ export function extractAttribute(command: CommandHistoryEntry, attr: string) {
   return command.attr.find((a) => a.name === attr)?.value;
 }
 
-function extractAttributeVariant(
-  command: CommandHistoryEntry,
-  attributes: ReadonlyArray<string>,
-) {
+function extractAttributeVariant(command: CommandHistoryEntry, attributes: ReadonlyArray<string>) {
   for (const attribute of attributes) {
     const value = extractAttribute(command, attribute);
 
@@ -63,6 +60,11 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
     ),
   ];
   const completion = extractAcknowledgement(command, "CommandComplete", true);
+  const extractAcks = (acks: ReadonlyArray<string>) =>
+    acks.flatMap((ack) => {
+      const extracted = extractAcknowledgement(command, ack);
+      return validAck(extracted) ? [extracted] : [];
+    });
 
   return {
     yamcs: [
@@ -70,20 +72,18 @@ export function collectAcks(command: CommandHistoryEntry): Acks {
       extractAcknowledgement(command, "Released"),
       extractAcknowledgement(command, "Sent"),
     ].filter(validAck),
-    systemA: systemAAckOrder
-      .map((ack) => extractAcknowledgement(command, ack))
-      .filter(validAck),
-    systemB: systemBAckOrder
-      .map((ack) => extractAcknowledgement(command, ack))
-      .filter(validAck),
+    systemA: extractAcks(systemAAckOrder),
+    systemB: extractAcks(systemBAckOrder),
     other: extraAckNames
       .filter(
         (ack) =>
           !systemAAckOrder.includes(ack as (typeof systemAAckOrder)[number]) &&
           !systemBAckOrder.includes(ack as (typeof systemBAckOrder)[number]),
       )
-      .map((ack) => extractAcknowledgement(command, ack))
-      .filter(validAck),
+      .flatMap((ack) => {
+        const extracted = extractAcknowledgement(command, ack);
+        return validAck(extracted) ? [extracted] : [];
+      }),
     completion: validAck(completion) ? completion : null,
   };
 }
@@ -109,9 +109,7 @@ function listAckNames(command: CommandHistoryEntry) {
     }
 
     if (attribute.name.startsWith("Acknowledge_")) {
-      ackNames.add(
-        attribute.name.slice("Acknowledge_".length, -"_Status".length),
-      );
+      ackNames.add(attribute.name.slice("Acknowledge_".length, -"_Status".length));
       continue;
     }
 
@@ -172,19 +170,4 @@ export function extractAcknowledgement(
     time: timeValue?.type === "TIMESTAMP" ? timeValue.value : undefined,
     message: messageValue?.type === "STRING" ? messageValue.value : undefined,
   };
-}
-
-export function formatCommandDate(d: Date) {
-  const now = new Date();
-  const isToday = d.toDateString() === now.toDateString();
-
-  const time = d.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-
-  return isToday
-    ? d.toLocaleTimeString()
-    : d.toLocaleDateString() + ", " + time;
 }

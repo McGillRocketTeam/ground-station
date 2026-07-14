@@ -5,12 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn, formatUtcDateTime, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
-import {
-  collectAcks,
-  extractAttribute,
-  type Ack,
-  type CommandHistoryEntry,
-} from "./utils";
+import { collectAcks, extractAttribute, type Ack, type CommandHistoryEntry } from "./utils";
 
 export function CommandDetail({
   command,
@@ -37,8 +32,7 @@ function diffMs(command: CommandHistoryEntry, ack: Ack) {
   }
 
   return Math.abs(
-    DateTime.toDate(command.generationTime).getTime() -
-      DateTime.toDate(ack.time).getTime(),
+    DateTime.toDate(command.generationTime).getTime() - DateTime.toDate(ack.time).getTime(),
   );
 }
 
@@ -56,9 +50,7 @@ function DetailTable({
       <div className="space-y-0.5">
         <Label>Command</Label>
         <div className="grid grid-cols-2 gap-x-1">
-          <div className="col-span-2 font-medium">
-            {commandLabel ?? command.commandName}
-          </div>
+          <div className="col-span-2 font-medium">{commandLabel ?? command.commandName}</div>
 
           {command.assignments &&
             command.assignments.map((assignment, index) => {
@@ -67,9 +59,7 @@ function DetailTable({
               return (
                 <Fragment key={assignment.name}>
                   <div className="relative ml-2 pl-4">
-                    {!isLast && (
-                      <span className="absolute top-0 left-1 h-full border-l" />
-                    )}
+                    {!isLast && <span className="absolute top-0 left-1 h-full border-l" />}
 
                     {isLast && (
                       <>
@@ -106,16 +96,12 @@ function DetailTable({
         </div>
         <div className="space-y-0.5">
           <Label>Seq. Number</Label>
-          <div>
-            {stringifyValue(extractAttribute(command, "Sequence_Count"))}
-          </div>
+          <div>{stringifyValue(extractAttribute(command, "Sequence_Count"))}</div>
         </div>
       </div>
       <div className="space-y-0.5">
         <Label>Targets</Label>
-        <div>
-          {stringifyValue(extractAttribute(command, "TX_Targets"), "-")}
-        </div>
+        <div>{stringifyValue(extractAttribute(command, "TX_Targets"), "-")}</div>
       </div>
       <Separator />
       {acks.yamcs.length > 0 && (
@@ -133,12 +119,7 @@ function DetailTable({
           <Label>System A Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
             {acks.systemA.map((ack) => (
-              <AckRow
-                friendlyName={ack.label}
-                key={ack.name}
-                ack={ack}
-                command={command}
-              />
+              <AckRow friendlyName={ack.label} key={ack.name} ack={ack} command={command} />
             ))}
           </div>
         </div>
@@ -148,12 +129,7 @@ function DetailTable({
           <Label>System B Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
             {acks.systemB.map((ack) => (
-              <AckRow
-                friendlyName={ack.label}
-                key={ack.name}
-                ack={ack}
-                command={command}
-              />
+              <AckRow friendlyName={ack.label} key={ack.name} ack={ack} command={command} />
             ))}
           </div>
         </div>
@@ -163,12 +139,7 @@ function DetailTable({
           <Label>Other Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
             {acks.other.map((ack) => (
-              <AckRow
-                friendlyName={ack.label}
-                key={ack.name}
-                ack={ack}
-                command={command}
-              />
+              <AckRow friendlyName={ack.label} key={ack.name} ack={ack} command={command} />
             ))}
           </div>
         </div>
@@ -176,7 +147,7 @@ function DetailTable({
       {acks.completion && (
         <div className="space-y-0.5">
           <Label>Completion</Label>
-          <div className="grid grid-cols-[auto_1fr] gap-x-2">
+          <div className="grid grid-cols-[auto_1fr] gap-x-2 max-w-80">
             <FCAckRow ack={acks.completion} command={command} />
           </div>
         </div>
@@ -185,13 +156,7 @@ function DetailTable({
   );
 }
 
-function FCAckRow({
-  ack,
-  command,
-}: {
-  ack: Ack;
-  command: CommandHistoryEntry;
-}) {
+export function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) {
   if (ack.status === "??") return;
 
   return (
@@ -213,13 +178,11 @@ function FCAckRow({
         {ack.label.toLocaleUpperCase()}
 
         {ack.time && (
-          <span className="ml-2 text-xs text-muted-foreground">
-            +{diffMs(command, ack)}ms
-          </span>
+          <span className="ml-2 text-xs text-muted-foreground">+{diffMs(command, ack)}ms</span>
         )}
       </div>
       {ack.message && (
-        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
+        <div className="col-span-full border-l-2 border-error py-1 pl-2 font-sans break-all">
           {ack.message}
         </div>
       )}
@@ -227,7 +190,7 @@ function FCAckRow({
   );
 }
 
-function AckRow({
+export function AckRow({
   ack,
   command,
   friendlyName,
@@ -250,18 +213,14 @@ function AckRow({
         {ack.status === "PENDING" ? <BrailleSpinner /> : ack.status}
       </div>
       <div>
-        {friendlyName
-          ? friendlyName.toLocaleUpperCase()
-          : ack.name.toLocaleUpperCase()}
+        {friendlyName ? friendlyName.toLocaleUpperCase() : ack.name.toLocaleUpperCase()}
 
         {ack.time && (
-          <span className="ml-2 text-xs text-muted-foreground">
-            +{diffMs(command, ack)}ms
-          </span>
+          <span className="ml-2 text-xs text-muted-foreground">+{diffMs(command, ack)}ms</span>
         )}
       </div>
       {ack.message && (
-        <div className="col-span-full max-w-80 border-l-2 border-error py-1 pl-2 font-sans break-all">
+        <div className="col-span-full border-l-2 border-error py-1 pl-2 font-sans break-all">
           {ack.message}
         </div>
       )}

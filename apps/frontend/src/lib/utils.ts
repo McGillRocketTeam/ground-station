@@ -19,11 +19,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type DisplayNumber = { kind: "number"; value: number };
-type DisplayString = { kind: "string"; value: string };
-type DisplayNone = { kind: "none" };
+export function createId() {
+  if (typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
 
-type Display = DisplayNumber | DisplayString | DisplayNone;
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  return [...bytes]
+    .map((byte, index) => {
+      const value = byte.toString(16).padStart(2, "0");
+      return [4, 6, 8, 10].includes(index) ? `-${value}` : value;
+    })
+    .join("");
+}
 
 export function stringifyValue(value?: typeof Value.Type, fallback?: string) {
   if (!value) return fallback ?? "Unknown";
@@ -50,23 +61,6 @@ export function formatUtcDateTime(date: Date | DateTime.DateTime) {
   return date instanceof Date
     ? utcDateTimeFormatter.format(date)
     : DateTime.formatIntl(date, utcDateTimeFormatter);
-}
-
-export function displayValue(value: typeof Value.Type): Display {
-  switch (value.type) {
-    case "FLOAT":
-    case "DOUBLE":
-    case "SINT32":
-    case "UINT32":
-    case "SINT64":
-    case "UINT64":
-      return { kind: "number", value: value.value };
-    case "ENUMERATED":
-    case "AGGREGATE":
-      return { kind: "none" };
-    default:
-      return { kind: "string", value: value.value.toString() };
-  }
 }
 
 export function formatDate(date: Date | DateTime.DateTime) {

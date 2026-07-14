@@ -2,10 +2,11 @@ import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
+import { Map, Marker } from "react-map-gl/maplibre";
 
-import { useTheme } from "@/components/theme-provider";
+import type { LiveParameterUpdate } from "@/lib/atom";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { useTheme } from "@/components/theme-provider";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { atomRegistry } from "@/lib/atom-registry";
 import { makeCard } from "@/lib/cards";
@@ -22,31 +23,39 @@ const MapCardConfiguration = Schema.Struct({
   longitude: CoordinateLongitudeField,
   latitude: CoordinateLatitudeField,
 
-  altitude: ParameterField.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" }),
-  ),
-  rocketLong: ParameterField.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" }),
-  ),
-  rocketLat: ParameterField.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" }),
-  ),
+  altitude: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" })),
+  rocketLong: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" })),
+  rocketLat: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" })),
 });
 
-export function RocketMarker(props: { lat: string; long: string }) {
-  const latValue = useAtomSuspense(parameterSubscriptionAtom(props.lat)).value
-    .engValue;
-  const longValue = useAtomSuspense(parameterSubscriptionAtom(props.long)).value
-    .engValue;
+function isValidCoordinate(latitude: number, longitude: number) {
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+}
+
+function RocketMarker(props: { lat: string; long: string }) {
+  const latitude = useAtomSuspense(parameterSubscriptionAtom(props.lat))
+    .value as LiveParameterUpdate;
+  const longitude = useAtomSuspense(parameterSubscriptionAtom(props.long))
+    .value as LiveParameterUpdate;
+  const latValue = latitude.value.engValue;
+  const longValue = longitude.value.engValue;
 
   if (latValue.type === "FLOAT" && longValue.type === "FLOAT") {
-    return (
-      <Marker
-        longitude={Number(longValue)}
-        latitude={Number(latValue.value)}
-        color="blue"
-      />
-    );
+    const latitude = Number(latValue.value);
+    const longitude = Number(longValue.value);
+
+    if (!isValidCoordinate(latitude, longitude)) {
+      return null;
+    }
+
+    return <Marker longitude={longitude} latitude={latitude} color="blue" />;
   }
 }
 
@@ -94,6 +103,9 @@ export const MapCard = makeCard({
     const { theme } = useTheme();
     const longitude = Number(props.params.longitude);
     const latitude = Number(props.params.latitude);
+    const padCoordinate = isValidCoordinate(latitude, longitude)
+      ? { latitude, longitude }
+      : undefined;
 
     const [viewState, setViewState] = useAtom(viewStateAtom);
     const [useLocalTiles, setUseLocalTiles] = useState(false);
@@ -143,6 +155,7 @@ export const MapCard = makeCard({
     return (
       <div className="relative h-full min-h-60 w-full">
         <Map
+          attributionControl={false}
           mapStyle={useLocalTiles ? customMapStyle : basicMapStyle(theme)}
           {...viewState}
           onMove={(event) => {
@@ -181,8 +194,13 @@ export const MapCard = makeCard({
           keyboard
           style={{ width: "100%", height: "100%" }}
         >
-          <NavigationControl position="top-left" />
-          <Marker longitude={longitude} latitude={latitude} color="red" />
+          {padCoordinate ? (
+            <Marker
+              longitude={padCoordinate.longitude}
+              latitude={padCoordinate.latitude}
+              color="red"
+            />
+          ) : null}
           <Suspense>
             <RocketMarker
               lat={props.params.rocketLat.qualifiedName}

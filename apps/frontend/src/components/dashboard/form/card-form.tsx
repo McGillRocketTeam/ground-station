@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { type CardId, CardSchemaMap } from "@/lib/cards";
 
-import { Field, FieldError, FieldGroup, FieldLabel } from "../../ui/field";
+import { Field, FieldError, FieldGroup, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
 import { DashboardCardField } from "./card-field";
 
@@ -34,21 +34,16 @@ function getDefaultFieldValue(value: unknown) {
   return "";
 }
 
-function encodeDefaultFieldValue(
-  fieldSchema: Schema.Schema<unknown>,
-  value: unknown,
-) {
+function encodeDefaultFieldValue(_fieldSchema: Schema.Schema<unknown>, value: unknown) {
   if (value === undefined) {
     return undefined;
   }
 
-  try {
-    return Schema.encodeUnknownSync(
-      fieldSchema as Schema.Top & { readonly EncodingServices: never },
-    )(value);
-  } catch {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
     return getDefaultFieldValue(value);
   }
+
+  return structuredClone(value);
 }
 
 export function DashboardCardForm({
@@ -69,10 +64,7 @@ export function DashboardCardForm({
   });
 
   const schema = CardSchemaMap[cardId];
-  const formSchema = schema as unknown as Schema.Codec<
-    DecodedFormValues,
-    EncodedFormValues
-  > &
+  const formSchema = schema as unknown as Schema.Codec<DecodedFormValues, EncodedFormValues> &
     Schema.Top & {
       readonly DecodingServices: never;
     };
@@ -81,12 +73,12 @@ export function DashboardCardForm({
 
   const defaultValues = useMemo<EncodedFormValues>(() => {
     return Object.fromEntries(
-      Object.entries(
-        schema.fields as Record<string, Schema.Schema<unknown>>,
-      ).map(([fieldName, fieldSchema]) => [
-        fieldName,
-        encodeDefaultFieldValue(fieldSchema, initialParams?.[fieldName]),
-      ]),
+      Object.entries(schema.fields as Record<string, Schema.Schema<unknown>>).map(
+        ([fieldName, fieldSchema]) => [
+          fieldName,
+          encodeDefaultFieldValue(fieldSchema, initialParams?.[fieldName]),
+        ],
+      ),
     );
   }, [initialParams, schema.fields]);
 
@@ -127,7 +119,9 @@ export function DashboardCardForm({
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor={`${formId}-title`}>Title</FieldLabel>
+          <label className={fieldLabelClassName} htmlFor={`${formId}-title`}>
+            Title
+          </label>
           <Input
             id={`${formId}-title`}
             name="title"
@@ -136,17 +130,15 @@ export function DashboardCardForm({
           />
         </Field>
 
-        {Object.entries(
-          schema.fields as Record<string, Schema.Schema<unknown>>,
-        ).map(([fieldName, fieldSchema]) => {
-          return (
-            <form.Field key={fieldName} name={fieldName}>
-              {(field) => (
-                <DashboardCardField field={field} fieldSchema={fieldSchema} />
-              )}
-            </form.Field>
-          );
-        })}
+        {Object.entries(schema.fields as Record<string, Schema.Schema<unknown>>).map(
+          ([fieldName, fieldSchema]) => {
+            return (
+              <form.Field key={fieldName} name={fieldName}>
+                {(field) => <DashboardCardField field={field} fieldSchema={fieldSchema} />}
+              </form.Field>
+            );
+          },
+        )}
 
         {Object.keys(schema.fields).length === 0 ? (
           <div className="text-sm text-muted-foreground">
@@ -157,9 +149,7 @@ export function DashboardCardForm({
 
       <form.Subscribe selector={(state) => [state.errorMap]}>
         {([errorMap]) =>
-          errorMap.onSubmit ? (
-            <FieldError>{String(errorMap.onSubmit)}</FieldError>
-          ) : null
+          errorMap.onSubmit ? <FieldError>{String(errorMap.onSubmit)}</FieldError> : null
         }
       </form.Subscribe>
     </form>

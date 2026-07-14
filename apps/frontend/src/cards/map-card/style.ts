@@ -27,9 +27,7 @@ export const customMapStyle = {
     },
     ontarioFull: {
       type: "raster",
-      tiles: [
-        `${mbtileserverBaseUrl}/satellite-2017-11-02_canada_ontario/tiles/{z}/{x}/{y}.jpg`,
-      ],
+      tiles: [`${mbtileserverBaseUrl}/satellite-2017-11-02_canada_ontario/tiles/{z}/{x}/{y}.jpg`],
       tileSize: 256,
       bounds: [-95.15965, 41.6377, -74.30998, 57.50826],
     },
@@ -146,7 +144,5 @@ export async function hasLocalMapTiles(): Promise<boolean> {
     }),
   );
 
-  return tileChecks.every(
-    (result) => result.status === "fulfilled" && result.value,
-  );
+  return tileChecks.every((result) => result.status === "fulfilled" && result.value);
 }

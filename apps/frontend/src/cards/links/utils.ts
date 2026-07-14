@@ -1,6 +1,14 @@
 import type { LinkInfo } from "@mrt/yamcs-effect";
 
-export function colorByStatus(linkStatus: string) {
+export function isLinkTransmitting(link: Pick<Link, "detailedStatus">) {
+  return link.detailedStatus?.trimStart().startsWith("true") ?? false;
+}
+
+export function colorByStatus(linkStatus: string, link?: Pick<Link, "detailedStatus">) {
+  if (linkStatus === "OK" && link && !isLinkTransmitting(link)) {
+    return "text-blue-500";
+  }
+
   return linkStatus === "OK"
     ? "text-success"
     : linkStatus === "DISABLED"

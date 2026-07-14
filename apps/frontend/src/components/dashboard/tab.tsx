@@ -11,12 +11,13 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { createId } from "@/lib/utils";
 
 import { editPanelDialogHandle } from "./form/edit-dialog";
 
 type CopiedCard = {
   component: string;
-  params?: unknown;
+  params?: object;
   title?: string;
 };
 
@@ -44,7 +45,7 @@ function setCopiedCard(card: CopiedCard) {
 }
 
 function cloneParams(params: unknown) {
-  return params === undefined ? undefined : structuredClone(params);
+  return params && typeof params === "object" ? structuredClone(params) : undefined;
 }
 
 export function DashboardTab(props: IDockviewDefaultTabProps) {
@@ -71,7 +72,7 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
 
     props.containerApi.addPanel({
       component: copied.component,
-      id: crypto.randomUUID(),
+      id: createId(),
       params: cloneParams(copied.params),
       position: {
         direction: "within",
@@ -90,9 +91,7 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
         <ContextMenuItem disabled={!panel} onClick={handleCopy}>
           Copy
         </ContextMenuItem>
-        {copied ? (
-          <ContextMenuItem onClick={handlePaste}>Paste</ContextMenuItem>
-        ) : null}
+        {copied ? <ContextMenuItem onClick={handlePaste}>Paste</ContextMenuItem> : null}
         <ContextMenuSeparator />
         <ContextMenuItem
           disabled={!panel}

@@ -1,5 +1,5 @@
 # Imports
-from typing import Dict, Any
+from typing import Any
 import yamcs.pymdb as Y
 
 from flight_system import FlightSystem

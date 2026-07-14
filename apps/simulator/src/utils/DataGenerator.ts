@@ -122,6 +122,28 @@ const makeIncrementingFloatField = (
     }),
   );
 
+const makeIncrementingFloatField = (
+  min: number,
+  max: number,
+  step: number,
+  dataMode: string,
+): Effect.Effect<
+  Effect.Effect<GeneratedFieldValue, never, never>,
+  never,
+  never
+> =>
+  Ref.make(0).pipe(
+    Effect.map((ref) => {
+      const steps = Math.floor((max - min) / step) + 1;
+
+      return dataMode === "random"
+        ? Effect.sync(() => Math.random() * (max - min) + min)
+        : Ref.getAndUpdate(ref, (n) => (n + 1) % steps).pipe(
+            Effect.map((n) => Number((n * step + min).toFixed(2))),
+          );
+    }),
+  );
+
 export class DataGenerator extends Context.Service<
   DataGenerator,
   {

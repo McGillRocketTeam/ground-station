@@ -18,6 +18,14 @@ import {
   type DashboardGaugeVisualRangesFieldApi,
 } from "./gauge-visual-ranges-field";
 import {
+  DashboardChartSeriesField,
+  type DashboardChartSeriesFieldApi,
+} from "./chart-series-field";
+import {
+  DashboardGaugeVisualRangesField,
+  type DashboardGaugeVisualRangesFieldApi,
+} from "./gauge-visual-ranges-field";
+import {
   DashboardParameterArrayField,
   type DashboardParameterArrayFieldApi,
 } from "./parameter-array-field";

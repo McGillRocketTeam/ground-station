@@ -16,7 +16,7 @@
     "@mrt/yamcs-effect": "workspace:*",
     "bit-buffer": "^0.3.0",
     "effect": "catalog:",
-    "mqtt": "^5.15.0"
+    "mqtt": "^5.15.2"
   },
   "devDependencies": {
     "@types/node": "latest",

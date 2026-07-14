@@ -3,6 +3,7 @@ import contextlib
 import functools
 import hashlib
 import logging
+import secrets
 import struct
 import time
 import traceback
@@ -13,7 +14,6 @@ from enum import StrEnum, auto
 from functools import cached_property
 from typing import Any, Literal, Self
 
-import ecdsa
 from bleak import BleakClient
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
@@ -55,6 +55,95 @@ MAX_CONNECTION_ATTEMPTS = 10
 # (notably through an ESPHome proxy). Left unbounded it stalls `async_unload_entry`
 # long enough for HA to mark the entry `FAILED_UNLOAD`, so cap every disconnect.
 DISCONNECT_TIMEOUT = 5.0
+
+# SEC 2 secp160r1 domain parameters used by EcoFlow's BLE ECDH handshake.
+_SECP160R1_P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFF
+_SECP160R1_A = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFC
+_SECP160R1_B = 0x1C97BEFC54BD7A8B65ACF89F81D4D4ADC565FA45
+_SECP160R1_N = 0x0100000000000000000001F4C8F927AED3CA752257
+_SECP160R1_SIZE = 20
+
+
+@dataclass(frozen=True)
+class _Secp160r1Point:
+    x: int
+    y: int
+
+
+_SECP160R1_G = _Secp160r1Point(
+    x=0x4A96B5688EF573284664698968C38BB913CBFC82,
+    y=0x23A628553168947D59DCC912042351377AC5FB32,
+)
+
+
+def _is_on_secp160r1(point: _Secp160r1Point) -> bool:
+    return (
+        point.y * point.y - (point.x * point.x * point.x + _SECP160R1_A * point.x + _SECP160R1_B)
+    ) % _SECP160R1_P == 0
+
+
+def _add_secp160r1_points(
+    left: _Secp160r1Point | None, right: _Secp160r1Point | None
+) -> _Secp160r1Point | None:
+    if left is None:
+        return right
+    if right is None:
+        return left
+    if left.x == right.x and (left.y + right.y) % _SECP160R1_P == 0:
+        return None
+
+    if left == right:
+        slope = (
+            (3 * left.x * left.x + _SECP160R1_A) * pow(2 * left.y, -1, _SECP160R1_P)
+        ) % _SECP160R1_P
+    else:
+        slope = ((right.y - left.y) * pow(right.x - left.x, -1, _SECP160R1_P)) % _SECP160R1_P
+
+    x = (slope * slope - left.x - right.x) % _SECP160R1_P
+    y = (slope * (left.x - x) - left.y) % _SECP160R1_P
+    return _Secp160r1Point(x=x, y=y)
+
+
+def _multiply_secp160r1_point(
+    scalar: int, point: _Secp160r1Point | None
+) -> _Secp160r1Point | None:
+    result = None
+    addend = point
+    while scalar > 0 and addend is not None:
+        if scalar & 1:
+            result = _add_secp160r1_points(result, addend)
+        addend = _add_secp160r1_points(addend, addend)
+        scalar >>= 1
+    return result
+
+
+def _generate_secp160r1_private_key() -> int:
+    return secrets.randbelow(_SECP160R1_N - 1) + 1
+
+
+def _encode_secp160r1_public_key(point: _Secp160r1Point) -> bytes:
+    return point.x.to_bytes(_SECP160R1_SIZE, "big") + point.y.to_bytes(_SECP160R1_SIZE, "big")
+
+
+def _decode_secp160r1_public_key(data: bytes) -> _Secp160r1Point:
+    if len(data) != _SECP160R1_SIZE * 2:
+        raise ValueError(f"Unexpected secp160r1 public key length: {len(data)}")
+    point = _Secp160r1Point(
+        x=int.from_bytes(data[:_SECP160R1_SIZE], "big"),
+        y=int.from_bytes(data[_SECP160R1_SIZE :], "big"),
+    )
+    if not _is_on_secp160r1(point):
+        raise ValueError("Received invalid secp160r1 public key")
+    return point
+
+
+def _derive_secp160r1_shared_secret(
+    private_key: int, public_key: _Secp160r1Point
+) -> bytes:
+    shared_point = _multiply_secp160r1_point(private_key, public_key)
+    if shared_point is None:
+        raise ValueError("Failed to derive secp160r1 shared secret")
+    return shared_point.x.to_bytes(_SECP160R1_SIZE, "big")
 
 
 _BT_PROTOCOL_UUIDS = {
@@ -937,12 +1026,14 @@ class Connection:
         self._logger.log_filtered(
             LogOptions.CONNECTION_DEBUG, "initBleSessionKey: Pub key exchange"
         )
-        self._private_key = ecdsa.SigningKey.generate(curve=ecdsa.SECP160r1)
-        self._public_key: ecdsa.VerifyingKey = self._private_key.get_verifying_key()  # pyright: ignore[reportAttributeAccessIssue]
+        self._private_key = _generate_secp160r1_private_key()
+        self._public_key = _multiply_secp160r1_point(self._private_key, _SECP160R1_G)
+        if self._public_key is None:
+            raise PacketParseError("Failed to generate secp160r1 public key")
 
         to_send = SimplePacketAssembler.encode(
             # Payload contains some weird prefix and generated public key
-            b"\x01\x00" + self._public_key.to_string(),
+            b"\x01\x00" + _encode_secp160r1_public_key(self._public_key),
         )
 
         # Device public key is sent as response, process will continue on device
@@ -966,17 +1057,21 @@ class Connection:
             )
         # status = data[1]
         ecdh_type_size = getEcdhTypeSize(data[2])
-        self._dev_pub_key = ecdsa.VerifyingKey.from_string(
-            data[3 : ecdh_type_size + 3], curve=ecdsa.SECP160r1
-        )
+        try:
+            self._dev_pub_key = _decode_secp160r1_public_key(data[3 : ecdh_type_size + 3])
+        except ValueError as error:
+            raise PacketParseError(str(error)) from error
 
         # Generating shared key from our private key and received device public key
         # NOTE: The device will do the same with it's private key and our public key to
         # generate the # same shared key value and use it to encrypt/decrypt using
         # symmetric encryption algorithm
-        shared_key = ecdsa.ECDH(
-            ecdsa.SECP160r1, self._private_key, self._dev_pub_key
-        ).generate_sharedsecret_bytes()
+        try:
+            shared_key = _derive_secp160r1_shared_secret(
+                self._private_key, self._dev_pub_key
+            )
+        except ValueError as error:
+            raise PacketParseError(str(error)) from error
         # Set Initialization Vector from digest of the original shared key
         iv = hashlib.md5(shared_key).digest()
 

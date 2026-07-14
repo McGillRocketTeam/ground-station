@@ -1,5 +1,6 @@
 import { useAtom, useAtomValue } from "@effect/atom-react";
 import { Atom } from "effect/unstable/reactivity";
+import { createElement } from "react";
 import { useState } from "react";
 
 import {
@@ -17,14 +18,15 @@ const selectedComponentAtom = Atom.map(selectedCardAtom, (id) => CardComponentMa
 
 export function DebugPage() {
   const selectedComponent = useAtomValue(selectedComponentAtom);
+  const SelectedComponent = selectedComponent;
 
   return (
     <div className="grid h-screen grid-cols-[4fr_minmax(300px,1fr)] grid-rows-[auto_1fr]">
       <DebugToolbar />
 
       <div className="grid place-items-center p-4">
-        {selectedComponent ? (
-          <div>{selectedComponent({} as never)}</div>
+        {SelectedComponent ? (
+          <div>{createElement(SelectedComponent, {} as never)}</div>
         ) : (
           <div className="text-muted-foreground">No Card Selected</div>
         )}

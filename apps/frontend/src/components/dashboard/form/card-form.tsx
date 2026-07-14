@@ -34,18 +34,16 @@ function getDefaultFieldValue(value: unknown) {
   return "";
 }
 
-function encodeDefaultFieldValue(fieldSchema: Schema.Schema<unknown>, value: unknown) {
+function encodeDefaultFieldValue(_fieldSchema: Schema.Schema<unknown>, value: unknown) {
   if (value === undefined) {
     return undefined;
   }
 
-  try {
-    return Schema.encodeUnknownSync(
-      fieldSchema as Schema.Top & { readonly EncodingServices: never },
-    )(value);
-  } catch {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
     return getDefaultFieldValue(value);
   }
+
+  return structuredClone(value);
 }
 
 export function DashboardCardForm({

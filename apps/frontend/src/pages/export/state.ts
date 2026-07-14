@@ -1,5 +1,5 @@
 import { StreamArchiveHeader } from "@mrt/yamcs-effect";
-import { Effect, Schema } from "effect";
+import { Data, Effect, Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
 import { yamcsBaseUrl } from "@/lib/atom";
@@ -17,6 +17,11 @@ export type CsvPreviewModel = {
   columns: ReadonlyArray<string>;
   rows: ReadonlyArray<ReadonlyArray<string>>;
 };
+
+class ExportPreviewRequestError extends Data.TaggedError("ExportPreviewRequestError")<{
+  readonly message: string;
+  readonly cause?: unknown;
+}> {}
 
 export function makeDefaultExportFormValues(instance: string): ExportFormValues {
   const endDate = new Date();
@@ -66,12 +71,20 @@ export const exportPreviewCsvAtom = Atom.make((get) =>
         const response = await fetch(url);
 
         if (!response.ok) {
-          throw new Error(`StatusCode error (${response.status} ${response.statusText} ${url})`);
+          throw new ExportPreviewRequestError({
+            message: `StatusCode error (${response.status} ${response.statusText} ${url})`,
+          });
         }
 
         return response.text();
       },
-      catch: (error) => (error instanceof Error ? error : new Error(String(error))),
+      catch: (error) =>
+        error instanceof ExportPreviewRequestError
+          ? error
+          : new ExportPreviewRequestError({
+              message: `Failed to load export preview from ${url}`,
+              cause: error,
+            }),
     });
   }),
 );

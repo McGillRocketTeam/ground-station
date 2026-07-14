@@ -221,7 +221,7 @@ function procedureStepKey(step: typeof ProcedureStep.Type, index: number) {
       return `${step.type}-${index}-${commandKey}`;
     }
     default:
-      return `${step.type}-${index}`;
+      return `step-${index}`;
   }
 }
 

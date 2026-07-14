@@ -5,8 +5,6 @@ import { useAtomValue } from "@effect/atom-react";
 import { AsyncResult } from "effect/unstable/reactivity";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 
-import type { CommandButtonEntry } from "@/cards/command-button";
-
 import { formatCommandDisplayName } from "@/cards/command-history/command-display";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +21,16 @@ import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 import { FormTable } from "./form-table";
 
 type CommandDefinition = typeof CommandInfo.Type;
+type CommandButtonArgument = {
+  name: string;
+  value: string;
+};
+
+type CommandButtonEntry = {
+  command: string;
+  label: string;
+  args: ReadonlyArray<CommandButtonArgument>;
+};
 
 export type DashboardCommandButtonEntriesFieldApi = AnyFieldApi & {
   state: AnyFieldApi["state"] & {
@@ -97,7 +105,7 @@ export function DashboardCommandButtonEntriesField({
                     <div className="text-sm text-muted-foreground">No arguments configured.</div>
                   ) : (
                     <div className="space-y-2">
-                      {(row.args ?? []).map((arg, argIndex) => (
+                      {(row.args ?? []).map((arg: CommandButtonArgument, argIndex: number) => (
                         <div
                           key={`${arg.name}-${argIndex}`}
                           className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2"
@@ -108,10 +116,11 @@ export function DashboardCommandButtonEntriesField({
                             onChange={(event) =>
                               updateRow({
                                 ...row,
-                                args: (row.args ?? []).map((currentArg, currentArgIndex) =>
-                                  currentArgIndex === argIndex
-                                    ? { ...currentArg, name: event.target.value }
-                                    : currentArg,
+                                args: (row.args ?? []).map(
+                                  (currentArg: CommandButtonArgument, currentArgIndex: number) =>
+                                    currentArgIndex === argIndex
+                                      ? { ...currentArg, name: event.target.value }
+                                      : currentArg,
                                 ),
                               })
                             }
@@ -122,10 +131,11 @@ export function DashboardCommandButtonEntriesField({
                             onChange={(event) =>
                               updateRow({
                                 ...row,
-                                args: (row.args ?? []).map((currentArg, currentArgIndex) =>
-                                  currentArgIndex === argIndex
-                                    ? { ...currentArg, value: event.target.value }
-                                    : currentArg,
+                                args: (row.args ?? []).map(
+                                  (currentArg: CommandButtonArgument, currentArgIndex: number) =>
+                                    currentArgIndex === argIndex
+                                      ? { ...currentArg, value: event.target.value }
+                                      : currentArg,
                                 ),
                               })
                             }
@@ -138,7 +148,8 @@ export function DashboardCommandButtonEntriesField({
                               updateRow({
                                 ...row,
                                 args: (row.args ?? []).filter(
-                                  (_arg, currentArgIndex) => currentArgIndex !== argIndex,
+                                  (_arg: CommandButtonArgument, currentArgIndex: number) =>
+                                    currentArgIndex !== argIndex,
                                 ),
                               })
                             }

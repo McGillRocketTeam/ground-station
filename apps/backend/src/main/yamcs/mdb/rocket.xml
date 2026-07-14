@@ -1343,60 +1343,6 @@ See https://github.com/yamcs/pymdb
           </ParameterRefEntry>
         </EntryList>
       </SequenceContainer>
-      <SequenceContainer name="payload_atomic" abstract="false">
-        <EntryList>
-          <ParameterRefEntry parameterRef="payload_atomic_bool_lead_pad">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_ok">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>7</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_sampling">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>6</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_freq_x">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_freq_y">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_freq_z">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_amp_x">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_amp_y">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_amp_z">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_time_elapsed">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-        </EntryList>
-      </SequenceContainer>
       <SequenceContainer name="prop_atomic" abstract="false">
         <EntryList>
           <ParameterRefEntry parameterRef="cc_pressure">

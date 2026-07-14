@@ -93,8 +93,8 @@ function InstanceSequenceKeybind({
 }: {
   index: number;
   instanceName: string;
-  setInstance: ReturnType<typeof useAtomSet<typeof selectedInstanceAtom>>;
-  setSwitchInstanceOpen: ReturnType<typeof useAtomSet<typeof switchInstanceMenuAtom>>;
+  setInstance: (value: string) => void;
+  setSwitchInstanceOpen: (value: boolean) => void;
 }) {
   useHotkeySequence(["O", "I", (index + 1).toString() as "0"], () => {
     setSwitchInstanceOpen(false);

@@ -17,7 +17,7 @@ import { editPanelDialogHandle } from "./form/edit-dialog";
 
 type CopiedCard = {
   component: string;
-  params?: unknown;
+  params?: object;
   title?: string;
 };
 
@@ -45,7 +45,7 @@ function setCopiedCard(card: CopiedCard) {
 }
 
 function cloneParams(params: unknown) {
-  return params === undefined ? undefined : structuredClone(params);
+  return params && typeof params === "object" ? structuredClone(params) : undefined;
 }
 
 export function DashboardTab(props: IDockviewDefaultTabProps) {

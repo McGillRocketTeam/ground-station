@@ -17,20 +17,6 @@ const ParameterSampleField = Schema.Literals([
 
 const SamplesSource = Schema.Literals(["ParameterArchive", "replay"]);
 
-const ParameterSampleField = Schema.Literals([
-  "time",
-  "avg",
-  "min",
-  "max",
-  "n",
-  "minTime",
-  "maxTime",
-  "firstTime",
-  "lastTime",
-]);
-
-const SamplesSource = Schema.Literals(["ParameterArchive", "replay"]);
-
 const GetSamplesResponse = Schema.Struct({
   sample: Schema.Array(ParameterSample),
 });

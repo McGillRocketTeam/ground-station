@@ -1,5 +1,5 @@
 import type { IDockviewPanel, IDockviewPanelProps } from "dockview-react";
-import type { ComponentType, ErrorInfo, ReactNode } from "react";
+import type { ComponentProps, ErrorInfo, FunctionComponent, ReactNode } from "react";
 
 import { Schema } from "effect";
 import { Component, createElement } from "react";
@@ -53,7 +53,7 @@ export interface CardDefinition<Id extends string, T extends Schema.Struct.Field
   name: string;
   schema: Schema.Struct<T>;
   actions?: (panel: IDockviewPanel) => ReadonlyArray<DashboardActionGroup>;
-  component: ComponentType<IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>>;
+  component: FunctionComponent<IDockviewPanelProps<Schema.Schema.Type<Schema.Struct<T>>>>;
 }
 
 class CardErrorBoundary extends Component<
@@ -145,4 +145,4 @@ export function getCardActionsForPanel(
 export type CardSchemaType<Id extends CardId> = Schema.Schema.Type<GetCard<Id>["schema"]>;
 
 // Get props type for a specific card's component
-export type CardProps<Id extends CardId> = Parameters<GetCard<Id>["component"]>[0];
+export type CardProps<Id extends CardId> = ComponentProps<GetCard<Id>["component"]>;

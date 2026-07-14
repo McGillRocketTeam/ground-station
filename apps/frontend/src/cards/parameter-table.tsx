@@ -21,25 +21,6 @@ const ParameterTableSectionSchema = Schema.Struct({
 
 export type ParameterTableSection = typeof ParameterTableSectionSchema.Type;
 
-const ParameterTableSectionSchema = Schema.Struct({
-  parameters: Schema.Array(Schema.String).pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Parameters" }),
-  ),
-  title: Schema.String.pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Section Title" }),
-  ),
-});
-
-export type ParameterTableSection = typeof ParameterTableSectionSchema.Type;
-
-export const DEFAULT_PARAMETER_TABLE_SECTIONS: ReadonlyArray<ParameterTableSection> =
-  Object.entries(CardEntries).map(([title, parameters]) => ({
-    title,
-    parameters: parameters.map(
-      (parameter) => `/${SYSTEM_A_PREFIX}/${parameter}`,
-    ),
-  }));
-
 export const ParameterTable = makeCard({
   id: "parameter-table",
   name: "Parameter Table",

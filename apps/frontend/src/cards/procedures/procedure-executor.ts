@@ -585,6 +585,7 @@ export class ProcedureExecutor extends Context.Service<
       Effect.gen(function* () {
         const parameterService = yield* Parameters;
         const registry = yield* AtomRegistry.AtomRegistry;
+        const yamcsConfig = yield* YamcsConfig;
         const state = yield* SubscriptionRef.make(
           ProcedureExecutionState.make({
             procedureType: "tw1",
@@ -787,20 +788,139 @@ export class ProcedureExecutor extends Context.Service<
         };
 
         const issueProcedureCommand = (command: ProcedureCommandSpec) =>
-          Effect.gen(function* () {
-            const yamcsConfig = yield* YamcsConfig;
+          YamcsAtomHttpClient.use((client) =>
+            client.command.issueCommand({
+              params: {
+                name: command.name,
+                instance: yamcsConfig.instance,
+                processor: yamcsConfig.processor,
+              },
+              payload: commandPayloadFromSpec(command),
+            }),
+          ).pipe(
+            Effect.mapError(
+              (error) =>
+                new ProcedureCommandFailedError({
+                  message: Cause.pretty(Cause.fail(error)),
+                }),
+            ),
+          );
 
-            return yield* YamcsAtomHttpClient.use((client) =>
-              client.command.issueCommand({
-                params: {
-                  name: command.name,
-                  instance: yamcsConfig.instance,
-                  processor: yamcsConfig.processor,
-                },
-                payload: commandPayloadFromSpec(command),
-              }),
-            );
-          });
+        const runStep = (index: number, step: typeof ProcedureStep.Type) => {
+          switch (step.type) {
+            case "text":
+            case "note":
+            case "check":
+              return recordStepChange(
+                index,
+                "stepLiveMessageUpdated",
+                "No live events for this step",
+                (step) => setStepLiveMessage(step, "No live events for this step"),
+              );
+            case "verify": {
+              const initialLiveData = new VerifyStepLiveData({
+                conditions: step.condition.map((condition) =>
+                  makeVerifyConditionLiveData(step, condition),
+                ),
+              });
+
+              return Effect.gen(function* () {
+                yield* recordStepChange(
+                  index,
+                  "stepLiveDataUpdated",
+                  `Monitoring ${step.condition.length} verification condition${step.condition.length === 1 ? "" : "s"}`,
+                  (currentStep) =>
+                    setStepLiveData(
+                      setStepLiveMessage(currentStep, "Waiting for verification conditions..."),
+                      initialLiveData,
+                    ),
+                );
+
+                if (step.delay > 0) {
+                  yield* Effect.sleep(`${step.delay} seconds`);
+                }
+
+                yield* timeoutStepCompletion(
+                  Effect.all(
+                    step.condition.map((condition, conditionIndex) => {
+                      const label = formatVerifyConditionLabel(step, condition);
+                      const mirroredParameter = getMirroredParameterName(condition.parameter);
+
+                      return Effect.all(
+                        [
+                          awaitVerifyParameter(
+                            index,
+                            conditionIndex,
+                            "primary",
+                            condition.parameter,
+                            condition,
+                            label,
+                          ).pipe(
+                            Effect.mapError((error) =>
+                              error instanceof ProcedureStepTimeoutError
+                                ? error
+                                : new ProcedureCommandFailedError({
+                                    message: Cause.pretty(Cause.fail(error)),
+                                  }),
+                            ),
+                          ),
+                          ...(mirroredParameter
+                            ? [
+                                awaitVerifyParameter(
+                                  index,
+                                  conditionIndex,
+                                  "mirrored",
+                                  mirroredParameter,
+                                  condition,
+                                  `${label} (System B)`,
+                                ).pipe(
+                                  Effect.mapError((error) =>
+                                    error instanceof ProcedureStepTimeoutError
+                                      ? error
+                                      : new ProcedureCommandFailedError({
+                                          message: Cause.pretty(Cause.fail(error)),
+                                        }),
+                                  ),
+                                ),
+                              ]
+                            : []),
+                        ],
+                        { concurrency: "unbounded" },
+                      );
+                    }),
+                    { concurrency: "unbounded" },
+                  ),
+                  step.timeout ? `${step.timeout} seconds` : undefined,
+                );
+              });
+            }
+            case "command":
+              return Effect.gen(function* () {
+                const commands = getProcedureCommandList(step);
+
+                for (const [commandIndex, command] of commands.entries()) {
+                  const cmd = yield* issueProcedureCommand(command);
+
+                  yield* setTrackedCommandId(index, cmd.id);
+
+                  yield* recordStepChange(
+                    index,
+                    "stepLiveMessageUpdated",
+                    `Sent ${cmd.id}`,
+                    (step) => setStepLiveMessage(step, `Sent ${cmd.id}`),
+                  );
+
+                  const result = yield* awaitCommandResult(cmd.id, index);
+
+                  yield* validateCommandResult(result);
+
+                  if (commandIndex < commands.length - 1) {
+                    yield* advanceSelectedCommand(index, commandIndex + 1);
+                  }
+                }
+              });
+          }
+        };
 
         const updateVerifyConditionAt = (
           index: number,
@@ -884,106 +1004,6 @@ export class ProcedureExecutor extends Context.Service<
               );
             }),
           );
-
-        const runStep = (index: number, step: typeof ProcedureStep.Type) => {
-          switch (step.type) {
-            case "text":
-            case "note":
-            case "check":
-              return recordStepChange(
-                index,
-                "stepLiveMessageUpdated",
-                "No live events for this step",
-                (step) => setStepLiveMessage(step, "No live events for this step"),
-              );
-            case "verify": {
-              const initialLiveData = new VerifyStepLiveData({
-                conditions: step.condition.map((condition) =>
-                  makeVerifyConditionLiveData(step, condition),
-                ),
-              });
-
-              return Effect.gen(function* () {
-                yield* recordStepChange(
-                  index,
-                  "stepLiveDataUpdated",
-                  `Monitoring ${step.condition.length} verification condition${step.condition.length === 1 ? "" : "s"}`,
-                  (currentStep) =>
-                    setStepLiveData(
-                      setStepLiveMessage(currentStep, "Waiting for verification conditions..."),
-                      initialLiveData,
-                    ),
-                );
-
-                if (step.delay > 0) {
-                  yield* Effect.sleep(`${step.delay} seconds`);
-                }
-
-                yield* timeoutStepCompletion(
-                  Effect.all(
-                    step.condition.map((condition, conditionIndex) => {
-                      const label = formatVerifyConditionLabel(step, condition);
-                      const mirroredParameter = getMirroredParameterName(condition.parameter);
-
-                      return Effect.all(
-                        [
-                          awaitVerifyParameter(
-                            index,
-                            conditionIndex,
-                            "primary",
-                            condition.parameter,
-                            condition,
-                            label,
-                          ),
-                          ...(mirroredParameter
-                            ? [
-                                awaitVerifyParameter(
-                                  index,
-                                  conditionIndex,
-                                  "mirrored",
-                                  mirroredParameter,
-                                  condition,
-                                  `${label} (System B)`,
-                                ),
-                              ]
-                            : []),
-                        ],
-                        { concurrency: "unbounded" },
-                      );
-                    }),
-                    { concurrency: "unbounded" },
-                  ),
-                  step.timeout ? `${step.timeout} seconds` : undefined,
-                );
-              });
-            }
-            case "command":
-              return Effect.gen(function* () {
-                const commands = getProcedureCommandList(step);
-
-                for (const [commandIndex, command] of commands.entries()) {
-                  const cmd = yield* issueProcedureCommand(command);
-
-                  yield* setTrackedCommandId(index, cmd.id);
-
-                  yield* recordStepChange(
-                    index,
-                    "stepLiveMessageUpdated",
-                    `Sent ${cmd.id}`,
-                    (step) => setStepLiveMessage(step, `Sent ${cmd.id}`),
-                  );
-
-                  const result = yield* awaitCommandResult(cmd.id, index);
-
-                  yield* validateCommandResult(result);
-
-                  if (commandIndex < commands.length - 1) {
-                    yield* advanceSelectedCommand(index, commandIndex + 1);
-                  }
-                }
-              });
-          }
-        };
 
         yield* AtomRegistry.toStreamResult(registry, commandsSubscriptionAtom).pipe(
           Stream.runForEach((commands) =>
@@ -1093,7 +1113,13 @@ export class ProcedureExecutor extends Context.Service<
             (step) => setStepLiveMessage(setStepState(step, "running"), "Starting step..."),
           );
 
-          const exit = yield* Effect.exit(runStep(current.index, current.step.meta));
+          const exit = yield* Effect.exit(
+            runStep(current.index, current.step.meta) as Effect.Effect<
+              void,
+              unknown,
+              YamcsAtomHttpClient | YamcsWebSocketClient | AtomRegistryType.AtomRegistry
+            >,
+          );
 
           if (Exit.isSuccess(exit)) {
             yield* recordStepOutcome(

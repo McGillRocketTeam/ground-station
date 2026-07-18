@@ -1,6 +1,13 @@
 import { Schema } from "effect";
 
-import { LinkInfo, NamedObjectId, StreamingCommandHisotryEntry, Value, Event } from "../schema.js";
+import {
+  AlarmData,
+  Event,
+  LinkInfo,
+  NamedObjectId,
+  StreamingCommandHisotryEntry,
+  Value,
+} from "../schema.js";
 
 export const SubscriptionId = Schema.Int.pipe(Schema.brand("SubscriptionId"));
 
@@ -109,7 +116,21 @@ export const EventsEvent = Schema.Struct({
   data: Event,
 });
 
-export const Events = Schema.Union([Update]);
+export const AlarmsEvent = Schema.Struct({
+  type: Schema.Literal("alarms"),
+  call: SubscriptionId,
+  seq: Schema.Int,
+  data: AlarmData,
+});
+
+export const Events = Schema.Union([
+  Update,
+  TimeEvent,
+  LinkEvent,
+  CommandHistoryEvent,
+  EventsEvent,
+  AlarmsEvent,
+]);
 
 export const Messages = Schema.Union([Reply, ServerState, Update]);
 export type Messages = typeof Messages.Type;

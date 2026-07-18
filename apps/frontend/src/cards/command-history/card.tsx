@@ -11,7 +11,7 @@ import {
   DataGridSearch,
 } from "@/components/ui/data-grid";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { commandHistoryEntryAtom, commandListAtom, commandsSubscriptionAtom } from "@/lib/atom";
+import { commandListAtom, commandsSubscriptionAtom } from "@/lib/atom";
 import { cn, formatDate, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
@@ -19,6 +19,7 @@ import { CommandDetail } from "./command-detail";
 import { makeCommandDisplayMap } from "./command-display";
 import {
   extractAcknowledgement,
+  allDisplayedAcksOk,
   extractAttribute,
   hasNokAck,
   type CommandHistoryEntry,
@@ -34,6 +35,7 @@ const extraAckColumns = [
 ] as const;
 
 const emptyCommandDisplayMap = new Map<string, string>();
+const maxVisibleCommands = 30;
 
 const commandSearchAtom = Atom.make("");
 
@@ -49,21 +51,33 @@ const totalCommandCountAtom = Atom.make((get) =>
   AsyncResult.map(get(commandsSubscriptionAtom), (commands) => commands.length),
 );
 
-const filteredCommandIdsAtom = Atom.make((get) => {
+const filteredCommandsAtom = Atom.make((get) => {
   const commandSearchText = get(commandSearchAtom).trim().toLowerCase();
   const commandDisplayMap = get(commandDisplayMapAtom);
 
-  return AsyncResult.map(get(commandsSubscriptionAtom), (commands) =>
-    commands.flatMap((command) => {
+  return AsyncResult.map(get(commandsSubscriptionAtom), (commands) => {
+    const matchingCommands: Array<CommandHistoryEntry> = [];
+
+    for (const command of commands) {
       const label = commandDisplayMap.get(command.commandName) ?? command.commandName;
-      return label.toLowerCase().includes(commandSearchText) ? [command.id] : [];
-    }),
-  );
+      if (!label.toLowerCase().includes(commandSearchText)) {
+        continue;
+      }
+
+      matchingCommands.push(command);
+
+      if (matchingCommands.length >= maxVisibleCommands) {
+        break;
+      }
+    }
+
+    return matchingCommands;
+  });
 });
 
 export function CommandHistoryTable() {
   const commandCount = useAtomValue(totalCommandCountAtom);
-  const filteredCommandIds = useAtomValue(filteredCommandIdsAtom);
+  const filteredCommands = useAtomValue(filteredCommandsAtom);
   const commandDisplayMap = useAtomValue(commandDisplayMapAtom);
   const totalCommandCount = commandCount._tag === "Success" ? commandCount.value : 0;
 
@@ -73,13 +87,13 @@ export function CommandHistoryTable() {
         <div
           className={cn(
             "relative grid grid-cols-[1.5rem_auto_1fr_auto_auto_repeat(9,2.125rem)_auto] gap-px rounded-none",
-            (filteredCommandIds._tag === "Initial" || filteredCommandIds._tag === "Failure") &&
+            (filteredCommands._tag === "Initial" || filteredCommands._tag === "Failure") &&
               "min-h-full",
           )}
         >
           <Header />
 
-          {AsyncResult.builder(filteredCommandIds)
+          {AsyncResult.builder(filteredCommands)
             .onInitial(() => (
               <div className="col-span-full min-h-full animate-pulse text-center font-mono text-muted-foreground uppercase">
                 Loading Command History
@@ -90,9 +104,9 @@ export function CommandHistoryTable() {
                 {error.toString()}
               </pre>
             ))
-            .onSuccess((commandIds) => (
+            .onSuccess((commands) => (
               <Body
-                commandIds={commandIds}
+                commands={commands}
                 totalCommandCount={totalCommandCount}
                 commandDisplayMap={commandDisplayMap}
               />
@@ -105,11 +119,11 @@ export function CommandHistoryTable() {
 }
 
 const Body = memo(function Body({
-  commandIds,
+  commands,
   totalCommandCount,
   commandDisplayMap,
 }: {
-  commandIds: string[];
+  commands: ReadonlyArray<CommandHistoryEntry>;
   totalCommandCount: number;
   commandDisplayMap: ReadonlyMap<string, string>;
 }) {
@@ -119,90 +133,87 @@ const Body = memo(function Body({
         <div className="col-span-full grid min-h-full place-items-center font-mono text-muted-foreground uppercase">
           No commands sent yet
         </div>
-      ) : commandIds.length === 0 ? (
+      ) : commands.length === 0 ? (
         <div className="col-span-full grid min-h-full place-items-center font-mono text-muted-foreground uppercase">
           No commands match the current search
         </div>
       ) : null}
 
-      {commandIds.map((commandId) => (
-        <CommandRow key={commandId} commandId={commandId} commandDisplayMap={commandDisplayMap} />
+      {commands.map((command) => (
+        <CommandRow
+          key={command.id}
+          command={command}
+          commandLabel={commandDisplayMap.get(command.commandName) ?? command.commandName}
+        />
       ))}
     </DataGridBody>
   );
 });
 
 const CommandRow = memo(function CommandRow({
-  commandId,
-  commandDisplayMap,
+  command,
+  commandLabel,
 }: {
-  commandId: string;
-  commandDisplayMap: ReadonlyMap<string, string>;
+  command: CommandHistoryEntry;
+  commandLabel: string;
 }) {
-  const command = useAtomValue(commandHistoryEntryAtom(commandId));
+  const rowHasNokAck = hasNokAck(command);
 
-  return AsyncResult.builder(command)
-    .onInitial(() => null)
-    .onError(() => null)
-    .onSuccess((command) => {
-      if (!command) {
-        return null;
-      }
+  return (
+    <Popover>
+      <PopoverTrigger
+        payload={command}
+        nativeButton={false}
+        render={
+          <DataGridRow
+            className={cn(
+              "group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
+              rowHasNokAck &&
+                "*:bg-error *:text-error-foreground hover:*:bg-error data-popup-open:*:bg-error",
+            )}
+          >
+            <div className="col-span-2 text-right">{formatDate(command.generationTime)}</div>
+            <div className="line-clamp-1 no-scrollbar overflow-x-scroll">{commandLabel}</div>
+            <div className="text-center">
+              {stringifyValue(extractAttribute(command, "Command_Id"), "")}
+            </div>
+            <div className="text-center">
+              {stringifyValue(extractAttribute(command, "Sequence_Count"), "")}
+            </div>
 
-      const commandLabel = commandDisplayMap.get(command.commandName) ?? command.commandName;
-      const rowHasNokAck = hasNokAck(command);
+            <AckCell command={command} name="Queued" errorRow={rowHasNokAck} />
+            <AckCell command={command} name="Released" errorRow={rowHasNokAck} />
+            <AckCell command={command} name="Sent" errorRow={rowHasNokAck} />
+            {extraAckColumns.map((ack) => (
+              <AckCell key={ack.name} command={command} name={ack.name} errorRow={rowHasNokAck} />
+            ))}
+            <AckCell
+              command={command}
+              name="CommandComplete"
+              customPrefix
+              errorRow={rowHasNokAck}
+            />
+          </DataGridRow>
+        }
+      />
 
-      return (
-        <Popover>
-          <PopoverTrigger
-            payload={command}
-            nativeButton={false}
-            render={
-              <DataGridRow
-                className={cn(
-                  "group cursor-default data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
-                  rowHasNokAck &&
-                    "*:bg-error *:text-error-foreground hover:*:bg-error data-popup-open:*:bg-error",
-                )}
-              >
-                <div className="col-span-2 text-right">{formatDate(command.generationTime)}</div>
-                <div className="line-clamp-1 no-scrollbar overflow-x-scroll">{commandLabel}</div>
-                <div className="text-center">
-                  {stringifyValue(extractAttribute(command, "Command_Id"), "")}
-                </div>
-                <div className="text-center">
-                  {stringifyValue(extractAttribute(command, "Sequence_Count"), "")}
-                </div>
+      <PopoverContent>
+        <CommandDetail command={command} commandLabel={commandLabel} />
+      </PopoverContent>
+    </Popover>
+  );
+}, areCommandRowPropsEqual);
 
-                <AckCell command={command} name="Queued" errorRow={rowHasNokAck} />
-                <AckCell command={command} name="Released" errorRow={rowHasNokAck} />
-                <AckCell command={command} name="Sent" errorRow={rowHasNokAck} />
-                {extraAckColumns.map((ack) => (
-                  <AckCell
-                    key={ack.name}
-                    command={command}
-                    name={ack.name}
-                    errorRow={rowHasNokAck}
-                  />
-                ))}
-                <AckCell
-                  command={command}
-                  name="CommandComplete"
-                  customPrefix
-                  errorRow={rowHasNokAck}
-                />
-              </DataGridRow>
-            }
-          />
-
-          <PopoverContent>
-            <CommandDetail command={command} commandLabel={commandLabel} />
-          </PopoverContent>
-        </Popover>
-      );
-    })
-    .render();
-});
+function areCommandRowPropsEqual(
+  previous: { command: CommandHistoryEntry; commandLabel: string },
+  next: { command: CommandHistoryEntry; commandLabel: string },
+) {
+  return (
+    previous.command.id === next.command.id &&
+    previous.commandLabel === next.commandLabel &&
+    (previous.command === next.command || allDisplayedAcksOk(previous.command))
+  );
+}
 
 const AckCell = memo(function AckCell({
   command,

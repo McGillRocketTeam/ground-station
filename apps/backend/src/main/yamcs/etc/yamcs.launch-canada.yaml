@@ -142,11 +142,11 @@ dataLinks:
     username: mrt
     password: H0tFire!
 
-  - name: EGSE/Pad/ToughSwitch
-    class: org.yamcs.mrt.links.ToughSwitchLink
-    ipAddress: 192.168.0.251
-    username: ubnt
-    password: ubnt
+  # - name: EGSE/Pad/ToughSwitch
+  #   class: org.yamcs.mrt.links.ToughSwitchLink
+  #   ipAddress: 192.168.0.251
+  #   username: ubnt
+  #   password: ubnt
 
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink

@@ -122,6 +122,60 @@ export const DataEncodingInfo = Schema.Struct({
   // contextCalibrators: Schema.Array(ContextCalibratorInfo)
 });
 
+export const AlarmLevelType = Schema.Literals([
+  "NORMAL",
+  "WATCH",
+  "WARNING",
+  "DISTRESS",
+  "CRITICAL",
+  "SEVERE",
+]);
+
+export const AlarmRange = Schema.Struct({
+  level: AlarmLevelType,
+  minInclusive: Schema.optional(Schema.Number),
+  maxInclusive: Schema.optional(Schema.Number),
+  minExclusive: Schema.optional(Schema.Number),
+  maxExclusive: Schema.optional(Schema.Number),
+});
+
+export const EnumerationAlarm = Schema.Struct({
+  level: AlarmLevelType,
+  label: Schema.String,
+});
+
+export const AlarmInfo = Schema.Struct({
+  minViolations: Schema.optional(Schema.Number),
+  staticAlarmRange: Schema.optional(Schema.Array(AlarmRange)),
+  staticAlarmRanges: Schema.optional(Schema.Array(AlarmRange)),
+  enumerationAlarm: Schema.optional(Schema.Array(EnumerationAlarm)),
+  enumerationAlarms: Schema.optional(Schema.Array(EnumerationAlarm)),
+  defaultLevel: Schema.optional(AlarmLevelType),
+});
+
+const AlgorithmSummaryInfo = Schema.Struct({
+  name,
+  qualifiedName,
+  shortDescription,
+  longDescription,
+  alias,
+  scope: Schema.optional(Schema.String),
+  type: Schema.optional(Schema.String),
+});
+
+const ContainerSummaryInfo = Schema.Struct({
+  name,
+  qualifiedName,
+  shortDescription,
+  longDescription,
+  alias,
+});
+
+export const UsedByInfo = Schema.Struct({
+  algorithm: Schema.optional(Schema.Array(AlgorithmSummaryInfo)),
+  container: Schema.optional(Schema.Array(ContainerSummaryInfo)),
+});
+
 export const ParameterTypeInfo = Schema.Struct({
   name,
   qualifiedName,
@@ -133,6 +187,9 @@ export const ParameterTypeInfo = Schema.Struct({
   engType: Schema.String,
   dataEncoding: Schema.optional(DataEncodingInfo),
   unitSet: Schema.optional(Schema.Array(UnitInfo)),
+  defaultAlarm: Schema.optional(AlarmInfo),
+  sizeInBits: Schema.optional(Schema.Int),
+  signed: Schema.optional(Schema.Boolean),
 });
 
 export const DataSourceType = Schema.Literals([
@@ -157,8 +214,9 @@ export const ParameterInfo = Schema.Struct({
   alias,
   type: ParameterTypeInfo,
   dataSource: DataSourceType,
-  // usedBy: UsedByInfo
+  usedBy: Schema.optional(UsedByInfo),
   // ancillaryData: {[key: string]: AncillaryDataInfo},
+  path: Schema.optional(Schema.Array(Schema.String)),
 });
 
 export const HistoryInfo = Schema.Struct({
@@ -750,4 +808,117 @@ export const YamcsInstance = Schema.Struct({
   //in case the state=FAILED, this field will indicate the cause of the failure
   // the missionDatabase and other fields may not be filled when this happens
   failureCause: Schema.optional(Schema.String),
+});
+
+export const AlarmType = Schema.Literals(["PARAMETER", "EVENT"]);
+
+export const AlarmSeverity = Schema.Literals([
+  "WATCH",
+  "WARNING",
+  "DISTRESS",
+  "CRITICAL",
+  "SEVERE",
+]);
+
+export const AlarmNotificationType = Schema.Literals([
+  "ACTIVE",
+  "TRIGGERED",
+  "SEVERITY_INCREASED",
+  "VALUE_UPDATED",
+  "ACKNOWLEDGED",
+  "CLEARED",
+  "RTN",
+  "SHELVED",
+  "UNSHELVED",
+  "RESET",
+  "TRIGGERED_PENDING",
+]);
+
+export const AcquisitionStatus = Schema.Literals([
+  "ACQUIRED",
+  "NOT_RECEIVED",
+  "INVALID",
+  "EXPIRED",
+]);
+
+export const MonitoringResult = Schema.Literals([
+  "DISABLED",
+  "IN_LIMITS",
+  "WATCH",
+  "WARNING",
+  "DISTRESS",
+  "CRITICAL",
+  "SEVERE",
+]);
+
+export const RangeCondition = Schema.Literals(["LOW", "HIGH"]);
+
+export const AlarmParameterValue = Schema.Struct({
+  id: NamedObjectId,
+  rawValue: Schema.optional(Value),
+  engValue: Schema.optional(Value),
+  acquisitionTime: Schema.optional(YamcsDate),
+  generationTime: YamcsDate,
+  acquisitionStatus: Schema.optional(AcquisitionStatus),
+  processingStatus: Schema.optional(Schema.Boolean),
+  monitoringResult: Schema.optional(MonitoringResult),
+  rangeCondition: Schema.optional(RangeCondition),
+  alarmRange: Schema.optional(Schema.Array(AlarmRange)),
+  expireMillis: Schema.optional(Schema.NumberFromString),
+  numericId: Schema.optional(Schema.Number),
+});
+
+export const AcknowledgeInfo = Schema.Struct({
+  acknowledgedBy: Schema.optional(Schema.String),
+  acknowledgeMessage: Schema.optional(Schema.String),
+  acknowledgeTime: Schema.optional(YamcsDate),
+});
+
+export const ParameterAlarmData = Schema.Struct({
+  triggerValue: AlarmParameterValue,
+  mostSevereValue: AlarmParameterValue,
+  currentValue: AlarmParameterValue,
+  parameter: Schema.optional(ParameterInfo),
+});
+
+export const EventAlarmData = Schema.Struct({
+  triggerEvent: Event,
+  mostSevereEvent: Event,
+  currentEvent: Event,
+});
+
+export const ShelveInfo = Schema.Struct({
+  shelvedBy: Schema.optional(Schema.String),
+  shelveMessage: Schema.optional(Schema.String),
+  shelveTime: Schema.optional(YamcsDate),
+  shelveExpiration: Schema.optional(YamcsDate),
+});
+
+export const ClearInfo = Schema.Struct({
+  clearedBy: Schema.optional(Schema.String),
+  clearTime: Schema.optional(YamcsDate),
+  clearMessage: Schema.optional(Schema.String),
+});
+
+export const AlarmData = Schema.Struct({
+  type: AlarmType,
+  triggerTime: YamcsDate,
+  id: NamedObjectId,
+  seqNum: Schema.Number,
+  severity: AlarmSeverity,
+  violations: Schema.Number,
+  count: Schema.Number,
+  acknowledgeInfo: Schema.optional(AcknowledgeInfo),
+  notificationType: AlarmNotificationType,
+  parameterDetail: Schema.optional(ParameterAlarmData),
+  eventDetail: Schema.optional(EventAlarmData),
+  latching: Schema.optional(Schema.Boolean),
+  processOK: Schema.Boolean,
+  triggered: Schema.Boolean,
+  acknowledged: Schema.Boolean,
+  shelveInfo: Schema.optional(ShelveInfo),
+  clearInfo: Schema.optional(ClearInfo),
+  updateTime: Schema.optional(YamcsDate),
+  readonly: Schema.Boolean,
+  pending: Schema.Boolean,
 });

@@ -59,10 +59,6 @@ export function DashboardCardForm({
   initialTitle?: string;
   onSubmit: (value: { title: string; params: DecodedFormValues }) => void;
 }) {
-  useHotkey("Mod+S", () => {
-    form.handleSubmit();
-  });
-
   const schema = CardSchemaMap[cardId];
   const formSchema = schema as unknown as Schema.Codec<DecodedFormValues, EncodedFormValues> &
     Schema.Top & {
@@ -105,6 +101,10 @@ export function DashboardCardForm({
 
       onSubmit({ title, params: parsed });
     },
+  });
+
+  useHotkey("Mod+S", () => {
+    form.handleSubmit();
   });
 
   return (

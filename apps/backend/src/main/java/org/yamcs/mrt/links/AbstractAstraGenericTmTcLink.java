@@ -26,6 +26,10 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
   private Status status = Status.UNAVAIL;
   private String detailedStatus = "";
 
+  protected boolean shouldProcessTelemetryPayload(byte[] payload) {
+    return true;
+  }
+
   @Override
   public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
     super.init(instance, name, config);
@@ -78,6 +82,10 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
   public void handleMqtt(String topic, MqttMessage message) {
     if (telemetryTopic.equals(topic)) {
       dataIn(1, message.getPayload().length);
+
+      if (!shouldProcessTelemetryPayload(message.getPayload())) {
+        return;
+      }
 
       for (var tmPacket : tmConverter.convert(message)) {
         tmPacket = packetPreprocessor.process(tmPacket);

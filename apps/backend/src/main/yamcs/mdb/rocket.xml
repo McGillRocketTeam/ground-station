@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <!--
 This file was generated with Yamcs PyMDB.
 See https://github.com/yamcs/pymdb
@@ -109,7 +109,17 @@ See https://github.com/yamcs/pymdb
         <UnitSet>
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>0.247</ValueOperand>
+              <Operator>*</Operator>
+              <ValueOperand>14</ValueOperand>
+              <Operator>-</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
       </FloatParameterType>
       <BooleanParameterType name="drogue_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
@@ -528,6 +538,11 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
+        <DefaultAlarm>
+          <StaticAlarmRanges>
+            <WarningRange minInclusive="-1" maxInclusive="1"/>
+          </StaticAlarmRanges>
+        </DefaultAlarm>
       </FloatParameterType>
       <FloatParameterType name="vertical_speed" sizeInBits="32">
         <UnitSet>

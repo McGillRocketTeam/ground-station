@@ -11,6 +11,13 @@ export {
 } from "./frontend";
 export { logValidationFailure, YamcsAtomHttpClient, yamcsBaseUrl } from "./yamcs/runtime";
 export {
+  alarmListAtom,
+  alarmsSubscriptionAtom,
+  parameterAlarmStateAtom,
+  parameterHasActiveAlarmAtom,
+} from "./yamcs/alarm";
+export {
+  parameterDetailAtom,
   parameterInfoAtom,
   parameterListAtom,
   parameterSubscriptionAtom,

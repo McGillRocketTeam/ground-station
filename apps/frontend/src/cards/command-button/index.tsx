@@ -1,6 +1,6 @@
 import type { CommandInfo } from "@mrt/yamcs-effect";
 
-import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
+import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 import { useState } from "react";
@@ -39,43 +39,43 @@ export const CommandButtonCard = makeCard({
       }),
     ),
   }),
-  component: (props) => {
-    const instance = useAtomValue(selectedInstanceAtom);
-    const commandList = useAtomValue(
-      YamcsAtomHttpClient.query("mdb", "listCommands", {
-        params: { instance },
-        query: {},
-      }),
-    );
-
-    return AsyncResult.builder(commandList)
-      .onInitial(() => (
-        <div className="grid min-h-full w-full animate-pulse place-items-center font-mono text-muted-foreground uppercase">
-          Loading Commands
-        </div>
-      ))
-      .onFailure((cause) => (
-        <pre className="grid min-h-full w-full place-items-center text-center font-mono text-error uppercase">
-          {Cause.pretty(cause)}
-        </pre>
-      ))
-      .onSuccess(() => <CommandButtonTable commands={props.params.commands} />)
-      .render();
-  },
+  component: (props) => <CommandButtonCardBody commands={props.params.commands} />,
 });
 
-function CommandButtonTable({ commands: allowedCommands }: { commands?: ReadonlyArray<string> }) {
+function CommandButtonCardBody({
+  commands: allowedCommands,
+}: {
+  commands?: ReadonlyArray<string>;
+}) {
   const instance = useAtomValue(selectedInstanceAtom);
-  const [target, setTarget] = useState<TargetOption>("BOTH");
-  const sendCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
-
-  const { commands } = useAtomSuspense(
+  const commandList = useAtomValue(
     YamcsAtomHttpClient.query("mdb", "listCommands", {
       params: { instance },
       query: {},
     }),
-  ).value;
-  const visibleCommands = filterCommands(commands, allowedCommands);
+  );
+
+  return AsyncResult.builder(commandList)
+    .onInitial(() => (
+      <div className="grid min-h-full w-full animate-pulse place-items-center font-mono text-muted-foreground uppercase">
+        Loading Commands
+      </div>
+    ))
+    .onFailure((cause) => (
+      <pre className="grid min-h-full w-full place-items-center text-center font-mono text-error uppercase">
+        {Cause.pretty(cause)}
+      </pre>
+    ))
+    .onSuccess(({ commands }) => (
+      <CommandButtonTable commands={filterCommands(commands, allowedCommands)} />
+    ))
+    .render();
+}
+
+function CommandButtonTable({ commands }: { commands: ReadonlyArray<CommandDefinition> }) {
+  const instance = useAtomValue(selectedInstanceAtom);
+  const [target, setTarget] = useState<TargetOption>("BOTH");
+  const sendCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
 
   return (
     <div className="h-full overflow-auto">
@@ -102,7 +102,7 @@ function CommandButtonTable({ commands: allowedCommands }: { commands?: Readonly
         </DataGridHeader>
 
         <DataGridBody>
-          {visibleCommands.map((command) => (
+          {commands.map((command) => (
             <DataGridRow key={command.qualifiedName}>
               <div>{formatCommandDisplayName(command.qualifiedName, command)}</div>
               <button

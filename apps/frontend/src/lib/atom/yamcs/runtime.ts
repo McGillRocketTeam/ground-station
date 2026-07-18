@@ -31,7 +31,7 @@ const transformYamcsHttpClient = (client: HttpClient.HttpClient) =>
     }),
   );
 
-const yamcsHttpClientLayer: Layer.Layer<HttpClient.HttpClient> = Layer.provideMerge(
+export const yamcsHttpClientLayer: Layer.Layer<HttpClient.HttpClient> = Layer.provideMerge(
   Layer.effect(HttpClient.HttpClient)(
     Effect.gen(function* () {
       const client = yield* HttpClient.HttpClient;

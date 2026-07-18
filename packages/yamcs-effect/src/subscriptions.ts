@@ -187,27 +187,27 @@ export class YamcsSubscriptions extends Context.Service<
           const eventStream = stream.pipe(
             Stream.mapEffect((m) => Schema.decodeUnknownEffect(ParameterEvent)(m.data)),
           );
-
-          // Wait for the mapping message (numeric ID -> parameter name)
-          const mappingEvents = yield* eventStream.pipe(
-            Stream.filter((e) => "mapping" in e),
-            Stream.take(1),
-            Stream.runCollect,
-          );
-
-          const mapping = Array.from(mappingEvents)[0]!.mapping;
+          let numericId: string | undefined;
 
           return eventStream.pipe(
-            Stream.filter((e) => "values" in e),
-            Stream.map(({ values }) =>
-              Object.fromEntries(
-                values.map((v) => {
-                  const key = mapping[v.numericId]?.name;
-                  return [key, v];
-                }),
-              ),
+            Stream.flatMap((event) => {
+              if ("mapping" in event) {
+                const mappedNumericId = Object.entries(event.mapping).find(
+                  ([, parameter]) => parameter.name === qualifiedName,
+                )?.[0];
+
+                if (mappedNumericId !== undefined) {
+                  numericId = mappedNumericId;
+                }
+
+                return Stream.empty;
+              }
+
+              return Stream.fromIterable(event.values);
+            }),
+            Stream.filter(
+              (value) => numericId !== undefined && String(value.numericId) === numericId,
             ),
-            Stream.map((a) => a[qualifiedName] as typeof ParameterValue.Type),
             Stream.ensuring(Effect.orElseSucceed(ws.unsubscribe(call), () => undefined)),
           );
         }),

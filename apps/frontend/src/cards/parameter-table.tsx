@@ -7,10 +7,18 @@ import { memo, useState, type ReactNode } from "react";
 import type { LiveParameterUpdate } from "@/lib/atom";
 
 import { parameterDetailPopoverHandle } from "@/components/parameter-detail";
-import { parameterInfoAtom, parameterSubscriptionAtom } from "@/lib/atom";
+import { parameterAlarmStateAtom, parameterInfoAtom, parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 import { cn } from "@/lib/utils";
+
+const alarmSeverityRank = {
+  WATCH: 0,
+  WARNING: 1,
+  DISTRESS: 2,
+  CRITICAL: 3,
+  SEVERE: 4,
+} as const;
 
 const ParameterTableSectionSchema = Schema.Struct({
   parameters: Schema.Array(Schema.String).pipe(
@@ -107,18 +115,48 @@ const TableGroup = memo(function TableGroup({
 
 const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
   const info = useAtomSuspense(parameterInfoAtom(parameter)).value;
+  const systemAParameter = parameter.replace("SystemB", "SystemA");
+  const systemBParameter = parameter.includes("SystemA")
+    ? parameter.replace("SystemA", "SystemB")
+    : systemAParameter;
+  const leftResult = useAtomValue(parameterAlarmStateAtom(systemAParameter));
+  const rightResult = useAtomValue(parameterAlarmStateAtom(systemBParameter));
+
+  const severity = [leftResult, rightResult].reduce<number | undefined>((highest, result) => {
+    if (result._tag !== "Success") {
+      return highest;
+    }
+
+    const rank = result.value.highestSeverity
+      ? alarmSeverityRank[result.value.highestSeverity]
+      : undefined;
+
+    if (rank === undefined) {
+      return highest;
+    }
+
+    return highest === undefined ? rank : Math.max(highest, rank);
+  }, undefined);
+
+  const alarmTone = severity === undefined ? undefined : severity <= 2 ? "warning" : "error";
 
   return (
     <Popover.Trigger
       handle={parameterDetailPopoverHandle}
       payload={parameter}
-      className="col-span-full grid grid-cols-subgrid text-sm *:bg-background *:px-1 hover:*:bg-selection-background data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]"
+      data-alarm={alarmTone}
+      className={cn(
+        "col-span-full grid grid-cols-subgrid text-sm *:px-1",
+        "*:bg-background hover:*:bg-selection-background data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
+        "data-[alarm=warning]:*:bg-warning data-[alarm=warning]:hover:*:bg-warning/20 data-[alarm=warning]:data-popup-open:*:bg-warning/20 data-[alarm=warning]:text-error-foreground",
+        "data-[alarm=error]:*:bg-error data-[alarm=error]:hover:*:bg-error/20 data-[alarm=error]:data-popup-open:*:bg-error/20 data-[alarm=error]:text-error-foreground",
+      )}
     >
       <div />
       <div className="line-clamp-1 text-ellipsis text-left" title={parameter}>
         {info.shortDescription ?? info.qualifiedName}
       </div>
-      <Value name={parameter.replace("SystemB", "SystemA")} />
+      <Value name={systemAParameter} />
       {parameter.includes("SystemA") && <Value name={parameter.replace("SystemA", "SystemB")} />}
       {/* <div /> */}
     </Popover.Trigger>

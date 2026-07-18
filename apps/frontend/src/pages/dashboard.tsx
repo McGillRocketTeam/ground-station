@@ -156,8 +156,11 @@ export function DashboardPage() {
       <Popover handle={parameterDetailPopoverHandle}>
         {({ payload }) =>
           payload && (
-            <PopoverContent>
-              <ParameterDetail className="w-md" qualifiedName={payload} />
+            <PopoverContent className="max-h-[58vh] max-w-[78vw] overflow-hidden p-0">
+              <ParameterDetail
+                className="max-h-[58vh] overflow-y-auto p-2.5 pr-2"
+                qualifiedName={payload}
+              />
             </PopoverContent>
           )
         }

@@ -1,5 +1,6 @@
 import { HttpApi } from "effect/unstable/httpapi";
 
+import alarmGroup from "./alarm.js";
 import commandGroup from "./command.js";
 import eventGroup from "./event.js";
 import instancesGroup from "./instances.ts";
@@ -12,6 +13,7 @@ export { StreamArchiveHeader } from "./stream-archive.js";
 
 export const YamcsApi = HttpApi.make("YAMCS")
   .add(mdbGroup)
+  .add(alarmGroup)
   .add(commandGroup)
   .add(linkGroup)
   .add(parameterGroup)

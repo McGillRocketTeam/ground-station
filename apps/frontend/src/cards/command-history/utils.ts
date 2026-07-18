@@ -100,6 +100,21 @@ export function hasNokAck(command: CommandHistoryEntry) {
   ].some((ack) => ack.status === "NOK");
 }
 
+export function allDisplayedAcksOk(command: CommandHistoryEntry) {
+  return [
+    extractAcknowledgement(command, "Queued"),
+    extractAcknowledgement(command, "Released"),
+    extractAcknowledgement(command, "Sent"),
+    extractAcknowledgement(command, "uplink_a_rx"),
+    extractAcknowledgement(command, "uplink_a_tx"),
+    extractAcknowledgement(command, "fc_a"),
+    extractAcknowledgement(command, "uplink_b_rx"),
+    extractAcknowledgement(command, "uplink_b_tx"),
+    extractAcknowledgement(command, "fc_b"),
+    extractAcknowledgement(command, "CommandComplete", true),
+  ].every((ack) => ack.status === "OK");
+}
+
 function listAckNames(command: CommandHistoryEntry) {
   const ackNames = new Set<string>();
 

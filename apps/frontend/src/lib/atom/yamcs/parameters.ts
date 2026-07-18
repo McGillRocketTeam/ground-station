@@ -2,10 +2,27 @@ import { Parameters, type QualifiedName } from "@mrt/yamcs-effect";
 import { Effect, Stream } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
+import { selectedInstanceAtom } from "../frontend";
+import { YamcsAtomHttpClient } from "./runtime";
 import { yamcsSubscriptionRuntime } from "./runtime";
 
 export const parameterInfoAtom = Atom.family((qualifiedName: QualifiedName) =>
   yamcsSubscriptionRuntime.atom(Parameters.use((s) => s.get(qualifiedName))),
+);
+
+export const parameterDetailAtom = Atom.family((qualifiedName: QualifiedName) =>
+  yamcsSubscriptionRuntime.atom((get) => {
+    const instance = get(selectedInstanceAtom);
+
+    return get.result(
+      YamcsAtomHttpClient.query("mdb", "getParameter", {
+        params: {
+          instance,
+          name: qualifiedName,
+        },
+      }),
+    );
+  }),
 );
 
 export const parameterListAtom = yamcsSubscriptionRuntime.atom(

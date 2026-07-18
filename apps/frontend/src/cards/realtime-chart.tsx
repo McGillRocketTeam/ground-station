@@ -1,10 +1,17 @@
-import { Effect, Fiber, Stream } from "effect";
+import { useAtomValue } from "@effect/atom-react";
+import { DateTime, Effect, Fiber, Stream } from "effect";
 import { AtomRegistry } from "effect/unstable/reactivity";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "uplot/dist/uPlot.min.css";
 import uPlot, { type AlignedData } from "uplot";
 
-import { parameterSubscriptionAtom } from "@/lib/atom";
+import {
+  logValidationFailure,
+  parameterSubscriptionAtom,
+  selectedInstanceAtom,
+  themeAtom,
+  YamcsAtomHttpClient,
+} from "@/lib/atom";
 import { atomRegistry } from "@/lib/atom-registry";
 import { makeCard } from "@/lib/cards";
 import { cn } from "@/lib/utils";
@@ -29,6 +36,12 @@ const DEFAULT_CHART_WIDTH = 620;
 const DEFAULT_CHART_HEIGHT = 480;
 
 const BUFFER_WINDOW_SECONDS = 30;
+const INITIAL_SAMPLE_COUNT = 240;
+
+type RealtimePlotThemeColors = {
+  border: string;
+  muted: string;
+};
 
 function extractNumericValue(value: unknown) {
   const numericValue = Number(value);
@@ -58,6 +71,32 @@ function withAlpha(color: string, alphaHex: string) {
   return /^#[0-9a-fA-F]{6}$/.test(color) ? `${color}${alphaHex}` : color;
 }
 
+function getRealtimePlotThemeColors(container: HTMLElement): RealtimePlotThemeColors {
+  const styles = getComputedStyle(container);
+
+  return {
+    border: styles.getPropertyValue("--border").trim(),
+    muted: styles.getPropertyValue("--muted-foreground").trim(),
+  };
+}
+
+function makeAxisOptions(colors: RealtimePlotThemeColors): uPlot.Axis[] {
+  return [
+    {
+      border: { stroke: colors.border },
+      grid: { stroke: colors.border },
+      stroke: colors.muted,
+      ticks: { stroke: colors.border },
+    },
+    {
+      border: { stroke: colors.border },
+      grid: { stroke: colors.border },
+      stroke: colors.muted,
+      ticks: { stroke: colors.border },
+    },
+  ];
+}
+
 function makeSeriesOptions(seriesConfigs: ReadonlyArray<ChartSeriesConfig>): uPlot.Series[] {
   return [
     {},
@@ -76,9 +115,8 @@ function buildAlignedData(
   seriesConfigs: ReadonlyArray<ChartSeriesConfig>,
   buffers: Map<string, Array<readonly [timestamp: number, value: number]>>,
   cutoff: number,
-  frameNow: number,
 ): AlignedData {
-  const timestamps = new Set<number>([cutoff, frameNow]);
+  const timestamps = new Set<number>([cutoff]);
 
   for (const series of seriesConfigs) {
     const buffer = buffers.get(series.parameter) ?? [];
@@ -98,6 +136,10 @@ function buildAlignedData(
   return aligned;
 }
 
+function getLatestLegendIndex(data: AlignedData) {
+  return data[0].length > 1 ? data[0].length - 1 : undefined;
+}
+
 export function RealtimePlot({
   className,
   seriesConfigs,
@@ -105,8 +147,46 @@ export function RealtimePlot({
   className?: string;
   seriesConfigs: ReadonlyArray<ChartSeriesConfig>;
 }) {
+  const instance = useAtomValue(selectedInstanceAtom);
+  const theme = useAtomValue(themeAtom);
+  const [systemTheme, setSystemTheme] = useState<"dark" | "light">(() =>
+    typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light",
+  );
+  const [themeRefreshKey, setThemeRefreshKey] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (theme !== "system") {
+      return;
+    }
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      setSystemTheme(media.matches ? "dark" : "light");
+    };
+
+    handleChange();
+    media.addEventListener("change", handleChange);
+
+    return () => {
+      media.removeEventListener("change", handleChange);
+    };
+  }, [theme]);
+
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => {
+      setThemeRefreshKey((value) => value + 1);
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, [resolvedTheme]);
 
   useEffect(() => {
     const now = Date.now() / 1000;
@@ -118,6 +198,7 @@ export function RealtimePlot({
 
     const measureSize = () => {
       const rect = containerRef.current?.getBoundingClientRect();
+
       return {
         width: Math.max(100, Math.floor(rect?.width ?? DEFAULT_CHART_WIDTH)),
         height: Math.max(100, Math.floor(rect?.height ?? DEFAULT_CHART_HEIGHT)),
@@ -125,8 +206,22 @@ export function RealtimePlot({
     };
 
     const initialSize = measureSize();
+    let themeColors = getRealtimePlotThemeColors(containerRef.current);
     const plot = new uPlot(
-      { ...initialSize, series: makeSeriesOptions(seriesConfigs) },
+      {
+        ...initialSize,
+        axes: makeAxisOptions(themeColors),
+        hooks: {
+          setCursor: [
+            (self) => {
+              if (self.cursor.idx == null) {
+                self.setLegend({ idx: getLatestLegendIndex(self.data) });
+              }
+            },
+          ],
+        },
+        series: makeSeriesOptions(seriesConfigs),
+      },
       data,
       chartRef.current,
     );
@@ -135,6 +230,87 @@ export function RealtimePlot({
     );
     let frameId: number | undefined;
     let dirty = false;
+    let latestLegendIndex: number | undefined;
+    const seedFiber = Effect.runFork(
+      Effect.gen(function* () {
+        const stop = new Date();
+        const start = new Date(stop.getTime() - BUFFER_WINDOW_SECONDS * 1000);
+
+        const querySamples = (parameterName: string, source: "ParameterArchive" | "replay") =>
+          Effect.orElseSucceed(
+            Effect.tapError(
+              AtomRegistry.getResult(
+                atomRegistry,
+                YamcsAtomHttpClient.query("parameter", "getSamples", {
+                  params: {
+                    instance,
+                    parameterName,
+                  },
+                  query: {
+                    count: INITIAL_SAMPLE_COUNT,
+                    gapTime: 300000,
+                    source,
+                    start: start.toISOString(),
+                    stop: stop.toISOString(),
+                    useRawValue: false,
+                  },
+                }),
+              ),
+              (error) =>
+                logValidationFailure(`realtime seed query (${instance}, ${parameterName})`, error, {
+                  instance,
+                  parameterName,
+                  source,
+                  start,
+                  stop,
+                }),
+            ),
+            () => ({ sample: [] as const }),
+          );
+
+        const seededSamples = yield* Effect.all(
+          seriesConfigs.map((series) =>
+            Effect.gen(function* () {
+              const archiveHistory = yield* querySamples(series.parameter, "ParameterArchive");
+              const history =
+                archiveHistory.sample.length > 0
+                  ? archiveHistory
+                  : yield* querySamples(series.parameter, "replay");
+
+              return {
+                parameter: series.parameter,
+                samples: history.sample.flatMap((sample) => {
+                  if (sample.avg === undefined) {
+                    return [];
+                  }
+
+                  return [
+                    [
+                      DateTime.toDate(sample.time).getTime() / 1000,
+                      applySeriesOffset(sample.avg, series),
+                    ] as const,
+                  ];
+                }),
+              };
+            }),
+          ),
+        );
+
+        yield* Effect.sync(() => {
+          for (const { parameter, samples } of seededSamples) {
+            const buffer = buffers.get(parameter);
+            if (!buffer || samples.length === 0) {
+              continue;
+            }
+
+            buffer.push(...samples);
+            buffer.sort((a, b) => a[0] - b[0]);
+          }
+
+          dirty = true;
+        });
+      }),
+    );
     const resizeObserver = new ResizeObserver(() => {
       plot.setSize(measureSize());
     });
@@ -155,7 +331,14 @@ export function RealtimePlot({
 
       if (dirty || trimmed) {
         dirty = false;
-        plot.setData(buildAlignedData(seriesConfigs, buffers, cutoff, frameNow));
+        const alignedData = buildAlignedData(seriesConfigs, buffers, cutoff);
+        latestLegendIndex = getLatestLegendIndex(alignedData);
+
+        plot.setData(alignedData);
+
+        if (plot.cursor.idx == null) {
+          plot.setLegend({ idx: latestLegendIndex });
+        }
       }
 
       plot.setScale("x", { min: cutoff, max: frameNow });
@@ -200,15 +383,16 @@ export function RealtimePlot({
         cancelAnimationFrame(frameId);
       }
       resizeObserver.disconnect();
+      Effect.runFork(Fiber.interrupt(seedFiber));
       plot.destroy();
       for (const fiber of subscriptionFibers) {
         Effect.runFork(Fiber.interrupt(fiber));
       }
     };
-  }, [seriesConfigs]);
+  }, [instance, seriesConfigs, themeRefreshKey]);
 
   return (
-    <div className="h-full w-full pb-8">
+    <div className="col-span-full h-full w-full pb-8">
       <div className={cn("h-full w-full", className)} ref={containerRef}>
         <div ref={chartRef} />
       </div>

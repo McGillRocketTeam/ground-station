@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <!--
 This file was generated with Yamcs PyMDB.
 See https://github.com/yamcs/pymdb
@@ -538,11 +538,6 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-        <DefaultAlarm>
-          <StaticAlarmRanges>
-            <WarningRange minInclusive="-1" maxInclusive="1"/>
-          </StaticAlarmRanges>
-        </DefaultAlarm>
       </FloatParameterType>
       <FloatParameterType name="vertical_speed" sizeInBits="32">
         <UnitSet>

@@ -54,11 +54,107 @@ paths:
   medium-double-double:
     source: rtsp://192.168.0.28:7447/6a279030f7df18112745f85d_0
     rtspTransport: tcp
+    runOnAvailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/availability_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_hook_event"},"value":{"type":"STRING","stringValue":"available"}}]}'
+    runOnUnavailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/availability_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_hook_event"},"value":{"type":"STRING","stringValue":"unavailable"}}]}'
+    runOnOnline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/connection_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_hook_event"},"value":{"type":"STRING","stringValue":"online"}}]}'
+    runOnOffline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/connection_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_hook_event"},"value":{"type":"STRING","stringValue":"offline"}}]}'
+    runOnRead: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/has_readers"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_hook_event"},"value":{"type":"STRING","stringValue":"read"}}]}'
+    runOnUnread: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/has_readers"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/medium-double-double/last_hook_event"},"value":{"type":"STRING","stringValue":"unread"}}]}'
   rouge-bol-deux-saveurs:
     source: rtsp://192.168.0.28:7447/6a278658f7df18112745f857_0
     rtspTransport: tcp
+    runOnAvailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/availability_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_hook_event"},"value":{"type":"STRING","stringValue":"available"}}]}'
+    runOnUnavailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/availability_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_hook_event"},"value":{"type":"STRING","stringValue":"unavailable"}}]}'
+    runOnOnline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/connection_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_hook_event"},"value":{"type":"STRING","stringValue":"online"}}]}'
+    runOnOffline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/connection_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_hook_event"},"value":{"type":"STRING","stringValue":"offline"}}]}'
+    runOnRead: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/has_readers"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_hook_event"},"value":{"type":"STRING","stringValue":"read"}}]}'
+    runOnUnread: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/has_readers"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/rouge-bol-deux-saveurs/last_hook_event"},"value":{"type":"STRING","stringValue":"unread"}}]}'
   Cunegonde-4:
     source: rtsp://192.168.0.28:7447/6a278c32f7df18112745f85b_0
     rtspTransport: tcp
+    runOnAvailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/availability_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_hook_event"},"value":{"type":"STRING","stringValue":"available"}}]}'
+    runOnUnavailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/availability_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_hook_event"},"value":{"type":"STRING","stringValue":"unavailable"}}]}'
+    runOnOnline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/connection_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_hook_event"},"value":{"type":"STRING","stringValue":"online"}}]}'
+    runOnOffline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/connection_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_hook_event"},"value":{"type":"STRING","stringValue":"offline"}}]}'
+    runOnRead: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/has_readers"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_hook_event"},"value":{"type":"STRING","stringValue":"read"}}]}'
+    runOnUnread: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/has_readers"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/Cunegonde-4/last_hook_event"},"value":{"type":"STRING","stringValue":"unread"}}]}'
   drone:
     source: publisher
+    runOnAvailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/drone/availability_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/drone/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/drone/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_hook_event"},"value":{"type":"STRING","stringValue":"available"}}]}'
+    runOnUnavailable: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/drone/availability_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_hook_event"},"value":{"type":"STRING","stringValue":"unavailable"}}]}'
+    runOnOnline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/drone/connection_state"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/drone/source_type"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/drone/source_id"},"value":{"type":"STRING","stringValue":"'$MTX_SOURCE_ID'"}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_hook_event"},"value":{"type":"STRING","stringValue":"online"}}]}'
+    runOnOffline: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/drone/connection_state"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_hook_event"},"value":{"type":"STRING","stringValue":"offline"}}]}'
+    runOnRead: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/drone/has_readers"},"value":{"type":"BOOLEAN","booleanValue":true}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_hook_event"},"value":{"type":"STRING","stringValue":"read"}}]}'
+    runOnUnread: >-
+      curl -fsS -X POST "http://host.docker.internal:8090/api/processors/launch-canada/realtime/parameters:batchSet"
+      -H "Content-Type: application/json"
+      --data '{"instance":"launch-canada","processor":"realtime","request":[{"id":{"name":"/EGSE/Pad/Camera/drone/has_readers"},"value":{"type":"BOOLEAN","booleanValue":false}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_reader_type"},"value":{"type":"STRING","stringValue":"'$MTX_READER_TYPE'"}},{"id":{"name":"/EGSE/Pad/Camera/drone/last_hook_event"},"value":{"type":"STRING","stringValue":"unread"}}]}'

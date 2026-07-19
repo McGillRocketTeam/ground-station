@@ -208,6 +208,9 @@ mdb:
         subLoaders:
           - type: xtce
             args:
+              file: mdb/camera-local.xml
+          - type: xtce
+            args:
               file: mdb/thermocouple.xml
           - type: xtce
             args:

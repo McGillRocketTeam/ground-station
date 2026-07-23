@@ -414,7 +414,11 @@ function makeLinkTemplate(shape: go.Shape) {
 }
 
 function initDiagram(toggleValveInProgram: (key: string) => void, colors: DiagramTheme) {
-  go.Diagram.licenseKey = import.meta.env.MRT_GOJS_API_KEY;
+  const licenseKey = import.meta.env.MRT_GOJS_API_KEY;
+  if (typeof licenseKey === "string" && licenseKey.trim().length > 0) {
+    go.Diagram.licenseKey = licenseKey;
+  }
+
   const diagram = new go.Diagram({
     initialContentAlignment: go.Spot.Center,
     allowMove: false,

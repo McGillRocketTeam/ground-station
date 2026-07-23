@@ -220,7 +220,7 @@ const initialNodeDataArray: Array<NodeData> = [
     loc: "840 80",
     label: "TT I-0",
     decimals: 0,
-    qualifiedName: "/EGSE/Pad/Thermocouple/tc5_temp",
+    qualifiedName: "/EGSE/Pad/Thermocouple/tc4_temp",
     unit: "C",
   },
   {

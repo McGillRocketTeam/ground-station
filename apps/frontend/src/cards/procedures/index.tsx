@@ -166,9 +166,10 @@ function formatValue(value: unknown) {
 
 function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
   return (
-    <div className="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-1 text-xs text-muted-foreground">
+    <div className="grid grid-cols-[auto_auto_auto_1fr] gap-x-3 gap-y-1 text-xs text-muted-foreground">
       <div>SYS A</div>
       <div>SYS B</div>
+      <div>ENG Value</div>
       <div>Condition</div>
       {liveData.conditions.map((condition) => (
         <Fragment key={`${condition.parameter}-${condition.label}`}>
@@ -195,6 +196,13 @@ function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
             ) : (
               <BrailleSpinner />
             )}
+          </div>
+          <div className="min-w-[8ch] text-foreground">
+            {condition.status === "passed"
+              ? condition.actual
+              : condition.mirroredStatus === "passed"
+                ? condition.mirroredActual
+                : ""}
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-foreground">{condition.label}</span>

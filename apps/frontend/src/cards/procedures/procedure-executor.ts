@@ -402,6 +402,25 @@ const makeVerifyConditionLiveData = (step: VerifyStep, condition: VerifyConditio
     mirroredStatus: getMirroredParameterName(condition.parameter) ? "pending" : undefined,
   });
 
+const formatVerifyConditionUpdateMessage = (
+  label: string,
+  target: "primary" | "mirrored",
+  status: VerifyConditionStatus,
+  actual: string | null,
+) => {
+  const system = target === "primary" ? "SYS A" : "SYS B";
+
+  if (actual === null) {
+    return `Awaiting ${label} ${system} verification value`;
+  }
+
+  if (status === "passed") {
+    return `${label} ${system} OK (${actual})`;
+  }
+
+  return `${label} ${system}: ${actual}`;
+};
+
 const valueToComparable = (
   value: { readonly type: string; readonly value?: unknown } | undefined,
 ): unknown => {
@@ -926,37 +945,36 @@ export class ProcedureExecutor extends Context.Service<
           index: number,
           conditionIndex: number,
           target: "primary" | "mirrored",
+          label: string,
           actual: string | null,
           status: VerifyConditionStatus,
-        ) =>
-          recordStepChange(
-            index,
-            "stepLiveDataUpdated",
-            actual === null ? "Awaiting verification values" : actual,
-            (step) => {
-              if (!(step.liveData instanceof VerifyStepLiveData)) {
-                return step;
-              }
+        ) => {
+          const message = formatVerifyConditionUpdateMessage(label, target, status, actual);
 
-              return setStepLiveData(
-                step,
-                new VerifyStepLiveData({
-                  conditions: step.liveData.conditions.map((condition, currentIndex) =>
-                    currentIndex === conditionIndex
-                      ? VerifyConditionLiveData.make({
-                          ...condition,
-                          actual: target === "primary" ? actual : condition.actual,
-                          status: target === "primary" ? status : condition.status,
-                          mirroredActual:
-                            target === "mirrored" ? actual : (condition.mirroredActual ?? null),
-                          mirroredStatus: target === "mirrored" ? status : condition.mirroredStatus,
-                        })
-                      : condition,
-                  ),
-                }),
-              );
-            },
-          );
+          return recordStepChange(index, "stepLiveDataUpdated", message, (step) => {
+            if (!(step.liveData instanceof VerifyStepLiveData)) {
+              return step;
+            }
+
+            return setStepLiveData(
+              setStepLiveMessage(step, message),
+              new VerifyStepLiveData({
+                conditions: step.liveData.conditions.map((condition, currentIndex) =>
+                  currentIndex === conditionIndex
+                    ? VerifyConditionLiveData.make({
+                        ...condition,
+                        actual: target === "primary" ? actual : condition.actual,
+                        status: target === "primary" ? status : condition.status,
+                        mirroredActual:
+                          target === "mirrored" ? actual : (condition.mirroredActual ?? null),
+                        mirroredStatus: target === "mirrored" ? status : condition.mirroredStatus,
+                      })
+                    : condition,
+                ),
+              }),
+            );
+          });
+        };
 
         const awaitVerifyParameter = (
           index: number,
@@ -982,6 +1000,7 @@ export class ProcedureExecutor extends Context.Service<
                     index,
                     conditionIndex,
                     target,
+                    label,
                     actual,
                     isSatisfied ? "passed" : "pending",
                   );

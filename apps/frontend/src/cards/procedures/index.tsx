@@ -61,7 +61,7 @@ function ProcedureView({ procedureType }: { procedureType: ProcedureType }) {
   }
 
   return (
-    <div className="h-full min-h-0 overflow-auto">
+    <div className="h-full min-h-0">
       <div className="sticky top-0 z-10 flex h-8 bg-background border-b text-sm">
         <button type="button" onClick={() => selectPreviousStep()} className="h-full border-r px-2">
           Prev
@@ -166,10 +166,11 @@ function formatValue(value: unknown) {
 
 function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
   return (
-    <div className="grid grid-cols-[auto_auto_auto_1fr] gap-x-3 gap-y-1 text-xs text-muted-foreground">
+    <div className="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-3 gap-y-1 text-xs text-muted-foreground">
       <div>SYS A</div>
       <div>SYS B</div>
-      <div>ENG Value</div>
+      <div>ENG Value A</div>
+      <div>ENG Value B</div>
       <div>Condition</div>
       {liveData.conditions.map((condition) => (
         <Fragment key={`${condition.parameter}-${condition.label}`}>
@@ -198,11 +199,10 @@ function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
             )}
           </div>
           <div className="min-w-[8ch] text-foreground">
-            {condition.status === "passed"
-              ? condition.actual
-              : condition.mirroredStatus === "passed"
-                ? condition.mirroredActual
-                : ""}
+            {condition.actual?.toLocaleUpperCase() ?? ""}
+          </div>
+          <div className="min-w-[8ch] text-foreground">
+            {condition.mirroredActual?.toLocaleUpperCase() ?? ""}
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-foreground">{condition.label}</span>

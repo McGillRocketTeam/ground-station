@@ -241,10 +241,10 @@ See https://github.com/yamcs/pymdb
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
       <IntegerParameterType name="flags_bool_lead_pad" signed="false" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="3" encoding="unsigned"/>
+        <IntegerDataEncoding sizeInBits="5" encoding="unsigned"/>
       </IntegerParameterType>
       <IntegerParameterType name="flags_post_pad" signed="false" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
       <EnumeratedParameterType name="flight_stage">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
@@ -278,6 +278,68 @@ See https://github.com/yamcs/pymdb
       <BooleanParameterType name="gps_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
+      <IntegerParameterType name="gps_debug_atomic_bool_lead_pad" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="7" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_debug_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="gps_fix_ok" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <EnumeratedParameterType name="gps_fix_type">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="No Fix"/>
+          <Enumeration value="1" label="Dead Reckoning"/>
+          <Enumeration value="2" label="2D Fix"/>
+          <Enumeration value="3" label="3D Fix"/>
+          <Enumeration value="4" label="GNSS+DR"/>
+          <Enumeration value="5" label="Time Only"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <FloatParameterType name="gps_ground_speed" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">m/s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="32" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="gps_heading_motion" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="32" encoding="twosComplement" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>100000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <FloatParameterType name="gps_horizontal_accuracy" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">m</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
       <FloatParameterType name="gps_latitude" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">deg</Unit>
@@ -307,11 +369,42 @@ See https://github.com/yamcs/pymdb
           </DefaultCalibrator>
         </FloatDataEncoding>
       </FloatParameterType>
+      <FloatParameterType name="gps_pdop" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">DOP</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>100</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellites_connected" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
       <FloatParameterType name="gps_time_last_update" sizeInBits="32">
         <UnitSet>
           <Unit form="calibrated">s</Unit>
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <FloatParameterType name="gps_vertical_accuracy" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">m</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="leastSignificantByteFirst">
+          <DefaultCalibrator>
+            <MathOperationCalibrator>
+              <ThisParameterOperand/>
+              <ValueOperand>1000</ValueOperand>
+              <Operator>/</Operator>
+            </MathOperationCalibrator>
+          </DefaultCalibrator>
+        </IntegerDataEncoding>
       </FloatParameterType>
       <BooleanParameterType name="gyro_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
@@ -407,6 +500,54 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="padding" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
+      <BooleanParameterType name="payload_adapter0_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="payload_adapter1_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="payload_adapter_0_raw_x" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_0_raw_y" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_0_raw_z" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_1_raw_x" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_1_raw_y" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_1_raw_z" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="payload_adapter_2_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="payload_adapter_2_raw_x" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_2_raw_y" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_2_raw_z" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="payload_adapter_3_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="payload_adapter_3_raw_x" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_3_raw_y" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="payload_adapter_3_raw_z" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+      </IntegerParameterType>
       <IntegerParameterType name="payload_amp_x" signed="true" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
@@ -416,10 +557,7 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="payload_amp_z" signed="true" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
-      <IntegerParameterType name="payload_atomic_bool_lead_pad" signed="false" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="6" encoding="unsigned"/>
-      </IntegerParameterType>
-      <BooleanParameterType name="payload_atomic_flag" zeroStringValue="False" oneStringValue="True">
+      <BooleanParameterType name="payload_data_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <IntegerParameterType name="payload_freq_x" signed="true" sizeInBits="32">
@@ -435,6 +573,12 @@ See https://github.com/yamcs/pymdb
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <BooleanParameterType name="payload_sampling" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="payload_status_atomic_bool_lead_pad" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="6" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="payload_status_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <IntegerParameterType name="payload_time_elapsed" signed="true" sizeInBits="32">
@@ -680,6 +824,32 @@ See https://github.com/yamcs/pymdb
       <Parameter name="gps_atomic_flag" parameterTypeRef="gps_atomic_flag">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="gps_debug_atomic_bool_lead_pad" parameterTypeRef="gps_debug_atomic_bool_lead_pad" shortDescription="Boolean Leading Padding">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_debug_atomic_flag" parameterTypeRef="gps_debug_atomic_flag">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_fix_ok" parameterTypeRef="gps_fix_ok" shortDescription="GPS Fix OK">
+        <LongDescription>Whether gnssFixOK is set in NAV-PVT flags</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_fix_type" parameterTypeRef="gps_fix_type" shortDescription="GPS Fix Type">
+        <LongDescription>u-blox fix mode: no fix, DR only, 2D, 3D, GNSS+DR, time only</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_ground_speed" parameterTypeRef="gps_ground_speed" shortDescription="GPS Ground Speed">
+        <LongDescription>Ground speed magnitude from NAV-PVT</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_heading_motion" parameterTypeRef="gps_heading_motion" shortDescription="GPS Heading of Motion">
+        <LongDescription>Heading of motion from NAV-PVT</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_horizontal_accuracy" parameterTypeRef="gps_horizontal_accuracy" shortDescription="GPS Horizontal Accuracy">
+        <LongDescription>Estimated horizontal accuracy from NAV-PVT</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
       <Parameter name="gps_latitude" parameterTypeRef="gps_latitude" shortDescription="GPS Latitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
@@ -690,7 +860,18 @@ See https://github.com/yamcs/pymdb
       <Parameter name="gps_longitude" parameterTypeRef="gps_longitude" shortDescription="GPS Longitude">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="gps_pdop" parameterTypeRef="gps_pdop" shortDescription="GPS PDOP">
+        <LongDescription>Position dilution of precision from NAV-PVT</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellites_connected" parameterTypeRef="gps_satellites_connected" shortDescription="GPS Satellites Connected">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
       <Parameter name="gps_time_last_update" parameterTypeRef="gps_time_last_update" shortDescription="GPS Time From Last Update">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_vertical_accuracy" parameterTypeRef="gps_vertical_accuracy" shortDescription="GPS Vertical Accuracy">
+        <LongDescription>Estimated vertical accuracy from NAV-PVT</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="gyro_atomic_flag" parameterTypeRef="gyro_atomic_flag">
@@ -757,6 +938,54 @@ See https://github.com/yamcs/pymdb
         <LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
+      <Parameter name="payload_adapter0_atomic_flag" parameterTypeRef="payload_adapter0_atomic_flag">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter1_atomic_flag" parameterTypeRef="payload_adapter1_atomic_flag">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_0_raw_x" parameterTypeRef="payload_adapter_0_raw_x" shortDescription="Payload Adapter 0 X">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_0_raw_y" parameterTypeRef="payload_adapter_0_raw_y" shortDescription="Payload Adapter 0 Y">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_0_raw_z" parameterTypeRef="payload_adapter_0_raw_z" shortDescription="Payload Adapter 0 Z">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_1_raw_x" parameterTypeRef="payload_adapter_1_raw_x" shortDescription="Payload Adapter 1 X">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_1_raw_y" parameterTypeRef="payload_adapter_1_raw_y" shortDescription="Payload Adapter 1 Y">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_1_raw_z" parameterTypeRef="payload_adapter_1_raw_z" shortDescription="Payload Adapter 1 Z">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_2_atomic_flag" parameterTypeRef="payload_adapter_2_atomic_flag">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_2_raw_x" parameterTypeRef="payload_adapter_2_raw_x" shortDescription="Payload Adapter 2 X">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_2_raw_y" parameterTypeRef="payload_adapter_2_raw_y" shortDescription="Payload Adapter 2 Y">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_2_raw_z" parameterTypeRef="payload_adapter_2_raw_z" shortDescription="Payload Adapter 2 Z">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_3_atomic_flag" parameterTypeRef="payload_adapter_3_atomic_flag">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_3_raw_x" parameterTypeRef="payload_adapter_3_raw_x" shortDescription="Payload Adapter 3 X">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_3_raw_y" parameterTypeRef="payload_adapter_3_raw_y" shortDescription="Payload Adapter 3 Y">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_3_raw_z" parameterTypeRef="payload_adapter_3_raw_z" shortDescription="Payload Adapter 3 Z">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
       <Parameter name="payload_amp_x" parameterTypeRef="payload_amp_x" shortDescription="Payload Amplitude X">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
@@ -766,10 +995,7 @@ See https://github.com/yamcs/pymdb
       <Parameter name="payload_amp_z" parameterTypeRef="payload_amp_z" shortDescription="Payload Amplitude Z">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="payload_atomic_bool_lead_pad" parameterTypeRef="payload_atomic_bool_lead_pad" shortDescription="Boolean Leading Padding">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="payload_atomic_flag" parameterTypeRef="payload_atomic_flag">
+      <Parameter name="payload_data_atomic_flag" parameterTypeRef="payload_data_atomic_flag">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="payload_freq_x" parameterTypeRef="payload_freq_x" shortDescription="Payload Frequency X">
@@ -785,6 +1011,12 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="payload_sampling" parameterTypeRef="payload_sampling" shortDescription="Payload Sampling">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_status_atomic_bool_lead_pad" parameterTypeRef="payload_status_atomic_bool_lead_pad" shortDescription="Boolean Leading Padding">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_status_atomic_flag" parameterTypeRef="payload_status_atomic_flag">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="payload_time_elapsed" parameterTypeRef="payload_time_elapsed" shortDescription="Payload Time Elapsed">
@@ -1041,14 +1273,98 @@ See https://github.com/yamcs/pymdb
               </BooleanExpression>
             </IncludeCondition>
           </ContainerRefEntry>
-          <ContainerRefEntry containerRef="payload_atomic">
+          <ContainerRefEntry containerRef="payload_status_atomic">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
             <IncludeCondition>
               <BooleanExpression>
                 <Condition>
-                  <ParameterInstanceRef parameterRef="payload_atomic_flag" useCalibratedValue="true"/>
+                  <ParameterInstanceRef parameterRef="payload_status_atomic_flag" useCalibratedValue="true"/>
+                  <ComparisonOperator>==</ComparisonOperator>
+                  <Value>True</Value>
+                </Condition>
+              </BooleanExpression>
+            </IncludeCondition>
+          </ContainerRefEntry>
+          <ContainerRefEntry containerRef="payload_data_atomic">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <IncludeCondition>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="payload_data_atomic_flag" useCalibratedValue="true"/>
+                  <ComparisonOperator>==</ComparisonOperator>
+                  <Value>True</Value>
+                </Condition>
+              </BooleanExpression>
+            </IncludeCondition>
+          </ContainerRefEntry>
+          <ContainerRefEntry containerRef="payload_adapter0_atomic">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <IncludeCondition>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="payload_adapter0_atomic_flag" useCalibratedValue="true"/>
+                  <ComparisonOperator>==</ComparisonOperator>
+                  <Value>True</Value>
+                </Condition>
+              </BooleanExpression>
+            </IncludeCondition>
+          </ContainerRefEntry>
+          <ContainerRefEntry containerRef="payload_adapter1_atomic">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <IncludeCondition>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="payload_adapter1_atomic_flag" useCalibratedValue="true"/>
+                  <ComparisonOperator>==</ComparisonOperator>
+                  <Value>True</Value>
+                </Condition>
+              </BooleanExpression>
+            </IncludeCondition>
+          </ContainerRefEntry>
+          <ContainerRefEntry containerRef="payload_adapter_2_atomic">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <IncludeCondition>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="payload_adapter_2_atomic_flag" useCalibratedValue="true"/>
+                  <ComparisonOperator>==</ComparisonOperator>
+                  <Value>True</Value>
+                </Condition>
+              </BooleanExpression>
+            </IncludeCondition>
+          </ContainerRefEntry>
+          <ContainerRefEntry containerRef="payload_adapter_3_atomic">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <IncludeCondition>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="payload_adapter_3_atomic_flag" useCalibratedValue="true"/>
+                  <ComparisonOperator>==</ComparisonOperator>
+                  <Value>True</Value>
+                </Condition>
+              </BooleanExpression>
+            </IncludeCondition>
+          </ContainerRefEntry>
+          <ContainerRefEntry containerRef="gps_debug_atomic">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <IncludeCondition>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="gps_debug_atomic_flag" useCalibratedValue="true"/>
                   <ComparisonOperator>==</ComparisonOperator>
                   <Value>True</Value>
                 </Condition>
@@ -1186,6 +1502,55 @@ See https://github.com/yamcs/pymdb
           </ParameterRefEntry>
         </EntryList>
       </SequenceContainer>
+      <SequenceContainer name="gps_debug_atomic" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="gps_fix_type">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_debug_atomic_bool_lead_pad">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>8</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_fix_ok">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>15</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_horizontal_accuracy">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_vertical_accuracy">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_ground_speed">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_heading_motion">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_pdop">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellites_connected">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
       <SequenceContainer name="gyro_atomic" abstract="false">
         <EntryList>
           <ParameterRefEntry parameterRef="gyro_rate_x">
@@ -1262,11 +1627,6 @@ See https://github.com/yamcs/pymdb
               <FixedValue>32</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="flags_bool_lead_pad">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>40</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="gyro_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>47</FixedValue>
@@ -1287,19 +1647,130 @@ See https://github.com/yamcs/pymdb
               <FixedValue>44</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_atomic_flag">
+          <ParameterRefEntry parameterRef="payload_status_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>43</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="flags_post_pad">
+          <ParameterRefEntry parameterRef="payload_data_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>42</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter0_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>41</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter1_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>40</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="flags_bool_lead_pad">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>48</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_2_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>55</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_3_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>54</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_debug_atomic_flag">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>53</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="flags_post_pad">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>56</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
         </EntryList>
       </SequenceContainer>
-      <SequenceContainer name="payload_atomic" abstract="false">
+      <SequenceContainer name="payload_adapter0_atomic" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="payload_adapter_0_raw_x">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_0_raw_y">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_0_raw_z">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="payload_adapter1_atomic" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="payload_adapter_1_raw_x">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_1_raw_y">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_1_raw_z">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="payload_adapter_2_atomic" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="payload_adapter_2_raw_x">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_2_raw_y">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_2_raw_z">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="payload_adapter_3_atomic" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="payload_adapter_3_raw_x">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_3_raw_y">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="payload_adapter_3_raw_z">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="payload_data_atomic" abstract="false">
         <EntryList>
           <ParameterRefEntry parameterRef="payload_freq_x">
             <LocationInContainerInBits referenceLocation="previousEntry">
@@ -1331,24 +1802,28 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="payload_status_atomic" abstract="false">
+        <EntryList>
           <ParameterRefEntry parameterRef="payload_time_elapsed">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_atomic_bool_lead_pad">
+          <ParameterRefEntry parameterRef="payload_status_atomic_bool_lead_pad">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>128</FixedValue>
+              <FixedValue>32</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="payload_ok">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>135</FixedValue>
+              <FixedValue>39</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="payload_sampling">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>134</FixedValue>
+              <FixedValue>38</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>

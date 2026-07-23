@@ -153,7 +153,7 @@ export function ProceduresPage() {
 
       <div className="grid grid-cols-[auto_auto_1fr_auto]">
         {procedures.map((step, index) => (
-          <ProcedureRow key={step.text} step={step} index={index} />
+          <ProcedureRow key={`${step.text}-${index}`} step={step} index={index} />
         ))}
       </div>
     </div>

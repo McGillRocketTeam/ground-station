@@ -6,7 +6,7 @@ import { flightReplayStateAtom } from "../data";
 export function DataTablePanel() {
   const data = useAtomSuspense(flightReplayStateAtom).value;
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full overflow-auto">
       <div className="grid grid-cols-[1.5rem_minmax(12rem,1fr)_minmax(8rem,0.7fr)_minmax(8rem,0.7fr)] gap-px font-mono">
         <TableHeader />
         <TableGroup name="Flight">

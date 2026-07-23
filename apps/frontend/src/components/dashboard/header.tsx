@@ -80,7 +80,6 @@ function TMinus() {
   return (
     <Popover>
       <PopoverTrigger
-        nativeButton={false}
         render={
           <button
             type="button"

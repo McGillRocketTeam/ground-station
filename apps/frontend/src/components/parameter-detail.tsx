@@ -7,8 +7,8 @@ import { AsyncResult } from "effect/unstable/reactivity";
 
 import { RealtimePlot } from "@/cards/realtime-chart";
 import { Separator } from "@/components/ui/separator";
-import { parameterDetailAtom } from "@/lib/atom";
-import { cn } from "@/lib/utils";
+import { parameterDetailAtom, parameterSubscriptionAtom } from "@/lib/atom";
+import { cn, stringifyValue } from "@/lib/utils";
 
 export const parameterDetailPopoverHandle = Popover.createHandle<QualifiedName>();
 
@@ -44,7 +44,7 @@ export function ParameterDetail({
       const staticAlarmRanges = defaultAlarm?.staticAlarmRanges ?? defaultAlarm?.staticAlarmRange;
 
       return (
-        <div className={cn("w-[36rem] max-w-[78vw] space-y-2", className)}>
+        <div className={cn("w-xl max-w-[78vw] space-y-2", className)}>
           <div className="space-y-1">
             <div className="break-all font-mono text-sm text-foreground">{info.qualifiedName}</div>
             {(info.shortDescription || info.longDescription) && (
@@ -58,6 +58,7 @@ export function ParameterDetail({
             <DetailGrid>
               <DetailRow label="Parameter" value={info.name} />
               <DetailRow label="System" value={system} />
+              <LiveValues qualifiedName={qualifiedName} />
               <DetailRow label="Type" value={info.type.engType.toLowerCase()} />
               {units && <DetailRow label="Units" value={units} />}
               {info.type.sizeInBits !== undefined && (
@@ -172,6 +173,21 @@ export function ParameterDetail({
     .render();
 }
 
+function LiveValues({ qualifiedName }: { qualifiedName: string }) {
+  const parameterResult = useAtomValue(parameterSubscriptionAtom(qualifiedName));
+
+  return AsyncResult.builder(parameterResult)
+    .onInitial(() => <></>)
+    .onError(() => <></>)
+    .onSuccess(({ value }) => (
+      <>
+        <DetailRow label="Raw Value" value={stringifyValue(value.rawValue)} />
+        <DetailRow label="Eng Value" value={stringifyValue(value.engValue)} />
+      </>
+    ))
+    .render();
+}
+
 function getSystemName(qualifiedName: string) {
   const parts = qualifiedName.split("/").filter(Boolean);
   if (parts.length <= 1) {
@@ -243,15 +259,15 @@ function Section({ children, title }: { children: ReactNode; title: string }) {
 }
 
 function DetailGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-2">{children}</div>;
+  return <div className="grid grid-cols-[12rem_1fr] gap-x-4">{children}</div>;
 }
 
 function DetailRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <>
-      <div className="text-nowrap text-foreground">{label}</div>
+    <div className="grid grid-cols-subgrid col-span-full odd:bg-muted py-1">
+      <div className="text-nowrap text-foreground pl-2">{label}</div>
       <div className="font-mono text-foreground break-anywhere">{value}</div>
-    </>
+    </div>
   );
 }
 

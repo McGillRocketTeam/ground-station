@@ -1,6 +1,9 @@
 package org.yamcs.mrt.links;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.ConfigurationException;
@@ -15,6 +18,10 @@ import org.yamcs.mrt.utils.MqttTopicHandler;
 import org.yamcs.tctm.AbstractTcTmParamLink;
 
 abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implements MqttTopicHandler {
+  private static final Map<String, AbstractAstraGenericTmTcLink> TELEMETRY_STATUS_LINKS =
+      new ConcurrentHashMap<>();
+  private static final Map<String, Boolean> PENDING_TELEMETRY_OK = new ConcurrentHashMap<>();
+
   protected final Log log = new Log(getClass());
 
   private MqttToTmPacketConverter tmConverter;
@@ -23,6 +30,8 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
   private String statusTopic;
   private String detailTopic;
   private String commandTopic;
+  private String registeredLinkName;
+  private List<String> telemetryStatusTargets = List.of();
   private Status status = Status.UNAVAIL;
   private String detailedStatus = "";
 
@@ -30,18 +39,28 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
     return true;
   }
 
+  protected boolean shouldMarkOwnStatusOkOnTelemetry() {
+    return false;
+  }
+
   @Override
   public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
     super.init(instance, name, config);
 
+    registeredLinkName = name;
     baseTopic = name;
     telemetryTopic = baseTopic + "/telemetry";
     statusTopic = baseTopic + "/status";
     detailTopic = baseTopic + "/detail";
     commandTopic = baseTopic + "/commands";
+    if (config.containsKey("telemetryStatusTargets")) {
+      telemetryStatusTargets = List.copyOf(config.getList("telemetryStatusTargets"));
+    }
 
     tmConverter = new DefaultMqttToTmPacketConverter();
     tmConverter.init(yamcsInstance, linkName, config);
+
+    registerTelemetryStatusLink(registeredLinkName, this);
 
     MqttManager manager = MqttManager.getInstance();
     try {
@@ -55,7 +74,11 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
 
   @Override
   public Spec getSpec() {
-    return getDefaultSpec();
+    Spec spec = getDefaultSpec();
+    spec.addOption("telemetryStatusTargets", Spec.OptionType.LIST)
+        .withRequired(false)
+        .withElementType(Spec.OptionType.STRING);
+    return spec;
   }
 
   @Override
@@ -65,6 +88,9 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
 
   @Override
   protected void doStop() {
+    if (registeredLinkName != null) {
+      TELEMETRY_STATUS_LINKS.remove(registeredLinkName, this);
+    }
     notifyStopped();
   }
 
@@ -86,6 +112,8 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
       if (!shouldProcessTelemetryPayload(message.getPayload())) {
         return;
       }
+
+      noteTelemetryReceived();
 
       for (var tmPacket : tmConverter.convert(message)) {
         tmPacket = packetPreprocessor.process(tmPacket);
@@ -146,5 +174,42 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
       failedCommand(preparedCommand.getCommandId(), e.toString());
       return false;
     }
+  }
+
+  void noteTelemetryReceived() {
+    if (shouldMarkOwnStatusOkOnTelemetry()) {
+      status = Status.OK;
+    }
+
+    for (String telemetryStatusTarget : telemetryStatusTargets) {
+      markTelemetryStatusOk(telemetryStatusTarget);
+    }
+  }
+
+  void setTelemetryStatusTargets(List<String> telemetryStatusTargets) {
+    this.telemetryStatusTargets = List.copyOf(telemetryStatusTargets);
+  }
+
+  static void registerTelemetryStatusLink(
+      String linkName, AbstractAstraGenericTmTcLink telemetryStatusLink) {
+    TELEMETRY_STATUS_LINKS.put(linkName, telemetryStatusLink);
+    if (PENDING_TELEMETRY_OK.remove(linkName) != null) {
+      telemetryStatusLink.status = Status.OK;
+    }
+  }
+
+  static void markTelemetryStatusOk(String linkName) {
+    AbstractAstraGenericTmTcLink telemetryStatusLink = TELEMETRY_STATUS_LINKS.get(linkName);
+    if (telemetryStatusLink != null) {
+      telemetryStatusLink.status = Status.OK;
+      return;
+    }
+
+    PENDING_TELEMETRY_OK.put(linkName, Boolean.TRUE);
+  }
+
+  static void clearTelemetryStatusRegistry() {
+    TELEMETRY_STATUS_LINKS.clear();
+    PENDING_TELEMETRY_OK.clear();
   }
 }

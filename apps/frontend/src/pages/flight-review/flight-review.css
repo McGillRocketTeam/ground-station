@@ -127,3 +127,16 @@
   border: 1px var(--color-border);
   background: var(--color-border);
 }
+
+.flight-review-plot .uplot {
+  font-family: var(--font-mono);
+}
+
+.flight-review-plot .u-legend,
+.flight-review-plot .u-title,
+.flight-review-plot .u-label,
+.flight-review-plot .u-value,
+.flight-review-plot .u-cursor-x,
+.flight-review-plot .u-cursor-y {
+  color: var(--color-white-text);
+}

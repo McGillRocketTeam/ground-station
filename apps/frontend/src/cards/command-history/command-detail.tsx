@@ -5,7 +5,14 @@ import { Separator } from "@/components/ui/separator";
 import { cn, formatUtcDateTime, stringifyValue } from "@/lib/utils";
 
 import { BrailleSpinner } from "./braile-spinner";
-import { collectAcks, extractAttribute, type Ack, type CommandHistoryEntry } from "./utils";
+import { useAckNow } from "./use-ack-now";
+import {
+  collectAcks,
+  extractAttribute,
+  getAckDisplayStatus,
+  type Ack,
+  type CommandHistoryEntry,
+} from "./utils";
 
 export function CommandDetail({
   command,
@@ -43,6 +50,7 @@ function DetailTable({
   command: CommandHistoryEntry;
   commandLabel?: string;
 }) {
+  const now = useAckNow();
   const acks = collectAcks(command);
 
   return (
@@ -109,7 +117,7 @@ function DetailTable({
           <Label>Yamcs Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
             {acks.yamcs.map((ack) => (
-              <AckRow key={ack.name} ack={ack} command={command} />
+              <AckRow key={ack.name} ack={ack} command={command} now={now} />
             ))}
           </div>
         </div>
@@ -119,7 +127,13 @@ function DetailTable({
           <Label>System A Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
             {acks.systemA.map((ack) => (
-              <AckRow friendlyName={ack.label} key={ack.name} ack={ack} command={command} />
+              <AckRow
+                friendlyName={ack.label}
+                key={ack.name}
+                ack={ack}
+                command={command}
+                now={now}
+              />
             ))}
           </div>
         </div>
@@ -129,7 +143,13 @@ function DetailTable({
           <Label>System B Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
             {acks.systemB.map((ack) => (
-              <AckRow friendlyName={ack.label} key={ack.name} ack={ack} command={command} />
+              <AckRow
+                friendlyName={ack.label}
+                key={ack.name}
+                ack={ack}
+                command={command}
+                now={now}
+              />
             ))}
           </div>
         </div>
@@ -139,7 +159,13 @@ function DetailTable({
           <Label>Other Acknowledgements</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2">
             {acks.other.map((ack) => (
-              <AckRow friendlyName={ack.label} key={ack.name} ack={ack} command={command} />
+              <AckRow
+                friendlyName={ack.label}
+                key={ack.name}
+                ack={ack}
+                command={command}
+                now={now}
+              />
             ))}
           </div>
         </div>
@@ -148,7 +174,7 @@ function DetailTable({
         <div className="space-y-0.5">
           <Label>Completion</Label>
           <div className="grid grid-cols-[auto_1fr] gap-x-2 max-w-80">
-            <FCAckRow ack={acks.completion} command={command} />
+            <FCAckRow ack={acks.completion} command={command} now={now} />
           </div>
         </div>
       )}
@@ -156,23 +182,33 @@ function DetailTable({
   );
 }
 
-export function FCAckRow({ ack, command }: { ack: Ack; command: CommandHistoryEntry }) {
+export function FCAckRow({
+  ack,
+  command,
+  now = Date.now(),
+}: {
+  ack: Ack;
+  command: CommandHistoryEntry;
+  now?: number;
+}) {
   if (ack.status === "??") return;
+
+  const displayStatus = getAckDisplayStatus(command, ack, now);
 
   return (
     <>
       <div
         className={cn(
-          ack.status === "OK" && "text-success",
-          ack.status === "NOK" && "bg-error text-error-foreground",
-          ack.status === "PENDING" && "w-[2ch] text-center",
-          ack.status === "??" && "text-muted-foreground",
+          displayStatus === "OK" && "text-success",
+          displayStatus === "NOK" && "bg-error text-error-foreground",
+          displayStatus === "PENDING" && "w-[2ch] text-center",
+          displayStatus === "??" && "text-muted-foreground",
         )}
       >
-        {ack.status === "OK" && "SUCCESS"}
-        {ack.status === "PENDING" && <BrailleSpinner />}
-        {ack.status === "NOK" && "FAILURE"}
-        {ack.status === "CANCELLED" && "CANCELLED"}
+        {displayStatus === "OK" && "SUCCESS"}
+        {displayStatus === "PENDING" && <BrailleSpinner />}
+        {displayStatus === "NOK" && "FAILURE"}
+        {displayStatus === "CANCELLED" && "CANCELLED"}
       </div>
       <div>
         {ack.label.toLocaleUpperCase()}
@@ -194,23 +230,28 @@ export function AckRow({
   ack,
   command,
   friendlyName,
+  now = Date.now(),
 }: {
   ack: Ack;
   command: CommandHistoryEntry;
   friendlyName?: string;
+  now?: number;
 }) {
   if (ack.status === "??") return;
+
+  const displayStatus = getAckDisplayStatus(command, ack, now);
+
   return (
     <>
       <div
         className={cn(
-          ack.status === "OK" && "text-success",
-          ack.status === "NOK" && "bg-error text-error-foreground",
-          ack.status === "PENDING" && "w-[2ch] text-center",
-          ack.status === "??" && "text-muted-foreground",
+          displayStatus === "OK" && "text-success",
+          displayStatus === "NOK" && "bg-error text-error-foreground",
+          displayStatus === "PENDING" && "w-[2ch] text-center",
+          displayStatus === "??" && "text-muted-foreground",
         )}
       >
-        {ack.status === "PENDING" ? <BrailleSpinner /> : ack.status}
+        {displayStatus === "PENDING" ? <BrailleSpinner /> : displayStatus}
       </div>
       <div>
         {friendlyName ? friendlyName.toLocaleUpperCase() : ack.name.toLocaleUpperCase()}

@@ -119,6 +119,8 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_a_controlstation_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemA/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -126,6 +128,8 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_a_pad_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemA/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -158,6 +162,8 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_b_controlstation_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemB/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -167,6 +173,8 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_b_pad_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemB/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2

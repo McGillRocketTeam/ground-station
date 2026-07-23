@@ -7,6 +7,7 @@ import { memo, useState, type ReactNode } from "react";
 import type { LiveParameterUpdate } from "@/lib/atom";
 
 import { parameterDetailPopoverHandle } from "@/components/parameter-detail";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { parameterAlarmStateAtom, parameterInfoAtom, parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
@@ -42,7 +43,7 @@ export const ParameterTable = makeCard({
   }),
   component: ({ params }) => {
     return (
-      <div className="h-full overflow-auto">
+      <ScrollArea className="h-full overflow-auto">
         <div className="grid grid-cols-[1.5rem_minmax(12rem,1fr)_minmax(8rem,0.7fr)_minmax(8rem,0.7fr)] gap-px font-mono">
           <TableHeader />
           {params.sections &&
@@ -54,7 +55,7 @@ export const ParameterTable = makeCard({
               </TableGroup>
             ))}
         </div>
-      </div>
+      </ScrollArea>
     );
   },
 });

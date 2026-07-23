@@ -17,10 +17,12 @@ import { cn, formatDate, stringifyValue } from "@/lib/utils";
 import { BrailleSpinner } from "./braile-spinner";
 import { CommandDetail } from "./command-detail";
 import { makeCommandDisplayMap } from "./command-display";
+import { useAckNow } from "./use-ack-now";
 import {
   extractAcknowledgement,
   allDisplayedAcksOk,
   extractAttribute,
+  getAckDisplayStatus,
   hasNokAck,
   type CommandHistoryEntry,
 } from "./utils";
@@ -76,6 +78,7 @@ const filteredCommandsAtom = Atom.make((get) => {
 });
 
 export function CommandHistoryTable() {
+  const now = useAckNow();
   const commandCount = useAtomValue(totalCommandCountAtom);
   const filteredCommands = useAtomValue(filteredCommandsAtom);
   const commandDisplayMap = useAtomValue(commandDisplayMapAtom);
@@ -107,6 +110,7 @@ export function CommandHistoryTable() {
             .onSuccess((commands) => (
               <Body
                 commands={commands}
+                now={now}
                 totalCommandCount={totalCommandCount}
                 commandDisplayMap={commandDisplayMap}
               />
@@ -120,10 +124,12 @@ export function CommandHistoryTable() {
 
 const Body = memo(function Body({
   commands,
+  now,
   totalCommandCount,
   commandDisplayMap,
 }: {
   commands: ReadonlyArray<CommandHistoryEntry>;
+  now: number;
   totalCommandCount: number;
   commandDisplayMap: ReadonlyMap<string, string>;
 }) {
@@ -143,6 +149,7 @@ const Body = memo(function Body({
         <CommandRow
           key={command.id}
           command={command}
+          now={now}
           commandLabel={commandDisplayMap.get(command.commandName) ?? command.commandName}
         />
       ))}
@@ -152,12 +159,14 @@ const Body = memo(function Body({
 
 const CommandRow = memo(function CommandRow({
   command,
+  now,
   commandLabel,
 }: {
   command: CommandHistoryEntry;
+  now: number;
   commandLabel: string;
 }) {
-  const rowHasNokAck = hasNokAck(command);
+  const rowHasNokAck = hasNokAck(command, now);
 
   return (
     <Popover>
@@ -205,11 +214,12 @@ const CommandRow = memo(function CommandRow({
 }, areCommandRowPropsEqual);
 
 function areCommandRowPropsEqual(
-  previous: { command: CommandHistoryEntry; commandLabel: string },
-  next: { command: CommandHistoryEntry; commandLabel: string },
+  previous: { command: CommandHistoryEntry; commandLabel: string; now: number },
+  next: { command: CommandHistoryEntry; commandLabel: string; now: number },
 ) {
   return (
     previous.command.id === next.command.id &&
+    previous.now === next.now &&
     previous.commandLabel === next.commandLabel &&
     (previous.command === next.command || allDisplayedAcksOk(previous.command))
   );
@@ -227,26 +237,30 @@ const AckCell = memo(function AckCell({
   errorRow?: boolean;
 }) {
   const ack = extractAcknowledgement(command, name, customPrefix);
+  const displayStatus = getAckDisplayStatus(command, ack);
+
   return (
     <div
       title={ack.label}
       className={cn(
         "grid place-items-center !px-0",
-        !errorRow && ack.status === "OK" && "text-success",
-        !errorRow && (ack.status === "??" || ack.status === "PENDING") && "text-muted-foreground",
+        !errorRow && displayStatus === "OK" && "text-success",
         !errorRow &&
-          ack.status !== "??" &&
-          ack.status !== "PENDING" &&
-          ack.status !== "OK" &&
+          (displayStatus === "??" || displayStatus === "PENDING") &&
+          "text-muted-foreground",
+        !errorRow &&
+          displayStatus !== "??" &&
+          displayStatus !== "PENDING" &&
+          displayStatus !== "OK" &&
           "text-error",
       )}
     >
-      {ack.status === "OK" && <Check className="size-3.5" />}
-      {ack.status === "PENDING" && <BrailleSpinner />}
-      {ack.status !== "OK" && ack.status !== "??" && ack.status !== "PENDING" && (
+      {displayStatus === "OK" && <Check className="size-3.5" />}
+      {displayStatus === "PENDING" && <BrailleSpinner />}
+      {displayStatus !== "OK" && displayStatus !== "??" && displayStatus !== "PENDING" && (
         <X className="size-4" />
       )}
-      {ack.status === "??" && "-"}
+      {displayStatus === "??" && "-"}
     </div>
   );
 });
@@ -266,7 +280,7 @@ const SearchInput = memo(function SearchInput() {
 
 const Header = memo(function Header() {
   return (
-    <DataGridHeader className="sticky top-0 z-20 bg-background">
+    <DataGridHeader className="sticky top-0 z-0 bg-background">
       <DataGridHead className="grid place-items-center">
         <Search className="size-3 text-muted-foreground" />
       </DataGridHead>

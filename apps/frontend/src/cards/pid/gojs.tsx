@@ -2,7 +2,9 @@ import { useAtomSet, useAtomSubscribe } from "@effect/atom-react";
 import { AsyncResult } from "effect/unstable/reactivity";
 import go from "gojs";
 import { ReactDiagram } from "gojs-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+
+import { resolveTheme, useTheme } from "@/components/theme-provider";
 
 import {
   initialPIDLinkDataArray,
@@ -16,23 +18,47 @@ import {
   togglePIDValveAtom,
 } from "./data";
 
-const C = Object.freeze({
-  panel: "#b6b6b6",
-  panel2: "#c2c2c2",
-  panelDk: "#a9a9a9",
-  outline: "#7a7a7a",
-  pipe: "#8c8c8c",
-  text: "#2f2f2f",
-  text2: "#5a5a5a",
-  on: "#f4f4f4",
-  off: "#6b6b6b",
-  band: "#9fb3c0",
-  level: "#a7bac6",
-  track: "#bdbdbd",
-  p1: "#e12c2c",
-  p2: "#f2b134",
-  p3: "#46c2e0",
-});
+type DiagramTheme = ReturnType<typeof getDiagramTheme>;
+
+function getDiagramTheme(theme: "light" | "dark") {
+  if (theme === "dark") {
+    return Object.freeze({
+      panel: "#525252",
+      panel2: "#666666",
+      panelDk: "#8a8a8a",
+      outline: "#ededed",
+      pipe: "#a4a4a4",
+      text: "#f5f5f5",
+      text2: "#d4d4d4",
+      on: "#000000",
+      off: "#b2b2b2",
+      band: "#8a8a8a",
+      level: "#74b4c7",
+      track: "#9a9a9a",
+      p1: "#b3b3b3",
+      p2: "#8a8a8a",
+      p3: "#666666",
+    });
+  }
+
+  return Object.freeze({
+    panel: "#b6b6b6",
+    panel2: "#c2c2c2",
+    panelDk: "#a9a9a9",
+    outline: "#5c5c5c",
+    pipe: "#707070",
+    text: "#262626",
+    text2: "#525252",
+    on: "#fafafa",
+    off: "#3d3d3d",
+    band: "#9c9c9c",
+    level: "#a7bac6",
+    track: "#bdbdbd",
+    p1: "#9c9c9c",
+    p2: "#777777",
+    p3: "#595959",
+  });
+}
 
 const PRESSURE_TANK_WIDTH = 90;
 const PRESSURE_TANK_HEIGHT = 120;
@@ -44,6 +70,21 @@ type DiagramModel = go.GraphLinksModel<NodeData, LinkData>;
 type PIDDiagramHandle = ReactDiagram & {
   getDiagram(): go.Diagram | null;
 };
+
+function fitDiagramToViewport(diagram: go.Diagram) {
+  const host = diagram.div;
+  if (!host || host.clientWidth === 0 || host.clientHeight === 0) {
+    return false;
+  }
+
+  const { width, height } = diagram.documentBounds;
+  if (width === 0 || height === 0) {
+    return false;
+  }
+
+  diagram.zoomToFit();
+  return true;
+}
 
 function getDiagramModel(diagram: go.Diagram): DiagramModel {
   return diagram.model as unknown as DiagramModel;
@@ -102,7 +143,7 @@ function toggleValve(
   toggleValveInProgram(data.key);
 }
 
-function makeTankTemplate() {
+function makeTankTemplate(colors: DiagramTheme) {
   const tankWidth = 90;
   const tankHeight = 120;
 
@@ -117,8 +158,8 @@ function makeTankTemplate() {
         name: "BODY",
         width: tankWidth,
         height: tankHeight,
-        fill: C.on,
-        stroke: C.outline,
+        fill: colors.on,
+        stroke: colors.outline,
         strokeWidth: 1.5,
         portId: "",
         fromSpot: go.Spot.Top,
@@ -126,12 +167,12 @@ function makeTankTemplate() {
       }),
       new go.TextBlock({
         alignment: new go.Spot(0.5, 0, 0, tankHeight * 0.4),
-        stroke: C.text,
+        stroke: colors.text,
       }).bind("text", "label"),
     );
 }
 
-function makePressureTankTemplate() {
+function makePressureTankTemplate(colors: DiagramTheme) {
   const fillHeight = PRESSURE_TANK_HEIGHT - PRESSURE_TANK_FILL_INSET;
 
   return new go.Node("Spot", {
@@ -145,8 +186,8 @@ function makePressureTankTemplate() {
         name: "BODY",
         width: PRESSURE_TANK_WIDTH,
         height: PRESSURE_TANK_HEIGHT,
-        fill: C.on,
-        stroke: C.outline,
+        fill: colors.on,
+        stroke: colors.outline,
         strokeWidth: 1.5,
         portId: "",
         fromSpot: go.Spot.Top,
@@ -154,7 +195,7 @@ function makePressureTankTemplate() {
       }),
       new go.Shape("Rectangle", {
         width: PRESSURE_TANK_WIDTH - PRESSURE_TANK_FILL_INSET,
-        fill: C.level,
+        fill: colors.level,
         strokeWidth: 0,
         alignment: new go.Spot(0.5, 1, 0, -3),
         alignmentFocus: go.Spot.Bottom,
@@ -168,14 +209,14 @@ function makePressureTankTemplate() {
       }),
       new go.TextBlock({
         alignment: new go.Spot(0.5, 0, 0, 16),
-        stroke: C.text,
+        stroke: colors.text,
       }).bind("text", "label"),
       new go.TextBlock({
         alignment: go.Spot.Center,
         font: "12px 'B612 Mono'",
         spacingAbove: 2,
         spacingBelow: 2,
-        stroke: C.text,
+        stroke: colors.text,
         width: 7 * 8,
         textAlign: "center",
       }).bind("text", "value", (value: number | undefined, obj: go.GraphObject) => {
@@ -233,7 +274,7 @@ function makePressureTankTemplate() {
     );
 }
 
-function makeReadoutTemplate() {
+function makeReadoutTemplate(colors: DiagramTheme) {
   return new go.Node("Auto", {
     selectable: false,
     locationSpot: go.Spot.Top,
@@ -241,17 +282,20 @@ function makeReadoutTemplate() {
     .bind("location", "loc", go.Point.parse)
     .add(
       new go.Shape("Rectangle", {
-        fill: C.panel2,
-        stroke: C.outline,
+        fill: colors.panel2,
+        stroke: colors.outline,
         strokeWidth: 0.75,
       }),
       new go.Panel("Vertical", {
         margin: new go.Margin(3, 6),
         defaultAlignment: go.Spot.Left,
       }).add(
-        new go.TextBlock({ font: "bold 9px sans-serif", stroke: C.text }).bind("text", "label"),
+        new go.TextBlock({ font: "bold 9px sans-serif", stroke: colors.text }).bind(
+          "text",
+          "label",
+        ),
         new go.Panel("Horizontal", { margin: new go.Margin(4, 0, 0, 0) }).add(
-          new go.TextBlock({ font: "15px 'B612 Mono'", stroke: C.text }).bind(
+          new go.TextBlock({ font: "15px 'B612 Mono'", stroke: colors.text }).bind(
             "text",
             "value",
             (value: number | undefined, obj: go.GraphObject) => {
@@ -261,7 +305,7 @@ function makeReadoutTemplate() {
           ),
           new go.TextBlock({
             font: "9px 'B612 Mono'",
-            stroke: C.text2,
+            stroke: colors.text2,
             margin: new go.Margin(0, 0, 0, 3),
           }).bind("text", "unit", (unit?: string) => unit ?? ""),
         ),
@@ -269,7 +313,7 @@ function makeReadoutTemplate() {
     );
 }
 
-function makeDashedRectangleTemplate() {
+function makeDashedRectangleTemplate(colors: DiagramTheme) {
   return new go.Node("Spot", {
     selectable: false,
     locationSpot: go.Spot.TopLeft,
@@ -278,7 +322,7 @@ function makeDashedRectangleTemplate() {
     .add(
       new go.Shape("Rectangle", {
         fill: null,
-        stroke: C.outline,
+        stroke: colors.outline,
         strokeWidth: 1.5,
         strokeDashArray: [5, 3],
         alignment: go.Spot.Center,
@@ -369,7 +413,8 @@ function makeLinkTemplate(shape: go.Shape) {
     .add(shape);
 }
 
-function initDiagram(toggleValveInProgram: (key: string) => void) {
+function initDiagram(toggleValveInProgram: (key: string) => void, colors: DiagramTheme) {
+  go.Diagram.licenseKey = import.meta.env.MRT_GOJS_API_KEY;
   const diagram = new go.Diagram({
     initialContentAlignment: go.Spot.Center,
     allowMove: false,
@@ -379,7 +424,7 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
     // "grid.visible": true,
   });
 
-  const model: DiagramModel = new go.GraphLinksModel<NodeData, LinkData>();
+  const model = new go.GraphLinksModel<NodeData, LinkData>();
   model.nodeKeyProperty = "key";
   model.linkKeyProperty = "key";
   diagram.model = model;
@@ -390,14 +435,14 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
       new go.Shape("Rectangle", {
         width: 60,
         height: 24,
-        fill: C.on,
-        stroke: C.outline,
+        fill: colors.on,
+        stroke: colors.outline,
         strokeWidth: 1.5,
         portId: "",
         fromSpot: go.Spot.Right,
         toSpot: go.Spot.Left,
       }),
-      new go.TextBlock({ margin: 6, stroke: C.text }).bind("text", "key"),
+      new go.TextBlock({ margin: 6, stroke: colors.text }).bind("text", "key"),
     );
 
   // Valve
@@ -416,16 +461,16 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
           new go.Shape({
             name: "SHAPE",
             geometryString: "F1 M0 0 L0 24 L18 12 z M36 0 L36 24 L18 12 z",
-            stroke: C.outline,
+            stroke: colors.outline,
             strokeWidth: 1.5,
             portId: "",
             fromSpot: go.Spot.Right,
             toSpot: go.Spot.Left,
           }).bind("fill", "state", (state: ValveNode["state"]) =>
-            state === "OPEN" ? C.on : C.off,
+            state === "OPEN" ? colors.on : colors.off,
           ),
         ),
-        new go.TextBlock({ stroke: C.text, textAlign: "center" })
+        new go.TextBlock({ stroke: colors.text, textAlign: "center" })
           .bind("alignment", "angle", labelAlignmentForAngle)
           .bind("text", "key"),
       ),
@@ -440,12 +485,12 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
         new go.Shape({
           name: "PORT",
           geometryString: "F1 M0 0 L30 0 L42 10 L30 20 L0 20 z",
-          fill: C.panel2,
-          stroke: C.outline,
+          fill: colors.panel2,
+          stroke: colors.outline,
           portId: "",
         }).bind("angle", "angle"),
         new go.TextBlock({
-          stroke: C.text,
+          stroke: colors.text,
           textAlign: "center",
           maxSize: new go.Size(80, NaN),
         })
@@ -471,17 +516,17 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
           new go.Shape({
             name: "SHAPE",
             geometryString: "F1 M0 0 L0 24 L18 12 z M36 0 L36 24 L18 12 z",
-            stroke: C.outline,
+            stroke: colors.outline,
             strokeWidth: 1.5,
             portId: "",
             fromSpot: go.Spot.Right,
             toSpot: go.Spot.Left,
           }).bind("fill", "state", (state: ValveNode["state"]) =>
-            state === "OPEN" ? C.on : C.off,
+            state === "OPEN" ? colors.on : colors.off,
           ),
           new go.Shape({
             geometryString: "M0 0 V26",
-            stroke: C.outline,
+            stroke: colors.outline,
             strokeWidth: 1.5,
             alignment: new go.Spot(0.5, 0, 0, -15),
             alignmentFocus: go.Spot.Top,
@@ -489,11 +534,11 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
           new go.Shape("Circle", {
             width: 15,
             height: 15,
-            stroke: C.outline,
+            stroke: colors.outline,
             strokeWidth: 1.5,
             alignment: go.Spot.Center,
           }).bind("fill", "state", (state: ValveNode["state"]) =>
-            state === "OPEN" ? C.on : C.off,
+            state === "OPEN" ? colors.on : colors.off,
           ),
           new go.Panel("Auto", {
             alignment: new go.Spot(0.5, 0, 0, -14),
@@ -505,27 +550,27 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
               new go.Shape("Rectangle", {
                 width: 16,
                 height: 16,
-                fill: C.on,
-                stroke: C.outline,
+                fill: colors.on,
+                stroke: colors.outline,
                 strokeWidth: 1.5,
               }),
-              new go.TextBlock({ font: "10px sans-serif", stroke: C.text }).bind(
+              new go.TextBlock({ font: "10px sans-serif", stroke: colors.text }).bind(
                 "text",
                 "letter",
                 (letter?: string) => letter ?? "",
               ),
             ),
         ),
-        new go.TextBlock({ stroke: C.text, textAlign: "center" })
+        new go.TextBlock({ stroke: colors.text, textAlign: "center" })
           .bind("alignment", "angle", ballValveLabelAlignmentForAngle)
           .bind("text", "", valveDisplayText),
       ),
   );
 
-  diagram.nodeTemplateMap.add("tank", makeTankTemplate());
-  diagram.nodeTemplateMap.add("pressure-tank", makePressureTankTemplate());
-  diagram.nodeTemplateMap.add("readout", makeReadoutTemplate());
-  diagram.nodeTemplateMap.add("dashed-rectangle", makeDashedRectangleTemplate());
+  diagram.nodeTemplateMap.add("tank", makeTankTemplate(colors));
+  diagram.nodeTemplateMap.add("pressure-tank", makePressureTankTemplate(colors));
+  diagram.nodeTemplateMap.add("readout", makeReadoutTemplate(colors));
+  diagram.nodeTemplateMap.add("dashed-rectangle", makeDashedRectangleTemplate(colors));
 
   diagram.nodeTemplateMap.add(
     "pipe-end",
@@ -539,7 +584,7 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
           width: 3,
           height: 3,
           opacity: 100,
-          fill: C.pipe,
+          fill: colors.pipe,
           // fill: "#FF0000",
           strokeWidth: 0,
           portId: "",
@@ -549,11 +594,11 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
       ),
   );
 
-  diagram.linkTemplate = makeLinkTemplate(new go.Shape({ stroke: C.pipe, strokeWidth: 3 }));
+  diagram.linkTemplate = makeLinkTemplate(new go.Shape({ stroke: colors.pipe, strokeWidth: 3 }));
   diagram.linkTemplateMap.add(
     "dashed",
     makeLinkTemplate(
-      new go.Shape({ stroke: C.panelDk, strokeWidth: 1.5, strokeDashArray: [5, 3] }),
+      new go.Shape({ stroke: colors.panelDk, strokeWidth: 1.5, strokeDashArray: [5, 3] }),
     ),
   );
 
@@ -561,42 +606,96 @@ function initDiagram(toggleValveInProgram: (key: string) => void) {
 }
 
 export function PIDDiagram() {
-  const diagramRef = useRef<PIDDiagramHandle | null>(null);
+  const { theme } = useTheme();
   const togglePIDValve = useAtomSet(togglePIDValveAtom);
-  const createDiagram = useMemo(() => () => initDiagram(togglePIDValve), [togglePIDValve]);
+  const resolvedTheme = resolveTheme(theme);
+  const diagramColors = useMemo(() => getDiagramTheme(resolvedTheme), [resolvedTheme]);
+  const liveDiagramRef = useRef<go.Diagram | null>(null);
+  const detachDiagramRef = useRef<(() => void) | null>(null);
+  const latestModelRef = useRef({
+    nodeDataArray: initialPIDNodeDataArray,
+    linkDataArray: initialPIDLinkDataArray,
+  });
+  const createDiagram = useMemo(
+    () => () => initDiagram(togglePIDValve, diagramColors),
+    [diagramColors, togglePIDValve],
+  );
 
-  useEffect(() => {
-    const diagram = diagramRef.current?.getDiagram();
+  const handleDiagramRef = useCallback((handle: PIDDiagramHandle | null) => {
+    detachDiagramRef.current?.();
+    detachDiagramRef.current = null;
+
+    const diagram = handle?.getDiagram() ?? null;
+    liveDiagramRef.current = diagram;
     if (!diagram) {
       return;
     }
 
-    syncDiagramModel(diagram, {
-      nodeDataArray: initialPIDNodeDataArray,
-      linkDataArray: initialPIDLinkDataArray,
+    syncDiagramModel(diagram, latestModelRef.current);
+
+    let frameId = 0;
+    const scheduleFit = () => {
+      cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        diagram.requestUpdate();
+        fitDiagramToViewport(diagram);
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleFit();
     });
+    const handleInitialLayoutCompleted = () => {
+      scheduleFit();
+    };
+
+    if (diagram.div) {
+      resizeObserver.observe(diagram.div);
+    }
+
+    diagram.addDiagramListener("InitialLayoutCompleted", handleInitialLayoutCompleted);
+    scheduleFit();
+
+    detachDiagramRef.current = () => {
+      cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      diagram.removeDiagramListener("InitialLayoutCompleted", handleInitialLayoutCompleted);
+      if (liveDiagramRef.current === diagram) {
+        liveDiagramRef.current = null;
+      }
+    };
   }, []);
 
-  useAtomSubscribe(
-    pidDiagramStateAtom,
-    (result) => {
-      const diagram = diagramRef.current?.getDiagram();
-      if (!diagram) {
-        return;
-      }
+  useEffect(() => {
+    return () => {
+      detachDiagramRef.current?.();
+      detachDiagramRef.current = null;
+    };
+  }, []);
 
+  const handleDiagramState = useCallback(
+    (result: AsyncResult.AsyncResult<typeof latestModelRef.current, unknown>) => {
       AsyncResult.match(result, {
         onInitial: () => undefined,
         onFailure: () => undefined,
-        onSuccess: ({ value }) => syncDiagramModel(diagram, value),
+        onSuccess: ({ value }) => {
+          latestModelRef.current = value;
+
+          if (liveDiagramRef.current) {
+            syncDiagramModel(liveDiagramRef.current, value);
+          }
+        },
       });
     },
-    { immediate: true },
+    [],
   );
+
+  useAtomSubscribe(pidDiagramStateAtom, handleDiagramState, { immediate: true });
 
   return (
     <ReactDiagram
-      ref={diagramRef}
+      key={resolvedTheme}
+      ref={handleDiagramRef}
       initDiagram={createDiagram}
       divClassName="w-full h-full"
       nodeDataArray={initialPIDNodeDataArray}

@@ -44,6 +44,7 @@ public class WifiAntennaLink extends AbstractLink {
   private volatile String detailedStatus = "Not started.";
   private volatile String sessionCookie;
   private volatile boolean authenticationPermanentlyFailed;
+  private volatile boolean hasConnectedOnce;
   private volatile Double distanceKm;
   private volatile Double transmitPowerDbm;
   private volatile Long apConnectedStations;
@@ -170,6 +171,7 @@ public class WifiAntennaLink extends AbstractLink {
 
       updateMetrics(pollResponse.body.data);
 
+      hasConnectedOnce = true;
       setStatus(Status.OK);
       detailedStatus =
           "Authenticated and polling wifi antenna control plane at "
@@ -179,18 +181,38 @@ public class WifiAntennaLink extends AbstractLink {
               + ")";
     } catch (Exception e) {
       sessionCookie = null;
-      setStatus(Status.FAILED);
-      if (e instanceof AuthenticationFailedException) {
-        authenticationPermanentlyFailed = true;
-        detailedStatus =
-            "Wifi antenna auth failed for "
-                + ipAddress
-                + "; refusing further login attempts until restart: "
-                + e.getMessage();
-      } else {
-        detailedStatus = "Wifi antenna API poll failed for " + ipAddress + ": " + e.getMessage();
-      }
+      handlePollingFailure(e);
     }
+  }
+
+  void handlePollingFailure(Exception e) {
+    if (e instanceof AuthenticationFailedException) {
+      setStatus(Status.FAILED);
+      authenticationPermanentlyFailed = true;
+      detailedStatus =
+          "Wifi antenna auth failed for "
+              + ipAddress
+              + "; refusing further login attempts until restart: "
+              + e.getMessage();
+      return;
+    }
+
+    if (hasConnectedOnce) {
+      setStatus(Status.FAILED);
+      detailedStatus = "Wifi antenna API poll failed for " + ipAddress + ": " + e.getMessage();
+      return;
+    }
+
+    setStatus(Status.UNAVAIL);
+    detailedStatus =
+        "Wifi antenna at "
+            + ipAddress
+            + " has not responded yet; continuing to poll: "
+            + e.getMessage();
+  }
+
+  void markConnectedForTest() {
+    hasConnectedOnce = true;
   }
 
   private boolean ensureAuthenticated() throws Exception {

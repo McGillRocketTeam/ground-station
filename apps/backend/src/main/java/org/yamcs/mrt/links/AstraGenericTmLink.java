@@ -35,6 +35,11 @@ public class AstraGenericTmLink extends AbstractAstraGenericTmTcLink {
     return FlightComputerPacketDedupRegistry.shouldProcess(systemName, packetId);
   }
 
+  @Override
+  protected boolean shouldMarkOwnStatusOkOnTelemetry() {
+    return true;
+  }
+
   static int readPacketId(byte[] payload) {
     return (payload[1] & 0xFF) << 8 | (payload[0] & 0xFF);
   }

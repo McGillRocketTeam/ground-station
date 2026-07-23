@@ -2,6 +2,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { Cause, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { linksSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
@@ -25,7 +26,11 @@ export const LinksCard = makeCard({
           {Cause.pretty(cause)}
         </pre>
       ))
-      .onSuccess((links) => <LinksTree links={links} />)
+      .onSuccess((links) => (
+        <ScrollArea className="h-full">
+          <LinksTree links={links} />
+        </ScrollArea>
+      ))
       .render();
   },
 });

@@ -21,6 +21,7 @@ import { ParameterTable } from "@/cards/parameter-table";
 import { PIDCard } from "@/cards/pid";
 import { ProceduresCard } from "@/cards/procedures";
 import { RealtimeChartCard } from "@/cards/realtime-chart";
+import { SatelliteSkyViewCard } from "@/cards/satellite-sky-view-card";
 import { SerialMonitorCard } from "@/cards/serial-monitor";
 import { TextCard } from "@/cards/text-card";
 import { VideoCard } from "@/cards/video-card";
@@ -32,6 +33,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   CommandHistoryCard,
   ChartCard,
   MapCard,
+  SatelliteSkyViewCard,
   LinksCard,
   EventsCard,
   FaultPanelCard,

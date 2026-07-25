@@ -1,12 +1,11 @@
 import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useRef } from "react";
 import { Map, Marker } from "react-map-gl/maplibre";
 
 import type { LiveParameterUpdate } from "@/lib/atom";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useTheme } from "@/components/theme-provider";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { atomRegistry } from "@/lib/atom-registry";
 import { makeCard } from "@/lib/cards";
@@ -15,9 +14,13 @@ import {
   CoordinateLongitudeField,
   ParameterField,
 } from "@/lib/dashboard-field-types";
-import { FormTitleAnnotationId } from "@/lib/form";
+import {
+  FormDefaultValueAnnotationId,
+  FormTitleAnnotationId,
+  FormTypeAnnotationId,
+} from "@/lib/form";
 
-import { basicMapStyle, customMapStyle, hasLocalMapTiles } from "./style";
+import { SatelliteSkyView } from "../satellite-sky-view";
 
 const MapCardConfiguration = Schema.Struct({
   longitude: CoordinateLongitudeField,
@@ -26,6 +29,13 @@ const MapCardConfiguration = Schema.Struct({
   altitude: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" })),
   rocketLong: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" })),
   rocketLat: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" })),
+  showSatelliteSkyView: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: true,
+      [FormTitleAnnotationId]: "Show Satellite Sky View",
+      [FormTypeAnnotationId]: "boolean",
+    }),
+  ),
 });
 
 function isValidCoordinate(latitude: number, longitude: number) {
@@ -58,6 +68,20 @@ function RocketMarker(props: { lat: string; long: string }) {
     return <Marker longitude={longitude} latitude={latitude} color="blue" />;
   }
 }
+
+const satelliteMapStyle = {
+  version: 8 as const,
+  sources: {
+    satellite: {
+      type: "raster" as const,
+      tiles: [
+        "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg",
+      ],
+      tileSize: 256,
+    },
+  },
+  layers: [{ id: "satellite", type: "raster" as const, source: "satellite" }],
+};
 
 type ViewState = {
   longitude: number;
@@ -100,7 +124,6 @@ export const MapCard = makeCard({
     },
   ],
   component: (props) => {
-    const { theme } = useTheme();
     const longitude = Number(props.params.longitude);
     const latitude = Number(props.params.latitude);
     const padCoordinate = isValidCoordinate(latitude, longitude)
@@ -108,7 +131,7 @@ export const MapCard = makeCard({
       : undefined;
 
     const [viewState, setViewState] = useAtom(viewStateAtom);
-    const [useLocalTiles, setUseLocalTiles] = useState(false);
+    const useLocalTiles = false;
     const lastLoggedZoom = useRef<number | null>(null);
 
     const logMapState = (
@@ -138,25 +161,12 @@ export const MapCard = makeCard({
       });
     };
 
-    useEffect(() => {
-      let isMounted = true;
-
-      void hasLocalMapTiles().then((available) => {
-        if (isMounted) {
-          setUseLocalTiles(available);
-        }
-      });
-
-      return () => {
-        isMounted = false;
-      };
-    }, []);
-
     return (
       <div className="relative h-full min-h-60 w-full">
         <Map
           attributionControl={false}
-          mapStyle={useLocalTiles ? customMapStyle : basicMapStyle(theme)}
+          // Previous style: useLocalTiles ? customMapStyle : basicMapStyle(theme)
+          mapStyle={satelliteMapStyle}
           {...viewState}
           onMove={(event) => {
             if (import.meta.env.DEV) {
@@ -208,6 +218,9 @@ export const MapCard = makeCard({
             />
           </Suspense>
         </Map>
+        {(props.params.showSatelliteSkyView ?? true) ? (
+          <SatelliteSkyView className="pointer-events-none absolute bottom-3 left-3 size-[min(42vw,18rem)] min-h-48 min-w-48" />
+        ) : null}
       </div>
     );
   },

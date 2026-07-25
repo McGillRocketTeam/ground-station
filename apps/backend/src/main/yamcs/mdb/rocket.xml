@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <!--
 This file was generated with Yamcs PyMDB.
 See https://github.com/yamcs/pymdb
@@ -383,6 +383,294 @@ See https://github.com/yamcs/pymdb
           </DefaultCalibrator>
         </IntegerDataEncoding>
       </FloatParameterType>
+      <FloatParameterType name="gps_satellite_1_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_1_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_1_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_1_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_1_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_1_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="gps_satellite_2_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_2_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_2_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_2_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_2_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_2_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="gps_satellite_3_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_3_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_3_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_3_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_3_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_3_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="gps_satellite_4_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_4_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_4_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_4_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_4_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_4_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="gps_satellite_5_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_5_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_5_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_5_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_5_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_5_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="gps_satellite_6_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_6_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_6_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_6_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_6_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_6_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="gps_satellite_7_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_7_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_7_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_7_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_7_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_7_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <FloatParameterType name="gps_satellite_8_azimuth" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
+      </FloatParameterType>
+      <IntegerParameterType name="gps_satellite_8_cno" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">dB-Hz</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <FloatParameterType name="gps_satellite_8_elevation" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+      </FloatParameterType>
+      <EnumeratedParameterType name="gps_satellite_8_gnss_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="GPS"/>
+          <Enumeration value="1" label="SBAS"/>
+          <Enumeration value="2" label="Galileo"/>
+          <Enumeration value="3" label="BeiDou"/>
+          <Enumeration value="5" label="QZSS"/>
+          <Enumeration value="6" label="GLONASS"/>
+          <Enumeration value="7" label="NavIC"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="gps_satellite_8_sv_id" signed="true" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <BooleanParameterType name="gps_satellite_8_used_in_fix" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
       <IntegerParameterType name="gps_satellites_connected" signed="true" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
@@ -649,11 +937,6 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-        <DefaultAlarm>
-          <StaticAlarmRanges rangeForm="inside">
-            <SevereRange minExclusive="10000"/>
-          </StaticAlarmRanges>
-        </DefaultAlarm>
       </FloatParameterType>
       <BooleanParameterType name="vent_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
@@ -687,11 +970,6 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
-        <DefaultAlarm>
-          <StaticAlarmRanges rangeForm="inside">
-            <WarningRange minExclusive="10000"/>
-          </StaticAlarmRanges>
-        </DefaultAlarm>
       </FloatParameterType>
       <FloatParameterType name="vertical_speed" sizeInBits="32">
         <UnitSet>
@@ -872,6 +1150,198 @@ See https://github.com/yamcs/pymdb
       </Parameter>
       <Parameter name="gps_pdop" parameterTypeRef="gps_pdop" shortDescription="GPS PDOP">
         <LongDescription>Position dilution of precision from NAV-PVT</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_1_azimuth" parameterTypeRef="gps_satellite_1_azimuth" shortDescription="GPS Satellite 1 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 1</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_1_cno" parameterTypeRef="gps_satellite_1_cno" shortDescription="GPS Satellite 1 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 1</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_1_elevation" parameterTypeRef="gps_satellite_1_elevation" shortDescription="GPS Satellite 1 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 1</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_1_gnss_id" parameterTypeRef="gps_satellite_1_gnss_id" shortDescription="GPS Satellite 1 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 1</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_1_sv_id" parameterTypeRef="gps_satellite_1_sv_id" shortDescription="GPS Satellite 1 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 1</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_1_used_in_fix" parameterTypeRef="gps_satellite_1_used_in_fix" shortDescription="GPS Satellite 1 Used">
+        <LongDescription>Whether satellite slot 1 contributes to the current navigation solution</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_2_azimuth" parameterTypeRef="gps_satellite_2_azimuth" shortDescription="GPS Satellite 2 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 2</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_2_cno" parameterTypeRef="gps_satellite_2_cno" shortDescription="GPS Satellite 2 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 2</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_2_elevation" parameterTypeRef="gps_satellite_2_elevation" shortDescription="GPS Satellite 2 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 2</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_2_gnss_id" parameterTypeRef="gps_satellite_2_gnss_id" shortDescription="GPS Satellite 2 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 2</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_2_sv_id" parameterTypeRef="gps_satellite_2_sv_id" shortDescription="GPS Satellite 2 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 2</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_2_used_in_fix" parameterTypeRef="gps_satellite_2_used_in_fix" shortDescription="GPS Satellite 2 Used">
+        <LongDescription>Whether satellite slot 2 contributes to the current navigation solution</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_3_azimuth" parameterTypeRef="gps_satellite_3_azimuth" shortDescription="GPS Satellite 3 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 3</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_3_cno" parameterTypeRef="gps_satellite_3_cno" shortDescription="GPS Satellite 3 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 3</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_3_elevation" parameterTypeRef="gps_satellite_3_elevation" shortDescription="GPS Satellite 3 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 3</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_3_gnss_id" parameterTypeRef="gps_satellite_3_gnss_id" shortDescription="GPS Satellite 3 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 3</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_3_sv_id" parameterTypeRef="gps_satellite_3_sv_id" shortDescription="GPS Satellite 3 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 3</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_3_used_in_fix" parameterTypeRef="gps_satellite_3_used_in_fix" shortDescription="GPS Satellite 3 Used">
+        <LongDescription>Whether satellite slot 3 contributes to the current navigation solution</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_4_azimuth" parameterTypeRef="gps_satellite_4_azimuth" shortDescription="GPS Satellite 4 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 4</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_4_cno" parameterTypeRef="gps_satellite_4_cno" shortDescription="GPS Satellite 4 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 4</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_4_elevation" parameterTypeRef="gps_satellite_4_elevation" shortDescription="GPS Satellite 4 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 4</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_4_gnss_id" parameterTypeRef="gps_satellite_4_gnss_id" shortDescription="GPS Satellite 4 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 4</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_4_sv_id" parameterTypeRef="gps_satellite_4_sv_id" shortDescription="GPS Satellite 4 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 4</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_4_used_in_fix" parameterTypeRef="gps_satellite_4_used_in_fix" shortDescription="GPS Satellite 4 Used">
+        <LongDescription>Whether satellite slot 4 contributes to the current navigation solution</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_5_azimuth" parameterTypeRef="gps_satellite_5_azimuth" shortDescription="GPS Satellite 5 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 5</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_5_cno" parameterTypeRef="gps_satellite_5_cno" shortDescription="GPS Satellite 5 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 5</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_5_elevation" parameterTypeRef="gps_satellite_5_elevation" shortDescription="GPS Satellite 5 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 5</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_5_gnss_id" parameterTypeRef="gps_satellite_5_gnss_id" shortDescription="GPS Satellite 5 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 5</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_5_sv_id" parameterTypeRef="gps_satellite_5_sv_id" shortDescription="GPS Satellite 5 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 5</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_5_used_in_fix" parameterTypeRef="gps_satellite_5_used_in_fix" shortDescription="GPS Satellite 5 Used">
+        <LongDescription>Whether satellite slot 5 contributes to the current navigation solution</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_6_azimuth" parameterTypeRef="gps_satellite_6_azimuth" shortDescription="GPS Satellite 6 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 6</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_6_cno" parameterTypeRef="gps_satellite_6_cno" shortDescription="GPS Satellite 6 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 6</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_6_elevation" parameterTypeRef="gps_satellite_6_elevation" shortDescription="GPS Satellite 6 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 6</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_6_gnss_id" parameterTypeRef="gps_satellite_6_gnss_id" shortDescription="GPS Satellite 6 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 6</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_6_sv_id" parameterTypeRef="gps_satellite_6_sv_id" shortDescription="GPS Satellite 6 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 6</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_6_used_in_fix" parameterTypeRef="gps_satellite_6_used_in_fix" shortDescription="GPS Satellite 6 Used">
+        <LongDescription>Whether satellite slot 6 contributes to the current navigation solution</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_7_azimuth" parameterTypeRef="gps_satellite_7_azimuth" shortDescription="GPS Satellite 7 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 7</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_7_cno" parameterTypeRef="gps_satellite_7_cno" shortDescription="GPS Satellite 7 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 7</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_7_elevation" parameterTypeRef="gps_satellite_7_elevation" shortDescription="GPS Satellite 7 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 7</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_7_gnss_id" parameterTypeRef="gps_satellite_7_gnss_id" shortDescription="GPS Satellite 7 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 7</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_7_sv_id" parameterTypeRef="gps_satellite_7_sv_id" shortDescription="GPS Satellite 7 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 7</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_7_used_in_fix" parameterTypeRef="gps_satellite_7_used_in_fix" shortDescription="GPS Satellite 7 Used">
+        <LongDescription>Whether satellite slot 7 contributes to the current navigation solution</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_8_azimuth" parameterTypeRef="gps_satellite_8_azimuth" shortDescription="GPS Satellite 8 Azimuth">
+        <LongDescription>Clockwise bearing from north for satellite slot 8</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_8_cno" parameterTypeRef="gps_satellite_8_cno" shortDescription="GPS Satellite 8 Signal">
+        <LongDescription>C/N0 signal strength for satellite slot 8</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_8_elevation" parameterTypeRef="gps_satellite_8_elevation" shortDescription="GPS Satellite 8 Elevation">
+        <LongDescription>Elevation above the horizon for satellite slot 8</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_8_gnss_id" parameterTypeRef="gps_satellite_8_gnss_id" shortDescription="GPS Satellite 8 Constellation">
+        <LongDescription>GNSS constellation for satellite slot 8</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_8_sv_id" parameterTypeRef="gps_satellite_8_sv_id" shortDescription="GPS Satellite 8 ID">
+        <LongDescription>Space vehicle identifier for satellite slot 8</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="gps_satellite_8_used_in_fix" parameterTypeRef="gps_satellite_8_used_in_fix" shortDescription="GPS Satellite 8 Used">
+        <LongDescription>Whether satellite slot 8 contributes to the current navigation solution</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="gps_satellites_connected" parameterTypeRef="gps_satellites_connected" shortDescription="GPS Satellites Connected">
@@ -1539,6 +2009,46 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_1_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_2_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_3_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_4_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_5_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_6_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_7_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_8_azimuth">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="gps_fix_type">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
@@ -1549,14 +2059,214 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_1_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_1_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_1_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_1_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_2_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_2_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_2_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_2_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_3_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_3_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_3_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_3_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_4_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_4_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_4_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_4_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_5_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_5_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_5_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_5_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_6_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_6_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_6_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_6_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_7_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_7_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_7_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_7_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_8_gnss_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_8_sv_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_8_cno">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_8_elevation">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_1_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>551</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_2_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>550</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_3_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>549</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_4_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>548</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_5_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>547</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_6_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>546</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_7_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>545</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_satellite_8_used_in_fix">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>544</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="gps_debug_atomic_bool_lead_pad">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>160</FixedValue>
+              <FixedValue>552</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="gps_fix_ok">
             <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>167</FixedValue>
+              <FixedValue>559</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>

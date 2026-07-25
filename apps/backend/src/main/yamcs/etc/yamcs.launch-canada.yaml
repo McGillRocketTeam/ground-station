@@ -218,6 +218,10 @@ mdb:
             args:
               file: mdb/camera-local.xml
           - type: xtce
+            spec: "WifiAntenna"
+            args:
+              file: mdb/wifi-antenna.xml
+          - type: xtce
             args:
               file: mdb/thermocouple.xml
           - type: xtce
@@ -231,6 +235,10 @@ mdb:
       - type: emptyNode
         spec: "ControlStation"
         subLoaders:
+          - type: xtce
+            spec: "WifiAntenna"
+            args:
+              file: mdb/wifi-antenna.xml
           - type: xtce
             spec: "ControlBox"
             args:

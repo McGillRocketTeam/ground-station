@@ -2,16 +2,16 @@
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="LabJack">
   <TelemetryMetaData>
     <ParameterTypeSet>
-      <BooleanParameterType name="boolean_true_alarm" zeroStringValue="False" oneStringValue="True">
+      <EnumeratedParameterType name="boolean_true_alarm">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="False"/>
+          <Enumeration value="1" label="True"/>
+        </EnumerationList>
         <DefaultAlarm>
-          <AlarmConditions>
-            <CriticalAlarm>
-              <Comparison parameterRef="ups_battery_active" value="true"/>
-            </CriticalAlarm>
-          </AlarmConditions>
+          <EnumerationAlarm enumerationLabel="True" alarmLevel="critical"/>
         </DefaultAlarm>
-      </BooleanParameterType>
+      </EnumeratedParameterType>
       <EnumeratedParameterType name="digital_pin_state">
         <UnitSet/>
         <IntegerDataEncoding encoding="unsigned" sizeInBits="1"/>
@@ -48,8 +48,8 @@
       <Parameter name="AIN13" parameterTypeRef="float_32"/>
       <!-- Digital pins -->
       <Parameter name="FIO0" parameterTypeRef="digital_pin_state"/>
-      <Parameter name="fill_valve_open" parameterTypeRef="digital_pin_state"/>
-      <Parameter name="dump_valve_open" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="fill_valve_open" parameterTypeRef="digital_pin_state" shortDescription="Fill Valve Open"/>
+      <Parameter name="dump_valve_open" parameterTypeRef="digital_pin_state" shortDescription="Dump Valve Open"/>
       <Parameter name="FIO1" parameterTypeRef="digital_pin_state"/>
       <Parameter name="FIO2" parameterTypeRef="digital_pin_state"/>
       <Parameter name="FIO3" parameterTypeRef="digital_pin_state"/>
@@ -379,7 +379,7 @@ dump_valve_open.updated = true;</AlgorithmText>
       </CustomAlgorithm>
       <CustomAlgorithm name="ups_battery_active" shortDescription="UPS Battery Active">
         <LongDescription>Reports whether the UPS battery is actively draining based on the AIN9 voltage threshold.</LongDescription>
-        <AlgorithmText language="JavaScript">ups_battery_active.value = AIN9.value &gt;= 3.3;
+        <AlgorithmText language="JavaScript">ups_battery_active.value = AIN9.value &gt;= 3.3 ? "True" : "False";
 ups_battery_active.updated = true;</AlgorithmText>
         <InputSet>
           <InputParameterInstanceRef parameterRef="AIN9" instance="0" inputName="AIN9"/>

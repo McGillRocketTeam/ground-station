@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <!--
 This file was generated with Yamcs PyMDB.
 See https://github.com/yamcs/pymdb
@@ -649,6 +649,11 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
+        <DefaultAlarm>
+          <StaticAlarmRanges rangeForm="inside">
+            <SevereRange minExclusive="10000"/>
+          </StaticAlarmRanges>
+        </DefaultAlarm>
       </FloatParameterType>
       <BooleanParameterType name="vent_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
@@ -682,6 +687,11 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
+        <DefaultAlarm>
+          <StaticAlarmRanges rangeForm="inside">
+            <WarningRange minExclusive="10000"/>
+          </StaticAlarmRanges>
+        </DefaultAlarm>
       </FloatParameterType>
       <FloatParameterType name="vertical_speed" sizeInBits="32">
         <UnitSet>
@@ -1437,7 +1447,22 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="fc_time_since_start">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="fc_temp">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="battery_current_draw">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="battery_voltage">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -1448,21 +1473,6 @@ See https://github.com/yamcs/pymdb
             </LocationInContainerInBits>
           </ParameterRefEntry>
           <ParameterRefEntry parameterRef="fc_snr">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="battery_voltage">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="battery_current_draw">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="fc_time_since_start">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
@@ -1504,21 +1514,6 @@ See https://github.com/yamcs/pymdb
       </SequenceContainer>
       <SequenceContainer name="gps_debug_atomic" abstract="false">
         <EntryList>
-          <ParameterRefEntry parameterRef="gps_fix_type">
-            <LocationInContainerInBits referenceLocation="previousEntry">
-              <FixedValue>0</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="gps_debug_atomic_bool_lead_pad">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>8</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="gps_fix_ok">
-            <LocationInContainerInBits referenceLocation="containerStart">
-              <FixedValue>15</FixedValue>
-            </LocationInContainerInBits>
-          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="gps_horizontal_accuracy">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
@@ -1544,9 +1539,24 @@ See https://github.com/yamcs/pymdb
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_fix_type">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
           <ParameterRefEntry parameterRef="gps_satellites_connected">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_debug_atomic_bool_lead_pad">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>160</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="gps_fix_ok">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>167</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>

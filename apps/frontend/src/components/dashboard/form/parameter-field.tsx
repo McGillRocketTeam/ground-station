@@ -365,6 +365,11 @@ export function ParameterSelector({
                 >
                   {filteredParameters.map((parameter) => {
                     const isSelected = value?.qualifiedName === parameter.qualifiedName;
+                    const parameterDescription = parameterLabels.get(parameter.qualifiedName);
+                    const showQualifiedName = parameterDescription !== parameter.qualifiedName;
+                    const parameterLabel = showQualifiedName
+                      ? parameterDescription
+                      : parameter.qualifiedName;
 
                     return (
                       <button
@@ -376,8 +381,13 @@ export function ParameterSelector({
                         )}
                         onClick={() => selectParameter(parameter)}
                       >
-                        <span className="block min-w-0 truncate font-medium">
-                          {getLeafSegment(parameter.qualifiedName)}
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">{parameterLabel}</span>
+                          {showQualifiedName ? (
+                            <span className="block truncate text-[0.625rem] text-muted-foreground">
+                              {parameter.qualifiedName}
+                            </span>
+                          ) : null}
                         </span>
                         {isSelected ? <CheckIcon className="size-3.5" /> : null}
                       </button>

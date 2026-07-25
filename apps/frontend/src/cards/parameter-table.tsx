@@ -8,7 +8,11 @@ import type { LiveParameterUpdate } from "@/lib/atom";
 
 import { parameterDetailPopoverHandle } from "@/components/parameter-detail";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { parameterAlarmStateAtom, parameterInfoAtom, parameterSubscriptionAtom } from "@/lib/atom";
+import {
+  parameterAlarmSeverityAtom,
+  parameterInfoAtom,
+  parameterSubscriptionAtom,
+} from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
 import { cn } from "@/lib/utils";
@@ -120,17 +124,15 @@ const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
   const systemBParameter = parameter.includes("SystemA")
     ? parameter.replace("SystemA", "SystemB")
     : systemAParameter;
-  const leftResult = useAtomValue(parameterAlarmStateAtom(systemAParameter));
-  const rightResult = useAtomValue(parameterAlarmStateAtom(systemBParameter));
+  const leftResult = useAtomValue(parameterAlarmSeverityAtom(systemAParameter));
+  const rightResult = useAtomValue(parameterAlarmSeverityAtom(systemBParameter));
 
   const severity = [leftResult, rightResult].reduce<number | undefined>((highest, result) => {
     if (result._tag !== "Success") {
       return highest;
     }
 
-    const rank = result.value.highestSeverity
-      ? alarmSeverityRank[result.value.highestSeverity]
-      : undefined;
+    const rank = result.value ? alarmSeverityRank[result.value] : undefined;
 
     if (rank === undefined) {
       return highest;
@@ -149,7 +151,7 @@ const TableRow = memo(function TableRow({ parameter }: { parameter: string }) {
       className={cn(
         "col-span-full grid grid-cols-subgrid text-sm *:px-1",
         "*:bg-background hover:*:bg-selection-background data-popup-open:*:bg-[color-mix(in_oklab,var(--color-selection-background)_50%,var(--background))]",
-        "data-[alarm=warning]:*:bg-warning data-[alarm=warning]:hover:*:bg-warning/20 data-[alarm=warning]:data-popup-open:*:bg-warning/20 data-[alarm=warning]:text-error-foreground",
+        "data-[alarm=warning]:*:bg-warning data-[alarm=warning]:hover:*:bg-warning/20 data-[alarm=warning]:data-popup-open:*:bg-warning/20 data-[alarm=warning]:text-warning-foreground",
         "data-[alarm=error]:*:bg-error data-[alarm=error]:hover:*:bg-error/20 data-[alarm=error]:data-popup-open:*:bg-error/20 data-[alarm=error]:text-error-foreground",
       )}
     >

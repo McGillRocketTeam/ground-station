@@ -89,7 +89,8 @@
 
   --mrt: #9f1c22;
   --success: var(--color-green-700);
-  --warning: var(--color-yellow-700);
+  --warning: var(--color-yellow-200);
+  --warning-foreground: var(--foreground);
 
   --error: #ad0000;
 }
@@ -140,9 +141,10 @@
 
   --mrt: #d21e26;
   --success: var(--color-green-500);
-  --warning: var(--color-yellow-500);
+  --warning: var(--color-yellow-300);
+  --warning-foreground: var(--color-black);
 
-  --error: #ad0000;
+  --error: #ff0000;
 }
 
 @theme inline {
@@ -200,6 +202,7 @@
   --color-error: var(--error);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-error-foreground: var(--color-white);
 }
 

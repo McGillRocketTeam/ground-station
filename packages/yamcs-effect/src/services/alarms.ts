@@ -1,6 +1,18 @@
-import { Context, Data, DateTime, Effect, Layer, Schema, SubscriptionRef, Stream } from "effect";
+import {
+  Context,
+  Data,
+  DateTime,
+  Effect,
+  Layer,
+  RcMap,
+  Schema,
+  Scope,
+  SubscriptionRef,
+  Stream,
+} from "effect";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 import { HttpApiClient } from "effect/unstable/httpapi";
+import { Socket } from "effect/unstable/socket";
 
 import { YamcsApi } from "../http/index.ts";
 import { AlarmData, NamedObjectId, type QualifiedName } from "../schema.ts";
@@ -49,6 +61,12 @@ export interface ShelveAlarmOptions extends AlarmActionTarget {
   readonly comment: string;
   readonly shelveDuration?: number | undefined;
 }
+
+interface AlarmStore {
+  readonly alarmsByKey: SubscriptionRef.SubscriptionRef<ReadonlyMap<string, typeof AlarmData.Type>>;
+}
+
+const alarmStoreKey = Symbol.for("@mrt/yamcs-effect/Alarms/store");
 
 const storeAlarmKey = (alarm: AlarmLookup) =>
   `${alarm.id.namespace ?? ""}:${alarm.id.name}:${alarm.seqNum}`;
@@ -143,13 +161,21 @@ const deriveParameterAlarmState = (
 export class Alarms extends Context.Service<
   Alarms,
   {
-    readonly list: Effect.Effect<ReadonlyArray<typeof AlarmData.Type>>;
-    readonly get: (lookup: AlarmLookup) => Effect.Effect<typeof AlarmData.Type | undefined>;
-    readonly getParameter: (qualifiedName: QualifiedName) => Effect.Effect<ParameterAlarmState>;
-    readonly subscribe: () => Effect.Effect<AlarmSubscription>;
+    readonly list: Effect.Effect<
+      ReadonlyArray<typeof AlarmData.Type>,
+      AlarmServiceError,
+      Scope.Scope
+    >;
+    readonly get: (
+      lookup: AlarmLookup,
+    ) => Effect.Effect<typeof AlarmData.Type | undefined, AlarmServiceError, Scope.Scope>;
+    readonly getParameter: (
+      qualifiedName: QualifiedName,
+    ) => Effect.Effect<ParameterAlarmState, AlarmServiceError, Scope.Scope>;
+    readonly subscribe: () => Effect.Effect<AlarmSubscription, AlarmServiceError, Scope.Scope>;
     readonly subscribeParameter: (
       qualifiedName: QualifiedName,
-    ) => Effect.Effect<ParameterAlarmSubscription>;
+    ) => Effect.Effect<ParameterAlarmSubscription, AlarmServiceError, Scope.Scope>;
     readonly acknowledge: (
       target: AlarmActionTarget & { comment: string },
     ) => Effect.Effect<void, AlarmServiceError>;
@@ -160,187 +186,222 @@ export class Alarms extends Context.Service<
     ) => Effect.Effect<void, AlarmServiceError>;
   }
 >()("@mrt/yamcs-effect/Alarms") {
-  static readonly layer = Layer.provide(
-    Layer.effect(
-      Alarms,
-      Effect.gen(function* () {
-        const websocketClient = yield* YamcsWebSocketClient;
-        const yamcsConfig = yield* YamcsConfig;
-        const httpClient = yield* HttpApiClient.make(YamcsApi, {
-          transformClient: (client) =>
-            HttpClient.mapRequest(client, (request) =>
-              HttpClientRequest.setUrl(
-                request,
-                new URL(request.url.replaceAll("%3A", ":"), yamcsConfig.url).toString(),
-              ),
+  static readonly layer = Layer.effect(
+    Alarms,
+    Effect.gen(function* () {
+      const websocketClient = yield* YamcsWebSocketClient;
+      const yamcsConfig = yield* YamcsConfig;
+      const httpClient = yield* HttpApiClient.make(YamcsApi, {
+        transformClient: (client) =>
+          HttpClient.mapRequest(client, (request) =>
+            HttpClientRequest.setUrl(
+              request,
+              new URL(request.url.replaceAll("%3A", ":"), yamcsConfig.url).toString(),
             ),
-        });
-
-        const { alarms: initialAlarms } = yield* httpClient.alarm.listProcessorAlarms({
-          params: {
-            instance: yamcsConfig.instance,
-            processor: yamcsConfig.processor,
-          },
-          query: {
-            includePending: true,
-          },
-        });
-
-        let initialAlarmsByKey = new Map<string, typeof AlarmData.Type>();
-
-        for (const alarm of initialAlarms) {
-          initialAlarmsByKey = mergeAlarmIntoState(initialAlarmsByKey, alarm);
-        }
-
-        const alarmsByKey =
-          yield* SubscriptionRef.make<ReadonlyMap<string, typeof AlarmData.Type>>(
-            initialAlarmsByKey,
-          );
-
-        const { stream } = yield* Effect.acquireRelease(
-          websocketClient.subscribe(
-            SubscribeAlarmsRequest.make({
-              instance: yamcsConfig.instance,
-              processor: yamcsConfig.processor,
-              includePending: true,
-            }),
           ),
-          ({ call }) => Effect.orElseSucceed(websocketClient.unsubscribe(call), () => undefined),
-        );
+      });
 
-        yield* stream.pipe(
-          Stream.mapEffect((message) => Schema.decodeUnknownEffect(AlarmsEvent)(message)),
-          Stream.map((message) => message.data),
-          Stream.runForEach((alarm) =>
-            SubscriptionRef.update(alarmsByKey, (current) => mergeAlarmIntoState(current, alarm)),
-          ),
-          Effect.forkScoped,
-        );
+      const alarmStoreMap = yield* RcMap.make<
+        typeof alarmStoreKey,
+        AlarmStore,
+        Schema.SchemaError | Socket.SocketError | unknown,
+        Scope.Scope
+      >({
+        lookup: () =>
+          Effect.acquireRelease(
+            Effect.gen(function* () {
+              const { alarms: initialAlarms } = yield* httpClient.alarm.listProcessorAlarms({
+                params: {
+                  instance: yamcsConfig.instance,
+                  processor: yamcsConfig.processor,
+                },
+                query: {
+                  includePending: true,
+                },
+              });
 
-        const list = SubscriptionRef.get(alarmsByKey).pipe(Effect.map(sortAlarms));
+              let initialAlarmsByKey = new Map<string, typeof AlarmData.Type>();
 
-        const get = (lookup: AlarmLookup) =>
-          SubscriptionRef.get(alarmsByKey).pipe(
-            Effect.map((current) => current.get(storeAlarmKey(lookup))),
-          );
+              for (const alarm of initialAlarms) {
+                initialAlarmsByKey = mergeAlarmIntoState(initialAlarmsByKey, alarm);
+              }
 
-        const getParameter = (qualifiedName: QualifiedName) =>
-          SubscriptionRef.get(alarmsByKey).pipe(
-            Effect.map((current) => deriveParameterAlarmState(current, qualifiedName)),
-          );
+              const alarmsByKey =
+                yield* SubscriptionRef.make<ReadonlyMap<string, typeof AlarmData.Type>>(
+                  initialAlarmsByKey,
+                );
 
-        const subscribe = () =>
-          Effect.map(SubscriptionRef.get(alarmsByKey), (initial) => ({
-            alarms: Stream.concat(
-              Stream.succeed(sortAlarms(initial)),
-              SubscriptionRef.changes(alarmsByKey).pipe(
-                Stream.map(sortAlarms),
-                Stream.mapError(
-                  (cause) => new AlarmServiceError({ operation: "subscribe", cause }),
-                ),
-              ),
-            ),
-          })) as Effect.Effect<AlarmSubscription>;
+              const { call, stream } = yield* websocketClient.subscribe(
+                SubscribeAlarmsRequest.make({
+                  instance: yamcsConfig.instance,
+                  processor: yamcsConfig.processor,
+                  includePending: true,
+                }),
+              );
 
-        const subscribeParameter = (qualifiedName: QualifiedName) =>
-          Effect.map(SubscriptionRef.get(alarmsByKey), (initial) => ({
-            state: Stream.suspend(() => {
-              let previous = deriveParameterAlarmState(initial, qualifiedName);
-
-              return Stream.concat(
-                Stream.succeed(previous),
-                SubscriptionRef.changes(alarmsByKey).pipe(
-                  Stream.map((current) => {
-                    const next = deriveParameterAlarmState(current, qualifiedName, previous);
-                    previous = next;
-                    return next;
-                  }),
-                  Stream.changes,
-                  Stream.mapError(
-                    (cause) => new AlarmServiceError({ operation: "subscribeParameter", cause }),
+              yield* stream.pipe(
+                Stream.mapEffect((message) => Schema.decodeUnknownEffect(AlarmsEvent)(message)),
+                Stream.map((message) => message.data),
+                Stream.runForEach((alarm) =>
+                  SubscriptionRef.update(alarmsByKey, (current) =>
+                    mergeAlarmIntoState(current, alarm),
                   ),
                 ),
+                Effect.forkScoped,
               );
-            }),
-          })) as Effect.Effect<ParameterAlarmSubscription>;
 
-        const acknowledge = (target: AlarmActionTarget & { comment: string }) =>
-          Effect.mapError(
-            httpClient.alarm.acknowledgeAlarm({
-              params: {
-                instance: yamcsConfig.instance,
-                processor: yamcsConfig.processor,
-                alarm: target.alarmName,
-                seqnum: target.seqNum,
-              },
-              payload: {
-                comment: target.comment,
-              },
+              return {
+                call,
+                store: { alarmsByKey } satisfies AlarmStore,
+              };
             }),
-            (cause) => new AlarmServiceError({ operation: "acknowledge", cause }),
-          );
+            ({ call }) => Effect.orElseSucceed(websocketClient.unsubscribe(call), () => undefined),
+          ).pipe(Effect.map(({ store }) => store)),
+      });
 
-        const shelve = (options: ShelveAlarmOptions) =>
-          Effect.mapError(
-            httpClient.alarm.shelveAlarm({
-              params: {
-                instance: yamcsConfig.instance,
-                processor: yamcsConfig.processor,
-                alarm: options.alarmName,
-                seqnum: options.seqNum,
-              },
-              payload: {
-                comment: options.comment,
-                shelveDuration: options.shelveDuration,
-              },
-            }),
-            (cause) => new AlarmServiceError({ operation: "shelve", cause }),
-          );
+      const getStore = Effect.fn("Alarms.getStore")(function* () {
+        return yield* RcMap.get(alarmStoreMap, alarmStoreKey).pipe(
+          Effect.mapError((cause) => new AlarmServiceError({ operation: "initialize", cause })),
+        );
+      });
 
-        const unshelve = (target: AlarmActionTarget) =>
-          Effect.mapError(
-            httpClient.alarm.unshelveAlarm({
-              params: {
-                instance: yamcsConfig.instance,
-                processor: yamcsConfig.processor,
-                alarm: target.alarmName,
-                seqnum: target.seqNum,
-              },
-            }),
-            (cause) => new AlarmServiceError({ operation: "unshelve", cause }),
-          );
+      const list = getStore().pipe(
+        Effect.flatMap((store) => SubscriptionRef.get(store.alarmsByKey)),
+        Effect.map(sortAlarms),
+      );
 
-        const clear = (target: AlarmActionTarget & { comment: string }) =>
-          Effect.mapError(
-            httpClient.alarm.clearAlarm({
-              params: {
-                instance: yamcsConfig.instance,
-                processor: yamcsConfig.processor,
-                alarm: target.alarmName,
-                seqnum: target.seqNum,
-              },
-              payload: {
-                comment: target.comment,
-              },
-            }),
-            (cause) => new AlarmServiceError({ operation: "clear", cause }),
-          );
+      const get = Effect.fn("Alarms.get")(function* (lookup: AlarmLookup) {
+        const store = yield* getStore();
+        const current = yield* SubscriptionRef.get(store.alarmsByKey);
+
+        return current.get(storeAlarmKey(lookup));
+      });
+
+      const getParameter = Effect.fn("Alarms.getParameter")(function* (
+        qualifiedName: QualifiedName,
+      ) {
+        const store = yield* getStore();
+        const current = yield* SubscriptionRef.get(store.alarmsByKey);
+
+        return deriveParameterAlarmState(current, qualifiedName);
+      });
+
+      const subscribe = Effect.fn("Alarms.subscribe")(function* () {
+        const store = yield* getStore();
+        const initial = yield* SubscriptionRef.get(store.alarmsByKey);
 
         return {
-          list,
-          get,
-          getParameter,
-          subscribe,
-          subscribeParameter,
-          acknowledge,
-          shelve,
-          unshelve,
-          clear,
-        };
-      }).pipe(
-        Effect.mapError((cause) => new AlarmServiceError({ operation: "initialize", cause })),
-      ),
-    ),
-    YamcsWebSocketClient.layer,
+          alarms: Stream.concat(
+            Stream.succeed(sortAlarms(initial)),
+            SubscriptionRef.changes(store.alarmsByKey).pipe(
+              Stream.map(sortAlarms),
+              Stream.mapError((cause) => new AlarmServiceError({ operation: "subscribe", cause })),
+            ),
+          ),
+        } satisfies AlarmSubscription;
+      });
+
+      const subscribeParameter = Effect.fn("Alarms.subscribeParameter")(function* (
+        qualifiedName: QualifiedName,
+      ) {
+        const store = yield* getStore();
+        const initial = yield* SubscriptionRef.get(store.alarmsByKey);
+
+        return {
+          state: Stream.suspend(() => {
+            let previous = deriveParameterAlarmState(initial, qualifiedName);
+
+            return Stream.concat(
+              Stream.succeed(previous),
+              SubscriptionRef.changes(store.alarmsByKey).pipe(
+                Stream.map((current) => {
+                  const next = deriveParameterAlarmState(current, qualifiedName, previous);
+                  previous = next;
+                  return next;
+                }),
+                Stream.changes,
+                Stream.mapError(
+                  (cause) => new AlarmServiceError({ operation: "subscribeParameter", cause }),
+                ),
+              ),
+            );
+          }),
+        } satisfies ParameterAlarmSubscription;
+      });
+
+      const acknowledge = (target: AlarmActionTarget & { comment: string }) =>
+        Effect.mapError(
+          httpClient.alarm.acknowledgeAlarm({
+            params: {
+              instance: yamcsConfig.instance,
+              processor: yamcsConfig.processor,
+              alarm: target.alarmName,
+              seqnum: target.seqNum,
+            },
+            payload: {
+              comment: target.comment,
+            },
+          }),
+          (cause) => new AlarmServiceError({ operation: "acknowledge", cause }),
+        );
+
+      const shelve = (options: ShelveAlarmOptions) =>
+        Effect.mapError(
+          httpClient.alarm.shelveAlarm({
+            params: {
+              instance: yamcsConfig.instance,
+              processor: yamcsConfig.processor,
+              alarm: options.alarmName,
+              seqnum: options.seqNum,
+            },
+            payload: {
+              comment: options.comment,
+              shelveDuration: options.shelveDuration,
+            },
+          }),
+          (cause) => new AlarmServiceError({ operation: "shelve", cause }),
+        );
+
+      const unshelve = (target: AlarmActionTarget) =>
+        Effect.mapError(
+          httpClient.alarm.unshelveAlarm({
+            params: {
+              instance: yamcsConfig.instance,
+              processor: yamcsConfig.processor,
+              alarm: target.alarmName,
+              seqnum: target.seqNum,
+            },
+          }),
+          (cause) => new AlarmServiceError({ operation: "unshelve", cause }),
+        );
+
+      const clear = (target: AlarmActionTarget & { comment: string }) =>
+        Effect.mapError(
+          httpClient.alarm.clearAlarm({
+            params: {
+              instance: yamcsConfig.instance,
+              processor: yamcsConfig.processor,
+              alarm: target.alarmName,
+              seqnum: target.seqNum,
+            },
+            payload: {
+              comment: target.comment,
+            },
+          }),
+          (cause) => new AlarmServiceError({ operation: "clear", cause }),
+        );
+
+      return {
+        list,
+        get,
+        getParameter,
+        subscribe,
+        subscribeParameter,
+        acknowledge,
+        shelve,
+        unshelve,
+        clear,
+      };
+    }),
   );
 }

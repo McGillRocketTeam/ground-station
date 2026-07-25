@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="WifiAntenna">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <FloatParameterType name="double_km">
+        <UnitSet>
+          <Unit form="calibrated">km</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="64"/>
+      </FloatParameterType>
+      <FloatParameterType name="double_dbm">
+        <UnitSet>
+          <Unit form="calibrated">dBm</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="64"/>
+      </FloatParameterType>
+      <IntegerParameterType name="uint32">
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
+      </IntegerParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="distance" parameterTypeRef="double_km" shortDescription="Wifi antenna distance parsed from ack timeout">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="transmit_power" parameterTypeRef="double_dbm" shortDescription="Wifi antenna transmit power">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+      <Parameter name="connected_stations" parameterTypeRef="uint32" shortDescription="Number of stations connected to the wifi antenna access point">
+        <ParameterProperties dataSource="local"/>
+      </Parameter>
+    </ParameterSet>
+  </TelemetryMetaData>
+</SpaceSystem>

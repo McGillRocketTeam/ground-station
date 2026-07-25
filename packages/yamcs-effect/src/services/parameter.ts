@@ -306,5 +306,5 @@ export class Parameters extends Context.Service<
       const subscribe = (qualifiedName: QualifiedName) => RcMap.get(subscriptionMap, qualifiedName);
       return { all, get, subscribe };
     }),
-  ).pipe(Layer.provide(YamcsWebSocketClient.layer));
+  );
 }

@@ -1,10 +1,12 @@
-import { useAtom, useAtomSuspense } from "@effect/atom-react";
+import { useAtom, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { DateTime } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { Suspense, useEffect } from "react";
 
+import { AlarmList } from "@/components/dashboard/alarm-list";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { redFlagTimeAtom, timeSubscriptionAtom } from "@/lib/atom";
+import { alarmSummaryAtom, redFlagTimeAtom, timeSubscriptionAtom } from "@/lib/atom";
 import { cn, formatDate } from "@/lib/utils";
 
 type MissionTimeData = (typeof import("@mrt/yamcs-effect").TimeEvent.Type)["data"];
@@ -59,6 +61,39 @@ function MissionTime() {
       </div>
     </div>
   );
+}
+
+function AlarmIndicator() {
+  const summary = useAtomValue(alarmSummaryAtom);
+
+  return AsyncResult.builder(summary)
+    .onInitial(() => <AlarmIndicatorState>LOADING</AlarmIndicatorState>)
+    .onFailure((cause) => (
+      <AlarmIndicatorState className="text-error" title={String(cause)}>
+        ERROR
+      </AlarmIndicatorState>
+    ))
+    .onSuccess(({ acknowledgedCount, hasUnacked, highestSeverity, unacknowledgedCount }) => {
+      const alarmTone =
+        highestSeverity === undefined
+          ? undefined
+          : highestSeverity === "CRITICAL" || highestSeverity === "SEVERE"
+            ? "error"
+            : "warning";
+
+      return (
+        <AlarmIndicatorState
+          alarmTone={alarmTone}
+          className={cn(
+            hasUnacked && alarmTone === "error" && "text-error",
+            hasUnacked && alarmTone === "warning" && "text-foreground",
+          )}
+        >
+          {hasUnacked ? `${unacknowledgedCount} UNACKED` : `${acknowledgedCount} ACKED`}
+        </AlarmIndicatorState>
+      );
+    })
+    .render();
 }
 
 function TMinus() {
@@ -121,6 +156,7 @@ export function DashboardHeader({ className }: { className?: string }) {
         <div className="text-muted-foreground">Ground Station Controls</div>
       </div>
       <div className="flex flex-row gap-2">
+        <AlarmIndicator />
         <Suspense fallback={<TMinusFallback />}>
           <TMinus />
         </Suspense>
@@ -139,5 +175,54 @@ function TMinusFallback() {
 
       <div className="w-[16.5ch] text-center text-xs text-orange-text">LOADING</div>
     </div>
+  );
+}
+
+function AlarmIndicatorState({
+  alarmTone,
+  children,
+  className,
+  title,
+}: {
+  alarmTone?: "warning" | "error";
+  children: string | number;
+  className?: string;
+  title?: string;
+}) {
+  return (
+    <Popover>
+      <PopoverContent align="end" className="max-h-[70vh] w-[min(90vw,72rem)] overflow-auto p-0">
+        <AlarmList />
+      </PopoverContent>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className={cn(
+              "flex flex-col border font-mono text-xs",
+              alarmTone === "warning" && "border-warning",
+              alarmTone === "error" && "border-error",
+            )}
+          />
+        }
+      >
+        <div
+          className={cn(
+            "w-full bg-border text-center font-semibold text-muted-foreground",
+            alarmTone === "warning" && "bg-warning text-warning-foreground",
+            alarmTone === "error" && "bg-error text-error-foreground",
+          )}
+        >
+          ALARMS
+        </div>
+
+        <div
+          className={cn("w-[16.5ch] text-center text-xs text-orange-text", className)}
+          title={title}
+        >
+          {children}
+        </div>
+      </PopoverTrigger>
+    </Popover>
   );
 }

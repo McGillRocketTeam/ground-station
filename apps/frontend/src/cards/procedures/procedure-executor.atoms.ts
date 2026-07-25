@@ -1,40 +1,22 @@
-import type * as AtomRegistry from "effect/unstable/reactivity/AtomRegistry";
-import type * as Reactivity from "effect/unstable/reactivity/Reactivity";
-
-import { BrowserSocket } from "@effect/platform-browser";
-import { Parameters, YamcsConfig, YamcsWebSocketClient } from "@mrt/yamcs-effect";
 import { Effect, Layer } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
-import { selectedInstanceAtom, YamcsAtomHttpClient, yamcsBaseUrl } from "@/lib/atom";
+import { YamcsAtomHttpClient } from "@/lib/atom";
+import { yamcsSubscriptionRuntime } from "@/lib/atom/yamcs/runtime";
 
 import type { ProcedureType } from "./procedure-stacks";
 
 import { ProcedureExecutor, ProcedureExecutorLog } from "./procedure-executor";
 
-type ProcedureRuntimeContext = AtomRegistry.AtomRegistry | Reactivity.Reactivity;
-
 const procedureRuntime = YamcsAtomHttpClient.runtime.factory((get) => {
-  const yamcsConfigLayer = Layer.succeed(YamcsConfig, {
-    url: new URL(yamcsBaseUrl),
-    instance: get(selectedInstanceAtom),
-    processor: "realtime",
-  });
-  const socketRequirementsLayer = Layer.merge(
-    yamcsConfigLayer,
-    BrowserSocket.layerWebSocketConstructor,
+  const yamcsLayer = get(yamcsSubscriptionRuntime.layer);
+  const httpApiLayer = get(YamcsAtomHttpClient.runtime.layer);
+  const procedureLayer = Layer.provide(
+    ProcedureExecutor.layer(),
+    Layer.mergeAll(yamcsLayer, httpApiLayer, ProcedureExecutorLog.layer),
   );
-  const runtimeLayer = get(YamcsAtomHttpClient.runtime.layer);
-  const sharedLayer = Layer.merge(
-    runtimeLayer,
-    Layer.provideMerge(YamcsWebSocketClient.layer, socketRequirementsLayer),
-  );
-  const parametersLayer = Layer.provideMerge(Parameters.layer, socketRequirementsLayer);
 
-  return Layer.provideMerge(
-    Layer.provideMerge(ProcedureExecutor.layer(), ProcedureExecutorLog.layer),
-    Layer.merge(sharedLayer, parametersLayer),
-  ) as Layer.Layer<any, any, ProcedureRuntimeContext>;
+  return Layer.mergeAll(procedureLayer, yamcsLayer, httpApiLayer);
 });
 
 export const procedureExecutionStateAtom = procedureRuntime.subscriptionRef(

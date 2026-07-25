@@ -1,7 +1,5 @@
 package org.yamcs.mrt.links;
 
-import static org.yamcs.parameter.SystemParametersService.getPV;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,6 +9,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,24 +22,27 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersService;
-import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.tctm.AbstractLink;
+import org.yamcs.tctm.AbstractParameterDataLink;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.UnitType;
 
 import com.google.gson.Gson;
 
-public class WifiAntennaLink extends AbstractLink {
+public class WifiAntennaLink extends AbstractParameterDataLink {
   private static final int POLL_INTERVAL_SECONDS = 1;
   private static final int CONNECT_TIMEOUT_MILLIS = 5_000;
   private static final int READ_TIMEOUT_MILLIS = 5_000;
   private static final Gson GSON = new Gson();
+  private static final String DISTANCE_PARAMETER_NAME = "distance";
+  private static final String TRANSMIT_POWER_PARAMETER_NAME = "transmit_power";
+  private static final String CONNECTED_STATIONS_PARAMETER_NAME = "connected_stations";
 
   private String ipAddress;
   private String username;
   private String password;
+  private final Map<String, Parameter> parameters = new HashMap<>();
   private volatile Status status = Status.UNAVAIL;
   private volatile String detailedStatus = "Not started.";
   private volatile String sessionCookie;
@@ -49,9 +52,7 @@ public class WifiAntennaLink extends AbstractLink {
   private volatile Double transmitPowerDbm;
   private volatile Long apConnectedStations;
   private ScheduledExecutorService executor;
-  private Parameter distanceParameter;
-  private Parameter transmitPowerParameter;
-  private Parameter apConnectedStationsParameter;
+  private int sequenceNumber;
 
   @Override
   public void init(String yamcsInstance, String linkName, YConfiguration config)
@@ -60,6 +61,17 @@ public class WifiAntennaLink extends AbstractLink {
     ipAddress = config.getString("ipAddress");
     username = config.getString("username");
     password = config.getString("password");
+
+    var mdb = MdbFactory.getInstance(yamcsInstance);
+    String parameterBase = "/" + linkName + "/";
+    for (String parameterName : parameterNames()) {
+      Parameter parameter = mdb.getParameter(parameterBase + parameterName);
+      if (parameter == null) {
+        throw new ConfigurationException(
+            "MDB does not have WifiAntenna parameter " + parameterBase + parameterName);
+      }
+      parameters.put(parameterName, parameter);
+    }
   }
 
   @Override
@@ -69,44 +81,6 @@ public class WifiAntennaLink extends AbstractLink {
     spec.addOption("username", OptionType.STRING).withRequired(true);
     spec.addOption("password", OptionType.STRING).withRequired(true);
     return spec;
-  }
-
-  @Override
-  public void setupSystemParameters(SystemParametersService sysParamService) {
-    super.setupSystemParameters(sysParamService);
-
-    distanceParameter =
-        sysParamService.createSystemParameter(
-            LINK_NAMESPACE + linkName + "/Distance",
-            Type.DOUBLE,
-            new UnitType("km"),
-            "Wifi antenna distance parsed from ack timeout");
-    transmitPowerParameter =
-        sysParamService.createSystemParameter(
-            LINK_NAMESPACE + linkName + "/Transmit Power",
-            Type.DOUBLE,
-            new UnitType("dBm"),
-            "Wifi antenna transmit power");
-    apConnectedStationsParameter =
-        sysParamService.createSystemParameter(
-            LINK_NAMESPACE + linkName + "/Connected Stations",
-            Type.UINT32,
-            "Number of stations connected to the wifi antenna access point");
-  }
-
-  @Override
-  protected void collectSystemParameters(long time, List<ParameterValue> list) {
-    super.collectSystemParameters(time, list);
-
-    if (distanceKm != null) {
-      list.add(getPV(distanceParameter, time, distanceKm));
-    }
-    if (transmitPowerDbm != null) {
-      list.add(getPV(transmitPowerParameter, time, transmitPowerDbm));
-    }
-    if (apConnectedStations != null) {
-      list.add(getPV(apConnectedStationsParameter, time, apConnectedStations));
-    }
   }
 
   @Override
@@ -165,11 +139,13 @@ public class WifiAntennaLink extends AbstractLink {
       if (Boolean.TRUE.equals(pollResponse.body.timeout)) {
         sessionCookie = null;
         setStatus(Status.UNAVAIL);
+        publishMetrics(getCurrentTime());
         detailedStatus = "Wifi antenna session timed out, reauthenticating";
         return;
       }
 
       updateMetrics(pollResponse.body.data);
+      publishMetrics(getCurrentTime());
 
       hasConnectedOnce = true;
       setStatus(Status.OK);
@@ -182,6 +158,7 @@ public class WifiAntennaLink extends AbstractLink {
     } catch (Exception e) {
       sessionCookie = null;
       handlePollingFailure(e);
+      publishMetrics(getCurrentTime());
     }
   }
 
@@ -409,6 +386,47 @@ public class WifiAntennaLink extends AbstractLink {
     distanceKm = parseLeadingDouble(data.ackTimeout);
     transmitPowerDbm = parseLeadingDouble(data.txPower);
     apConnectedStations = parseLeadingLong(data.apConnectedStations);
+  }
+
+  private void publishMetrics(long time) {
+    List<ParameterValue> values = new ArrayList<>();
+    addDouble(values, time, DISTANCE_PARAMETER_NAME, distanceKm);
+    addDouble(values, time, TRANSMIT_POWER_PARAMETER_NAME, transmitPowerDbm);
+    addUint32(values, time, CONNECTED_STATIONS_PARAMETER_NAME, apConnectedStations);
+    if (!values.isEmpty()) {
+      updateParameters(time, "wifi-antenna", sequenceNumber++, values);
+    }
+  }
+
+  private void addDouble(List<ParameterValue> values, long time, String name, Double value) {
+    if (value == null) {
+      return;
+    }
+
+    ParameterValue pv = new ParameterValue(parameters.get(name));
+    pv.setGenerationTime(time);
+    pv.setAcquisitionTime(time);
+    pv.setEngValue(ValueUtility.getDoubleValue(value));
+    values.add(pv);
+  }
+
+  private void addUint32(List<ParameterValue> values, long time, String name, Long value) {
+    if (value == null) {
+      return;
+    }
+
+    ParameterValue pv = new ParameterValue(parameters.get(name));
+    pv.setGenerationTime(time);
+    pv.setAcquisitionTime(time);
+    pv.setEngValue(ValueUtility.getUint32Value(value.intValue()));
+    values.add(pv);
+  }
+
+  private static List<String> parameterNames() {
+    return List.of(
+        DISTANCE_PARAMETER_NAME,
+        TRANSMIT_POWER_PARAMETER_NAME,
+        CONNECTED_STATIONS_PARAMETER_NAME);
   }
 
   private static Double parseLeadingDouble(String value) {

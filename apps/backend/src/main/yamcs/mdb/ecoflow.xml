@@ -23,9 +23,9 @@
         </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
         <DefaultAlarm>
-          <StaticAlarmRanges>
-            <CriticalRange maxInclusive="180"/>
-            <SevereRange maxInclusive="120"/>
+          <StaticAlarmRanges rangeForm="inside">
+            <WarningRange minInclusive="0" maxInclusive="180"/>
+            <SevereRange minInclusive="0" maxInclusive="120"/>
           </StaticAlarmRanges>
         </DefaultAlarm>
       </IntegerParameterType>

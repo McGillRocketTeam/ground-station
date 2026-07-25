@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
 import { AlarmData, QualifiedName } from "../schema.js";
@@ -13,12 +13,12 @@ const ListAlarmsOptions = {
 };
 
 const ListAlarmsResponse = Schema.Struct({
-  alarms: Schema.Array(AlarmData),
+  alarms: Schema.Array(AlarmData).pipe(Schema.withDecodingDefaultKey(Effect.succeed([]))),
   continuationToken: Schema.optional(Schema.String),
 });
 
 const ListProcessorAlarmsResponse = Schema.Struct({
-  alarms: Schema.Array(AlarmData),
+  alarms: Schema.Array(AlarmData).pipe(Schema.withDecodingDefaultKey(Effect.succeed([]))),
 });
 
 const AcknowledgeAlarmRequest = Schema.Struct({

@@ -191,7 +191,10 @@ function AlarmIndicatorState({
 }) {
   return (
     <Popover>
-      <PopoverContent align="end" className="max-h-[70vh] w-[min(90vw,72rem)] overflow-auto p-0">
+      <PopoverContent
+        align="end"
+        className="max-h-[70vh] w-[min(90vw,72rem)] overflow-auto no-scrollbar border-primary border p-2"
+      >
         <AlarmList />
       </PopoverContent>
       <PopoverTrigger

@@ -5,6 +5,7 @@ import { Schema, SchemaAST } from "effect";
 
 import { FormMaxAnnotationId, FormMinAnnotationId, formTitle, formType } from "@/lib/form";
 
+import { Checkbox } from "../../ui/checkbox";
 import { Field, FieldError, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
 import { DashboardCameraField, type DashboardCameraFieldApi } from "./camera-field";
@@ -171,6 +172,20 @@ function DashboardCoordinateField({
   );
 }
 
+function DashboardBooleanField({ field, title }: { field: AnyFieldApi; title: string }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 text-sm" htmlFor={field.name}>
+      <Checkbox
+        id={field.name}
+        checked={Boolean(field.state.value)}
+        onBlur={field.handleBlur}
+        onCheckedChange={(checked) => field.handleChange(checked)}
+      />
+      <span>{title}</span>
+    </label>
+  );
+}
+
 export function DashboardCardField({
   field,
   fieldSchema,
@@ -189,6 +204,15 @@ export function DashboardCardField({
 
   if (coordinateError) {
     errors.push({ message: coordinateError });
+  }
+
+  if (type === "boolean") {
+    return (
+      <Field data-invalid={field.state.meta.isTouched && !field.state.meta.isValid}>
+        <DashboardBooleanField field={field} title={formTitle(fieldSchema)} />
+        {field.state.meta.isTouched ? <FieldError errors={errors} /> : null}
+      </Field>
+    );
   }
 
   return (

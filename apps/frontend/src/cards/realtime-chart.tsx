@@ -17,8 +17,8 @@ import { makeCard } from "@/lib/cards";
 import { cn } from "@/lib/utils";
 
 import {
-  ChartCardConfigSchema,
   DEFAULT_SERIES_CONFIGS,
+  RealtimeChartCardConfigSchema,
   type ChartSeriesConfig,
 } from "./chart-card/config";
 import { applySeriesOffset } from "./chart-card/data";
@@ -26,21 +26,46 @@ import { applySeriesOffset } from "./chart-card/data";
 export const RealtimeChartCard = makeCard({
   id: "realtime-chart-card",
   name: "Realtime Chart",
-  schema: ChartCardConfigSchema,
+  schema: RealtimeChartCardConfigSchema,
   component: (props) => (
-    <RealtimePlot seriesConfigs={props.params.series ?? DEFAULT_SERIES_CONFIGS} />
+    <RealtimePlot
+      seriesConfigs={props.params.series ?? DEFAULT_SERIES_CONFIGS}
+      showAlarmLines={props.params.showAlarmLines ?? true}
+      timeWindowSeconds={(props.params.defaultTimeWindowMinutes ?? 0.5) * 60}
+    />
   ),
 });
 
 const DEFAULT_CHART_WIDTH = 620;
 const DEFAULT_CHART_HEIGHT = 480;
 
-const BUFFER_WINDOW_SECONDS = 30;
 const INITIAL_SAMPLE_COUNT = 240;
 
 type RealtimePlotThemeColors = {
   border: string;
   muted: string;
+};
+
+type AlarmLine = {
+  color: string;
+  label: string;
+  value: number;
+};
+
+type StaticAlarmRange = {
+  readonly level: string;
+  readonly minInclusive?: number;
+  readonly minExclusive?: number;
+  readonly maxInclusive?: number;
+  readonly maxExclusive?: number;
+};
+
+const ALARM_COLORS: Readonly<Record<string, string>> = {
+  WATCH: "#facc15",
+  WARNING: "#f59e0b",
+  DISTRESS: "#f97316",
+  CRITICAL: "#ef4444",
+  SEVERE: "#dc2626",
 };
 
 function extractNumericValue(value: unknown) {
@@ -111,6 +136,76 @@ function makeSeriesOptions(seriesConfigs: ReadonlyArray<ChartSeriesConfig>): uPl
   ];
 }
 
+function getAlarmLines(
+  ranges: ReadonlyArray<StaticAlarmRange>,
+  series: ChartSeriesConfig,
+): Array<AlarmLine> {
+  return ranges.flatMap((range) => {
+    const color = ALARM_COLORS[range.level] ?? "#ef4444";
+    const normalizedLevel = range.level.toLowerCase();
+    const level = normalizedLevel.charAt(0).toUpperCase() + normalizedLevel.slice(1);
+    const min = range.minInclusive ?? range.minExclusive;
+    const max = range.maxInclusive ?? range.maxExclusive;
+
+    return [
+      ...(min === undefined
+        ? []
+        : [{ color, label: `${level} low`, value: applySeriesOffset(min, series) }]),
+      ...(max === undefined
+        ? []
+        : [{ color, label: `${level} high`, value: applySeriesOffset(max, series) }]),
+    ];
+  });
+}
+
+function alarmLinesPlugin(getLines: () => ReadonlyArray<AlarmLine>): uPlot.Plugin {
+  return {
+    hooks: {
+      draw: [
+        (plot) => {
+          const { ctx } = plot;
+          const { left, top, width, height } = plot.bbox;
+          const pixelRatio = devicePixelRatio;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(left, top, width, height);
+          ctx.clip();
+          ctx.font = `${11 * pixelRatio}px sans-serif`;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "bottom";
+
+          for (const line of getLines()) {
+            const y = Math.round(plot.valToPos(line.value, "y", true));
+            if (y < top || y > top + height) {
+              continue;
+            }
+
+            const valueLabel = line.value.toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            });
+            const label = `${valueLabel}  ${line.label}`;
+
+            ctx.strokeStyle = line.color;
+            ctx.lineWidth = pixelRatio;
+            ctx.setLineDash([6 * pixelRatio, 4 * pixelRatio]);
+            ctx.beginPath();
+            ctx.moveTo(left, y);
+            ctx.lineTo(left + width, y);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+            ctx.fillStyle = line.color;
+            ctx.fillText(label, left + 6 * pixelRatio, y - 4 * pixelRatio);
+          }
+
+          ctx.restore();
+        },
+      ],
+    },
+  };
+}
+
 function buildAlignedData(
   seriesConfigs: ReadonlyArray<ChartSeriesConfig>,
   buffers: Map<string, Array<readonly [timestamp: number, value: number]>>,
@@ -143,9 +238,13 @@ function getLatestLegendIndex(data: AlignedData) {
 export function RealtimePlot({
   className,
   seriesConfigs,
+  showAlarmLines = true,
+  timeWindowSeconds = 30,
 }: {
   className?: string;
   seriesConfigs: ReadonlyArray<ChartSeriesConfig>;
+  showAlarmLines?: boolean;
+  timeWindowSeconds?: number;
 }) {
   const instance = useAtomValue(selectedInstanceAtom);
   const theme = useAtomValue(themeAtom);
@@ -207,6 +306,8 @@ export function RealtimePlot({
 
     const initialSize = measureSize();
     let themeColors = getRealtimePlotThemeColors(containerRef.current);
+    let alarmLines: ReadonlyArray<AlarmLine> = [];
+    const alarmLinesByParameter = new Map<string, ReadonlyArray<AlarmLine>>();
     const plot = new uPlot(
       {
         ...initialSize,
@@ -219,6 +320,18 @@ export function RealtimePlot({
               }
             },
           ],
+        },
+        plugins: showAlarmLines ? [alarmLinesPlugin(() => alarmLines)] : [],
+        scales: {
+          y: {
+            range: (_plot, dataMin, dataMax) => {
+              const values = showAlarmLines ? alarmLines.map((line) => line.value) : [];
+              const min = Math.min(dataMin, ...values);
+              const max = Math.max(dataMax, ...values);
+              const padding = Math.max((max - min) * 0.05, 1);
+              return [min - padding, max + padding];
+            },
+          },
         },
         series: makeSeriesOptions(seriesConfigs),
       },
@@ -234,7 +347,7 @@ export function RealtimePlot({
     const seedFiber = Effect.runFork(
       Effect.gen(function* () {
         const stop = new Date();
-        const start = new Date(stop.getTime() - BUFFER_WINDOW_SECONDS * 1000);
+        const start = new Date(stop.getTime() - timeWindowSeconds * 1000);
 
         const querySamples = (parameterName: string, source: "ParameterArchive" | "replay") =>
           Effect.orElseSucceed(
@@ -319,7 +432,7 @@ export function RealtimePlot({
 
     const renderFrame = () => {
       const frameNow = Date.now() / 1000;
-      const cutoff = frameNow - BUFFER_WINDOW_SECONDS;
+      const cutoff = frameNow - timeWindowSeconds;
       let trimmed = false;
 
       for (const buffer of buffers.values()) {
@@ -356,9 +469,16 @@ export function RealtimePlot({
           ).pipe(
             Stream.runForEach((update) =>
               Effect.sync(() => {
+                const defaultAlarm = update.info.type.defaultAlarm;
+                const ranges =
+                  defaultAlarm?.staticAlarmRanges ?? defaultAlarm?.staticAlarmRange ?? [];
+                alarmLinesByParameter.set(series.parameter, getAlarmLines(ranges, series));
+                alarmLines = Array.from(alarmLinesByParameter.values()).flat();
+
                 const numericValue = getParameterNumericValue(update);
 
                 if (numericValue === undefined) {
+                  dirty = true;
                   return;
                 }
 
@@ -389,7 +509,7 @@ export function RealtimePlot({
         Effect.runFork(Fiber.interrupt(fiber));
       }
     };
-  }, [instance, seriesConfigs, themeRefreshKey]);
+  }, [instance, seriesConfigs, showAlarmLines, themeRefreshKey, timeWindowSeconds]);
 
   return (
     <div className="col-span-full h-full w-full pb-8">

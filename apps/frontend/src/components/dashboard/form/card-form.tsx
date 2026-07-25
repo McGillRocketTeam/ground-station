@@ -4,6 +4,7 @@ import { Effect, Schema } from "effect";
 import { useMemo, useRef, useState } from "react";
 
 import { type CardId, CardSchemaMap } from "@/lib/cards";
+import { formDefaultValue, formType } from "@/lib/form";
 
 import { Field, FieldError, FieldGroup, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
@@ -35,6 +36,10 @@ function getDefaultFieldValue(value: unknown) {
 }
 
 function encodeDefaultFieldValue(_fieldSchema: Schema.Schema<unknown>, value: unknown) {
+  if (formType(_fieldSchema) === "boolean") {
+    return value ?? formDefaultValue(_fieldSchema) ?? false;
+  }
+
   if (value === undefined) {
     return undefined;
   }

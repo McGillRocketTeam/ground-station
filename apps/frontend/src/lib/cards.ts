@@ -17,6 +17,7 @@ import { LinksGraphCard } from "@/cards/links-graph";
 import { LiveChartCard } from "@/cards/live-chart";
 import { MapCard } from "@/cards/map-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
+import { ParameterDeviceTable } from "@/cards/parameter-device-table";
 import { ParameterTable } from "@/cards/parameter-table";
 import { PIDCard } from "@/cards/pid";
 import { ProceduresCard } from "@/cards/procedures";
@@ -30,6 +31,7 @@ import { VideoCard } from "@/cards/video-card";
 export const CardArray: CardDefinition<string, any>[] = [
   TextCard,
   ParameterTable,
+  ParameterDeviceTable,
   CommandHistoryCard,
   ChartCard,
   MapCard,

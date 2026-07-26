@@ -5,6 +5,7 @@ import { Socket } from "effect/unstable/socket";
 
 import { YamcsApi } from "../http/index.ts";
 import { ParameterInfo, type QualifiedName } from "../schema.ts";
+import { collectPaginated } from "../utils.ts";
 import { SubscribeParameterRequest } from "../websocket/client-messages.ts";
 import { YamcsWebSocketClient } from "../websocket/client.ts";
 import {
@@ -67,10 +68,19 @@ export class Parameters extends Context.Service<
           ),
       });
 
-      const { parameters: all } = yield* httpClient.mdb.listParameters({
-        params: { instance: yamcsConfig.instance },
-        query: { limit: "900", details: true },
-      });
+      const all = yield* collectPaginated((next) =>
+        httpClient.mdb
+          .listParameters({
+            params: { instance: yamcsConfig.instance },
+            query: { limit: "500", details: true, next },
+          })
+          .pipe(
+            Effect.map((response) => ({
+              items: response.parameters,
+              continuationToken: response.continuationToken,
+            })),
+          ),
+      );
 
       const parameterInfoByQualifiedName = new Map(
         all.map((parameter) => [parameter.qualifiedName, parameter] as const),

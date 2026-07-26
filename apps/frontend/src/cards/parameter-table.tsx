@@ -47,7 +47,7 @@ export const ParameterTable = makeCard({
   }),
   component: ({ params }) => {
     return (
-      <ScrollArea className="h-full overflow-auto">
+      <ScrollArea className="h-full">
         <div className="grid grid-cols-[1.5rem_minmax(12rem,1fr)_minmax(8rem,0.7fr)_minmax(8rem,0.7fr)] gap-px font-mono">
           <TableHeader />
           {params.sections &&

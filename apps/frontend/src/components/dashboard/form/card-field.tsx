@@ -22,6 +22,10 @@ import {
   DashboardParameterArrayField,
   type DashboardParameterArrayFieldApi,
 } from "./parameter-array-field";
+import {
+  DashboardParameterDeviceField,
+  type DashboardParameterDeviceFieldApi,
+} from "./parameter-device-field";
 import { DashboardParameterField, type DashboardParameterFieldApi } from "./parameter-field";
 import {
   DashboardParameterTableSectionsField,
@@ -31,6 +35,10 @@ import {
 const DashboardParameterFieldComponent = DashboardParameterField as unknown as ComponentType<{
   field: DashboardParameterFieldApi;
 }>;
+const DashboardParameterDeviceFieldComponent =
+  DashboardParameterDeviceField as unknown as ComponentType<{
+    field: DashboardParameterDeviceFieldApi;
+  }>;
 const DashboardCameraFieldComponent = DashboardCameraField as unknown as ComponentType<{
   field: DashboardCameraFieldApi;
 }>;
@@ -59,6 +67,8 @@ function getFieldPlaceholder(type: ReturnType<typeof formType>) {
       return "Select a camera";
     case "parameter":
       return "Select a parameter";
+    case "parameterDevice":
+      return "Select a device";
     case "command":
       return "Enter a command";
     case "coordinate":
@@ -231,6 +241,12 @@ export function DashboardCardField({
             return <DashboardCameraFieldComponent field={field as DashboardCameraFieldApi} />;
           case "parameter":
             return <DashboardParameterFieldComponent field={field as DashboardParameterFieldApi} />;
+          case "parameterDevice":
+            return (
+              <DashboardParameterDeviceFieldComponent
+                field={field as DashboardParameterDeviceFieldApi}
+              />
+            );
           case "parameterArray":
             return (
               <DashboardParameterArrayFieldComponent

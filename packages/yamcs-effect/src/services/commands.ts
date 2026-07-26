@@ -23,7 +23,7 @@ import {
   IssueCommandResponse,
   StreamingCommandHisotryEntry,
 } from "../schema.ts";
-import { mergeCommandEntries } from "../utils.ts";
+import { collectPaginated, mergeCommandEntries } from "../utils.ts";
 import { SubscribeCommandsRequest } from "../websocket/client-messages.ts";
 import { YamcsWebSocketClient } from "../websocket/client.ts";
 import { CommandHistoryEvent } from "../websocket/server-messages.ts";
@@ -116,10 +116,19 @@ export class Commands extends Context.Service<
           ),
       });
 
-      const { commands: all } = yield* httpClient.mdb.listCommands({
-        params: { instance: yamcsConfig.instance },
-        query: { limit: "900" },
-      });
+      const all = yield* collectPaginated((next) =>
+        httpClient.mdb
+          .listCommands({
+            params: { instance: yamcsConfig.instance },
+            query: { limit: "500", next },
+          })
+          .pipe(
+            Effect.map((response) => ({
+              items: response.commands,
+              continuationToken: response.continuationToken,
+            })),
+          ),
+      );
 
       const commandInfoByQualifiedName = new Map(
         all.map((command) => [command.qualifiedName, command] as const),

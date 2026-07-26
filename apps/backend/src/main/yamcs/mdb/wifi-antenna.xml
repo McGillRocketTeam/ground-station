@@ -1,33 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="WifiAntenna">
-  <TelemetryMetaData>
-    <ParameterTypeSet>
-      <FloatParameterType name="double_km">
-        <UnitSet>
-          <Unit form="calibrated">km</Unit>
-        </UnitSet>
-        <FloatDataEncoding sizeInBits="64"/>
-      </FloatParameterType>
-      <FloatParameterType name="double_dbm">
-        <UnitSet>
-          <Unit form="calibrated">dBm</Unit>
-        </UnitSet>
-        <FloatDataEncoding sizeInBits="64"/>
-      </FloatParameterType>
-      <IntegerParameterType name="uint32">
-        <IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
-      </IntegerParameterType>
-    </ParameterTypeSet>
-    <ParameterSet>
-      <Parameter name="distance" parameterTypeRef="double_km" shortDescription="Wifi antenna distance parsed from ack timeout">
-        <ParameterProperties dataSource="local"/>
-      </Parameter>
-      <Parameter name="transmit_power" parameterTypeRef="double_dbm" shortDescription="Wifi antenna transmit power">
-        <ParameterProperties dataSource="local"/>
-      </Parameter>
-      <Parameter name="connected_stations" parameterTypeRef="uint32" shortDescription="Number of stations connected to the wifi antenna access point">
-        <ParameterProperties dataSource="local"/>
-      </Parameter>
-    </ParameterSet>
-  </TelemetryMetaData>
+  <SpaceSystem name="DeviceInformation">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>2048</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+        <IntegerParameterType name="percent"><UnitSet><Unit form="calibrated">%</Unit></UnitSet><IntegerDataEncoding sizeInBits="32" encoding="unsigned"/></IntegerParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="device_name" parameterTypeRef="string" shortDescription="Configured antenna device name"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="hardware_version" parameterTypeRef="string" shortDescription="Antenna hardware model and revision"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="firmware_version" parameterTypeRef="string" shortDescription="Installed antenna firmware version"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="system_time" parameterTypeRef="string" shortDescription="Current time reported by the antenna"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="uptime" parameterTypeRef="string" shortDescription="Formatted time since the antenna started"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="memory_usage" parameterTypeRef="percent" shortDescription="Current memory utilization"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="cpu_usage" parameterTypeRef="percent" shortDescription="Current CPU utilization"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="WirelessSettings">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>2048</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+        <IntegerParameterType name="uint32"><IntegerDataEncoding sizeInBits="32" encoding="unsigned"/></IntegerParameterType>
+        <FloatParameterType name="distance_km"><UnitSet><Unit form="calibrated">km</Unit></UnitSet><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+        <FloatParameterType name="power_dbm"><UnitSet><Unit form="calibrated">dBm</Unit></UnitSet><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="tdma" parameterTypeRef="string" shortDescription="TP-Link TDMA mode status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="region_code" parameterTypeRef="uint32" shortDescription="Configured wireless regulatory region code"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="channel" parameterTypeRef="string" shortDescription="Configured wireless channel and center frequency"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="channel_width" parameterTypeRef="string" shortDescription="Configured wireless channel width"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="ieee80211_mode" parameterTypeRef="string" shortDescription="Configured IEEE 802.11 operating mode"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="max_tx_rate" parameterTypeRef="string" shortDescription="Maximum configured wireless transmit rate"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="antenna_mode" parameterTypeRef="uint32" shortDescription="Configured antenna mode code"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="transmit_power" parameterTypeRef="power_dbm" shortDescription="Numeric wireless transmit power"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="distance" parameterTypeRef="distance_km" shortDescription="Numeric link distance used to calculate ACK timeout"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="WirelessSignalQuality">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="signed_db"><UnitSet><Unit form="calibrated">dB</Unit></UnitSet><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></IntegerParameterType>
+        <IntegerParameterType name="percent"><UnitSet><Unit form="calibrated">%</Unit></UnitSet><IntegerDataEncoding sizeInBits="32" encoding="unsigned"/></IntegerParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="signal_strength" parameterTypeRef="signed_db" shortDescription="Raw received signal strength indicator"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="noise_strength" parameterTypeRef="signed_db" shortDescription="Raw measured wireless noise strength"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="snr" parameterTypeRef="signed_db" shortDescription="Raw signal-to-noise ratio"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="transmit_ccq" parameterTypeRef="percent" shortDescription="Client connection quality for transmitted frames"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Lan">
+    <TelemetryMetaData>
+      <ParameterTypeSet><StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>2048</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType></ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="mac_address" parameterTypeRef="string" shortDescription="LAN interface MAC address"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="ip_address" parameterTypeRef="string" shortDescription="LAN IPv4 address"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="subnet_mask" parameterTypeRef="string" shortDescription="LAN IPv4 subnet mask"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="ipv6_address" parameterTypeRef="string" shortDescription="LAN IPv6 address and prefix"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_0_status" parameterTypeRef="string" shortDescription="LAN port 0 link speed and duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_1_status" parameterTypeRef="string" shortDescription="LAN port 1 link speed and duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="wan_port_1_status" parameterTypeRef="string" shortDescription="WAN port 1 link speed and duplex status"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Wan">
+    <TelemetryMetaData>
+      <ParameterTypeSet><StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>2048</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType></ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="connection_type" parameterTypeRef="string" shortDescription="WAN connection type"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="mac_address" parameterTypeRef="string" shortDescription="WAN interface MAC address"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="ip_address" parameterTypeRef="string" shortDescription="WAN IPv4 address"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="subnet_mask" parameterTypeRef="string" shortDescription="WAN IPv4 subnet mask"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="default_gateway" parameterTypeRef="string" shortDescription="WAN IPv4 default gateway"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="dns_server" parameterTypeRef="string" shortDescription="WAN IPv4 DNS server"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="ipv6_address" parameterTypeRef="string" shortDescription="WAN IPv6 address and prefix"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="ipv6_dns_server" parameterTypeRef="string" shortDescription="WAN IPv6 DNS server"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="ipv6_default_gateway" parameterTypeRef="string" shortDescription="WAN IPv6 default gateway"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="RadioStatus">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>2048</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+        <BooleanParameterType name="boolean"><IntegerDataEncoding sizeInBits="1" encoding="unsigned"/></BooleanParameterType>
+        <IntegerParameterType name="uint32"><IntegerDataEncoding sizeInBits="32" encoding="unsigned"/></IntegerParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="ssid_broadcast_enabled" parameterTypeRef="boolean" shortDescription="Whether access point SSID broadcast is enabled"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="access_point_enabled" parameterTypeRef="boolean" shortDescription="Whether access point mode is enabled"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="access_point_mac_address" parameterTypeRef="string" shortDescription="Access point radio MAC address"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="access_point_ssid" parameterTypeRef="string" shortDescription="Access point wireless network name"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="access_point_security" parameterTypeRef="string" shortDescription="Access point wireless security mode"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="connected_stations" parameterTypeRef="uint32" shortDescription="Numeric count of stations connected to the access point"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_enabled" parameterTypeRef="uint32" shortDescription="Wireless client mode state code"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_mac_address" parameterTypeRef="string" shortDescription="Wireless client interface MAC address"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_ssid" parameterTypeRef="string" shortDescription="Wireless network joined by client mode"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_security" parameterTypeRef="string" shortDescription="Wireless client security mode"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_wds" parameterTypeRef="uint32" shortDescription="Wireless distribution system state code"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="root_access_point_bssid" parameterTypeRef="string" shortDescription="BSSID of the root access point"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="root_access_point_ssid" parameterTypeRef="string" shortDescription="SSID of the root access point"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_tx_rate" parameterTypeRef="string" shortDescription="Current wireless client transmit rate"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_rx_rate" parameterTypeRef="string" shortDescription="Current wireless client receive rate"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="client_connection_time" parameterTypeRef="string" shortDescription="Elapsed wireless client connection time"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
 </SpaceSystem>

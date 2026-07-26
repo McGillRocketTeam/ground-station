@@ -20,8 +20,9 @@ const makeIntField = (
   min: number,
   max: number,
   dataMode: string,
+  initialOffset = 0,
 ): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> =>
-  Ref.make(0).pipe(
+  Ref.make(initialOffset).pipe(
     Effect.map((ref) => {
       const range = max - min + 1;
 
@@ -39,8 +40,9 @@ const makeFixedField = (
 const makeChoiceField = (
   values: ReadonlyArray<number>,
   dataMode: string,
+  initialOffset = 0,
 ): Effect.Effect<Effect.Effect<GeneratedFieldValue, never, never>, never, never> =>
-  Ref.make(0).pipe(
+  Ref.make(initialOffset).pipe(
     Effect.map((ref) =>
       dataMode === "random"
         ? Effect.sync(() => values[Math.floor(Math.random() * values.length)] ?? values[0] ?? 0)
@@ -158,6 +160,31 @@ export class DataGenerator extends Context.Service<
           parameter.name === "acceleration_z"
         ) {
           return makeIncrementingFloatField(-32_000, 32_000, 1_000, dataMode);
+        }
+
+        const satelliteMatch =
+          /^gps_satellite_(\d+)_(azimuth|elevation|cno|gnss_id|sv_id|used_in_fix)$/.exec(
+            parameter.name,
+          );
+
+        if (satelliteMatch) {
+          const slot = Number(satelliteMatch[1]);
+          const field = satelliteMatch[2];
+
+          switch (field) {
+            case "azimuth":
+              return makeIntField(0, 359, dataMode, (slot - 1) * 45);
+            case "elevation":
+              return makeIntField(0, 90, dataMode, (slot * 11) % 91);
+            case "cno":
+              return makeIntField(20, 55, dataMode, (slot * 4) % 36);
+            case "gnss_id":
+              return makeChoiceField([0, 1, 2, 3, 5, 6, 7], dataMode, slot - 1);
+            case "sv_id":
+              return makeIntField(1, 255, dataMode, slot * 17);
+            case "used_in_fix":
+              return makeChoiceField([0, 1], dataMode, slot);
+          }
         }
 
         if (parameter.name.toLowerCase().includes("gps")) {

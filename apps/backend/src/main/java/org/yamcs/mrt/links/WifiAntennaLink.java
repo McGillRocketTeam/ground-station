@@ -24,20 +24,74 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.tctm.AbstractParameterDataLink;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class WifiAntennaLink extends AbstractParameterDataLink {
   private static final int POLL_INTERVAL_SECONDS = 1;
   private static final int CONNECT_TIMEOUT_MILLIS = 5_000;
   private static final int READ_TIMEOUT_MILLIS = 5_000;
   private static final Gson GSON = new Gson();
-  private static final String DISTANCE_PARAMETER_NAME = "distance";
-  private static final String TRANSMIT_POWER_PARAMETER_NAME = "transmit_power";
-  private static final String CONNECTED_STATIONS_PARAMETER_NAME = "connected_stations";
+  private static final List<ParameterBinding> PARAMETER_BINDINGS =
+      List.of(
+          string("wanConnType", "Wan/connection_type"),
+          string("wanMacAddr", "Wan/mac_address"),
+          string("wanIpAddress", "Wan/ip_address"),
+          string("wanSubnetMask", "Wan/subnet_mask"),
+          string("wanDefaultGateway", "Wan/default_gateway"),
+          string("wanDnsServer", "Wan/dns_server"),
+          string("wanIpv6Address", "Wan/ipv6_address"),
+          string("wanIpv6DnsServer", "Wan/ipv6_dns_server"),
+          string("wanIpv6DefaultGateway", "Wan/ipv6_default_gateway"),
+          string("lanMacAddr", "Lan/mac_address"),
+          string("lanIpAddress", "Lan/ip_address"),
+          string("lanSubnetMask", "Lan/subnet_mask"),
+          string("lanIpv6Address", "Lan/ipv6_address"),
+          string("lanPort1", "Lan/port_1_status"),
+          string("lanPort0", "Lan/port_0_status"),
+          string("wanPort1", "Lan/wan_port_1_status"),
+          string("sysTime", "DeviceInformation/system_time"),
+          string("sysRunTime", "DeviceInformation/uptime"),
+          uint32("memory", "DeviceInformation/memory_usage"),
+          uint32("cpu", "DeviceInformation/cpu_usage"),
+          string("deviceName", "DeviceInformation/device_name"),
+          string("firmVersion", "DeviceInformation/firmware_version"),
+          string("hardVersion", "DeviceInformation/hardware_version"),
+          sint32("rssi", "WirelessSignalQuality/signal_strength"),
+          sint32("noiseStrength", "WirelessSignalQuality/noise_strength"),
+          sint32("snrProcess", "WirelessSignalQuality/snr"),
+          uint32("transmitCcq", "WirelessSignalQuality/transmit_ccq"),
+          string("tdma", "WirelessSettings/tdma"),
+          uint32("region", "WirelessSettings/region_code"),
+          string("channel", "WirelessSettings/channel"),
+          string("channelWidth", "WirelessSettings/channel_width"),
+          string("mode", "WirelessSettings/ieee80211_mode"),
+          string("maxTxRate", "WirelessSettings/max_tx_rate"),
+          uint32("antennaMode", "WirelessSettings/antenna_mode"),
+          leadingDouble("txPower", "WirelessSettings/transmit_power"),
+          leadingDouble("ackTimeout", "WirelessSettings/distance"),
+          bool("enableSSID", "RadioStatus/ssid_broadcast_enabled"),
+          bool("apEnable", "RadioStatus/access_point_enabled"),
+          string("apMacAddr", "RadioStatus/access_point_mac_address"),
+          string("apSsid", "RadioStatus/access_point_ssid"),
+          string("apSecurity", "RadioStatus/access_point_security"),
+          leadingUint32("apConnectedStations", "RadioStatus/connected_stations"),
+          uint32("clientEnable", "RadioStatus/client_enabled"),
+          string("clientMacAddr", "RadioStatus/client_mac_address"),
+          string("clientSsid", "RadioStatus/client_ssid"),
+          string("clientSecurity", "RadioStatus/client_security"),
+          uint32("clientWds", "RadioStatus/client_wds"),
+          string("rootApBssid", "RadioStatus/root_access_point_bssid"),
+          string("rootApSsid", "RadioStatus/root_access_point_ssid"),
+          string("clientTxRate", "RadioStatus/client_tx_rate"),
+          string("clientRxRate", "RadioStatus/client_rx_rate"),
+          string("clientConnTime", "RadioStatus/client_connection_time"));
 
   private String ipAddress;
   private String username;
@@ -48,9 +102,6 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
   private volatile String sessionCookie;
   private volatile boolean authenticationPermanentlyFailed;
   private volatile boolean hasConnectedOnce;
-  private volatile Double distanceKm;
-  private volatile Double transmitPowerDbm;
-  private volatile Long apConnectedStations;
   private ScheduledExecutorService executor;
   private int sequenceNumber;
 
@@ -110,9 +161,6 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
 
   private void setStatus(Status newStatus) {
     status = newStatus;
-    if (newStatus != Status.OK) {
-      apConnectedStations = 0L;
-    }
   }
 
   private void refreshStatus() {
@@ -139,13 +187,11 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
       if (Boolean.TRUE.equals(pollResponse.body.timeout)) {
         sessionCookie = null;
         setStatus(Status.UNAVAIL);
-        publishMetrics(getCurrentTime());
         detailedStatus = "Wifi antenna session timed out, reauthenticating";
         return;
       }
 
-      updateMetrics(pollResponse.body.data);
-      publishMetrics(getCurrentTime());
+      publishInfo(pollResponse.body.data, getCurrentTime());
 
       hasConnectedOnce = true;
       setStatus(Status.OK);
@@ -153,12 +199,11 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
           "Authenticated and polling wifi antenna control plane at "
               + ipAddress
               + " (device "
-              + nullSafe(pollResponse.body.data == null ? null : pollResponse.body.data.deviceName)
+               + nullSafe(stringValue(pollResponse.body.data, "deviceName"))
               + ")";
     } catch (Exception e) {
       sessionCookie = null;
       handlePollingFailure(e);
-      publishMetrics(getCurrentTime());
     }
   }
 
@@ -375,27 +420,44 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
     return value == null ? "unknown" : String.valueOf(value);
   }
 
-  private void updateMetrics(InfoDataResponse data) {
+  private void publishInfo(JsonObject data, long time) {
     if (data == null) {
-      distanceKm = null;
-      transmitPowerDbm = null;
-      apConnectedStations = null;
       return;
     }
 
-    distanceKm = parseLeadingDouble(data.ackTimeout);
-    transmitPowerDbm = parseLeadingDouble(data.txPower);
-    apConnectedStations = parseLeadingLong(data.apConnectedStations);
-  }
-
-  private void publishMetrics(long time) {
     List<ParameterValue> values = new ArrayList<>();
-    addDouble(values, time, DISTANCE_PARAMETER_NAME, distanceKm);
-    addDouble(values, time, TRANSMIT_POWER_PARAMETER_NAME, transmitPowerDbm);
-    addUint32(values, time, CONNECTED_STATIONS_PARAMETER_NAME, apConnectedStations);
+    for (ParameterBinding binding : PARAMETER_BINDINGS) {
+      JsonElement value = data.get(binding.jsonName());
+      if (value == null || value.isJsonNull()) {
+        continue;
+      }
+
+      switch (binding.kind()) {
+        case STRING -> addString(values, time, binding.parameterName(), value.getAsString());
+        case UINT32 -> addUint32(values, time, binding.parameterName(), value.getAsLong());
+        case SINT32 -> addSint32(values, time, binding.parameterName(), value.getAsInt());
+        case BOOLEAN -> addBoolean(values, time, binding.parameterName(), value.getAsBoolean());
+        case LEADING_DOUBLE ->
+            addDouble(values, time, binding.parameterName(), parseLeadingDouble(value.getAsString()));
+        case LEADING_UINT32 ->
+            addUint32(values, time, binding.parameterName(), parseLeadingLong(value.getAsString()));
+      }
+    }
     if (!values.isEmpty()) {
       updateParameters(time, "wifi-antenna", sequenceNumber++, values);
     }
+  }
+
+  private void addString(List<ParameterValue> values, long time, String name, String value) {
+    addValue(values, time, name, ValueUtility.getStringValue(value));
+  }
+
+  private void addSint32(List<ParameterValue> values, long time, String name, Integer value) {
+    addValue(values, time, name, ValueUtility.getSint32Value(value));
+  }
+
+  private void addBoolean(List<ParameterValue> values, long time, String name, Boolean value) {
+    addValue(values, time, name, ValueUtility.getBooleanValue(value));
   }
 
   private void addDouble(List<ParameterValue> values, long time, String name, Double value) {
@@ -403,11 +465,7 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
       return;
     }
 
-    ParameterValue pv = new ParameterValue(parameters.get(name));
-    pv.setGenerationTime(time);
-    pv.setAcquisitionTime(time);
-    pv.setEngValue(ValueUtility.getDoubleValue(value));
-    values.add(pv);
+    addValue(values, time, name, ValueUtility.getDoubleValue(value));
   }
 
   private void addUint32(List<ParameterValue> values, long time, String name, Long value) {
@@ -415,18 +473,27 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
       return;
     }
 
+    addValue(values, time, name, ValueUtility.getUint32Value(value.intValue()));
+  }
+
+  private void addValue(List<ParameterValue> values, long time, String name, Value value) {
     ParameterValue pv = new ParameterValue(parameters.get(name));
     pv.setGenerationTime(time);
     pv.setAcquisitionTime(time);
-    pv.setEngValue(ValueUtility.getUint32Value(value.intValue()));
+    pv.setEngValue(value);
     values.add(pv);
   }
 
   private static List<String> parameterNames() {
-    return List.of(
-        DISTANCE_PARAMETER_NAME,
-        TRANSMIT_POWER_PARAMETER_NAME,
-        CONNECTED_STATIONS_PARAMETER_NAME);
+    return PARAMETER_BINDINGS.stream().map(ParameterBinding::parameterName).toList();
+  }
+
+  private static String stringValue(JsonObject object, String name) {
+    if (object == null) {
+      return null;
+    }
+    JsonElement value = object.get(name);
+    return value == null || value.isJsonNull() ? null : value.getAsString();
   }
 
   private static Double parseLeadingDouble(String value) {
@@ -460,6 +527,41 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
     return parsed == null ? null : parsed.longValue();
   }
 
+  private static ParameterBinding string(String jsonName, String parameterName) {
+    return new ParameterBinding(jsonName, parameterName, ParameterKind.STRING);
+  }
+
+  private static ParameterBinding uint32(String jsonName, String parameterName) {
+    return new ParameterBinding(jsonName, parameterName, ParameterKind.UINT32);
+  }
+
+  private static ParameterBinding sint32(String jsonName, String parameterName) {
+    return new ParameterBinding(jsonName, parameterName, ParameterKind.SINT32);
+  }
+
+  private static ParameterBinding bool(String jsonName, String parameterName) {
+    return new ParameterBinding(jsonName, parameterName, ParameterKind.BOOLEAN);
+  }
+
+  private static ParameterBinding leadingDouble(String jsonName, String parameterName) {
+    return new ParameterBinding(jsonName, parameterName, ParameterKind.LEADING_DOUBLE);
+  }
+
+  private static ParameterBinding leadingUint32(String jsonName, String parameterName) {
+    return new ParameterBinding(jsonName, parameterName, ParameterKind.LEADING_UINT32);
+  }
+
+  private enum ParameterKind {
+    STRING,
+    UINT32,
+    SINT32,
+    BOOLEAN,
+    LEADING_DOUBLE,
+    LEADING_UINT32
+  }
+
+  private record ParameterBinding(String jsonName, String parameterName, ParameterKind kind) {}
+
   private static final class AuthenticationFailedException extends IOException {
     AuthenticationFailedException(String message) {
       super(message);
@@ -477,13 +579,6 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
   private static final class InfoResponse {
     Boolean timeout;
 
-    InfoDataResponse data;
-  }
-
-  private static final class InfoDataResponse {
-    String deviceName;
-    String ackTimeout;
-    String txPower;
-    String apConnectedStations;
+    JsonObject data;
   }
 }

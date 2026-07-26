@@ -14,6 +14,7 @@ export type FormType =
   | "string"
   | "camera"
   | "parameter"
+  | "parameterDevice"
   | "parameterArray"
   | "commandArray"
   | "gaugeVisualRanges"

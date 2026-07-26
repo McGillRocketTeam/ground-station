@@ -136,15 +136,28 @@ dataLinks:
 
   - name: EGSE/Pad/WifiAntenna
     class: org.yamcs.mrt.links.WifiAntennaLink
+    ppStream: pp_realtime
     ipAddress: 192.168.0.254
     username: mrt
     password: H0tFire!
 
   - name: EGSE/ControlStation/WifiAntenna
     class: org.yamcs.mrt.links.WifiAntennaLink
+    ppStream: pp_realtime
     ipAddress: 192.168.0.253
     username: mrt
     password: H0tFire!
+
+  - name: EGSE/ControlStation/WifiRouter
+    class: org.yamcs.mrt.links.WifiRouterLink
+    ppStream: pp_realtime
+    endpoint: http://192.168.0.1:8080/ubus
+    username: root
+    password: ${env.WIFI_ROUTER_PASSWORD}
+    pollIntervalSeconds: 2
+    linkSpeedMbps: 100
+    warningThresholdMbps: 80
+    saturationThresholdMbps: 90
 
   # - name: EGSE/Pad/ToughSwitch
   #   class: org.yamcs.mrt.links.ToughSwitchLink
@@ -235,6 +248,10 @@ mdb:
       - type: emptyNode
         spec: "ControlStation"
         subLoaders:
+          - type: xtce
+            spec: "WifiRouter"
+            args:
+              file: mdb/wifi-router.xml
           - type: xtce
             spec: "WifiAntenna"
             args:

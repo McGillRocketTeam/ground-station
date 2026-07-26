@@ -6,7 +6,10 @@ function ScrollArea({ className, children, ...props }: ScrollAreaPrimitive.Root.
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
-      className={cn("relative", className)}
+      className={cn(
+        "relative overflow-hidden transition-[padding] duration-0 [&:has([data-slot=scroll-area-scrollbar][data-hovering][data-orientation=horizontal])]:pb-2.5 [&:has([data-slot=scroll-area-scrollbar][data-hovering][data-orientation=vertical])]:pr-2.5",
+        className,
+      )}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport

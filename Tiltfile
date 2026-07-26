@@ -69,7 +69,7 @@ local_resource(
 
 local_resource(
     'backend',
-    serve_cmd="cd apps/backend && mvn yamcs:run",
+    serve_cmd="set -a && . apps/backend/.env && set +a && cd apps/backend && exec mvn yamcs:run",
 		serve_env=backend_env,
 		labels=['mrt'],
 		links='http://localhost:8090',

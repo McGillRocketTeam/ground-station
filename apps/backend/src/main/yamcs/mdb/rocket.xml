@@ -923,6 +923,11 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
+        <DefaultAlarm minViolations="1">
+          <StaticAlarmRanges>
+            <CriticalRange maxInclusive="850"/>
+          </StaticAlarmRanges>
+        </DefaultAlarm>
       </FloatParameterType>
       <FloatParameterType name="tank_temp" sizeInBits="32">
         <UnitSet>
@@ -937,6 +942,22 @@ See https://github.com/yamcs/pymdb
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>
+        <ContextAlarmList>
+          <ContextAlarm minViolations="1">
+            <StaticAlarmRanges>
+              <CriticalRange maxInclusive="30"/>
+            </StaticAlarmRanges>
+            <ContextMatch>
+              <BooleanExpression>
+                <Condition>
+                  <ParameterInstanceRef parameterRef="tank_pressure" useCalibratedValue="true"/>
+                  <ComparisonOperator>&gt;</ComparisonOperator>
+                  <Value>100</Value>
+                </Condition>
+              </BooleanExpression>
+            </ContextMatch>
+          </ContextAlarm>
+        </ContextAlarmList>
       </FloatParameterType>
       <BooleanParameterType name="vent_armed_HW" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>

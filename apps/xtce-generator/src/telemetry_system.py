@@ -236,6 +236,17 @@ class TelemetrySystem(FlightSystem):
                         f"Input Error: Tried to create float parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 calibrator = TelemetrySystem.set_param_calibrator(row)
+                alarm = None
+                context_alarms = None
+                if gui_variable_name == "tank_pressure":
+                    alarm = Y.ThresholdAlarm(critical_high=850)
+                elif gui_variable_name == "tank_temp":
+                    context_alarms = [
+                        Y.ThresholdContextAlarm(
+                            context=Y.GtExpression("tank_pressure", 100),
+                            alarm=Y.ThresholdAlarm(critical_high=30),
+                        )
+                    ]
                 if "float" in encoded_type:
                     param = Y.FloatParameter(
                         system=self.sys,
@@ -246,6 +257,8 @@ class TelemetrySystem(FlightSystem):
                         # raw_units=units_raw,
                         encoding=Y.FloatEncoding(bits=size, little_endian=True),
                         calibrator=calibrator,
+                        alarm=alarm,
+                        context_alarms=context_alarms,
                     )
                     return param
                 elif "int" in encoded_type:
@@ -265,6 +278,8 @@ class TelemetrySystem(FlightSystem):
                             bits=size, scheme=scheme, little_endian=True
                         ),
                         calibrator=calibrator,
+                        alarm=alarm,
+                        context_alarms=context_alarms,
                     )
                     return param
             case "Integer":

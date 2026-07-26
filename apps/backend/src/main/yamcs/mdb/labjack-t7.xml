@@ -29,6 +29,17 @@
         </UnitSet>
         <FloatDataEncoding encoding="IEEE754_1985"/>
       </FloatParameterType>
+      <FloatParameterType name="pre_fill_pressure_psi_type">
+        <UnitSet>
+          <Unit form="calibrated">psi</Unit>
+        </UnitSet>
+        <FloatDataEncoding encoding="IEEE754_1985"/>
+        <DefaultAlarm minViolations="1">
+          <StaticAlarmRanges>
+            <CriticalRange maxInclusive="1150"/>
+          </StaticAlarmRanges>
+        </DefaultAlarm>
+      </FloatParameterType>
     </ParameterTypeSet>
     <ParameterSet>
       <!-- Raw AIN channels -->
@@ -101,7 +112,7 @@
       <Parameter name="post_fill_pressure_psi" parameterTypeRef="float_32_psi" shortDescription="Post-Fill Pressure">
         <ParameterProperties dataSource="derived" readOnly="true"/>
       </Parameter>
-      <Parameter name="pre_fill_pressure_psi" parameterTypeRef="float_32_psi" shortDescription="Pre-Fill Pressure">
+      <Parameter name="pre_fill_pressure_psi" parameterTypeRef="pre_fill_pressure_psi_type" shortDescription="Pre-Fill Pressure">
         <ParameterProperties dataSource="derived" readOnly="true"/>
       </Parameter>
       <Parameter name="calibrated_pressure_ain8_psi" parameterTypeRef="float_32_psi">

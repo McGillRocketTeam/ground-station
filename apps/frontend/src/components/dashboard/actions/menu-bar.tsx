@@ -35,12 +35,21 @@ export function DashboardMenuBar() {
 
 function DashboardMenuBarMenu() {
   const groups = useDashboardDashboardActionGroups();
+  const dashboardGroups = groups.filter((group) => group.id === "dashboard-list");
+  const actionGroups = groups.filter((group) => group.id !== "dashboard-list");
 
   return (
     <MenubarMenu>
       <MenubarTrigger>Dashboard</MenubarTrigger>
       <MenubarContent className="w-full max-w-80 min-w-44">
-        <DashboardActionMenubarGroups groups={groups} />
+        <MenubarSub>
+          <MenubarSubTrigger>Dashboards</MenubarSubTrigger>
+          <MenubarSubContent>
+            <DashboardActionMenubarGroups groups={dashboardGroups} />
+          </MenubarSubContent>
+        </MenubarSub>
+        <MenubarSeparator />
+        <DashboardActionMenubarGroups groups={actionGroups} />
       </MenubarContent>
     </MenubarMenu>
   );

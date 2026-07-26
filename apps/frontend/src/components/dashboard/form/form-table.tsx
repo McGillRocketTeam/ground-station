@@ -1,5 +1,30 @@
-import { PlusIcon, Redo2Icon, Trash2Icon, Undo2Icon } from "lucide-react";
-import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { restrictToFirstScrollableAncestor, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVerticalIcon, PlusIcon, Redo2Icon, Trash2Icon, Undo2Icon } from "lucide-react";
+import {
+  createContext,
+  useContext,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { createId } from "@/lib/utils";
+import { cn, createId } from "@/lib/utils";
 
 export type FormTableColumn<T> = {
   header: string;
@@ -22,6 +47,52 @@ type FormTableHistory<T> = {
   past: ReadonlyArray<ReadonlyArray<T>>;
   future: ReadonlyArray<ReadonlyArray<T>>;
 };
+
+type SortableHandleContextValue = Pick<ReturnType<typeof useSortable>, "attributes" | "listeners">;
+
+const SortableHandleContext = createContext<SortableHandleContextValue | null>(null);
+
+function SortableTableRow({ children, id }: { children: ReactNode; id: string }) {
+  const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
+    id,
+  });
+
+  return (
+    <SortableHandleContext value={{ attributes, listeners }}>
+      <TableRow
+        ref={setNodeRef}
+        style={{
+          opacity: isDragging ? 0.5 : undefined,
+          position: "relative",
+          transform: CSS.Translate.toString(transform),
+          transition,
+          zIndex: isDragging ? 1 : undefined,
+        }}
+      >
+        {children}
+      </TableRow>
+    </SortableHandleContext>
+  );
+}
+
+export function FormTableDragHandle({ label = "Reorder row" }: { label?: string }) {
+  const sortable = useContext(SortableHandleContext);
+  if (!sortable) return null;
+
+  return (
+    <Button
+      {...sortable.attributes}
+      {...sortable.listeners}
+      aria-label={label}
+      className="touch-none cursor-grab active:cursor-grabbing"
+      size="icon-sm"
+      type="button"
+      variant="ghost"
+    >
+      <GripVerticalIcon />
+    </Button>
+  );
+}
 
 function isEditableTarget(target: EventTarget) {
   return (
@@ -39,6 +110,7 @@ export function FormTable<T>({
   emptyMessage = "No rows configured.",
   getRowKey,
   onChange,
+  reorderable = false,
   value,
 }: {
   addLabel?: string;
@@ -47,6 +119,7 @@ export function FormTable<T>({
   emptyMessage?: string;
   getRowKey?: (row: T, rowIndex: number) => string;
   onChange: (value: ReadonlyArray<T>) => void;
+  reorderable?: boolean;
   value: ReadonlyArray<T>;
 }) {
   const rowIdsRef = useRef<ReadonlyArray<string>>([]);
@@ -54,6 +127,10 @@ export function FormTable<T>({
     past: [],
     future: [],
   });
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   if (rowIdsRef.current.length === 0) {
     rowIdsRef.current = value.map(() => createId());
@@ -78,6 +155,16 @@ export function FormTable<T>({
   const removeRow = (rowIndex: number) => {
     rowIdsRef.current = rowIdsRef.current.filter((_, index) => index !== rowIndex);
     changeValue(value.filter((_, index) => index !== rowIndex));
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = rowIdsRef.current.indexOf(String(active.id));
+    const newIndex = rowIdsRef.current.indexOf(String(over.id));
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    changeValue(arrayMove([...value], oldIndex, newIndex));
   };
 
   const undo = () => {
@@ -139,58 +226,87 @@ export function FormTable<T>({
     }
   };
 
+  const table = (
+    <Table className="table-fixed">
+      <TableHeader>
+        <TableRow>
+          {columns.map((column) => (
+            <TableHead key={column.header} className={cn(column.className, "align-middle")}>
+              {column.header}
+            </TableHead>
+          ))}
+          <TableHead className="w-24 px-3 text-right align-middle">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {value.length === 0 ? (
+          <TableRow>
+            <TableCell
+              className="h-16 text-center text-muted-foreground"
+              colSpan={columns.length + 1}
+            >
+              {emptyMessage}
+            </TableCell>
+          </TableRow>
+        ) : (
+          value.map((row, rowIndex) => {
+            const rowId =
+              rowIdsRef.current[rowIndex] ?? getRowKey?.(row, rowIndex) ?? String(rowIndex);
+            const cells = (
+              <>
+                {columns.map((column) => (
+                  <TableCell key={column.header} className={column.className}>
+                    {column.render({
+                      row,
+                      rowIndex,
+                      updateRow: (next) => updateRow(rowIndex, next),
+                    })}
+                  </TableCell>
+                ))}
+                <TableCell className="w-24 px-3 text-right align-top">
+                  <Button
+                    aria-label="Remove row"
+                    size="icon-sm"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => removeRow(rowIndex)}
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </TableCell>
+              </>
+            );
+
+            return reorderable ? (
+              <SortableTableRow key={rowId} id={rowId}>
+                {cells}
+              </SortableTableRow>
+            ) : (
+              <TableRow key={getRowKey?.(row, rowIndex) ?? rowId}>{cells}</TableRow>
+            );
+          })
+        )}
+      </TableBody>
+    </Table>
+  );
+
   return (
     <div className="space-y-2" onKeyDownCapture={handleKeyDownCapture}>
       <div className="rounded-md border border-border">
-        <Table className="table-fixed">
-          <TableHeader>
-            <TableRow>
-              {columns.map((column) => (
-                <TableHead key={column.header} className={column.className}>
-                  {column.header}
-                </TableHead>
-              ))}
-              <TableHead className="w-24 px-3 text-right align-middle">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {value.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  className="h-16 text-center text-muted-foreground"
-                  colSpan={columns.length + 1}
-                >
-                  {emptyMessage}
-                </TableCell>
-              </TableRow>
-            ) : (
-              value.map((row, rowIndex) => (
-                <TableRow key={getRowKey?.(row, rowIndex) ?? rowIdsRef.current[rowIndex]}>
-                  {columns.map((column) => (
-                    <TableCell key={column.header} className={column.className}>
-                      {column.render({
-                        row,
-                        rowIndex,
-                        updateRow: (next) => updateRow(rowIndex, next),
-                      })}
-                    </TableCell>
-                  ))}
-                  <TableCell className="w-24 px-3 text-right align-top">
-                    <Button
-                      aria-label="Remove row"
-                      size="icon-sm"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => removeRow(rowIndex)}
-                    >
-                      <Trash2Icon />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        {reorderable ? (
+          <DndContext
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis, restrictToFirstScrollableAncestor]}
+            sensors={sensors}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={[...rowIdsRef.current]} strategy={verticalListSortingStrategy}>
+              {table}
+            </SortableContext>
+          </DndContext>
+        ) : (
+          table
+        )}
       </div>
       <div className="flex items-center gap-2">
         <Button

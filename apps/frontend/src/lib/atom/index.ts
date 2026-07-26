@@ -6,7 +6,9 @@ export { AlarmSound, AlarmSoundError, playAlarmSoundAtom, stopAlarmSoundAtom } f
 export {
   redFlagTimeAtom,
   selectedInstanceAtom,
+  ThemeFromJsonString,
   themeAtom,
+  themeStorageKey,
   type RedFlagTime,
   type Theme,
 } from "./frontend";

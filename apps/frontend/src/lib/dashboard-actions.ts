@@ -7,6 +7,7 @@ export type DashboardAction = {
   shortcut?: RegisterableHotkey;
   disabled?: boolean;
   destructive?: boolean;
+  href?: string;
   run: () => void;
 };
 

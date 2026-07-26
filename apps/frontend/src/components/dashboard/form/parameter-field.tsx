@@ -3,6 +3,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { useAtomValue } from "@effect/atom-react";
 import { Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
+import Fuse, { type FuseResultMatch } from "fuse.js";
 import { CheckIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
 
@@ -52,6 +53,40 @@ const PARAMETER_SELECTOR_COLUMN_WIDTH = 208;
 const PARAMETER_SELECTOR_SEARCH_WIDTH = 512;
 const PARAMETER_SELECTOR_MIN_WIDTH = 320;
 
+type SearchableParameter = {
+  readonly qualifiedName: string;
+  readonly shortDescription?: string | undefined;
+};
+
+function HighlightedMatches({
+  matches,
+  searchKey,
+  text,
+}: {
+  matches: ReadonlyArray<FuseResultMatch> | undefined;
+  searchKey: "qualifiedName" | "shortDescription";
+  text: string;
+}) {
+  const indices = matches?.find((match) => match.key === searchKey)?.indices;
+  if (!indices || indices.length === 0) return text;
+
+  const fragments: Array<React.ReactNode> = [];
+  let offset = 0;
+
+  for (const [start, end] of indices) {
+    if (start > offset) fragments.push(text.slice(offset, start));
+    fragments.push(
+      <mark className="rounded-sm bg-selection-background text-inherit" key={`${start}-${end}`}>
+        {text.slice(start, end + 1)}
+      </mark>,
+    );
+    offset = end + 1;
+  }
+
+  if (offset < text.length) fragments.push(text.slice(offset));
+  return fragments;
+}
+
 function getQualifiedNameSegments(qualifiedName: string) {
   return qualifiedName.split("/").filter((segment) => segment.length > 0);
 }
@@ -92,6 +127,47 @@ function buildParameterTree(parameters: ReadonlyArray<DashboardParameterFieldVal
   }
 
   return root;
+}
+
+type PreparedParameters = {
+  readonly options: ReadonlyArray<DashboardParameterFieldValue>;
+  readonly labels: ReadonlyMap<string, string>;
+  readonly descriptions: ReadonlyMap<string, string | undefined>;
+  readonly tree: ParameterTreeNode;
+  readonly search: Fuse<SearchableParameter>;
+};
+
+const preparedParametersCache = new WeakMap<object, PreparedParameters>();
+
+function prepareParameters(parameters: ReadonlyArray<SearchableParameter>): PreparedParameters {
+  const cached = preparedParametersCache.get(parameters);
+  if (cached) return cached;
+
+  const options = parameters.map((parameter) => ({ qualifiedName: parameter.qualifiedName }));
+  const prepared = {
+    options,
+    labels: new Map(
+      parameters.map((parameter) => [
+        parameter.qualifiedName,
+        parameter.shortDescription ?? parameter.qualifiedName,
+      ]),
+    ),
+    descriptions: new Map(
+      parameters.map((parameter) => [parameter.qualifiedName, parameter.shortDescription]),
+    ),
+    tree: buildParameterTree(options),
+    search: new Fuse(parameters, {
+      keys: [
+        { name: "shortDescription", weight: 0.6 },
+        { name: "qualifiedName", weight: 0.4 },
+      ],
+      threshold: 0.35,
+      ignoreLocation: true,
+      includeMatches: true,
+    }),
+  } satisfies PreparedParameters;
+  preparedParametersCache.set(parameters, prepared);
+  return prepared;
 }
 
 function sortTreeNodes(nodes: Iterable<ParameterTreeNode>) {
@@ -216,28 +292,19 @@ export function ParameterSelector({
   const parametersResult = useAtomValue(parameterListAtom);
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
+  const deferredQuery = React.useDeferredValue(query);
   const [activeSegments, setActiveSegments] = React.useState<ReadonlyArray<string>>([]);
 
   return AsyncResult.builder(parametersResult)
     .onInitial(() => <div>Loading Parameter Selector...</div>)
     .onSuccess((parameters) => {
-      const parameterOptions: ReadonlyArray<DashboardParameterFieldValue> = parameters.map(
-        (parameter) => ({
-          qualifiedName: parameter.qualifiedName,
-        }),
-      );
-
-      const parameterLabels = new Map(
-        parameters.map((parameter) => [
-          parameter.qualifiedName,
-          parameter.shortDescription ?? parameter.qualifiedName,
-        ]),
-      );
-      const parameterDescriptions = new Map(
-        parameters.map((parameter) => [parameter.qualifiedName, parameter.shortDescription]),
-      );
-
-      const parameterTree = buildParameterTree(parameterOptions);
+      const {
+        descriptions: parameterDescriptions,
+        labels: parameterLabels,
+        options: parameterOptions,
+        search: parameterSearch,
+        tree: parameterTree,
+      } = prepareParameters(parameters);
       const selectedLabel = value
         ? (parameterLabels.get(value.qualifiedName) ?? value.qualifiedName)
         : null;
@@ -251,7 +318,7 @@ export function ParameterSelector({
           ? findExistingPathSegments(parameterTree, activeSegments)
           : browseSegments;
       const treeColumns = buildTreeColumns(parameterTree, visibleSegments);
-      const normalizedQuery = query.trim().toLowerCase();
+      const normalizedQuery = deferredQuery.trim().toLowerCase();
       const treeBrowseColumns = treeColumns.slice(0, 4);
       const remainingBranchNode =
         treeColumns.length > 5 ? findTreeNode(parameterTree, visibleSegments.slice(0, 4)) : null;
@@ -282,13 +349,10 @@ export function ParameterSelector({
       );
       const popoverWidth = normalizedQuery ? PARAMETER_SELECTOR_SEARCH_WIDTH : browseWidth;
       const filteredParameters = normalizedQuery
-        ? parameterOptions.filter((parameter) => {
-            const label = parameterLabels.get(parameter.qualifiedName) ?? parameter.qualifiedName;
-            return (
-              parameter.qualifiedName.toLowerCase().includes(normalizedQuery) ||
-              label.toLowerCase().includes(normalizedQuery)
-            );
-          })
+        ? parameterSearch.search(normalizedQuery, { limit: 100 }).map(({ item, matches }) => ({
+            parameter: { qualifiedName: item.qualifiedName },
+            matches,
+          }))
         : [];
 
       const selectParameter = (parameter: DashboardParameterFieldValue) => {
@@ -341,7 +405,7 @@ export function ParameterSelector({
               onKeyDown={(event) => {
                 if (event.key === "Enter" && filteredParameters[0]) {
                   event.preventDefault();
-                  selectParameter(filteredParameters[0]);
+                  selectParameter(filteredParameters[0].parameter);
                 }
               }}
             />
@@ -357,13 +421,8 @@ export function ParameterSelector({
                   No parameters found.
                 </div>
               ) : (
-                <div
-                  className={cn(
-                    PARAMETER_SELECTOR_RESULTS_HEIGHT_CLASS,
-                    "overflow-y-auto rounded-md border border-border/50 p-1",
-                  )}
-                >
-                  {filteredParameters.map((parameter) => {
+                <div className={cn(PARAMETER_SELECTOR_RESULTS_HEIGHT_CLASS, "overflow-y-auto")}>
+                  {filteredParameters.map(({ matches, parameter }) => {
                     const isSelected = value?.qualifiedName === parameter.qualifiedName;
                     const parameterDescription = parameterLabels.get(parameter.qualifiedName);
                     const showQualifiedName = parameterDescription !== parameter.qualifiedName;
@@ -376,16 +435,26 @@ export function ParameterSelector({
                         key={parameter.qualifiedName}
                         type="button"
                         className={cn(
-                          "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs/relaxed hover:bg-accent hover:text-accent-foreground",
+                          "grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-border/50 px-2 py-1.5 text-left text-xs/relaxed last:border-b-0 hover:bg-accent hover:text-accent-foreground",
                           isSelected && "bg-accent text-accent-foreground",
                         )}
                         onClick={() => selectParameter(parameter)}
                       >
                         <span className="min-w-0">
-                          <span className="block truncate font-medium">{parameterLabel}</span>
+                          <span className="block truncate font-medium">
+                            <HighlightedMatches
+                              matches={matches}
+                              searchKey={showQualifiedName ? "shortDescription" : "qualifiedName"}
+                              text={parameterLabel}
+                            />
+                          </span>
                           {showQualifiedName ? (
                             <span className="block truncate text-[0.625rem] text-muted-foreground">
-                              {parameter.qualifiedName}
+                              <HighlightedMatches
+                                matches={matches}
+                                searchKey="qualifiedName"
+                                text={parameter.qualifiedName}
+                              />
                             </span>
                           ) : null}
                         </span>

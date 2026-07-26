@@ -144,7 +144,7 @@ export const MapCard = makeCard({
         north: number;
       },
     ) => {
-      console.log(`[map-card] ${label}`, {
+      console.debug(`[map-card] ${label}`, {
         zoom: Number(nextViewState.zoom.toFixed(2)),
         longitude: Number(nextViewState.longitude.toFixed(6)),
         latitude: Number(nextViewState.latitude.toFixed(6)),

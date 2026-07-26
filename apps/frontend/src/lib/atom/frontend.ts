@@ -6,6 +6,8 @@ const localStorageRuntime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage)
 
 const themeSchema = Schema.Literals(["dark", "light", "system"]);
 export type Theme = typeof themeSchema.Type;
+export const themeStorageKey = "vite-ui-theme";
+export const ThemeFromJsonString = Schema.fromJsonString(themeSchema);
 
 const redFlagTimeSchema = Schema.Struct({
   day: Schema.String,
@@ -22,7 +24,7 @@ export const selectedInstanceAtom = Atom.kvs({
 
 export const themeAtom = Atom.kvs({
   runtime: localStorageRuntime,
-  key: "vite-ui-theme",
+  key: themeStorageKey,
   schema: themeSchema,
   defaultValue: () => "system" as Theme,
 });

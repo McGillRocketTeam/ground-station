@@ -197,7 +197,7 @@ function AlarmIndicatorState({
     <Popover>
       <PopoverContent
         align="end"
-        className="max-h-[70vh] w-[min(90vw,72rem)] overflow-auto no-scrollbar border-primary border p-2"
+        className="max-h-[70vh] w-[min(90vw,72rem)] overflow-auto no-scrollbar p-2"
       >
         <AlarmList />
       </PopoverContent>

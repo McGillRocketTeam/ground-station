@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 
 import { useAtom } from "@effect/atom-react";
+import { Option, Schema } from "effect";
 import { useEffect } from "react";
 
-import { themeAtom, type Theme } from "@/lib/atom";
+import { themeAtom, ThemeFromJsonString, themeStorageKey, type Theme } from "@/lib/atom";
 
 function syncThemeColor() {
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -34,7 +35,24 @@ export function resolveTheme(theme: Theme): Exclude<Theme, "system"> {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme] = useAtom(themeAtom);
+  const [theme, setTheme] = useAtom(themeAtom);
+
+  useEffect(() => {
+    const syncStoredTheme = (event: StorageEvent) => {
+      if (event.storageArea !== window.localStorage || event.key !== themeStorageKey) return;
+
+      if (event.newValue === null) {
+        setTheme("system");
+        return;
+      }
+
+      const storedTheme = Schema.decodeUnknownOption(ThemeFromJsonString)(event.newValue);
+      if (Option.isSome(storedTheme)) setTheme(storedTheme.value);
+    };
+
+    window.addEventListener("storage", syncStoredTheme);
+    return () => window.removeEventListener("storage", syncStoredTheme);
+  }, [setTheme]);
 
   useEffect(() => {
     const root = window.document.documentElement;

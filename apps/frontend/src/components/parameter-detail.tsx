@@ -74,20 +74,24 @@ export function ParameterDetail({
             </DetailGrid>
           </Section>
 
-          <Separator />
-
-          <Section title="Live Value">
-            <RealtimePlot
-              className="h-52"
-              seriesConfigs={[
-                {
-                  color: "#FD9900",
-                  label: info.shortDescription ?? info.name,
-                  parameter: qualifiedName,
-                },
-              ]}
-            />
-          </Section>
+          {(info.type.engType.toLowerCase() === "integer" ||
+            info.type.engType.toLowerCase() === "float") && (
+            <>
+              <Separator />
+              <Section title="Live Value">
+                <RealtimePlot
+                  className="h-52"
+                  seriesConfigs={[
+                    {
+                      color: "#FD9900",
+                      label: info.shortDescription ?? info.name,
+                      parameter: qualifiedName,
+                    },
+                  ]}
+                />
+              </Section>
+            </>
+          )}
 
           {usedByRows.length > 0 && (
             <>

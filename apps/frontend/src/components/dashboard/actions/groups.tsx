@@ -1,11 +1,9 @@
-import type { SerializedDockview } from "dockview-react";
-
-import { useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
+import { useAtom, useAtomSet, useAtomSuspense, useAtomValue } from "@effect/atom-react";
 import { formatForDisplay, type RegisterableHotkey } from "@tanstack/react-hotkeys";
-import { Effect } from "effect";
-import { Atom } from "effect/unstable/reactivity";
-import { Fragment } from "react";
-import { useNavigate } from "react-router";
+import { Effect, Option, Schema } from "effect";
+import { AsyncResult, Atom } from "effect/unstable/reactivity";
+import { Fragment, useEffect, useRef } from "react";
+import { Link, useNavigate, useParams } from "react-router";
 
 import type { DashboardAction, DashboardActionGroup } from "@/lib/dashboard-actions";
 
@@ -19,12 +17,16 @@ import {
 } from "@/components/ui/menubar";
 import { selectedInstanceAtom, YamcsAtomHttpClient } from "@/lib/atom";
 import {
-  dashboardStorageKey,
-  isSerializedDockviewLayout,
-  snapshotDockviewLayout,
-} from "@/lib/dashboard-layout";
+  dashboardAtom,
+  dashboardsAtom,
+  deleteDashboardAtom,
+  importDashboardAtom,
+} from "@/lib/atom/dashboard";
+import { Dashboard } from "@/lib/dashboard-persistence";
 
 import { editPanelDialogHandle } from "../form/edit-dialog";
+import { newDashboardDialogHandle } from "../form/new-dashboard-dialog";
+import { renameDashboardDialogHandle } from "../form/rename-dashboard-dialog";
 import {
   activePanelAtom,
   currentCardActionsAtom,
@@ -32,7 +34,6 @@ import {
   dashboardLayoutHistoryAtom,
   dashboardRedoAtom,
   dashboardUndoAtom,
-  initializeDashboardLayoutHistoryAtom,
 } from "./layout";
 
 const toggleFullscreenAtom = Atom.fn(() =>
@@ -45,8 +46,10 @@ const toggleFullscreenAtom = Atom.fn(() =>
   }),
 );
 
-function downloadDashboardLayout(layout: unknown) {
-  const blob = new Blob([JSON.stringify(layout, null, 2)], {
+const DashboardJson = Schema.fromJsonString(Dashboard);
+
+function downloadDashboard(dashboard: Dashboard) {
+  const blob = new Blob([Schema.encodeUnknownSync(DashboardJson)(dashboard)], {
     type: "application/json",
   });
   const downloadUrl = URL.createObjectURL(blob);
@@ -54,16 +57,13 @@ function downloadDashboardLayout(layout: unknown) {
   const timestamp = new Date().toISOString().replaceAll(":", "-");
 
   link.href = downloadUrl;
-  link.download = `dashboard-${timestamp}.json`;
+  link.download = `${dashboard.slug}-${timestamp}.json`;
   link.click();
 
   URL.revokeObjectURL(downloadUrl);
 }
 
-const mrtEnvironment =
-  import.meta.env.MRT_ENVIRONMENT === "development" ? "development" : "production";
-
-function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
+function pickDashboardFile(): Promise<Dashboard | undefined> {
   return new Promise((resolve) => {
     const input = document.createElement("input");
 
@@ -78,10 +78,8 @@ function pickDashboardLayoutFile(): Promise<SerializedDockview | undefined> {
       }
 
       try {
-        const rawLayout = await file.text();
-        const layout = JSON.parse(rawLayout) as unknown;
-
-        resolve(isSerializedDockviewLayout(layout) ? snapshotDockviewLayout(layout) : undefined);
+        const contents = await file.text();
+        resolve(await Schema.decodeUnknownPromise(DashboardJson)(contents));
       } catch (err) {
         console.error("Error importing dashboard layout", err);
         resolve(undefined);
@@ -101,10 +99,36 @@ export function flattenDashboardActionGroups(
 export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActionGroup> {
   const undo = useAtomSet(dashboardUndoAtom);
   const redo = useAtomSet(dashboardRedoAtom);
-  const initializeDashboardLayoutHistory = useAtomSet(initializeDashboardLayoutHistoryAtom);
   const api = useAtomValue(dashboardDockviewApiAtom);
   const { past, present, future } = useAtomValue(dashboardLayoutHistoryAtom);
+  const { slug = "" } = useParams();
+  const dashboard = Option.getOrUndefined(useAtomSuspense(dashboardAtom(slug)).value);
+  const dashboards = useAtomSuspense(dashboardsAtom).value;
+  const [importResult, importDashboard] = useAtom(importDashboardAtom);
+  const [deleteResult, deleteDashboard] = useAtom(deleteDashboardAtom);
+  const pendingNavigation = useRef<"import" | undefined>(undefined);
+  const deleteNavigation = useRef<string | undefined>(undefined);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const result = importResult;
+    if (!pendingNavigation.current || !AsyncResult.isSuccess(result)) {
+      return;
+    }
+
+    pendingNavigation.current = undefined;
+    navigate(`/dashboards/${result.value.slug}`);
+  }, [importResult, navigate]);
+
+  useEffect(() => {
+    if (!deleteNavigation.current || !AsyncResult.isSuccess(deleteResult)) {
+      return;
+    }
+
+    const nextSlug = deleteNavigation.current;
+    deleteNavigation.current = undefined;
+    navigate(`/dashboards/${nextSlug}`);
+  }, [deleteResult, navigate]);
 
   return [
     {
@@ -130,34 +154,52 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
       ],
     },
     {
-      id: "dashboard-page",
-      heading: "Page",
+      id: "dashboard-management",
+      heading: "Dashboard",
       actions: [
         {
-          id: "new-page",
-          label: "New Page",
-          run: () => {},
+          id: "new-dashboard",
+          label: "New Dashboard",
+          run: () => newDashboardDialogHandle.openWithPayload(crypto.randomUUID()),
         },
         {
-          id: "export-page",
-          label: "Export Page",
-          keywords: ["dashboard", "page", "export", "download", "json"],
-          disabled: !api && !present,
-          shortcut: "Mod+Shift+S",
+          id: "rename-dashboard",
+          label: "Rename Dashboard",
+          keywords: ["dashboard", "rename", "name"],
+          disabled: !dashboard,
           run: () => {
-            const layout = api?.toJSON() ?? present;
-
-            if (!layout) {
-              return;
-            }
-
-            downloadDashboardLayout(layout);
+            if (dashboard) renameDashboardDialogHandle.openWithPayload(dashboard);
           },
         },
         {
-          id: "import-page",
-          label: "Import Page",
-          keywords: ["dashboard", "page", "import", "upload", "json"],
+          id: "delete-dashboard",
+          label: "Delete Dashboard",
+          keywords: ["dashboard", "delete", "remove"],
+          disabled: dashboards.length === 1,
+          destructive: true,
+          run: () => {
+            const nextDashboard = dashboards.find((item) => item.slug !== slug);
+            if (
+              !nextDashboard ||
+              !window.confirm(`Delete ${dashboard?.name ?? "this dashboard"}?`)
+            ) {
+              return;
+            }
+
+            deleteNavigation.current = nextDashboard.slug;
+            deleteDashboard(slug);
+          },
+        },
+      ],
+    },
+    {
+      id: "dashboard-transfer",
+      heading: "Import and Export",
+      actions: [
+        {
+          id: "import-dashboard",
+          label: "Import Dashboard",
+          keywords: ["dashboard", "import", "upload", "json"],
           disabled: !api,
           shortcut: "Mod+Shift+O",
           run: () => {
@@ -165,49 +207,48 @@ export function useDashboardDashboardActionGroups(): ReadonlyArray<DashboardActi
               return;
             }
 
-            void pickDashboardLayoutFile().then((layout) => {
-              if (!layout) {
+            void pickDashboardFile().then((imported) => {
+              if (!imported) {
                 return;
               }
-
-              try {
-                api.fromJSON(layout);
-                window.localStorage.setItem(dashboardStorageKey, JSON.stringify(layout));
-                initializeDashboardLayoutHistory(layout);
-              } catch (err) {
-                console.error("Error loading imported dashboard layout", err);
-              }
+              pendingNavigation.current = "import";
+              importDashboard(imported);
+            });
+          },
+        },
+        {
+          id: "export-dashboard",
+          label: "Export Dashboard",
+          keywords: ["dashboard", "export", "download", "json"],
+          disabled: !dashboard || (!api && !present),
+          shortcut: "Mod+Shift+S",
+          run: () => {
+            if (!dashboard) {
+              return;
+            }
+            downloadDashboard({
+              ...dashboard,
+              layout: api?.toJSON() ?? present ?? dashboard.layout,
             });
           },
         },
       ],
     },
-    ...(mrtEnvironment === "development"
-      ? [
-          {
-            id: "dashboard-development",
-            heading: "Development",
-            actions: [
-              {
-                id: "dave-default-layout",
-                label: "Save Layout as Default",
-                keywords: ["dashboard", "layout", "default", "save"],
-                run: () => {
-                  if (!api) return;
-                  const layout = api.toJSON();
-                  console.log(layout);
-                },
-              },
-              {
-                id: "open-debug-page",
-                label: "Open Debug Page",
-                keywords: ["dashboard", "development", "debug"],
-                run: () => navigate("/debug"),
-              },
-            ],
-          },
-        ]
-      : []),
+    {
+      id: "dashboard-list",
+      heading: "Dashboards",
+      actions: dashboards.map((item, index) => ({
+        id: `open-dashboard-${item.slug}`,
+        label: item.name,
+        keywords: ["dashboard", "open", item.name, item.slug],
+        disabled: item.slug === slug,
+        href: `/dashboards/${item.slug}`,
+        shortcut: (index < 10 ? `Alt+${index === 9 ? 0 : index + 1}` : undefined) as
+          | RegisterableHotkey
+          | undefined,
+        run: () => navigate(`/dashboards/${item.slug}`),
+      })),
+    },
   ];
 }
 
@@ -340,7 +381,8 @@ export function DashboardActionMenubarGroups({
           <MenubarItem
             key={action.id}
             disabled={action.disabled}
-            onClick={action.run}
+            render={action.href ? <Link to={action.href} /> : undefined}
+            onClick={action.href ? undefined : action.run}
             variant={action.destructive ? "destructive" : "default"}
             className="text-nowrap"
           >

@@ -29,6 +29,7 @@ export const RealtimeChartCard = makeCard({
   schema: RealtimeChartCardConfigSchema,
   component: (props) => (
     <RealtimePlot
+      panelApi={props.api}
       seriesConfigs={props.params.series ?? DEFAULT_SERIES_CONFIGS}
       showAlarmLines={props.params.showAlarmLines ?? true}
       timeWindowSeconds={(props.params.defaultTimeWindowMinutes ?? 0.5) * 60}
@@ -44,6 +45,13 @@ const INITIAL_SAMPLE_COUNT = 240;
 type RealtimePlotThemeColors = {
   border: string;
   muted: string;
+};
+
+type RealtimePlotPanelApi = {
+  readonly isVisible: boolean;
+  readonly onDidVisibilityChange: (listener: (event: { readonly isVisible: boolean }) => void) => {
+    dispose: () => void;
+  };
 };
 
 type AlarmLine = {
@@ -237,11 +245,13 @@ function getLatestLegendIndex(data: AlignedData) {
 
 export function RealtimePlot({
   className,
+  panelApi,
   seriesConfigs,
   showAlarmLines = true,
   timeWindowSeconds = 30,
 }: {
   className?: string;
+  panelApi?: RealtimePlotPanelApi;
   seriesConfigs: ReadonlyArray<ChartSeriesConfig>;
   showAlarmLines?: boolean;
   timeWindowSeconds?: number;
@@ -254,8 +264,24 @@ export function RealtimePlot({
       : "light",
   );
   const [themeRefreshKey, setThemeRefreshKey] = useState(0);
+  const [isVisible, setIsVisible] = useState(() => panelApi?.isVisible ?? true);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!panelApi) {
+      return;
+    }
+
+    setIsVisible(panelApi.isVisible);
+    const disposable = panelApi.onDidVisibilityChange((event) => {
+      setIsVisible(event.isVisible);
+    });
+
+    return () => {
+      disposable.dispose();
+    };
+  }, [panelApi]);
 
   useEffect(() => {
     if (theme !== "system") {
@@ -288,6 +314,10 @@ export function RealtimePlot({
   }, [resolvedTheme]);
 
   useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
     const now = Date.now() / 1000;
     const data: AlignedData = [[now - 1, now], ...seriesConfigs.map(() => [null, null])];
 
@@ -509,7 +539,7 @@ export function RealtimePlot({
         Effect.runFork(Fiber.interrupt(fiber));
       }
     };
-  }, [instance, seriesConfigs, showAlarmLines, themeRefreshKey, timeWindowSeconds]);
+  }, [instance, isVisible, seriesConfigs, showAlarmLines, themeRefreshKey, timeWindowSeconds]);
 
   return (
     <div className="col-span-full h-full w-full pb-8">

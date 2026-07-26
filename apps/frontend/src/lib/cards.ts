@@ -17,6 +17,7 @@ import { LinksGraphCard } from "@/cards/links-graph";
 import { LiveChartCard } from "@/cards/live-chart";
 import { MapCard } from "@/cards/map-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
+import { NetworkTopologyCard } from "@/cards/network-topology";
 import { ParameterDeviceTable } from "@/cards/parameter-device-table";
 import { ParameterTable } from "@/cards/parameter-table";
 import { PIDCard } from "@/cards/pid";
@@ -43,6 +44,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   GaugeCard,
   LiveChartCard,
   MqttExplorerCard,
+  NetworkTopologyCard,
   RealtimeChartCard,
   SerialMonitorCard,
   VideoCard,

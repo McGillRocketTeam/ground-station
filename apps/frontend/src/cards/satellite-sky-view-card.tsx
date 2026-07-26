@@ -1,4 +1,6 @@
-import { Schema } from "effect";
+import { useAtomValue } from "@effect/atom-react";
+import { Cause, Schema } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { Suspense } from "react";
 
 import {
@@ -7,9 +9,21 @@ import {
   useSatelliteTelemetry,
 } from "@/cards/satellite-sky-view";
 import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
+import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 
 const satelliteSlots = Array.from({ length: 8 }, (_, index) => index + 1);
+const parameterRoot = "/SystemA/Rocket/FlightComputer";
+const gpsParameters = [
+  ["GPS Fix OK", "gps_fix_ok"],
+  ["GPS Fix Type", "gps_fix_type"],
+  ["GPS Ground Speed", "gps_ground_speed"],
+  ["GPS Heading of Motion", "gps_heading_motion"],
+  ["GPS Horizontal Accuracy", "gps_horizontal_accuracy"],
+  ["GPS Vertical Accuracy", "gps_vertical_accuracy"],
+  ["GPS PDOP", "gps_pdop"],
+  ["GPS Satellites Connected", "gps_satellites_connected"],
+] as const;
 
 function formatNumber(value: number | undefined, suffix = "") {
   return value === undefined ? "-" : `${Math.round(value)}${suffix}`;
@@ -46,6 +60,32 @@ function PendingSatelliteDataRow({ slot }: { slot: number }) {
   );
 }
 
+function GpsParameterRow({ label, parameter }: { label: string; parameter: string }) {
+  const result = useAtomValue(parameterSubscriptionAtom(`${parameterRoot}/${parameter}`));
+
+  return (
+    <DataGridRow className="*:py-0.5">
+      <div>{label}</div>
+      {AsyncResult.match(result, {
+        onInitial: () => <div className="text-right text-muted-foreground">Awaiting Value</div>,
+        onFailure: ({ cause }) => (
+          <div className="text-right text-error" title={Cause.pretty(cause)}>
+            Error
+          </div>
+        ),
+        onSuccess: ({ value }) => (
+          <div className="text-right">
+            {"value" in value.value.engValue
+              ? value.value.engValue.value.toLocaleString()
+              : "Unknown Value Type"}{" "}
+            {value.info.type.unitSet?.map((unit) => unit.unit).join("")}
+          </div>
+        ),
+      })}
+    </DataGridRow>
+  );
+}
+
 export const SatelliteSkyViewCard = makeCard({
   id: "satellite-sky-view-card",
   name: "Satellite Sky View",
@@ -56,7 +96,7 @@ export const SatelliteSkyViewCard = makeCard({
         <SatelliteSkyView className="size-full" />
       </div>
 
-      <div className="overflow-x-auto border-t bg-border">
+      <div className="overflow-auto border-t bg-border">
         <div className="grid grid-cols-[auto_auto_1fr_auto_auto_auto_auto] gap-px">
           <DataGridHeader className="sticky top-0 z-10 bg-background">
             <DataGridHead>Slot</DataGridHead>
@@ -72,6 +112,18 @@ export const SatelliteSkyViewCard = makeCard({
               <Suspense key={slot} fallback={<PendingSatelliteDataRow slot={slot} />}>
                 <SatelliteDataRow slot={slot} />
               </Suspense>
+            ))}
+          </DataGridBody>
+        </div>
+
+        <div className="mt-px grid grid-cols-[minmax(12rem,1fr)_minmax(8rem,0.7fr)] gap-px">
+          <DataGridHeader className="sticky top-0 z-10 bg-background">
+            <DataGridHead>Parameter</DataGridHead>
+            <DataGridHead className="text-right">System A</DataGridHead>
+          </DataGridHeader>
+          <DataGridBody>
+            {gpsParameters.map(([label, parameter]) => (
+              <GpsParameterRow key={parameter} label={label} parameter={parameter} />
             ))}
           </DataGridBody>
         </div>

@@ -89,7 +89,11 @@ function AlarmIndicator() {
             hasUnacked && alarmTone === "warning" && "text-foreground",
           )}
         >
-          {hasUnacked ? `${unacknowledgedCount} UNACKED` : `${acknowledgedCount} ACKED`}
+          {hasUnacked
+            ? `${unacknowledgedCount} UNACKED`
+            : acknowledgedCount > 0
+              ? `${acknowledgedCount} ACKED`
+              : "NONE"}
         </AlarmIndicatorState>
       );
     })

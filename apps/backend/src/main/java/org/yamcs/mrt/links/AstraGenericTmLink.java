@@ -10,7 +10,8 @@ public class AstraGenericTmLink extends AbstractAstraGenericTmTcLink {
   private String systemName;
 
   @Override
-  public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
+  public void init(String instance, String name, YConfiguration config)
+      throws ConfigurationException {
     super.init(instance, name, config);
     systemName = extractSystemName(name);
   }

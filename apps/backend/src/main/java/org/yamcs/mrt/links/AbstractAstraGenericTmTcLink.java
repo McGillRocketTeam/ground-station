@@ -17,7 +17,8 @@ import org.yamcs.mrt.utils.MqttManager;
 import org.yamcs.mrt.utils.MqttTopicHandler;
 import org.yamcs.tctm.AbstractTcTmParamLink;
 
-abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implements MqttTopicHandler {
+abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink
+    implements MqttTopicHandler {
   private static final Map<String, AbstractAstraGenericTmTcLink> TELEMETRY_STATUS_LINKS =
       new ConcurrentHashMap<>();
   private static final Map<String, Boolean> PENDING_TELEMETRY_OK = new ConcurrentHashMap<>();
@@ -44,7 +45,8 @@ abstract class AbstractAstraGenericTmTcLink extends AbstractTcTmParamLink implem
   }
 
   @Override
-  public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
+  public void init(String instance, String name, YConfiguration config)
+      throws ConfigurationException {
     super.init(instance, name, config);
 
     registeredLinkName = name;

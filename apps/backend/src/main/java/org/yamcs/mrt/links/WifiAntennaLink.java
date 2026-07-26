@@ -1,5 +1,8 @@
 package org.yamcs.mrt.links;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,7 +20,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -28,10 +30,6 @@ import org.yamcs.parameter.Value;
 import org.yamcs.tctm.AbstractParameterDataLink;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class WifiAntennaLink extends AbstractParameterDataLink {
   private static final int POLL_INTERVAL_SECONDS = 1;
@@ -137,7 +135,8 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
   @Override
   protected void doStart() {
     executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleWithFixedDelay(this::refreshStatus, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    executor.scheduleWithFixedDelay(
+        this::refreshStatus, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
     notifyStarted();
   }
 
@@ -199,7 +198,7 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
           "Authenticated and polling wifi antenna control plane at "
               + ipAddress
               + " (device "
-               + nullSafe(stringValue(pollResponse.body.data, "deviceName"))
+              + nullSafe(stringValue(pollResponse.body.data, "deviceName"))
               + ")";
     } catch (Exception e) {
       sessionCookie = null;
@@ -284,10 +283,7 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
     String encodedHash = md5Hex(passwordHash + ":" + nonce).toUpperCase(Locale.ROOT);
 
     String form =
-        "encoded="
-            + urlEncode(username + ":" + encodedHash)
-            + "&nonce="
-            + urlEncode(nonce);
+        "encoded=" + urlEncode(username + ":" + encodedHash) + "&nonce=" + urlEncode(nonce);
 
     ApiResponse<VersionResponse> response =
         request("/data/version.json", "POST", form, true, VersionResponse.class, Map.of());
@@ -347,9 +343,10 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
     }
 
     int responseCode = connection.getResponseCode();
-    InputStream stream = responseCode >= HttpURLConnection.HTTP_BAD_REQUEST
-        ? connection.getErrorStream()
-        : connection.getInputStream();
+    InputStream stream =
+        responseCode >= HttpURLConnection.HTTP_BAD_REQUEST
+            ? connection.getErrorStream()
+            : connection.getInputStream();
 
     if (stream == null) {
       throw new IOException("Access point returned no response body");
@@ -402,6 +399,7 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
 
     return null;
   }
+
   private static String md5Hex(String value) throws NoSuchAlgorithmException {
     MessageDigest digest = MessageDigest.getInstance("MD5");
     byte[] bytes = digest.digest(value.getBytes(StandardCharsets.US_ASCII));
@@ -438,7 +436,8 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
         case SINT32 -> addSint32(values, time, binding.parameterName(), value.getAsInt());
         case BOOLEAN -> addBoolean(values, time, binding.parameterName(), value.getAsBoolean());
         case LEADING_DOUBLE ->
-            addDouble(values, time, binding.parameterName(), parseLeadingDouble(value.getAsString()));
+            addDouble(
+                values, time, binding.parameterName(), parseLeadingDouble(value.getAsString()));
         case LEADING_UINT32 ->
             addUint32(values, time, binding.parameterName(), parseLeadingLong(value.getAsString()));
       }
@@ -505,7 +504,9 @@ public class WifiAntennaLink extends AbstractParameterDataLink {
     boolean seenDigit = false;
     for (int i = 0; i < value.length(); i++) {
       char current = value.charAt(i);
-      if ((current >= '0' && current <= '9') || current == '.' || (current == '-' && builder.isEmpty())) {
+      if ((current >= '0' && current <= '9')
+          || current == '.'
+          || (current == '-' && builder.isEmpty())) {
         builder.append(current);
         if (current >= '0' && current <= '9') {
           seenDigit = true;

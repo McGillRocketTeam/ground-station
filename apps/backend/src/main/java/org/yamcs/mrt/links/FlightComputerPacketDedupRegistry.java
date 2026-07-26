@@ -8,20 +8,21 @@ final class FlightComputerPacketDedupRegistry {
   private static final int MAX_OLD_PACKET_WINDOW = 10;
   private static final Map<String, Integer> LAST_ACCEPTED_PACKET_IDS = new ConcurrentHashMap<>();
 
-  private FlightComputerPacketDedupRegistry() {
-  }
+  private FlightComputerPacketDedupRegistry() {}
 
   static boolean shouldProcess(String systemName, int packetId) {
     boolean[] accepted = new boolean[1];
-    LAST_ACCEPTED_PACKET_IDS.compute(systemName, (key, currentPacketId) -> {
-      if (currentPacketId == null || isNewerPacketId(packetId, currentPacketId)) {
-        accepted[0] = true;
-        return packetId;
-      }
+    LAST_ACCEPTED_PACKET_IDS.compute(
+        systemName,
+        (key, currentPacketId) -> {
+          if (currentPacketId == null || isNewerPacketId(packetId, currentPacketId)) {
+            accepted[0] = true;
+            return packetId;
+          }
 
-      accepted[0] = false;
-      return currentPacketId;
-    });
+          accepted[0] = false;
+          return currentPacketId;
+        });
     return accepted[0];
   }
 

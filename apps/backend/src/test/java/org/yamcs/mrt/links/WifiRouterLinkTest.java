@@ -5,13 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.gson.JsonParser;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.xml.XtceStaxReader;
-
-import com.google.gson.JsonParser;
 
 class WifiRouterLinkTest {
   @Test
@@ -25,8 +23,9 @@ class WifiRouterLinkTest {
 
   @Test
   void calculatesIndependentFullDuplexRates() {
-    var sample = WifiRouterLink.calculateThroughput(1_000, 2_000, 25_001_000L, 2_002_000L,
-        1_000_000_000L, 3_000_000_000L);
+    var sample =
+        WifiRouterLink.calculateThroughput(
+            1_000, 2_000, 25_001_000L, 2_002_000L, 1_000_000_000L, 3_000_000_000L);
     assertEquals(100.0, sample.rxMbps(), 0.001);
     assertEquals(8.0, sample.txMbps(), 0.001);
   }
@@ -38,7 +37,9 @@ class WifiRouterLinkTest {
 
   @Test
   void selectsLowestMetricActiveDefaultRoute() throws Exception {
-    var dump = JsonParser.parseString("""
+    var dump =
+        JsonParser.parseString(
+                """
         {"interface":[
           {"interface":"wan","up":false,"device":"eth0.2","metric":10,
            "route":[{"target":"0.0.0.0","mask":0}]},
@@ -47,7 +48,8 @@ class WifiRouterLinkTest {
           {"interface":"wwan","up":true,"device":"sta1","metric":20,
            "route":[{"target":"0.0.0.0","mask":0}]}
         ]}
-        """).getAsJsonObject();
+        """)
+            .getAsJsonObject();
 
     var selected = WifiRouterLink.selectUplink(dump);
 
@@ -67,9 +69,12 @@ class WifiRouterLinkTest {
 
   @Test
   void selectsNoUplinkWhenRouterHasNoDefaultRoute() {
-    var dump = JsonParser.parseString("""
+    var dump =
+        JsonParser.parseString(
+                """
         {"interface":[{"interface":"lan","up":true,"device":"br-lan","route":[]}]}
-        """).getAsJsonObject();
+        """)
+            .getAsJsonObject();
 
     assertNull(WifiRouterLink.selectUplink(dump));
   }
@@ -77,8 +82,10 @@ class WifiRouterLinkTest {
   @Test
   void requiresTenSecondsOfContinuousSaturation() {
     long now = TimeUnit.SECONDS.toNanos(12);
-    var saturated = List.of(new WifiRouterLink.ThroughputSample(0, 91, 1),
-        new WifiRouterLink.ThroughputSample(TimeUnit.SECONDS.toNanos(11), 92, 1));
+    var saturated =
+        List.of(
+            new WifiRouterLink.ThroughputSample(0, 91, 1),
+            new WifiRouterLink.ThroughputSample(TimeUnit.SECONDS.toNanos(11), 92, 1));
     assertTrue(WifiRouterLink.sustained(saturated, true, 90, now));
     assertFalse(WifiRouterLink.sustained(saturated, false, 90, now));
   }
@@ -86,9 +93,11 @@ class WifiRouterLinkTest {
   @Test
   void briefSpikeIsNotSustained() {
     long now = TimeUnit.SECONDS.toNanos(12);
-    var samples = List.of(new WifiRouterLink.ThroughputSample(0, 91, 1),
-        new WifiRouterLink.ThroughputSample(TimeUnit.SECONDS.toNanos(2), 20, 1),
-        new WifiRouterLink.ThroughputSample(TimeUnit.SECONDS.toNanos(12), 92, 1));
+    var samples =
+        List.of(
+            new WifiRouterLink.ThroughputSample(0, 91, 1),
+            new WifiRouterLink.ThroughputSample(TimeUnit.SECONDS.toNanos(2), 20, 1),
+            new WifiRouterLink.ThroughputSample(TimeUnit.SECONDS.toNanos(12), 92, 1));
     assertFalse(WifiRouterLink.sustained(samples, true, 90, now));
   }
 

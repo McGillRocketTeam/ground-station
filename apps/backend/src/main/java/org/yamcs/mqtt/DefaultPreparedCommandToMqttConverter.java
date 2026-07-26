@@ -6,13 +6,11 @@ import org.yamcs.commanding.PreparedCommand;
 
 public class DefaultPreparedCommandToMqttConverter implements PreparedCommandToMqttConverter {
 
-    @Override
-    public void init(String yamcsInstance, String linkName, YConfiguration config) {
-    }
+  @Override
+  public void init(String yamcsInstance, String linkName, YConfiguration config) {}
 
-    @Override
-    public MqttMessage convert(PreparedCommand preparedCommand) {
-        return new MqttMessage(preparedCommand.getBinary());
-    }
-
+  @Override
+  public MqttMessage convert(PreparedCommand preparedCommand) {
+    return new MqttMessage(preparedCommand.getBinary());
+  }
 }

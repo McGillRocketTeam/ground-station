@@ -21,7 +21,6 @@ public final class LabJackConfigV2 {
   public static double AIN_LOW_RANGE_V = 1.0;
   public static double AIN_HIGH_RANGE_V = 10.0;
 
-  public static int GRAPH_FREQ = 5;
   public static double TM_PACKET_RATE_HZ = 5.0;
   public static double TM_PACKET_RATE_TOLERANCE_HZ = 0.01;
   public static boolean ARCHIVE_FULL_RATE = false;
@@ -49,8 +48,7 @@ public final class LabJackConfigV2 {
     SCAN_RATE_HZ = config.getDouble("scanRateHz", SCAN_RATE_HZ);
     SCANS_PER_READ = config.getInt("scansPerRead", SCANS_PER_READ);
     STREAM_RESOLUTION_INDEX = config.getInt("streamResolutionIndex", STREAM_RESOLUTION_INDEX);
-    GRAPH_FREQ = Math.max(1, config.getInt("graphFreq", GRAPH_FREQ));
-    TM_PACKET_RATE_HZ = config.getDouble("tmPacketRateHz", SCAN_RATE_HZ / GRAPH_FREQ);
+    TM_PACKET_RATE_HZ = config.getDouble("tmPacketRateHz", TM_PACKET_RATE_HZ);
     ARCHIVE_FULL_RATE = config.getBoolean("archiveFullRate", ARCHIVE_FULL_RATE);
     ARCHIVE_STREAM = config.getString("archiveStream", ARCHIVE_STREAM);
     WATCHDOG_TIMEOUT_S = config.getInt("watchdogTimeoutS", WATCHDOG_TIMEOUT_S);
@@ -59,42 +57,32 @@ public final class LabJackConfigV2 {
 
     validateSamplingConfig(SCAN_RATE_HZ);
     log.info(
-        "LabJackV2 config: scanRate={} Hz, scansPerRead={}, resolutionIndex={}, graphFreq={}, "
+        "LabJackV2 config: scanRate={} Hz, scansPerRead={}, resolutionIndex={}, "
             + "tmPacketRate={} Hz, archiveFullRate={}, watchdogTimeout={} s",
         SCAN_RATE_HZ,
         SCANS_PER_READ,
         STREAM_RESOLUTION_INDEX,
-        GRAPH_FREQ,
         TM_PACKET_RATE_HZ,
         ARCHIVE_FULL_RATE,
         WATCHDOG_TIMEOUT_S);
   }
 
   public static void validateSamplingConfig(double achievedScanRateHz) {
-    double actualPacketRateHz = achievedScanRateHz / GRAPH_FREQ;
-    if (actualPacketRateHz + TM_PACKET_RATE_TOLERANCE_HZ < MIN_REALTIME_PACKET_RATE_HZ) {
+    if (TM_PACKET_RATE_HZ < MIN_REALTIME_PACKET_RATE_HZ) {
       throw new IllegalArgumentException(
           "LabJackV2 realtime packet rate must be at least "
               + MIN_REALTIME_PACKET_RATE_HZ
               + " Hz, got "
-              + actualPacketRateHz
-              + " Hz with scanRateHz="
-              + achievedScanRateHz
-              + " and graphFreq="
-              + GRAPH_FREQ);
-    }
-    if (Math.abs(actualPacketRateHz - TM_PACKET_RATE_HZ) > TM_PACKET_RATE_TOLERANCE_HZ) {
-      throw new IllegalArgumentException(
-          "LabJackV2 packet path must run at "
               + TM_PACKET_RATE_HZ
-              + " Hz (+/- "
-              + TM_PACKET_RATE_TOLERANCE_HZ
-              + ") but is "
-              + actualPacketRateHz
-              + " Hz with scanRateHz="
+              + " Hz");
+    }
+    if (TM_PACKET_RATE_HZ > achievedScanRateHz + TM_PACKET_RATE_TOLERANCE_HZ) {
+      throw new IllegalArgumentException(
+          "LabJackV2 packet rate cannot exceed scan rate: packetRateHz="
+              + TM_PACKET_RATE_HZ
+              + ", scanRateHz="
               + achievedScanRateHz
-              + " and graphFreq="
-              + GRAPH_FREQ);
+              + " Hz");
     }
   }
 }

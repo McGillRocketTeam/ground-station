@@ -106,17 +106,24 @@ function Satellite({ slot }: { slot: number }) {
   const color = satelliteGnssColor(telemetry.gnssId);
 
   return (
-    <g opacity={telemetry.usedInFix ? 1 : 0.55}>
+    <g
+      key={`${telemetry.gnssId}-${satelliteId}`}
+      opacity={telemetry.usedInFix ? 1 : 0.55}
+      style={{
+        transform: `translate(${x}px, ${y}px)`,
+        transition: "transform 500ms ease-out",
+      }}
+    >
       <title>{`${telemetry.gnssId} ${satelliteId} · ${Math.round(azimuth)}° az · ${Math.round(elevation)}° el · ${telemetry.cno ?? "-"} dB-Hz`}</title>
       <circle
-        cx={x}
-        cy={y}
+        cx="0"
+        cy="0"
         r="4.2"
         fill={color}
         stroke={telemetry.usedInFix ? "white" : color}
         strokeWidth="0.5"
       />
-      <text x={x} y={y} fill="white" fontSize="3.2" textAnchor="middle" dominantBaseline="central">
+      <text x="0" y="0" fill="white" fontSize="3.2" textAnchor="middle" dominantBaseline="central">
         {satelliteId}
       </text>
     </g>

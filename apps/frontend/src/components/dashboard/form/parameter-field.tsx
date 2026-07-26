@@ -424,11 +424,9 @@ export function ParameterSelector({
                 <div className={cn(PARAMETER_SELECTOR_RESULTS_HEIGHT_CLASS, "overflow-y-auto")}>
                   {filteredParameters.map(({ matches, parameter }) => {
                     const isSelected = value?.qualifiedName === parameter.qualifiedName;
-                    const parameterDescription = parameterLabels.get(parameter.qualifiedName);
-                    const showQualifiedName = parameterDescription !== parameter.qualifiedName;
-                    const parameterLabel = showQualifiedName
-                      ? parameterDescription
-                      : parameter.qualifiedName;
+                    const parameterLabel =
+                      parameterLabels.get(parameter.qualifiedName) ?? parameter.qualifiedName;
+                    const showQualifiedName = parameterLabel !== parameter.qualifiedName;
 
                     return (
                       <button

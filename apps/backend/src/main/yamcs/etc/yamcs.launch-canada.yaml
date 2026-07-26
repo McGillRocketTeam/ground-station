@@ -24,6 +24,8 @@ services:
 dataLinks:
   - name: EGSE/Pad/LabJack
     class: org.yamcs.labjack2.LabJackDataLinkV2
+    scanRateHz: 100
+    tmPacketRateHz: 20
     tmStream: tm_labJack
     tcStream: tc_labJack
     packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor

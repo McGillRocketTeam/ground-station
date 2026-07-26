@@ -17,7 +17,6 @@ import { cn, formatDate, stringifyValue } from "@/lib/utils";
 import { BrailleSpinner } from "./braile-spinner";
 import { CommandDetail } from "./command-detail";
 import { makeCommandDisplayMap } from "./command-display";
-import { useAckNow } from "./use-ack-now";
 import {
   extractAcknowledgement,
   allDisplayedAcksOk,
@@ -78,7 +77,6 @@ const filteredCommandsAtom = Atom.make((get) => {
 });
 
 export function CommandHistoryTable() {
-  const now = useAckNow();
   const commandCount = useAtomValue(totalCommandCountAtom);
   const filteredCommands = useAtomValue(filteredCommandsAtom);
   const commandDisplayMap = useAtomValue(commandDisplayMapAtom);
@@ -110,7 +108,6 @@ export function CommandHistoryTable() {
             .onSuccess((commands) => (
               <Body
                 commands={commands}
-                now={now}
                 totalCommandCount={totalCommandCount}
                 commandDisplayMap={commandDisplayMap}
               />
@@ -124,12 +121,10 @@ export function CommandHistoryTable() {
 
 const Body = memo(function Body({
   commands,
-  now,
   totalCommandCount,
   commandDisplayMap,
 }: {
   commands: ReadonlyArray<CommandHistoryEntry>;
-  now: number;
   totalCommandCount: number;
   commandDisplayMap: ReadonlyMap<string, string>;
 }) {
@@ -149,7 +144,6 @@ const Body = memo(function Body({
         <CommandRow
           key={command.id}
           command={command}
-          now={now}
           commandLabel={commandDisplayMap.get(command.commandName) ?? command.commandName}
         />
       ))}
@@ -159,14 +153,12 @@ const Body = memo(function Body({
 
 const CommandRow = memo(function CommandRow({
   command,
-  now,
   commandLabel,
 }: {
   command: CommandHistoryEntry;
-  now: number;
   commandLabel: string;
 }) {
-  const rowHasNokAck = hasNokAck(command, now);
+  const rowHasNokAck = hasNokAck(command);
 
   return (
     <Popover>
@@ -214,12 +206,11 @@ const CommandRow = memo(function CommandRow({
 }, areCommandRowPropsEqual);
 
 function areCommandRowPropsEqual(
-  previous: { command: CommandHistoryEntry; commandLabel: string; now: number },
-  next: { command: CommandHistoryEntry; commandLabel: string; now: number },
+  previous: { command: CommandHistoryEntry; commandLabel: string },
+  next: { command: CommandHistoryEntry; commandLabel: string },
 ) {
   return (
     previous.command.id === next.command.id &&
-    previous.now === next.now &&
     previous.commandLabel === next.commandLabel &&
     (previous.command === next.command || allDisplayedAcksOk(previous.command))
   );

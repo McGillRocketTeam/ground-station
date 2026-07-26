@@ -154,7 +154,7 @@ function TelemetryChart({ color, parameter, title }: TelemetryChartParams) {
         axes: makeAxisOptions(themeColors),
         cursor: {
           bind: {
-            dblclick: (self, _targ, handler) => (event) => {
+            dblclick: (_self, _targ, handler) => (event) => {
               handler(event);
               resetXScale();
               return null;

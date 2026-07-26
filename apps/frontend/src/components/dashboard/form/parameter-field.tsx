@@ -252,11 +252,11 @@ export function ParameterSelector({
           : browseSegments;
       const treeColumns = buildTreeColumns(parameterTree, visibleSegments);
       const normalizedQuery = query.trim().toLowerCase();
-      const treeBrowseColumns = treeColumns.slice(0, 3);
+      const treeBrowseColumns = treeColumns.slice(0, 4);
       const remainingBranchNode =
-        treeColumns.length > 4 ? findTreeNode(parameterTree, visibleSegments.slice(0, 3)) : null;
+        treeColumns.length > 5 ? findTreeNode(parameterTree, visibleSegments.slice(0, 4)) : null;
       const browseColumns: ReadonlyArray<ParameterBrowseColumn> =
-        remainingBranchNode && treeColumns.length > 4
+        remainingBranchNode && treeColumns.length > 5
           ? [
               ...treeBrowseColumns.map((column) => ({
                 type: "tree" as const,
@@ -266,7 +266,7 @@ export function ParameterSelector({
               })),
               {
                 type: "flat" as const,
-                key: `${visibleSegments.slice(0, 3).join("/")}-descendants`,
+                key: `${visibleSegments.slice(0, 4).join("/")}-descendants`,
                 items: collectDescendantParameters(remainingBranchNode),
               },
             ]

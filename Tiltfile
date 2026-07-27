@@ -42,7 +42,7 @@ if ecoflow_mqtt_enabled and ecoflow_user_id == '':
 	fail("Tilt config 'ecoflow_user_id' is required when 'ecoflow_mqtt' is true")
 
 open_frontend_cmd = os.name == 'nt' and "python -m webbrowser http://localhost:5173" or "python3 -m webbrowser http://localhost:5173"
-backend_serve_cmd = os.name == 'nt' and "powershell -NoProfile -Command \"$envFile = 'apps/backend/.env'; if (Test-Path $envFile) { Get-Content $envFile | ForEach-Object { if ($_ -match '^\\s*(#.*)?$') { return }; $name, $value = $_ -split '=', 2; Set-Item -Path Env:$name -Value $value } }; Set-Location 'apps/backend'; mvn yamcs:run\"" or "set -a && . apps/backend/.env && set +a && cd apps/backend && exec mvn yamcs:run"
+backend_serve_cmd = os.name == 'nt' and "powershell -NoProfile -File apps/backend/scripts/tilt-run.ps1" or "set -a && . apps/backend/.env && set +a && cd apps/backend && exec mvn yamcs:run"
 
 local_resource(
     'frontend',

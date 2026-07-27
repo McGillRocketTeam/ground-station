@@ -145,6 +145,15 @@ See https://github.com/yamcs/pymdb
         </UnitSet>
         <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="leastSignificantByteFirst"/>
       </FloatParameterType>
+      <BooleanParameterType name="external_power_hw" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <BooleanParameterType name="external_power_sw" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="fc_internal_atomic_bool_lead_pad" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="6" encoding="unsigned"/>
+      </IntegerParameterType>
       <BooleanParameterType name="fc_internal_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -837,24 +846,42 @@ See https://github.com/yamcs/pymdb
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_amp_x" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">V</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_amp_y" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">V</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_amp_z" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">V</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <BooleanParameterType name="payload_data_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <IntegerParameterType name="payload_freq_x" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">Hz</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_freq_y" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">Hz</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_freq_z" signed="true" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">Hz</Unit>
+        </UnitSet>
         <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
       <BooleanParameterType name="payload_ok" zeroStringValue="False" oneStringValue="True">
@@ -1063,6 +1090,17 @@ See https://github.com/yamcs/pymdb
       </Parameter>
       <Parameter name="drouge_deployment_from_ground" parameterTypeRef="drouge_deployment_from_ground" shortDescription="Drouge Deployment From Ground">
         <LongDescription>Altitude above pad level at which drouge deployment is fired. Values held after event</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="external_power_hw" parameterTypeRef="external_power_hw" shortDescription="External Power HW">
+        <LongDescription>If the FC is on an external power source.</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="external_power_sw" parameterTypeRef="external_power_sw" shortDescription="External Power SW">
+        <LongDescription>If the FC is on an external power source.</LongDescription>
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="fc_internal_atomic_bool_lead_pad" parameterTypeRef="fc_internal_atomic_bool_lead_pad" shortDescription="Boolean Leading Padding">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="fc_internal_atomic_flag" parameterTypeRef="fc_internal_atomic_flag">
@@ -1966,6 +2004,21 @@ See https://github.com/yamcs/pymdb
           <ParameterRefEntry parameterRef="fc_snr">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="fc_internal_atomic_bool_lead_pad">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>120</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="external_power_hw">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>127</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="external_power_sw">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>126</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
         </EntryList>

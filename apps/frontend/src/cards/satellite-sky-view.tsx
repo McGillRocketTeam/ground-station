@@ -6,7 +6,8 @@ import type { LiveParameterUpdate } from "@/lib/atom";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 
 const satelliteSlots = Array.from({ length: 8 }, (_, index) => index + 1);
-const satelliteParameterRoot = "/SystemA/Rocket/FlightComputer";
+
+export type SatelliteSystem = "SystemA" | "SystemB";
 
 const gnssColors: Record<string, string> = {
   GPS: "#3b82f6",
@@ -49,8 +50,9 @@ function numericValue(update: LiveParameterUpdate) {
   }
 }
 
-export function useSatelliteTelemetry(slot: number): SatelliteTelemetry {
-  const parameter = (name: string) => `${satelliteParameterRoot}/gps_satellite_${slot}_${name}`;
+export function useSatelliteTelemetry(slot: number, system: SatelliteSystem): SatelliteTelemetry {
+  const parameter = (name: string) =>
+    `/${system}/Rocket/FlightComputer/gps_satellite_${slot}_${name}`;
   const azimuth = numericValue(
     useAtomSuspense(parameterSubscriptionAtom(parameter("azimuth"))).value as LiveParameterUpdate,
   );
@@ -82,8 +84,8 @@ export function useSatelliteTelemetry(slot: number): SatelliteTelemetry {
   };
 }
 
-function Satellite({ slot }: { slot: number }) {
-  const telemetry = useSatelliteTelemetry(slot);
+function Satellite({ slot, system }: { slot: number; system: SatelliteSystem }) {
+  const telemetry = useSatelliteTelemetry(slot, system);
   const { azimuth, elevation, satelliteId } = telemetry;
 
   if (
@@ -130,7 +132,13 @@ function Satellite({ slot }: { slot: number }) {
   );
 }
 
-export function SatelliteSkyView({ className }: { className?: string }) {
+export function SatelliteSkyView({
+  className,
+  system = "SystemA",
+}: {
+  className?: string;
+  system?: SatelliteSystem;
+}) {
   return (
     <svg
       className={className}
@@ -213,7 +221,7 @@ export function SatelliteSkyView({ className }: { className?: string }) {
       </g>
       {satelliteSlots.map((slot) => (
         <Suspense key={slot} fallback={null}>
-          <Satellite slot={slot} />
+          <Satellite slot={slot} system={system} />
         </Suspense>
       ))}
     </svg>

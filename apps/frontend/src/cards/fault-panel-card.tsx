@@ -6,65 +6,6 @@ import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { cn } from "@/lib/utils";
 
-const faults = [
-  {
-    name: "FC\nOPERATIONAL",
-    parameter: "/SystemA/Derived/Rocket/FlightComputer/operational_health",
-  },
-  {
-    name: "FC\nTELEMETRY",
-    parameter: "/SystemA/Derived/Rocket/FlightComputer/telemetry_health",
-  },
-  {
-    name: "DROGUE\nRECOVERY",
-    parameter: "/SystemA/Derived/Rocket/Recovery/drogue_health",
-  },
-  {
-    name: "MAIN\nRECOVERY",
-    parameter: "/SystemA/Derived/Rocket/Recovery/main_health",
-  },
-  {
-    name: "RECOVERY\nREADINESS",
-    parameter: "/SystemA/Derived/Rocket/Recovery/readiness",
-  },
-  {
-    name: "MOV\nPROPULSION",
-    parameter: "/SystemA/Derived/Rocket/Propulsion/mov_health",
-  },
-  {
-    name: "F/DOV\nPROPULSION",
-    parameter: "/SystemA/Derived/Rocket/Propulsion/fdov_health",
-  },
-  {
-    name: "VENT\nPROPULSION",
-    parameter: "/SystemA/Derived/Rocket/Propulsion/vent_health",
-  },
-  {
-    name: "PROPULSION\nREADINESS",
-    parameter: "/SystemA/Derived/Rocket/Propulsion/readiness",
-  },
-  {
-    name: "GPS\nNAVIGATION",
-    parameter: "/SystemA/Derived/Rocket/Navigation/solution_health",
-  },
-  {
-    name: "SD\nRECORDING",
-    parameter: "/SystemA/Derived/Rocket/Storage/recording_health",
-  },
-  {
-    name: "CONTROL\nRADIO",
-    parameter: "/SystemA/Derived/ControlStation/Radio/link_health",
-  },
-  {
-    name: "PAD\nRADIO",
-    parameter: "/SystemA/Derived/Pad/Radio/link_health",
-  },
-  {
-    name: "SYSTEMA\nCOMMS",
-    parameter: "/SystemA/Derived/Communications/capability",
-  },
-] as const;
-
 export const FaultPanelCard = makeCard({
   id: "fault-panel-card",
   name: "Fault Panel Card",

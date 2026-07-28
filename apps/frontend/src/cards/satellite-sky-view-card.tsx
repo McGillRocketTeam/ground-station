@@ -1,19 +1,24 @@
 import { useAtomValue } from "@effect/atom-react";
-import { Cause, Schema } from "effect";
+import { Cause, Effect, Schema } from "effect";
 import { AsyncResult } from "effect/unstable/reactivity";
 import { Suspense } from "react";
 
 import {
   satelliteGnssColor,
   SatelliteSkyView,
+  type SatelliteSystem,
   useSatelliteTelemetry,
 } from "@/cards/satellite-sky-view";
 import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
+import {
+  FormDefaultValueAnnotationId,
+  FormTitleAnnotationId,
+  FormTypeAnnotationId,
+} from "@/lib/form";
 
 const satelliteSlots = Array.from({ length: 8 }, (_, index) => index + 1);
-const parameterRoot = "/SystemA/Rocket/FlightComputer";
 const gpsParameters = [
   ["GPS Fix OK", "gps_fix_ok"],
   ["GPS Fix Type", "gps_fix_type"],
@@ -29,8 +34,8 @@ function formatNumber(value: number | undefined, suffix = "") {
   return value === undefined ? "-" : `${Math.round(value)}${suffix}`;
 }
 
-function SatelliteDataRow({ slot }: { slot: number }) {
-  const telemetry = useSatelliteTelemetry(slot);
+function SatelliteDataRow({ slot, system }: { slot: number; system: SatelliteSystem }) {
+  const telemetry = useSatelliteTelemetry(slot, system);
 
   return (
     <DataGridRow className="*:py-0.5">
@@ -60,8 +65,18 @@ function PendingSatelliteDataRow({ slot }: { slot: number }) {
   );
 }
 
-function GpsParameterRow({ label, parameter }: { label: string; parameter: string }) {
-  const result = useAtomValue(parameterSubscriptionAtom(`${parameterRoot}/${parameter}`));
+function GpsParameterRow({
+  label,
+  parameter,
+  system,
+}: {
+  label: string;
+  parameter: string;
+  system: SatelliteSystem;
+}) {
+  const result = useAtomValue(
+    parameterSubscriptionAtom(`/${system}/Rocket/FlightComputer/${parameter}`),
+  );
 
   return (
     <DataGridRow className="*:py-0.5">
@@ -89,45 +104,65 @@ function GpsParameterRow({ label, parameter }: { label: string; parameter: strin
 export const SatelliteSkyViewCard = makeCard({
   id: "satellite-sky-view-card",
   name: "Satellite Sky View",
-  schema: Schema.Struct({}),
-  component: () => (
-    <div className="grid size-full grid-rows-[minmax(0,1fr)_auto] overflow-hidden bg-background">
-      <div className="flex min-h-0 items-center justify-center p-3">
-        <SatelliteSkyView className="size-full" />
-      </div>
+  schema: Schema.Struct({
+    system: Schema.Literals(["SystemA", "SystemB"]).pipe(
+      Schema.withDecodingDefaultKey(Effect.succeed("SystemA")),
+      Schema.annotate({
+        [FormDefaultValueAnnotationId]: "SystemA",
+        [FormTitleAnnotationId]: "System",
+        [FormTypeAnnotationId]: "string",
+      }),
+    ),
+  }),
+  component: ({ params }) => {
+    const system = params.system ?? "SystemA";
 
-      <div className="overflow-auto border-t bg-border">
-        <div className="grid grid-cols-[auto_auto_1fr_auto_auto_auto_auto] gap-px">
-          <DataGridHeader className="sticky top-0 z-10 bg-background">
-            <DataGridHead>Slot</DataGridHead>
-            <DataGridHead>SV ID</DataGridHead>
-            <DataGridHead>GNSS</DataGridHead>
-            <DataGridHead className="text-right">Az</DataGridHead>
-            <DataGridHead className="text-right">El</DataGridHead>
-            <DataGridHead className="text-right">C/N0</DataGridHead>
-            <DataGridHead>Fix</DataGridHead>
-          </DataGridHeader>
-          <DataGridBody>
-            {satelliteSlots.map((slot) => (
-              <Suspense key={slot} fallback={<PendingSatelliteDataRow slot={slot} />}>
-                <SatelliteDataRow slot={slot} />
-              </Suspense>
-            ))}
-          </DataGridBody>
+    return (
+      <div className="grid size-full grid-rows-[minmax(0,1fr)_auto] overflow-hidden bg-background">
+        <div className="flex min-h-0 items-center justify-center p-3">
+          <SatelliteSkyView className="size-full" system={system} />
         </div>
 
-        <div className="mt-px grid grid-cols-[minmax(12rem,1fr)_minmax(8rem,0.7fr)] gap-px">
-          <DataGridHeader className="sticky top-0 z-10 bg-background">
-            <DataGridHead>Parameter</DataGridHead>
-            <DataGridHead className="text-right">System A</DataGridHead>
-          </DataGridHeader>
-          <DataGridBody>
-            {gpsParameters.map(([label, parameter]) => (
-              <GpsParameterRow key={parameter} label={label} parameter={parameter} />
-            ))}
-          </DataGridBody>
+        <div className="overflow-auto border-t bg-border">
+          <div className="grid grid-cols-[auto_auto_1fr_auto_auto_auto_auto] gap-px">
+            <DataGridHeader className="sticky top-0 z-10 bg-background">
+              <DataGridHead>Slot</DataGridHead>
+              <DataGridHead>SV ID</DataGridHead>
+              <DataGridHead>GNSS</DataGridHead>
+              <DataGridHead className="text-right">Az</DataGridHead>
+              <DataGridHead className="text-right">El</DataGridHead>
+              <DataGridHead className="text-right">C/N0</DataGridHead>
+              <DataGridHead>Fix</DataGridHead>
+            </DataGridHeader>
+            <DataGridBody>
+              {satelliteSlots.map((slot) => (
+                <Suspense key={slot} fallback={<PendingSatelliteDataRow slot={slot} />}>
+                  <SatelliteDataRow slot={slot} system={system} />
+                </Suspense>
+              ))}
+            </DataGridBody>
+          </div>
+
+          <div className="mt-px grid grid-cols-[minmax(12rem,1fr)_minmax(8rem,0.7fr)] gap-px">
+            <DataGridHeader className="sticky top-0 z-10 bg-background">
+              <DataGridHead>Parameter</DataGridHead>
+              <DataGridHead className="text-right">
+                {system === "SystemA" ? "System A" : "System B"}
+              </DataGridHead>
+            </DataGridHeader>
+            <DataGridBody>
+              {gpsParameters.map(([label, parameter]) => (
+                <GpsParameterRow
+                  key={parameter}
+                  label={label}
+                  parameter={parameter}
+                  system={system}
+                />
+              ))}
+            </DataGridBody>
+          </div>
         </div>
       </div>
-    </div>
-  ),
+    );
+  },
 });

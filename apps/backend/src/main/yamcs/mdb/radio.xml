@@ -21,9 +21,6 @@
         <ValidRange validRangeAppliesToCalibrated="false" minInclusive="0" maxInclusive="255"/>
       </FloatParameterType>
       <FloatParameterType name="snr" sizeInBits="32">
-        <UnitSet>
-          <Unit form="calibrated">dB</Unit>
-        </UnitSet>
         <IntegerDataEncoding sizeInBits="8" encoding="twosComplement" bitOrder="leastSignificantBitFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -38,9 +35,8 @@
       <FloatParameterType name="temperature_c">
         <UnitSet>
           <Unit form="calibrated">C</Unit>
-          <Unit form="raw">centi-C</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement" bitOrder="leastSignificantBitFirst">
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" bitOrder="leastSignificantBitFirst" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>

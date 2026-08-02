@@ -62,6 +62,11 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+			<groupId>org.python</groupId>
+			<artifactId>jython-standalone</artifactId>
+			<version>2.7.4</version>
+		</dependency>
+		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-codec-mqtt</artifactId>
 			<version>4.1.133.Final</version>

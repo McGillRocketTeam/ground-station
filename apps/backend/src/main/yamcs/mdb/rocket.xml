@@ -899,6 +899,22 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="payload_time_elapsed" signed="true" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
       </IntegerParameterType>
+      <FloatParameterType name="predicted_location_accuracy" sizeInBits="64">
+        <UnitSet>
+          <Unit form="calibrated">m</Unit>
+        </UnitSet>
+        <ValidRange validRangeAppliesToCalibrated="true" minInclusive="0.0"/>
+      </FloatParameterType>
+      <FloatParameterType name="predicted_location_latitude" sizeInBits="64">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+      </FloatParameterType>
+      <FloatParameterType name="predicted_location_longitude" sizeInBits="64">
+        <UnitSet>
+          <Unit form="calibrated">deg</Unit>
+        </UnitSet>
+      </FloatParameterType>
       <BooleanParameterType name="prop_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
@@ -1560,6 +1576,18 @@ See https://github.com/yamcs/pymdb
       </Parameter>
       <Parameter name="payload_time_elapsed" parameterTypeRef="payload_time_elapsed" shortDescription="Payload Time Elapsed">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="predicted_location_accuracy" parameterTypeRef="predicted_location_accuracy" shortDescription="Predicted Landing Search Radius">
+        <LongDescription>Conservative, uncalibrated search radius around the predicted landing coordinates. It is not a formal confidence interval.</LongDescription>
+        <ParameterProperties dataSource="derived" persistence="true"/>
+      </Parameter>
+      <Parameter name="predicted_location_latitude" parameterTypeRef="predicted_location_latitude" shortDescription="Predicted Landing Latitude">
+        <LongDescription>Estimated latitude at landing. This is the center of a possible search region, not a precise recovery coordinate.</LongDescription>
+        <ParameterProperties dataSource="derived" persistence="true"/>
+      </Parameter>
+      <Parameter name="predicted_location_longitude" parameterTypeRef="predicted_location_longitude" shortDescription="Predicted Landing Longitude">
+        <LongDescription>Estimated longitude at landing. This is the center of a possible search region, not a precise recovery coordinate.</LongDescription>
+        <ParameterProperties dataSource="derived" persistence="true"/>
       </Parameter>
       <Parameter name="prop_atomic_flag" parameterTypeRef="prop_atomic_flag">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
@@ -2887,6 +2915,477 @@ gps_locked.updated = true;</AlgorithmText>
           <OnParameterUpdateTrigger parameterRef="gps_time_last_update"/>
           <OnParameterUpdateTrigger parameterRef="gps_latitude"/>
           <OnParameterUpdateTrigger parameterRef="gps_longitude"/>
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="landing_prediction" shortDescription="Possible Landing Region">
+        <LongDescription>Projects recent GPS drift over estimated remaining descent time. Outputs are a search aid and do not indicate a precise location.</LongDescription>
+        <AlgorithmText language="python">global math, LandingPredictionConfig, EARTH_RADIUS_M, _is_finite, _linear_fit, _recent, LandingPredictor
+
+
+"""Vehicle-independent model parameters for landing prediction.
+
+Keep numerical values in SI units. Vehicle profiles can attach simulation
+context to this configuration, but the defaults do not describe a particular
+rocket. This is important because the URRG replay fixture and Project Luminor
+simulation report describe different vehicles.
+"""
+
+
+class LandingPredictionConfig(object):
+    """All changeable assumptions used or retained by the predictor.
+
+    Keyword arguments may override any known parameter. Rejecting unknown names
+    catches misspellings that could otherwise silently leave an old value in
+    use. This class avoids dataclasses and type annotations for Yamcs Jython
+    2.7.4 compatibility.
+    """
+
+    # Optional vehicle simulation context. The first-pass model does not use
+    # these values yet, so an unknown value is safer than a misleading default.
+    vehicle_name = None
+    simulation_revision = None
+    recovery_configuration = None
+    dry_mass_kg = None
+    wet_mass_kg = None
+    vehicle_length_m = None
+    airframe_diameter_m = None
+    predicted_apogee_m = None
+    maximum_velocity_mps = None
+    maximum_acceleration_g = None
+    burn_time_s = None
+    total_impulse_ns = None
+    peak_thrust_n = None
+    effective_rail_length_m = None
+    rail_departure_velocity_mps = None
+
+    # Recovery assumptions. Replace these with current recovery simulations.
+    main_deployment_agl_m = 450.0
+    nominal_main_descent_mps = 8.0
+    main_effective_speed_multiplier = 1.8
+
+    # Estimation windows and validity thresholds.
+    gps_window_s = 12.0
+    altitude_window_s = 4.0
+    minimum_descent_speed_mps = 1.0
+    maximum_history_points = 80
+
+    # Conservative uncertainty model. These are not calibrated probabilities.
+    base_gps_uncertainty_m = 25.0
+    fit_error_multiplier = 2.0
+    remaining_time_fractional_uncertainty = 0.20
+    unobserved_horizontal_velocity_mps = 3.5
+    minimum_accuracy_m = 50.0
+    reported_vertical_speed_fallback_error_m = 10.0
+    effective_main_time_uncertainty_s = 2.0
+    ineffective_main_time_uncertainty_fraction = 0.35
+    future_main_time_uncertainty_fraction = 0.40
+
+    def __init__(self, **overrides):
+        for name, value in overrides.items():
+            if not hasattr(self, name) or name.startswith("_"):
+                raise ValueError("Unknown landing prediction parameter: %s" % name)
+            setattr(self, name, value)
+
+"""Small, dependency-free rocket landing predictor.
+
+This module intentionally uses Python 2.7-compatible syntax so the same code can
+be loaded as a Yamcs Jython user library. The eventual Yamcs algorithm only needs
+to retain one ``LandingPredictor`` instance, pass new parameter values to
+``update``, and copy the two values returned by ``predict`` to its outputs.
+
+The model is deliberately modest:
+
+* recent GPS fixes provide horizontal ground velocity;
+* recent altitude samples provide vertical velocity;
+* remaining altitude divided by descent rate provides time to landing; and
+* horizontal velocity multiplied by that time provides the landing offset.
+
+It is a search aid, not a flight dynamics simulation. In particular it cannot
+observe future wind shear, canopy behavior, or terrain. ``accuracy_m`` is a
+conservative search radius assembled from observed fit errors and fixed model
+allowances. It is not yet a statistically calibrated confidence interval.
+"""
+
+
+import math
+
+
+
+EARTH_RADIUS_M = 6371000.0
+
+
+def _is_finite(value):
+    return value is not None and not math.isnan(value) and not math.isinf(value)
+
+
+def _linear_fit(points):
+    """Return ``(slope, residual_rms)`` for ``(time, value)`` points."""
+    count = len(points)
+    if count &lt; 2:
+        return None
+
+    mean_time = sum(point[0] for point in points) / count
+    mean_value = sum(point[1] for point in points) / count
+    denominator = sum((point[0] - mean_time) ** 2 for point in points)
+    if denominator &lt;= 0.0:
+        return None
+
+    slope = sum(
+        (point[0] - mean_time) * (point[1] - mean_value) for point in points
+    ) / denominator
+    intercept = mean_value - slope * mean_time
+    residual_rms = math.sqrt(
+        sum((point[1] - (intercept + slope * point[0])) ** 2 for point in points)
+        / count
+    )
+    return slope, residual_rms
+
+
+def _recent(points, window_s):
+    if not points:
+        return []
+    cutoff = points[-1][0] - window_s
+    return [point for point in points if point[0] &gt;= cutoff]
+
+
+class LandingPredictor(object):
+    """Accumulate telemetry and estimate a possible landing region.
+
+    Inputs to ``update`` must already use metres, seconds, and metres per second.
+    Supplying ``None`` means that parameter did not update. Yamcs parameter
+    timestamps should be used for ``time_s`` rather than wall-clock execution
+    time so stale values do not look like fresh measurements.
+
+    Vehicle and recovery assumptions are supplied through
+    ``LandingPredictionConfig`` and should be updated as simulations improve.
+    """
+
+    def __init__(self, config=None):
+        self.config = config or LandingPredictionConfig()
+        self._gps = []
+        self._altitude = []
+        self._reported_vertical_speed_mps = None
+        self._stage = None
+        self._main_fired = False
+
+    def update(
+        self,
+        time_s,
+        latitude=None,
+        longitude=None,
+        altitude_agl_m=None,
+        vertical_speed_mps=None,
+        stage=None,
+        main_fired=None,
+    ):
+        """Record only telemetry values that were updated at ``time_s``."""
+        if not _is_finite(time_s):
+            return
+
+        if self._valid_gps(latitude, longitude):
+            gps_point = (float(time_s), float(latitude), float(longitude))
+            if not self._gps or (
+                gps_point[0] &gt; self._gps[-1][0]
+                and gps_point[1:] != self._gps[-1][1:]
+            ):
+                self._gps.append(gps_point)
+                self._gps = self._gps[-self.config.maximum_history_points :]
+
+        if _is_finite(altitude_agl_m):
+            altitude_point = (float(time_s), max(0.0, float(altitude_agl_m)))
+            if not self._altitude or (
+                altitude_point[0] &gt; self._altitude[-1][0]
+                and altitude_point[1] != self._altitude[-1][1]
+            ):
+                self._altitude.append(altitude_point)
+                self._altitude = self._altitude[
+                    -self.config.maximum_history_points :
+                ]
+
+        if _is_finite(vertical_speed_mps):
+            self._reported_vertical_speed_mps = float(vertical_speed_mps)
+        if stage is not None:
+            self._stage = str(stage).lower()
+        if main_fired is not None:
+            self._main_fired = self._main_fired or bool(main_fired)
+
+    def predict(self):
+        """Return the two intended Yamcs output values, or ``None``.
+
+        The return shape maps directly to the requested output parameters:
+
+        ``predicted_location``
+            A latitude/longitude aggregate.
+
+        ``predicted_location_accuracy``
+            An uncalibrated conservative search radius in metres.
+        """
+        if not self._gps or not self._altitude:
+            return None
+
+        horizontal = self._horizontal_velocity()
+        vertical = self._descent_rate()
+        if (
+            horizontal is None
+            or vertical is None
+            or vertical[0] &lt; self.config.minimum_descent_speed_mps
+        ):
+            return None
+
+        east_mps, north_mps, horizontal_fit_error_m = horizontal
+        descent_mps, altitude_fit_error_m = vertical
+        altitude_agl_m = self._altitude[-1][1]
+        remaining_time_s, configuration_uncertainty_s = self._remaining_time(
+            altitude_agl_m, descent_mps
+        )
+
+        east_offset_m = east_mps * remaining_time_s
+        north_offset_m = north_mps * remaining_time_s
+        latitude, longitude = self._offset_location(east_offset_m, north_offset_m)
+
+        speed_mps = math.sqrt(east_mps ** 2 + north_mps ** 2)
+        time_uncertainty_s = (
+            configuration_uncertainty_s
+            + altitude_fit_error_m
+            / max(descent_mps, self.config.minimum_descent_speed_mps)
+            + remaining_time_s
+            * self.config.remaining_time_fractional_uncertainty
+        )
+        accuracy_m = (
+            self.config.base_gps_uncertainty_m
+            + horizontal_fit_error_m * self.config.fit_error_multiplier
+            + speed_mps * time_uncertainty_s
+            + remaining_time_s * self.config.unobserved_horizontal_velocity_mps
+        )
+
+        return {
+            "predicted_location": {
+                "latitude": latitude,
+                "longitude": longitude,
+            },
+            "predicted_location_accuracy": max(
+                self.config.minimum_accuracy_m, accuracy_m
+            ),
+        }
+
+    def _horizontal_velocity(self):
+        points = _recent(self._gps, self.config.gps_window_s)
+        if len(points) &lt; 3:
+            return None
+
+        reference_latitude = points[-1][1]
+        reference_longitude = points[-1][2]
+        latitude_radians = math.radians(reference_latitude)
+        east_points = []
+        north_points = []
+        for time_s, latitude, longitude in points:
+            north_m = math.radians(latitude - reference_latitude) * EARTH_RADIUS_M
+            east_m = (
+                math.radians(longitude - reference_longitude)
+                * EARTH_RADIUS_M
+                * math.cos(latitude_radians)
+            )
+            east_points.append((time_s, east_m))
+            north_points.append((time_s, north_m))
+
+        east_fit = _linear_fit(east_points)
+        north_fit = _linear_fit(north_points)
+        if east_fit is None or north_fit is None:
+            return None
+        fit_error_m = math.sqrt(east_fit[1] ** 2 + north_fit[1] ** 2)
+        return east_fit[0], north_fit[0], fit_error_m
+
+    def _descent_rate(self):
+        points = _recent(self._altitude, self.config.altitude_window_s)
+        fit = _linear_fit(points)
+        if (
+            fit is not None
+            and fit[0] &lt; -self.config.minimum_descent_speed_mps
+        ):
+            return -fit[0], fit[1]
+
+        if (
+            self._reported_vertical_speed_mps is not None
+            and self._reported_vertical_speed_mps
+            &lt; -self.config.minimum_descent_speed_mps
+        ):
+            return (
+                -self._reported_vertical_speed_mps,
+                self.config.reported_vertical_speed_fallback_error_m,
+            )
+        return None
+
+    def _remaining_time(self, altitude_agl_m, descent_mps):
+        main_is_effective = descent_mps &lt;= (
+            self.config.nominal_main_descent_mps
+            * self.config.main_effective_speed_multiplier
+        )
+        main_expected = self._main_fired or (
+            self._stage is not None and "main" in self._stage
+        )
+
+        if main_is_effective:
+            return (
+                altitude_agl_m / descent_mps,
+                self.config.effective_main_time_uncertainty_s,
+            )
+
+        if main_expected or altitude_agl_m &lt;= self.config.main_deployment_agl_m:
+            # Main was expected but no aerodynamic slowdown is visible.
+            remaining = altitude_agl_m / descent_mps
+            return (
+                remaining,
+                remaining * self.config.ineffective_main_time_uncertainty_fraction,
+            )
+
+        drogue_altitude_m = altitude_agl_m - self.config.main_deployment_agl_m
+        drogue_time_s = drogue_altitude_m / descent_mps
+        main_time_s = (
+            self.config.main_deployment_agl_m
+            / self.config.nominal_main_descent_mps
+        )
+        return (
+            drogue_time_s + main_time_s,
+            main_time_s * self.config.future_main_time_uncertainty_fraction,
+        )
+
+    def _offset_location(self, east_m, north_m):
+        latitude = self._gps[-1][1]
+        longitude = self._gps[-1][2]
+        predicted_latitude = latitude + math.degrees(north_m / EARTH_RADIUS_M)
+        longitude_scale = EARTH_RADIUS_M * math.cos(math.radians(latitude))
+        predicted_longitude = longitude + math.degrees(east_m / longitude_scale)
+        return predicted_latitude, predicted_longitude
+
+    @staticmethod
+    def _valid_gps(latitude, longitude):
+        if not _is_finite(latitude) or not _is_finite(longitude):
+            return False
+        if latitude == 0.0 and longitude == 0.0:
+            return False
+        return -90.0 &lt;= latitude &lt;= 90.0 and -180.0 &lt;= longitude &lt;= 180.0
+
+# This file is an algorithm body, not a standalone Python module. The XTCE
+# generator prepends the reusable predictor classes before embedding it.
+
+global _landing_predictor_states
+
+try:
+    _landing_predictor_states
+except NameError:
+    _landing_predictor_states = {}
+
+# Each mounted copy of rocket.xml receives distinct Yamcs input binding objects.
+# Their identity keeps System A and System B histories separate even though the
+# Python script engine is shared by all algorithms in a processor.
+state_key = id(gps_latitude)
+state = _landing_predictor_states.get(state_key)
+if state is None:
+    state = {
+        "predictor": LandingPredictor(),
+        "timestamps": {},
+    }
+    _landing_predictor_states[state_key] = state
+
+
+def updated_value(binding, name, transform=None):
+    """Return a value only when Yamcs reports a new parameter generation time."""
+    if binding.value is None:
+        return None
+    timestamp = binding.generationTimeMillis
+    if state["timestamps"].get(name) == timestamp:
+        return None
+    state["timestamps"][name] = timestamp
+    value = binding.value
+    return transform(value) if transform is not None else value
+
+
+latitude = updated_value(gps_latitude, "gps_latitude")
+longitude = updated_value(gps_longitude, "gps_longitude")
+altitude_agl_m = updated_value(
+    barometer_altitude_from_pad,
+    "barometer_altitude_from_pad",
+    lambda feet: feet * 0.3048,
+)
+vertical_speed_mps = updated_value(
+    vertical_speed,
+    "vertical_speed",
+    lambda feet_per_second: feet_per_second * 0.3048,
+)
+stage = updated_value(flight_stage, "flight_stage")
+main_fired = updated_value(main_energized_SW, "main_energized_SW")
+
+changed_times = [
+    binding.generationTimeMillis
+    for binding in (
+        gps_latitude,
+        gps_longitude,
+        barometer_altitude_from_pad,
+        vertical_speed,
+        flight_stage,
+        main_energized_SW,
+    )
+    if binding.value is not None
+    and state["timestamps"].get("algorithm_time_" + str(id(binding)))
+    != binding.generationTimeMillis
+]
+for binding in (
+    gps_latitude,
+    gps_longitude,
+    barometer_altitude_from_pad,
+    vertical_speed,
+    flight_stage,
+    main_energized_SW,
+):
+    if binding.value is not None:
+        state["timestamps"]["algorithm_time_" + str(id(binding))] = (
+            binding.generationTimeMillis
+        )
+
+if changed_times:
+    state["predictor"].update(
+        max(changed_times) / 1000.0,
+        latitude=latitude,
+        longitude=longitude,
+        altitude_agl_m=altitude_agl_m,
+        vertical_speed_mps=vertical_speed_mps,
+        stage=stage,
+        main_fired=main_fired,
+    )
+
+result = state["predictor"].predict()
+if result is None:
+    predicted_location_latitude.updated = False
+    predicted_location_longitude.updated = False
+    predicted_location_accuracy.updated = False
+else:
+    predicted_location_latitude.value = result["predicted_location"]["latitude"]
+    predicted_location_longitude.value = result["predicted_location"]["longitude"]
+    predicted_location_accuracy.value = result["predicted_location_accuracy"]
+    predicted_location_latitude.updated = True
+    predicted_location_longitude.updated = True
+    predicted_location_accuracy.updated = True
+</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="gps_latitude" instance="0" inputName="gps_latitude"/>
+          <InputParameterInstanceRef parameterRef="gps_longitude" instance="0" inputName="gps_longitude"/>
+          <InputParameterInstanceRef parameterRef="barometer_altitude_from_pad" instance="0" inputName="barometer_altitude_from_pad"/>
+          <InputParameterInstanceRef parameterRef="vertical_speed" instance="0" inputName="vertical_speed"/>
+          <InputParameterInstanceRef parameterRef="flight_stage" instance="0" inputName="flight_stage"/>
+          <InputParameterInstanceRef parameterRef="main_energized_SW" instance="0" inputName="main_energized_SW"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="predicted_location_latitude" outputName="predicted_location_latitude"/>
+          <OutputParameterRef parameterRef="predicted_location_longitude" outputName="predicted_location_longitude"/>
+          <OutputParameterRef parameterRef="predicted_location_accuracy" outputName="predicted_location_accuracy"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="gps_latitude"/>
+          <OnParameterUpdateTrigger parameterRef="gps_longitude"/>
+          <OnParameterUpdateTrigger parameterRef="barometer_altitude_from_pad"/>
+          <OnParameterUpdateTrigger parameterRef="vertical_speed"/>
+          <OnParameterUpdateTrigger parameterRef="flight_stage"/>
+          <OnParameterUpdateTrigger parameterRef="main_energized_SW"/>
         </TriggerSet>
       </CustomAlgorithm>
       <CustomAlgorithm name="mov_open" shortDescription="MOV Open">

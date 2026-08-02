@@ -21,6 +21,7 @@ import { NetworkTopologyCard } from "@/cards/network-topology";
 import { ParameterDeviceTable } from "@/cards/parameter-device-table";
 import { ParameterTable } from "@/cards/parameter-table";
 import { PIDCard } from "@/cards/pid";
+import { PredictionMapCard } from "@/cards/prediction-map-card";
 import { ProceduresCard } from "@/cards/procedures";
 import { RealtimeChartCard } from "@/cards/realtime-chart";
 import { SatelliteSkyViewCard } from "@/cards/satellite-sky-view-card";
@@ -36,6 +37,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   CommandHistoryCard,
   ChartCard,
   MapCard,
+  PredictionMapCard,
   SatelliteSkyViewCard,
   LinksCard,
   EventsCard,

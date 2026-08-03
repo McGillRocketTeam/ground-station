@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -48,6 +50,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   private static final int FIRST_SEQUENCE = 1;
   private static final int MAX_SEQUENCE = 255;
   private static final int RESET_AV_ACK_SEQUENCE = 0;
+  static final int FC_ACK_TIMEOUT_SECONDS = 15;
   private static final String RESET_AV_COMMAND_NAME = "reset_av";
   private static final String RESET_AV_COMMAND_CODE = "rs";
   private static final Gson GSON = new Gson();
@@ -69,7 +72,10 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   public void init(String yamcsInstance, String linkName, YConfiguration config)
       throws ConfigurationException {
     super.init(yamcsInstance, linkName, config);
+    configure(config);
+  }
 
+  void configure(YConfiguration config) throws ConfigurationException {
     registerCommandOption();
     connOpts = MqttUtils.getConnectionOptions(config);
     client = MqttUtils.newClient(config);
@@ -663,6 +669,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
       }
       if (dispatch.canRemove()) {
         releaseDispatch(dispatch);
+      } else {
+        scheduleFlightComputerAckTimeout(dispatch);
       }
       return;
     }
@@ -679,7 +687,58 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
     if (dispatch.isFinished()) {
       releaseDispatch(dispatch);
+    } else {
+      scheduleFlightComputerAckTimeout(dispatch);
     }
+  }
+
+  private void scheduleFlightComputerAckTimeout(DispatchState dispatch) {
+    if (!dispatch.markFlightComputerAckTimeoutScheduled()) {
+      return;
+    }
+
+    try {
+      ScheduledFuture<?> timeout =
+          scheduleFlightComputerAckTimeout(
+              () -> handleFlightComputerAckTimeout(dispatch),
+              FC_ACK_TIMEOUT_SECONDS,
+              TimeUnit.SECONDS);
+      dispatch.setFlightComputerAckTimeout(timeout);
+    } catch (RuntimeException e) {
+      log.warn("Could not schedule flight computer ack timeout; failing the pending ack", e);
+      handleFlightComputerAckTimeout(dispatch);
+    }
+  }
+
+  ScheduledFuture<?> scheduleFlightComputerAckTimeout(
+      Runnable task, long delay, TimeUnit timeUnit) {
+    return YamcsServer.getServer().getThreadPoolExecutor().schedule(task, delay, timeUnit);
+  }
+
+  private void handleFlightComputerAckTimeout(DispatchState dispatch) {
+    List<Target> timedOutTargets = dispatch.markFlightComputerAcksTimedOut();
+    if (timedOutTargets.isEmpty()) {
+      return;
+    }
+
+    releaseDispatch(dispatch);
+
+    String detail =
+        "Flight computer acknowledgement timed out after " + FC_ACK_TIMEOUT_SECONDS + " seconds";
+    long missionTime = timeService.getMissionTime();
+    List<String> targetNames = new ArrayList<>();
+    for (Target target : timedOutTargets) {
+      targetNames.add(target.ackName());
+      commandHistoryPublisher.publishAck(
+          dispatch.commandId(), target.fcAckKey(), missionTime, AckStatus.NOK, detail);
+    }
+
+    commandHistoryPublisher.publishAck(
+        dispatch.commandId(),
+        CommandHistoryPublisher.CommandComplete_KEY,
+        missionTime,
+        AckStatus.NOK,
+        detail + " on " + String.join(", ", targetNames));
   }
 
   private AckDto parseAck(Target target, MqttMessage message, String ackType) {
@@ -777,6 +836,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
   }
 
   private void releaseDispatch(DispatchState dispatch) {
+    dispatch.close();
     if (dispatch.ackTrackingMode() == AckTrackingMode.COUNTED) {
       synchronized (this) {
         dispatchBySequence.remove(dispatch.sequence(), dispatch);
@@ -1001,6 +1061,9 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     private AckStatus statusFailureAckStatus;
     private String statusFailureDetail;
     private boolean publishResultsFinalized;
+    private boolean flightComputerAckTimeoutScheduled;
+    private ScheduledFuture<?> flightComputerAckTimeout;
+    private boolean closed;
 
     private DispatchState(
         PreparedCommand preparedCommand,
@@ -1022,7 +1085,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized DispatchProgress recordPublishSuccess(Target target) {
-      if (!requestedTargetsByName.containsKey(target.name())
+      if (closed
+          || !requestedTargetsByName.containsKey(target.name())
           || publishedTargets.contains(target.name())
           || failedTargets.containsKey(target.name())) {
         return new DispatchProgress(false, allPublishesResolved());
@@ -1033,7 +1097,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized DispatchProgress recordPublishFailure(Target target, String message) {
-      if (!requestedTargetsByName.containsKey(target.name())
+      if (closed
+          || !requestedTargetsByName.containsKey(target.name())
           || publishedTargets.contains(target.name())
           || failedTargets.containsKey(target.name())) {
         return new DispatchProgress(false, allPublishesResolved());
@@ -1044,7 +1109,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized boolean recordFlightComputerAck(Target target, boolean completionRejected) {
-      if (!requestedTargetsByName.containsKey(target.name())
+      if (closed
+          || !requestedTargetsByName.containsKey(target.name())
           || failedTargets.containsKey(target.name())) {
         return false;
       }
@@ -1062,7 +1128,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized boolean recordRadioAck(Target target, RadioAckPhase phase) {
-      if (!expectedRadioTargets.contains(target.name())
+      if (closed
+          || !expectedRadioTargets.contains(target.name())
           || failedTargets.containsKey(target.name())) {
         return false;
       }
@@ -1074,7 +1141,8 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized boolean recordStatusAck(Target target, AckStatus ackStatus, String message) {
-      if (!requestedTargetsByName.containsKey(target.name())
+      if (closed
+          || !requestedTargetsByName.containsKey(target.name())
           || failedTargets.containsKey(target.name())
           || hasStatusFailure()) {
         return false;
@@ -1095,7 +1163,7 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
     }
 
     synchronized boolean markPublishResultsFinalized() {
-      if (publishResultsFinalized) {
+      if (closed || publishResultsFinalized) {
         return false;
       }
 
@@ -1105,6 +1173,59 @@ public class MqttFanoutCommandLink extends AbstractTcDataLink implements MqttCal
 
       publishResultsFinalized = true;
       return true;
+    }
+
+    synchronized boolean markFlightComputerAckTimeoutScheduled() {
+      if (closed
+          || ackTrackingMode != AckTrackingMode.COUNTED
+          || !publishResultsFinalized
+          || flightComputerAckTimeoutScheduled) {
+        return false;
+      }
+
+      for (String targetName : publishedTargets) {
+        if (!flightComputerAcks.contains(targetName)) {
+          flightComputerAckTimeoutScheduled = true;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    synchronized void setFlightComputerAckTimeout(ScheduledFuture<?> timeout) {
+      if (closed) {
+        timeout.cancel(false);
+      } else {
+        flightComputerAckTimeout = timeout;
+      }
+    }
+
+    synchronized List<Target> markFlightComputerAcksTimedOut() {
+      if (closed || !publishResultsFinalized) {
+        return List.of();
+      }
+
+      List<Target> timedOutTargets = new ArrayList<>();
+      for (Target target : requestedTargetsByName.values()) {
+        if (publishedTargets.contains(target.name())
+            && !flightComputerAcks.contains(target.name())) {
+          timedOutTargets.add(target);
+        }
+      }
+      if (timedOutTargets.isEmpty()) {
+        return List.of();
+      }
+
+      closed = true;
+      return List.copyOf(timedOutTargets);
+    }
+
+    synchronized void close() {
+      closed = true;
+      if (flightComputerAckTimeout != null) {
+        flightComputerAckTimeout.cancel(false);
+        flightComputerAckTimeout = null;
+      }
     }
 
     synchronized boolean shouldComplete() {

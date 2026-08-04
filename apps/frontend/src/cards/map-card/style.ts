@@ -1,6 +1,19 @@
 import type { StyleSpecification } from "maplibre-gl";
 
-const mbtileserverBaseUrl = "http://localhost:3001/services";
+function resolveMbtileserverBaseUrl() {
+  const url = new URL("http://localhost:3001/services");
+
+  if (
+    typeof window !== "undefined" &&
+    !["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ) {
+    url.hostname = window.location.hostname;
+  }
+
+  return url.toString().replace(/\/$/, "");
+}
+
+const mbtileserverBaseUrl = resolveMbtileserverBaseUrl();
 
 const requiredTilesets = [
   "worldLowQuality",

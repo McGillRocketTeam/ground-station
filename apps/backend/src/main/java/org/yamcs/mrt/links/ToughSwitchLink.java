@@ -305,8 +305,11 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
     return "http://" + ipAddress;
   }
 
-  private void publishStats(String statsJson) {
+  private void publishStats(String statsJson) throws IOException {
     JsonObject root = GSON.fromJson(statsJson, JsonObject.class);
+    if (root == null) {
+      throw new IOException("ToughSwitch stats response was JSON null");
+    }
     long now = getCurrentTime();
     List<ParameterValue> values = new ArrayList<>();
 

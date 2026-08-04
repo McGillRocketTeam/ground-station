@@ -88,6 +88,26 @@ This will start:
   - MQTT broker (Eclipse Mosquitto, port 1883)
   - Map tile server (port 3001)
 
+### Remote access with NetBird
+
+Install and enroll the native [NetBird client](https://docs.netbird.io/get-started/install) on the host once. The native client is used instead of a Docker container so the NetBird peer can reach both host processes and Docker-published ports on Windows, macOS, and Linux.
+
+Enable the integration in `tilt_config.json`:
+
+```json
+{
+  "remote": true
+}
+```
+
+Start Tilt on all interfaces so both the application and Tilt dashboard are reachable from another NetBird peer:
+
+```bash
+tilt up --host=0.0.0.0
+```
+
+The `netbird` Tilt resource runs `netbird up`, prints the host's NetBird IPv4 address, and reports the frontend and Tilt URLs. It does not install NetBird, store a setup key, or disconnect NetBird when Tilt stops. Use NetBird policies and the host firewall to restrict access to the required ports.
+
 ## 🔧 Individual Package Development
 
 ### Frontend Development

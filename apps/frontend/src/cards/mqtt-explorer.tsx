@@ -28,7 +28,21 @@ type TopicNode = {
   value?: TopicEntry;
 };
 
-const DEFAULT_MQTT_URL = import.meta.env.MQTT_BROKER_URL ?? "ws://localhost:9001";
+function resolveMqttUrl(rawUrl: string) {
+  const url = new URL(rawUrl);
+
+  if (
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "0.0.0.0"].includes(url.hostname) &&
+    !["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ) {
+    url.hostname = window.location.hostname;
+  }
+
+  return url.toString();
+}
+
+const DEFAULT_MQTT_URL = resolveMqttUrl(import.meta.env.MQTT_BROKER_URL ?? "ws://localhost:9001");
 
 const MqttExplorerCardConfigSchema = Schema.Struct({
   brokerUrl: Schema.optional(Schema.String).pipe(

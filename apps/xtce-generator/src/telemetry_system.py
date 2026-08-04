@@ -376,7 +376,9 @@ class TelemetrySystem(FlightSystem):
                     long_description=description,
                     calibrated_units=units_cal,
                     # raw_units=units_raw,
-                    encoding=Y.IntegerEncoding(bits=size, scheme=scheme),
+                    encoding=Y.IntegerEncoding(
+                        bits=size, scheme=scheme, little_endian=True
+                    ),
                     calibrator=calibrator,
                 )
                 return param

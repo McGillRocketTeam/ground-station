@@ -304,7 +304,7 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
         output.write(buffer, 0, read);
       }
     } catch (IOException e) {
-      if (output.size() == 0 || !"Premature EOF".equals(e.getMessage())) {
+      if (!"Premature EOF".equals(e.getMessage())) {
         throw e;
       }
       log.debug("ToughSwitch closed the HTTP response after {} bytes", output.size());

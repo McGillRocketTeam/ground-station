@@ -30,6 +30,20 @@ const MapCardConfiguration = Schema.Struct({
   altitude: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" })),
   rocketLong: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" })),
   rocketLat: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" })),
+  useLocalTiles: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: true,
+      [FormTitleAnnotationId]: "Use Local Map Tiles",
+      [FormTypeAnnotationId]: "boolean",
+    }),
+  ),
+  showLc2025Layers: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: true,
+      [FormTitleAnnotationId]: "Show LC2025 Layers",
+      [FormTypeAnnotationId]: "boolean",
+    }),
+  ),
   showSatelliteSkyView: Schema.optional(Schema.Boolean).pipe(
     Schema.annotate({
       [FormDefaultValueAnnotationId]: true,
@@ -60,9 +74,9 @@ function RocketMarker(props: { lat: string; long: string }) {
 }
 
 const viewStateAtom = Atom.make<MapViewState>({
-  longitude: -73.5673,
-  latitude: 45.5017,
-  zoom: 10,
+  longitude: -81.86,
+  latitude: 48,
+  zoom: 11,
 });
 
 export const MapCard = makeCard({
@@ -103,7 +117,13 @@ export const MapCard = makeCard({
     const [viewState, setViewState] = useAtom(viewStateAtom);
     return (
       <div className="relative h-full min-h-60 w-full">
-        <DashboardMap debugName="map-card" viewState={viewState} onViewStateChange={setViewState}>
+        <DashboardMap
+          debugName="map-card"
+          viewState={viewState}
+          onViewStateChange={setViewState}
+          useLocalTiles={props.params.useLocalTiles ?? true}
+          showLc2025Layers={props.params.showLc2025Layers ?? true}
+        >
           {padCoordinate ? (
             <Marker
               longitude={padCoordinate.longitude}

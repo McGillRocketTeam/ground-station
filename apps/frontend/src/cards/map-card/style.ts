@@ -1,6 +1,6 @@
 import type { StyleSpecification } from "maplibre-gl";
 
-function resolveMbtileserverBaseUrl() {
+export function resolveMbtileserverBaseUrl() {
   const url = new URL("http://localhost:3001/services");
 
   if (
@@ -18,18 +18,40 @@ const mbtileserverBaseUrl = resolveMbtileserverBaseUrl();
 const requiredTilesets = [
   "worldLowQuality",
   "satellite-2017-11-02_canada_ontario",
-  "timminsCity",
   "launchcanada",
   "launchcanada2",
+  "timminsCity",
 ] as const;
 
-export const basicMapStyle = (theme: string) =>
-  theme === "dark"
-    ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-    : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
+const rasterPaint = {
+  "raster-opacity": 1,
+  "raster-fade-duration": 0,
+} as const;
 
-export const customMapStyle = {
-  name: "OSM + Satellite",
+export const eoxMapStyle = {
+  name: "EOX Sentinel-2 Cloudless 2025",
+  version: 8,
+  sources: {
+    eoxSatellite: {
+      type: "raster",
+      tiles: [
+        "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg",
+      ],
+      tileSize: 256,
+    },
+  },
+  layers: [
+    {
+      id: "EOX-Satellite",
+      type: "raster",
+      source: "eoxSatellite",
+      paint: rasterPaint,
+    },
+  ],
+} satisfies StyleSpecification;
+
+export const localMapStyle = {
+  name: "Local Satellite",
   version: 8,
   sources: {
     worldLowQuality: {
@@ -37,33 +59,39 @@ export const customMapStyle = {
       tiles: [`${mbtileserverBaseUrl}/worldLowQuality/tiles/{z}/{x}/{y}.jpg`],
       tileSize: 256,
       bounds: [-165.219, -88.6959, 178.999, 88.5106],
+      minzoom: 0,
+      maxzoom: 6,
     },
-    ontarioFull: {
+    ontario: {
       type: "raster",
       tiles: [`${mbtileserverBaseUrl}/satellite-2017-11-02_canada_ontario/tiles/{z}/{x}/{y}.jpg`],
       tileSize: 256,
       bounds: [-95.15965, 41.6377, -74.30998, 57.50826],
+      minzoom: 0,
+      maxzoom: 13,
+    },
+    launchCanadaRegional: {
+      type: "raster",
+      tiles: [`${mbtileserverBaseUrl}/launchcanada/tiles/{z}/{x}/{y}.jpg`],
+      tileSize: 256,
+      bounds: [-84.4429, 46.535, -79.3033, 49.358],
+      minzoom: 12,
+      maxzoom: 15,
+    },
+    launchCanadaDetail: {
+      type: "raster",
+      tiles: [`${mbtileserverBaseUrl}/launchcanada2/tiles/{z}/{x}/{y}.jpg`],
+      tileSize: 256,
+      bounds: [-82.0236, 47.8831, -81.7227, 48.0483],
+      minzoom: 0,
+      maxzoom: 18,
     },
     timminsCity: {
       type: "raster",
       tiles: [`${mbtileserverBaseUrl}/timminsCity/tiles/{z}/{x}/{y}.jpg`],
       tileSize: 256,
       bounds: [-81.511, 48.3795, -81.1542, 48.5736],
-    },
-    launchCanada1: {
-      type: "raster",
-      tiles: [`${mbtileserverBaseUrl}/launchcanada/tiles/{z}/{x}/{y}.jpg`],
-      tileSize: 256,
-      bounds: [-84.4429, 46.535, -79.3033, 49.358],
-      minzoom: 0,
-      maxzoom: 13,
-    },
-    launchCanada2: {
-      type: "raster",
-      tiles: [`${mbtileserverBaseUrl}/launchcanada2/tiles/{z}/{x}/{y}.jpg`],
-      tileSize: 256,
-      bounds: [-82.0236, 47.8831, -81.7227, 48.0483],
-      minzoom: 0,
+      minzoom: 12,
       maxzoom: 18,
     },
   },
@@ -73,75 +101,35 @@ export const customMapStyle = {
       type: "raster",
       source: "worldLowQuality",
       minzoom: 0,
-      maxzoom: 8,
-      layout: {
-        visibility: "visible",
-      },
-      paint: {
-        "raster-opacity": 1,
-        "raster-fade-duration": 0,
-      },
-      filter: ["all"],
+      paint: rasterPaint,
     },
     {
-      id: "Ontario-Full",
+      id: "Ontario-Satellite",
       type: "raster",
-      source: "ontarioFull",
-      minzoom: 4,
-      maxzoom: 22,
-      layout: {
-        visibility: "visible",
-      },
-      paint: {
-        "raster-opacity": 1,
-        "raster-fade-duration": 0,
-      },
-      filter: ["all"],
+      source: "ontario",
+      minzoom: 3,
+      paint: rasterPaint,
     },
     {
-      id: "Launch-Canada-1",
+      id: "Launch-Canada-Regional",
       type: "raster",
-      source: "launchCanada1",
-      minzoom: 0,
-      maxzoom: 15,
-      layout: {
-        visibility: "visible",
-      },
-      paint: {
-        "raster-opacity": 1,
-        "raster-fade-duration": 0,
-      },
-      filter: ["all"],
+      source: "launchCanadaRegional",
+      minzoom: 12,
+      paint: rasterPaint,
     },
     {
-      id: "Launch-Canada-2",
+      id: "Launch-Canada-Detail",
       type: "raster",
-      source: "launchCanada2",
+      source: "launchCanadaDetail",
       minzoom: 15,
-      maxzoom: 22,
-      layout: {
-        visibility: "visible",
-      },
-      paint: {
-        "raster-opacity": 1,
-        "raster-fade-duration": 0,
-      },
-      filter: ["all"],
+      paint: rasterPaint,
     },
     {
       id: "Timmins-City",
       type: "raster",
       source: "timminsCity",
       minzoom: 12,
-      maxzoom: 22,
-      layout: {
-        visibility: "visible",
-      },
-      paint: {
-        "raster-opacity": 1,
-        "raster-fade-duration": 0,
-      },
-      filter: ["all"],
+      paint: rasterPaint,
     },
   ],
 } satisfies StyleSpecification;

@@ -797,53 +797,53 @@ See https://github.com/yamcs/pymdb
       <IntegerParameterType name="padding" signed="false" sizeInBits="32">
         <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
       </IntegerParameterType>
-      <BooleanParameterType name="payload_adapter0_atomic_flag" zeroStringValue="False" oneStringValue="True">
-        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
-      </BooleanParameterType>
-      <BooleanParameterType name="payload_adapter1_atomic_flag" zeroStringValue="False" oneStringValue="True">
+      <BooleanParameterType name="payload_adapter_0_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <IntegerParameterType name="payload_adapter_0_raw_x" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_0_raw_y" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_0_raw_z" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
+      <BooleanParameterType name="payload_adapter_1_atomic_flag" zeroStringValue="False" oneStringValue="True">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
       <IntegerParameterType name="payload_adapter_1_raw_x" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_1_raw_y" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_1_raw_z" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <BooleanParameterType name="payload_adapter_2_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <IntegerParameterType name="payload_adapter_2_raw_x" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_2_raw_y" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_2_raw_z" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <BooleanParameterType name="payload_adapter_3_atomic_flag" zeroStringValue="False" oneStringValue="True">
         <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
       </BooleanParameterType>
       <IntegerParameterType name="payload_adapter_3_raw_x" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_3_raw_y" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_adapter_3_raw_z" signed="true" sizeInBits="32">
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="leastSignificantByteFirst"/>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="leastSignificantByteFirst"/>
       </IntegerParameterType>
       <IntegerParameterType name="payload_amp_x" signed="true" sizeInBits="32">
         <UnitSet>
@@ -1493,10 +1493,7 @@ See https://github.com/yamcs/pymdb
         <LongDescription>A.S.T.R.A. Packet Padding</LongDescription>
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="payload_adapter0_atomic_flag" parameterTypeRef="payload_adapter0_atomic_flag">
-        <ParameterProperties dataSource="telemetered" persistence="true"/>
-      </Parameter>
-      <Parameter name="payload_adapter1_atomic_flag" parameterTypeRef="payload_adapter1_atomic_flag">
+      <Parameter name="payload_adapter_0_atomic_flag" parameterTypeRef="payload_adapter_0_atomic_flag">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="payload_adapter_0_raw_x" parameterTypeRef="payload_adapter_0_raw_x" shortDescription="Payload Adapter 0 X">
@@ -1506,6 +1503,9 @@ See https://github.com/yamcs/pymdb
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="payload_adapter_0_raw_z" parameterTypeRef="payload_adapter_0_raw_z" shortDescription="Payload Adapter 0 Z">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="payload_adapter_1_atomic_flag" parameterTypeRef="payload_adapter_1_atomic_flag">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="payload_adapter_1_raw_x" parameterTypeRef="payload_adapter_1_raw_x" shortDescription="Payload Adapter 1 X">
@@ -1868,28 +1868,28 @@ See https://github.com/yamcs/pymdb
               </BooleanExpression>
             </IncludeCondition>
           </ContainerRefEntry>
-          <ContainerRefEntry containerRef="payload_adapter0_atomic">
+          <ContainerRefEntry containerRef="payload_adapter_0_atomic">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
             <IncludeCondition>
               <BooleanExpression>
                 <Condition>
-                  <ParameterInstanceRef parameterRef="payload_adapter0_atomic_flag" useCalibratedValue="true"/>
+                  <ParameterInstanceRef parameterRef="payload_adapter_0_atomic_flag" useCalibratedValue="true"/>
                   <ComparisonOperator>==</ComparisonOperator>
                   <Value>True</Value>
                 </Condition>
               </BooleanExpression>
             </IncludeCondition>
           </ContainerRefEntry>
-          <ContainerRefEntry containerRef="payload_adapter1_atomic">
+          <ContainerRefEntry containerRef="payload_adapter_1_atomic">
             <LocationInContainerInBits referenceLocation="previousEntry">
               <FixedValue>0</FixedValue>
             </LocationInContainerInBits>
             <IncludeCondition>
               <BooleanExpression>
                 <Condition>
-                  <ParameterInstanceRef parameterRef="payload_adapter1_atomic_flag" useCalibratedValue="true"/>
+                  <ParameterInstanceRef parameterRef="payload_adapter_1_atomic_flag" useCalibratedValue="true"/>
                   <ComparisonOperator>==</ComparisonOperator>
                   <Value>True</Value>
                 </Condition>
@@ -2479,12 +2479,12 @@ See https://github.com/yamcs/pymdb
               <FixedValue>42</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_adapter0_atomic_flag">
+          <ParameterRefEntry parameterRef="payload_adapter_0_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>41</FixedValue>
             </LocationInContainerInBits>
           </ParameterRefEntry>
-          <ParameterRefEntry parameterRef="payload_adapter1_atomic_flag">
+          <ParameterRefEntry parameterRef="payload_adapter_1_atomic_flag">
             <LocationInContainerInBits referenceLocation="containerStart">
               <FixedValue>40</FixedValue>
             </LocationInContainerInBits>
@@ -2516,7 +2516,7 @@ See https://github.com/yamcs/pymdb
           </ParameterRefEntry>
         </EntryList>
       </SequenceContainer>
-      <SequenceContainer name="payload_adapter0_atomic" abstract="false">
+      <SequenceContainer name="payload_adapter_0_atomic" abstract="false">
         <EntryList>
           <ParameterRefEntry parameterRef="payload_adapter_0_raw_x">
             <LocationInContainerInBits referenceLocation="previousEntry">
@@ -2535,7 +2535,7 @@ See https://github.com/yamcs/pymdb
           </ParameterRefEntry>
         </EntryList>
       </SequenceContainer>
-      <SequenceContainer name="payload_adapter1_atomic" abstract="false">
+      <SequenceContainer name="payload_adapter_1_atomic" abstract="false">
         <EntryList>
           <ParameterRefEntry parameterRef="payload_adapter_1_raw_x">
             <LocationInContainerInBits referenceLocation="previousEntry">

@@ -1,5 +1,5 @@
 import { useAtom, useAtomSuspense } from "@effect/atom-react";
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { Suspense } from "react";
 import { Marker } from "react-map-gl/maplibre";
@@ -9,27 +9,32 @@ import type { LiveParameterUpdate } from "@/lib/atom";
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { atomRegistry } from "@/lib/atom-registry";
 import { makeCard } from "@/lib/cards";
-import {
-  CoordinateLatitudeField,
-  CoordinateLongitudeField,
-  ParameterField,
-} from "@/lib/dashboard-field-types";
+import { CoordinateLatitudeField, CoordinateLongitudeField } from "@/lib/dashboard-field-types";
 import {
   FormDefaultValueAnnotationId,
   FormTitleAnnotationId,
   FormTypeAnnotationId,
 } from "@/lib/form";
 
+import { PredictionAnnotations } from "../prediction-map-card/prediction-annotations";
 import { SatelliteSkyView } from "../satellite-sky-view";
 import { DashboardMap, isValidCoordinate, type MapViewState } from "./map";
 
 const MapCardConfiguration = Schema.Struct({
-  longitude: CoordinateLongitudeField,
-  latitude: CoordinateLatitudeField,
-
-  altitude: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" })),
-  rocketLong: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" })),
-  rocketLat: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" })),
+  system: Schema.Literals(["SystemA", "SystemB"]).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed("SystemA")),
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: "SystemA",
+      [FormTitleAnnotationId]: "System",
+      [FormTypeAnnotationId]: "string",
+    }),
+  ),
+  longitude: Schema.optional(CoordinateLongitudeField).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Ground Station Longitude" }),
+  ),
+  latitude: Schema.optional(CoordinateLatitudeField).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Ground Station Latitude" }),
+  ),
   useLocalTiles: Schema.optional(Schema.Boolean).pipe(
     Schema.annotate({
       [FormDefaultValueAnnotationId]: true,
@@ -41,6 +46,13 @@ const MapCardConfiguration = Schema.Struct({
     Schema.annotate({
       [FormDefaultValueAnnotationId]: true,
       [FormTitleAnnotationId]: "Show LC2025 Layers",
+      [FormTypeAnnotationId]: "boolean",
+    }),
+  ),
+  showLandingPrediction: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: false,
+      [FormTitleAnnotationId]: "Show Landing Prediction",
       [FormTypeAnnotationId]: "boolean",
     }),
   ),
@@ -73,6 +85,10 @@ function RocketMarker(props: { lat: string; long: string }) {
   }
 }
 
+function flightComputerParameter(system: "SystemA" | "SystemB", parameterName: string) {
+  return `/${system}/Rocket/FlightComputer/${parameterName}`;
+}
+
 const viewStateAtom = Atom.make<MapViewState>({
   longitude: -81.86,
   latitude: 48,
@@ -97,10 +113,17 @@ export const MapCard = makeCard({
               return;
             }
 
+            const longitude = Number(card.params.longitude);
+            const latitude = Number(card.params.latitude);
+
+            if (!isValidCoordinate(latitude, longitude)) {
+              return;
+            }
+
             atomRegistry.set(viewStateAtom, {
               zoom: 10,
-              longitude: Number(card.params.longitude),
-              latitude: Number(card.params.latitude),
+              longitude,
+              latitude,
             });
           },
         },
@@ -108,6 +131,7 @@ export const MapCard = makeCard({
     },
   ],
   component: (props) => {
+    const system = props.params.system ?? "SystemA";
     const longitude = Number(props.params.longitude);
     const latitude = Number(props.params.latitude);
     const padCoordinate = isValidCoordinate(latitude, longitude)
@@ -133,10 +157,19 @@ export const MapCard = makeCard({
           ) : null}
           <Suspense>
             <RocketMarker
-              lat={props.params.rocketLat.qualifiedName}
-              long={props.params.rocketLong.qualifiedName}
+              lat={flightComputerParameter(system, "gps_latitude")}
+              long={flightComputerParameter(system, "gps_longitude")}
             />
           </Suspense>
+          {props.params.showLandingPrediction ? (
+            <Suspense>
+              <PredictionAnnotations
+                accuracy={flightComputerParameter(system, "predicted_location_accuracy")}
+                latitude={flightComputerParameter(system, "predicted_location_latitude")}
+                longitude={flightComputerParameter(system, "predicted_location_longitude")}
+              />
+            </Suspense>
+          ) : null}
         </DashboardMap>
         {(props.params.showSatelliteSkyView ?? true) ? (
           <SatelliteSkyView className="pointer-events-none absolute bottom-3 left-3 size-[min(42vw,18rem)] min-h-48 min-w-48" />

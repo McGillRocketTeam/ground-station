@@ -14,6 +14,9 @@ yarn-error.log*
 
 dist
 
+# Local GIS source bundles
+assets/LC2025_QGIS.zip
+
 # Python
 __pycache__/
 *.py[cod]

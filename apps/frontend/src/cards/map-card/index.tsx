@@ -1,5 +1,5 @@
 import { useAtom, useAtomSuspense } from "@effect/atom-react";
-import { Effect, Schema } from "effect";
+import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 import { Suspense } from "react";
 import { Marker } from "react-map-gl/maplibre";
@@ -21,14 +21,6 @@ import { SatelliteSkyView } from "../satellite-sky-view";
 import { DashboardMap, isValidCoordinate, type MapViewState } from "./map";
 
 const MapCardConfiguration = Schema.Struct({
-  system: Schema.Literals(["SystemA", "SystemB"]).pipe(
-    Schema.withDecodingDefaultKey(Effect.succeed("SystemA")),
-    Schema.annotate({
-      [FormDefaultValueAnnotationId]: "SystemA",
-      [FormTitleAnnotationId]: "System",
-      [FormTypeAnnotationId]: "string",
-    }),
-  ),
   longitude: Schema.optional(CoordinateLongitudeField).pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Ground Station Longitude" }),
   ),
@@ -65,7 +57,7 @@ const MapCardConfiguration = Schema.Struct({
   ),
 });
 
-function RocketMarker(props: { lat: string; long: string }) {
+function RocketMarker(props: { lat: string; long: string; color: string }) {
   const latitude = useAtomSuspense(parameterSubscriptionAtom(props.lat))
     .value as LiveParameterUpdate;
   const longitude = useAtomSuspense(parameterSubscriptionAtom(props.long))
@@ -81,7 +73,7 @@ function RocketMarker(props: { lat: string; long: string }) {
       return null;
     }
 
-    return <Marker longitude={longitude} latitude={latitude} color="blue" />;
+    return <Marker longitude={longitude} latitude={latitude} color={props.color} />;
   }
 }
 
@@ -131,7 +123,6 @@ export const MapCard = makeCard({
     },
   ],
   component: (props) => {
-    const system = props.params.system ?? "SystemA";
     const longitude = Number(props.params.longitude);
     const latitude = Number(props.params.latitude);
     const padCoordinate = isValidCoordinate(latitude, longitude)
@@ -157,18 +148,41 @@ export const MapCard = makeCard({
           ) : null}
           <Suspense>
             <RocketMarker
-              lat={flightComputerParameter(system, "gps_latitude")}
-              long={flightComputerParameter(system, "gps_longitude")}
+              lat={flightComputerParameter("SystemA", "gps_latitude")}
+              long={flightComputerParameter("SystemA", "gps_longitude")}
+              color="#2563eb"
+            />
+          </Suspense>
+          <Suspense>
+            <RocketMarker
+              lat={flightComputerParameter("SystemB", "gps_latitude")}
+              long={flightComputerParameter("SystemB", "gps_longitude")}
+              color="#db2777"
             />
           </Suspense>
           {props.params.showLandingPrediction ? (
-            <Suspense>
-              <PredictionAnnotations
-                accuracy={flightComputerParameter(system, "predicted_location_accuracy")}
-                latitude={flightComputerParameter(system, "predicted_location_latitude")}
-                longitude={flightComputerParameter(system, "predicted_location_longitude")}
-              />
-            </Suspense>
+            <>
+              <Suspense>
+                <PredictionAnnotations
+                  id="prediction-system-a"
+                  color="#f59e0b"
+                  outlineColor="#fbbf24"
+                  accuracy={flightComputerParameter("SystemA", "predicted_location_accuracy")}
+                  latitude={flightComputerParameter("SystemA", "predicted_location_latitude")}
+                  longitude={flightComputerParameter("SystemA", "predicted_location_longitude")}
+                />
+              </Suspense>
+              <Suspense>
+                <PredictionAnnotations
+                  id="prediction-system-b"
+                  color="#06b6d4"
+                  outlineColor="#67e8f9"
+                  accuracy={flightComputerParameter("SystemB", "predicted_location_accuracy")}
+                  latitude={flightComputerParameter("SystemB", "predicted_location_latitude")}
+                  longitude={flightComputerParameter("SystemB", "predicted_location_longitude")}
+                />
+              </Suspense>
+            </>
           ) : null}
         </DashboardMap>
         {(props.params.showSatelliteSkyView ?? true) ? (

@@ -56,6 +56,9 @@ function makeAccuracyCircle(longitude: number, latitude: number, radiusMeters: n
 }
 
 export function PredictionAnnotations(props: {
+  id?: string;
+  color?: string;
+  outlineColor?: string;
   accuracy: string;
   latitude: string;
   longitude: string;
@@ -64,6 +67,9 @@ export function PredictionAnnotations(props: {
   const accuracy = useNumericParameter(props.accuracy);
   const latitude = useNumericParameter(props.latitude);
   const longitude = useNumericParameter(props.longitude);
+  const id = props.id ?? "prediction";
+  const color = props.color ?? "#f59e0b";
+  const outlineColor = props.outlineColor ?? "#fbbf24";
   const validCoordinate =
     latitude !== undefined && longitude !== undefined && isValidCoordinate(latitude, longitude);
   const hasCentered = useRef(false);
@@ -81,23 +87,23 @@ export function PredictionAnnotations(props: {
     <>
       {accuracy !== undefined && Number.isFinite(accuracy) && accuracy > 0 ? (
         <Source
-          id="prediction-accuracy-source"
+          id={`${id}-accuracy-source`}
           data={makeAccuracyCircle(longitude, latitude, accuracy)}
           type="geojson"
         >
           <Layer
-            id="prediction-accuracy-fill"
+            id={`${id}-accuracy-fill`}
             type="fill"
-            paint={{ "fill-color": "#f59e0b", "fill-opacity": 0.22 }}
+            paint={{ "fill-color": color, "fill-opacity": 0.22 }}
           />
           <Layer
-            id="prediction-accuracy-outline"
+            id={`${id}-accuracy-outline`}
             type="line"
-            paint={{ "line-color": "#fbbf24", "line-width": 2 }}
+            paint={{ "line-color": outlineColor, "line-width": 2 }}
           />
         </Source>
       ) : null}
-      <Marker longitude={longitude} latitude={latitude} color="#f59e0b" />
+      <Marker longitude={longitude} latitude={latitude} color={color} />
     </>
   );
 }

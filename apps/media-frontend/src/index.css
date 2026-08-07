@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@import "@fontsource-variable/public-sans";
+
+@font-face {
+  font-family: "B612 Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local("B612 Mono"),
+    url("/fonts/B612-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "B612 Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    local("B612 Mono Bold"),
+    url("/fonts/B612-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "B612 Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local("B612 Mono Italic"),
+    url("/fonts/B612-Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "B612 Mono";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    local("B612 Mono Bold Italic"),
+    url("/fonts/B612-BoldItalic.ttf") format("truetype");
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --orange-text: oklch(0.205 0 0);
+  --white-text: #000000;
+  --background-secondary: #ebebeb;
+  --background-secondary-highlight: #dfdede;
+  --selection-background: #c4e2ff;
+  --mrt: #9f1c22;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --ring: oklch(0.556 0 0);
+  --orange-text: #ffa022;
+  --white-text: #ffffff;
+  --background-secondary: #363636;
+  --background-secondary-highlight: #464646;
+  --selection-background: #113c66;
+  --mrt: #d21e26;
+}
+
+@theme inline {
+  --font-sans: "Public Sans Variable", sans-serif;
+  --font-mono: "B612 Mono", monospace;
+  --default-mono-font-family: "B612 Mono", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-orange-text: var(--orange-text);
+  --color-white-text: var(--white-text);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-secondary-highlight: var(--background-secondary-highlight);
+  --color-selection-background: var(--selection-background);
+  --color-mrt: var(--mrt);
+}
+
+.font-mono {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "zero";
+  font-variant-numeric: slashed-zero;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply font-sans;
+    color: white;
+    background: black;
+  }
+
+  html {
+    @apply font-sans;
+  }
+}

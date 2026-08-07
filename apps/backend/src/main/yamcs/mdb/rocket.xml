@@ -1592,7 +1592,7 @@ See https://github.com/yamcs/pymdb
       <Parameter name="prop_atomic_flag" parameterTypeRef="prop_atomic_flag">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
-      <Parameter name="prop_energized_electric" parameterTypeRef="prop_energized_electric" shortDescription="Electrical energized propulsion boards">
+      <Parameter name="prop_energized_electric" parameterTypeRef="prop_energized_electric" shortDescription="Propulsion On (HW)">
         <ParameterProperties dataSource="telemetered" persistence="true"/>
       </Parameter>
       <Parameter name="prop_states_atomic_bool_lead_pad" parameterTypeRef="prop_states_atomic_bool_lead_pad" shortDescription="Boolean Leading Padding">

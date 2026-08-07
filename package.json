@@ -23,6 +23,7 @@
   },
   "packageManager": "pnpm@10.26.1",
   "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"],
     "overrides": {
       "@babel/core": "7.29.6",
       "@effect/platform-node>undici": "8.5.0",

@@ -184,6 +184,28 @@ if media_enabled:
 	docker_compose(
 		"./docker/media/docker-compose.yml"
 	)
+	local_resource(
+		'media-backend',
+		serve_cmd="pnpm --filter @mrt/media-backend dev",
+		labels=['media'],
+		links='http://localhost:3000',
+		resource_deps=['mediamtx'],
+		readiness_probe=probe(
+			period_secs=3,
+			http_get=http_get_action(port=3000, path="/overlay/state")
+		)
+	)
+	local_resource(
+		'media-frontend',
+		serve_cmd="pnpm --filter @mrt/media-frontend dev --port 5174 --strictPort",
+		labels=['media'],
+		links='http://localhost:5174',
+		resource_deps=['media-backend'],
+		readiness_probe=probe(
+			period_secs=3,
+			http_get=http_get_action(port=5174, path="/")
+		)
+	)
 
 # dc_resource("backend", labels=['mrt'])
 dc_resource("mbtileserver", labels=['infrastructure'])

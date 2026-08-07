@@ -227,7 +227,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN88"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>492</ValueOperand>
+                    <ValueOperand>483</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN88"/>
@@ -239,7 +239,7 @@
                     <ParameterInstanceRefOperand parameterRef="AIN90"/>
                     <ValueOperand>611</ValueOperand>
                     <Operator>*</Operator>
-                    <ValueOperand>474</ValueOperand>
+                    <ValueOperand>505</ValueOperand>
                     <Operator>-</Operator>
                     <TriggerSet>
                         <OnParameterUpdateTrigger parameterRef="AIN90"/>

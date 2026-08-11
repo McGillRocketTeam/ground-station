@@ -113,10 +113,10 @@ See https://github.com/yamcs/pymdb
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
-              <ValueOperand>0.1452</ValueOperand>
-              <Operator>*</Operator>
-              <ValueOperand>1.69</ValueOperand>
+              <ValueOperand>450.57</ValueOperand>
               <Operator>-</Operator>
+              <ValueOperand>2.3889</ValueOperand>
+              <Operator>/</Operator>
             </MathOperationCalibrator>
           </DefaultCalibrator>
         </IntegerDataEncoding>

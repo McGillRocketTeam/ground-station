@@ -63,7 +63,7 @@
   --foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --border: oklch(1 0 0 / 10%);
+  --border: #5a5a5a;
   --ring: oklch(0.556 0 0);
   --orange-text: #ffa022;
   --white-text: #ffffff;
@@ -100,6 +100,14 @@
   font-variant-numeric: slashed-zero;
 }
 
+.overlay-card-header {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--mrt) 42%, #180405) 0%,
+    color-mix(in srgb, var(--mrt) 88%, white) 100%
+  );
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -108,10 +116,20 @@
   body {
     @apply font-sans;
     color: white;
-    background: black;
+    background: transparent;
+  }
+
+  html,
+  body,
+  #root {
+    @apply font-sans;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
   }
 
   html {
-    @apply font-sans;
+    font-size: 18px;
   }
 }

@@ -8,14 +8,14 @@ export const recoverySubSystemCommandAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 13,
+    stepNumber: 18,
     role: "CSH",
     name: "/FlightComputer/arm_recovery",
     comment: "Press the command stack button to set Recovery Arm.",
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 14,
+    stepNumber: 19,
     role: "CSC",
     presentation: {
       type: "truthTable",
@@ -69,7 +69,7 @@ export const recoverySubSystemCommandAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 15,
+    stepNumber: 20,
     role: "AVC",
     text: [
       "Confirm the LEDs on the FC-A Energize Daughter Board are as follows:",
@@ -86,14 +86,14 @@ export const recoverySubSystemCommandAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 16,
+    stepNumber: 21,
     role: "CSH",
     name: "/FlightComputer/disarm_recovery",
     comment: "Press the command stack button to set Recovery Disarm.",
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 17,
+    stepNumber: 22,
     role: "CSC",
     presentation: {
       type: "truthTable",
@@ -147,7 +147,7 @@ export const recoverySubSystemCommandAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 18,
+    stepNumber: 23,
     role: "AVC",
     text: [
       "Confirm the LEDs on the FC-A Energize Daughter Board are as follows:",
@@ -164,7 +164,7 @@ export const recoverySubSystemCommandAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 19,
+    stepNumber: 24,
     role: "AVC",
     text: [
       "Confirm the LEDs on the IEPE PCB are as follows:",
@@ -178,31 +178,49 @@ export const recoverySubSystemCommandAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 20,
+    stepNumber: 25,
     role: "CSC",
     text: [
       "Confirm telemetry link for the IEPE PCB is established by confirming that the payload states are as follows:",
       "  Variable             State",
-      "  pa_ok                TRUE",
-      "  pa_sampling_state    TRUE",
-      "  pa_amplitude_x       stable",
-      "  pa_amplitude_y       stable",
-      "  pa_amplitude_z       stable",
-      "  pa_frequency_x       stable",
-      "  pa_frequency_y       stable",
-      "  pa_frequency_z       stable",
+      "  Payload OK           TRUE",
+      "  Payload Sampling     TRUE",
+      "  Payload Frequency X  stable",
+      "  Payload Frequency Y  stable",
+      "  Payload Frequency Z  stable",
+      "  Payload Amplitude X  stable",
+      "  Payload Amplitude Y  stable",
+      "  Payload Amplitude Z  stable",
     ].join("\n"),
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 21,
+    stepNumber: 26,
     role: "AVC",
     text: "Confirm that on the Adapter PCB, both the 3V3 and 5V LEDs are on.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 22,
+    stepNumber: 27,
+    role: "CSC",
+    text: "Confirm telemetry link for the Adapter PCB is established by confirming that Adapter 0-3 X, Y, Z values are updating.",
+  }),
+  ProcedureStep.make({
+    type: "text",
+    stepNumber: 28,
+    role: "AVC",
+    text: "Reverse the polarity of the e-magnet to DC power supply connections, and turn the power supply on.",
+  }),
+  ProcedureStep.make({
+    type: "text",
+    stepNumber: 29,
     role: "AVC",
     text: "Disarm SRAD avionics.",
+  }),
+  ProcedureStep.make({
+    type: "text",
+    stepNumber: 30,
+    role: "AVC",
+    text: "Turn off the output of the e-magnet power supply.",
   }),
 ];

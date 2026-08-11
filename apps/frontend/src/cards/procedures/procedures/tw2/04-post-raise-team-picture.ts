@@ -13,32 +13,20 @@ export const postRaiseTeamPictureSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 59,
+    stepNumber: 53,
     role: "PD",
-    text: "Call over the RSO to confirm launch angle.",
+    text: "Call over the RSO to confirm launch angle before tightening the anchoring.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 60,
-    role: "PD",
-    text: "Remove the igniter shield for the team picture",
-  }),
-  ProcedureStep.make({
-    type: "text",
-    stepNumber: 61,
+    stepNumber: 54,
     role: "All",
     text: "Take a quick group picture! Then, all non-essential launch pad personnel must leave the safety perimeter of the launch rail.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 62,
+    stepNumber: 55,
     role: "All",
     text: "All personnel except PD, OP1, OP2, OP3, OP4, OP5 exit the launch pad and head back to the ground station.",
-  }),
-  ProcedureStep.make({
-    type: "text",
-    stepNumber: 63,
-    role: "PD",
-    text: "Reinstall the igniter shield",
   }),
 ];

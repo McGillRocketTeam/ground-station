@@ -1,12 +1,13 @@
 # TW1 Procedure Update Reference
 
-This file documents the conventions used when updating `tw1.ts`.
+This file documents the conventions used when updating the TW1 procedure stack.
 
 Use it when translating paper procedures into `ProcedureStep` definitions for the frontend procedure cards.
 
 ## File
 
-- Procedure implementation: `apps/frontend/src/cards/procedures/procedures/tw1.ts`
+- Procedure stack: `apps/frontend/src/cards/procedures/procedures/tw1.ts`
+- Procedure sections: `apps/frontend/src/cards/procedures/procedures/tw1/`
 - Reference notes: `apps/frontend/src/cards/procedures/procedures/tw1-reference.md`
 
 ## Goal
@@ -49,6 +50,7 @@ These paper phrases were mapped to software commands:
 - `F/DOV ENERGIZED` -> `/FlightComputer/fdov_energize`
 - `F/DOV DE-ENERGIZED` -> `/FlightComputer/fdov_de-energize`
 - `E-Stop Button` -> `/FlightComputer/emergency_stop`
+- `Umbilical Low` -> `/FlightComputer/umbilical_to_battery`
 
 ## Telemetry Mapping Used In TW1
 
@@ -148,7 +150,7 @@ Then map each condition to a display row and column:
 
 ## Paper-Procedure Specific Notes From This Update
 
-- The original `tw1.ts` AV-prop section was outdated and out of order.
+- The original TW1 AV-prop section was outdated and out of order.
 - The correct order used for this update was:
   - AV-Propulsion Integration & Telemetry Verification
   - Basic Vent Valve Verification
@@ -157,6 +159,9 @@ Then map each condition to a display row and column:
   - Basic F/DOV Verification
   - Abort Functional Verification
   - AV-Prop closeout steps
+  - Recov/Payload/GFRP Assembly Procedures
+  - Energetics, wiring, and GFRP Assembly Procedures
+  - Final Rocket Assembly Procedures
   - Recovery Sub-System Command and Telemetry Verification
   - Recovery closeout steps
 - The paper procedure included steps not present in the old file:

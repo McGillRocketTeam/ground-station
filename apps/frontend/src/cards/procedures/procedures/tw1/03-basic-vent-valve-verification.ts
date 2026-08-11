@@ -8,20 +8,20 @@ export const basicVentValveVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 28,
+    stepNumber: 34,
     role: "PRC",
     text: "Place 2 fingers on the vent valve to feel for gate actuation.",
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 29,
+    stepNumber: 35,
     role: "CSH",
     name: "/FlightComputer/vent_valve_energize",
     comment: "Set the Vent Valve switch to ENERGIZED.",
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 30,
+    stepNumber: 36,
     role: "CSC",
     presentation: {
       type: "truthTable",
@@ -57,24 +57,24 @@ export const basicVentValveVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 31,
+    stepNumber: 37,
     role: "AVC",
     text: [
       "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",
       "  Channel  ARM  GATE  EN  CON",
-      "  CH1      on   on    on  on",
+      "  CH1      on   on    off off",
     ].join("\n"),
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 32,
+    stepNumber: 38,
     role: "CSH",
     name: "/FlightComputer/vent_valve_de-energize",
     comment: "Set the Vent Valve switch to DE-ENERGIZED.",
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 33,
+    stepNumber: 39,
     role: "CSC",
     presentation: {
       type: "truthTable",
@@ -110,7 +110,7 @@ export const basicVentValveVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 34,
+    stepNumber: 40,
     role: "AVC",
     text: [
       "Confirm the LEDs on the Prop Top Energize Daughter Board are as follows:",

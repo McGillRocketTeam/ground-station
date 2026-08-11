@@ -8,14 +8,14 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 21,
+    stepNumber: 27,
     role: "CSH",
     name: "/FlightComputer/propulsion_on",
     comment: "Press the command stack button to set Propulsion On.",
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 22,
+    stepNumber: 28,
     role: "CSC",
     presentation: {
       type: "truthTable",
@@ -87,7 +87,7 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 23,
+    stepNumber: 29,
     role: "AVC",
     text: [
       "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
@@ -102,9 +102,9 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 24,
+    stepNumber: 30,
     role: "CSC",
-    comment: "Verify that the Tank Pressure reading is within 0.0 to 20.0PSI.",
+    comment: "Verify that the Tank Pressure reading is within 0.0 to 20.0 PSI.",
     delay: 0,
     condition: [
       {
@@ -121,9 +121,9 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 25,
+    stepNumber: 31,
     role: "CSC",
-    comment: "Verify that the Vent Temperature reading is within 12.0 to 33.0C.",
+    comment: "Verify that the Vent Temperature reading is within 12.0 to 33.0°C.",
     delay: 0,
     condition: [
       {
@@ -140,9 +140,9 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 26,
+    stepNumber: 32,
     role: "CSC",
-    comment: "Verify that the Combustion Chamber Pressure reading is within 0.0 to 20.0PSI.",
+    comment: "Verify that the Combustion Chamber Pressure reading is within 0.0 to 20.0 PSI.",
     delay: 0,
     condition: [
       {
@@ -159,9 +159,9 @@ export const avPropulsionIntegrationAndTelemetryVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 27,
+    stepNumber: 33,
     role: "CSC",
-    comment: "Verify that the Tank Temperature reading is within 12.0 to 33.0C.",
+    comment: "Verify that the Tank Temperature reading is within 12.0 to 33.0°C.",
     delay: 0,
     condition: [
       {

@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { HttpApiGroup, HttpApiEndpoint, HttpApiError } from "effect/unstable/httpapi";
 
 import { BatchSetParameterValuesRequest, ParameterSample, QualifiedName } from "../schema.js";
@@ -18,7 +18,7 @@ const ParameterSampleField = Schema.Literals([
 const SamplesSource = Schema.Literals(["ParameterArchive", "replay"]);
 
 const GetSamplesResponse = Schema.Struct({
-  sample: Schema.Array(ParameterSample),
+  sample: Schema.Array(ParameterSample).pipe(Schema.withDecodingDefaultKey(Effect.succeed([]))),
 });
 
 export const parameterGroup = HttpApiGroup.make("parameter")

@@ -6,7 +6,7 @@ import uPlot, { type AlignedData } from "uplot";
 
 import { cn } from "@/lib/utils";
 
-import { flightReplayStateAtom, type FlightPacket } from "../data";
+import { flightReplayStateAtom, type FlightPacket, type RecoveryEvent } from "../data";
 
 const DEFAULT_CHART_WIDTH = 640;
 const DEFAULT_CHART_HEIGHT = 220;
@@ -19,6 +19,7 @@ type PlotThemeColors = {
 };
 
 type TelemetryChartParams = {
+  readonly annotationLabels?: boolean;
   readonly color?: string;
   readonly parameter: string;
   readonly title: string;
@@ -70,6 +71,71 @@ function makeAxisOptions(colors: PlotThemeColors): uPlot.Axis[] {
   ];
 }
 
+function recoveryEventsPlugin(
+  events: ReadonlyArray<RecoveryEvent>,
+  showLabels: boolean,
+): uPlot.Plugin {
+  return {
+    hooks: {
+      draw: [
+        (plot) => {
+          const { ctx } = plot;
+          const { left, top, width, height } = plot.bbox;
+          const pixelRatio = devicePixelRatio;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(left, top, width, height);
+          ctx.clip();
+
+          for (const event of events) {
+            const x = Math.round(plot.valToPos(event.timeMs / 1000, "x", true));
+            if (x < left || x > left + width) continue;
+
+            const isMain = event.label.includes("Main");
+            const isSystemB = event.label.startsWith("B ");
+            const color = isMain ? "#22c55e" : "#38bdf8";
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5 * pixelRatio;
+            ctx.setLineDash(isSystemB ? [4 * pixelRatio, 3 * pixelRatio] : []);
+            ctx.beginPath();
+            ctx.moveTo(x, top);
+            ctx.lineTo(x, top + height);
+            ctx.stroke();
+
+            if (!showLabels) continue;
+
+            const label = event.label.replace(/^[AB] /, "").toUpperCase();
+            ctx.font = `${9 * pixelRatio}px sans-serif`;
+            const labelWidth = ctx.measureText(label).width + 8 * pixelRatio;
+            const labelHeight = 15 * pixelRatio;
+            const labelX = x + 4 * pixelRatio;
+            const labelY = Math.min(top + height - labelWidth, top + 4 * pixelRatio);
+
+            ctx.setLineDash([]);
+            ctx.save();
+            ctx.translate(labelX + labelHeight, labelY);
+            ctx.rotate(Math.PI / 2);
+            ctx.fillStyle = "#09090b";
+            ctx.fillRect(0, 0, labelWidth, labelHeight);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = pixelRatio;
+            ctx.strokeRect(0, 0, labelWidth, labelHeight);
+            ctx.fillStyle = color;
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label, 4 * pixelRatio, labelHeight / 2);
+            ctx.restore();
+          }
+
+          ctx.restore();
+        },
+      ],
+    },
+  };
+}
+
 function parseNumericValue(rawValue: string | undefined) {
   if (rawValue === undefined || rawValue === "") {
     return null;
@@ -95,7 +161,12 @@ function buildAlignedData(
   return [timestamps, values];
 }
 
-function TelemetryChart({ color, parameter, title }: TelemetryChartParams) {
+function TelemetryChart({
+  annotationLabels = false,
+  color,
+  parameter,
+  title,
+}: TelemetryChartParams) {
   const flightReplay = useAtomSuspense(flightReplayStateAtom).value;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
@@ -201,6 +272,7 @@ function TelemetryChart({ color, parameter, title }: TelemetryChartParams) {
         legend: {
           show: false,
         },
+        plugins: [recoveryEventsPlugin(flightReplay.recoveryEvents, annotationLabels)],
         scales: {
           x: {
             auto: false,
@@ -244,7 +316,15 @@ function TelemetryChart({ color, parameter, title }: TelemetryChartParams) {
       resizeObserver.disconnect();
       plot.destroy();
     };
-  }, [flightReplay.flightEndMs, flightReplay.flightStartMs, hasSeries, seriesColor, title]);
+  }, [
+    flightReplay.flightEndMs,
+    flightReplay.flightStartMs,
+    flightReplay.recoveryEvents,
+    annotationLabels,
+    hasSeries,
+    seriesColor,
+    title,
+  ]);
 
   useEffect(() => {
     if (!plotRef.current || !hasSeries) {
@@ -305,5 +385,12 @@ export function TelemetryChartPanel(props: IGridviewPanelProps) {
     );
   }
 
-  return <TelemetryChart color={params.color} parameter={params.parameter} title={params.title} />;
+  return (
+    <TelemetryChart
+      annotationLabels={params.annotationLabels}
+      color={params.color}
+      parameter={params.parameter}
+      title={params.title}
+    />
+  );
 }

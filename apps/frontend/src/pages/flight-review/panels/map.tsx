@@ -3,7 +3,15 @@ import { useEffect, useRef } from "react";
 import Map, { Layer, Marker, Source, type MapRef } from "react-map-gl/maplibre";
 import "vis-timeline/styles/vis-timeline-graph2d.css";
 import { STAGE_COLORS } from "..";
-import { flightReplayGpsPathAtom, flightReplayGpsStateAtom } from "../data";
+import { flightReplayGpsPathAtom, flightReplayGpsStateAtom, flightReplayStateAtom } from "../data";
+
+const parameterNumber = (
+  parameters: Readonly<Record<string, string | undefined>> | undefined,
+  name: string,
+) => {
+  const value = Number(parameters?.[name]);
+  return Number.isFinite(value) ? value : undefined;
+};
 
 const toPathSegmentOpacity = (segmentIndex: number, segmentCount: number) => {
   if (segmentCount <= 1) {
@@ -115,6 +123,21 @@ function RocketPath() {
 
 export const MapPanel = () => {
   const gpsState = useAtomSuspense(flightReplayGpsStateAtom).value;
+  const replay = useAtomSuspense(flightReplayStateAtom).value;
+  const finalGps = replay.gpsTrack[replay.gpsTrack.length - 1];
+  const finalPacket = replay.packets[replay.packets.length - 1];
+  const predictedLatitude = parameterNumber(
+    finalPacket?.parameters,
+    "/SystemA/Rocket/FlightComputer/predicted_location_latitude",
+  );
+  const predictedLongitude = parameterNumber(
+    finalPacket?.parameters,
+    "/SystemA/Rocket/FlightComputer/predicted_location_longitude",
+  );
+  const predictedAccuracy = parameterNumber(
+    finalPacket?.parameters,
+    "/SystemA/Rocket/FlightComputer/predicted_location_accuracy",
+  );
   const mapRef = useRef<MapRef | null>(null);
 
   useEffect(() => {
@@ -159,6 +182,22 @@ export const MapPanel = () => {
       >
         <RocketPath />
         <RocketMarker />
+        {finalGps ? (
+          <Marker longitude={finalGps.longitude} latitude={finalGps.latitude} anchor="center">
+            <div
+              className="size-3 rounded-full border-2 border-white bg-emerald-500 shadow"
+              title="Final recorded GPS position"
+            />
+          </Marker>
+        ) : null}
+        {predictedLatitude !== undefined && predictedLongitude !== undefined ? (
+          <Marker longitude={predictedLongitude} latitude={predictedLatitude} anchor="center">
+            <div
+              className="size-4 rotate-45 border-2 border-white bg-amber-400 shadow"
+              title={`Final predicted landing position${predictedAccuracy === undefined ? "" : `, ${predictedAccuracy.toFixed(0)} m search radius`}`}
+            />
+          </Marker>
+        ) : null}
       </Map>
 
       <div className="flex flex-col border font-mono text-xs absolute top-4 right-4 bg-background">
@@ -168,6 +207,10 @@ export const MapPanel = () => {
 
         <CoordinateValue value={gpsState?.latitude} fractionDigits={4} />
         <CoordinateValue value={gpsState?.longitude} fractionDigits={6} />
+        <div className="mt-1 border-t border-border px-1 text-[10px] text-muted-foreground">
+          Green: final GPS
+        </div>
+        <div className="px-1 text-[10px] text-muted-foreground">Amber: prediction</div>
       </div>
     </div>
   );

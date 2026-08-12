@@ -99,6 +99,31 @@
   background: var(--color-selection-background);
 }
 
+.vis-item.flight-review-recovery-event {
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  padding: 0 !important;
+  border: 1px solid var(--color-background) !important;
+  border-radius: 1px !important;
+  transform: translate(-5px, 3px) rotate(45deg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.vis-item.flight-review-recovery-event-drogue {
+  background: #eab308;
+  color: #eab308;
+}
+
+.vis-item.flight-review-recovery-event-main {
+  background: #38bdf8;
+  color: #38bdf8;
+}
+
+.vis-item.flight-review-recovery-event .vis-item-content {
+  display: none;
+}
+
 .vis-custom-time {
   width: 3px !important;
   border: 0 !important;

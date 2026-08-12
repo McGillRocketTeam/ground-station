@@ -4,12 +4,10 @@ import { AsyncResult, Atom } from "effect/unstable/reactivity";
 
 export { AlarmSound, AlarmSoundError, playAlarmSoundAtom, stopAlarmSoundAtom } from "./alarm-sound";
 export {
-  redFlagTimeAtom,
   selectedInstanceAtom,
   ThemeFromJsonString,
   themeAtom,
   themeStorageKey,
-  type RedFlagTime,
   type Theme,
 } from "./frontend";
 export { logValidationFailure, YamcsAtomHttpClient, yamcsBaseUrl } from "./yamcs/runtime";

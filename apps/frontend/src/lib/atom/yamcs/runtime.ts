@@ -43,21 +43,7 @@ export const yamcsHttpClientLayer: Layer.Layer<HttpClient.HttpClient> = Layer.pr
 );
 
 export const frontendRuntimeFactory = Atom.context({ memoMap: Atom.defaultMemoMap });
-function resolveRuntimeUrl(url: string): string {
-  const parsedUrl = new URL(url);
-
-  if (
-    typeof window !== "undefined" &&
-    ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsedUrl.hostname) &&
-    !["localhost", "127.0.0.1"].includes(window.location.hostname)
-  ) {
-    parsedUrl.hostname = window.location.hostname;
-  }
-
-  return parsedUrl.toString();
-}
-
-export const yamcsBaseUrl = resolveRuntimeUrl(import.meta.env.YAMCS_URL);
+export const yamcsBaseUrl = new URL("/", window.location.origin).toString();
 const runtimeEnv = { ...import.meta.env, YAMCS_URL: yamcsBaseUrl };
 
 frontendRuntimeFactory.addGlobalLayer(Logger.layer([Logger.consolePretty()]));

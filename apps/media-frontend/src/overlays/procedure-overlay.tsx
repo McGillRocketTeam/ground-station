@@ -1,44 +1,45 @@
-import { OverlayCard, OverlayCardHeader } from "../components/overlay-card.tsx";
+import { OverlayCard } from "../components/overlay-card.tsx";
+import { countedProcedureCodes, getProcedureStep, type ProcedureCode } from "./procedure-steps.ts";
 
 type ProcedureOverlayProps = {
-  code: `TW${1 | 2 | 3 | 4}`;
+  code: ProcedureCode;
   title: string;
   blurb: string;
 };
 
 export function ProcedureOverlay({ code, title, blurb }: ProcedureOverlayProps) {
-  const step = Number(code.slice(2));
+  const step = getProcedureStep(code);
 
   return (
-    <main className="relative h-screen w-screen" aria-label={`${code} procedure overlay`}>
-      <OverlayCard className="absolute right-8 bottom-8 w-[min(34rem,calc(100vw-6rem))]">
-        <OverlayCardHeader>
-          <span>Current step</span>
-          <span>{step}/4</span>
-        </OverlayCardHeader>
-
-        <div className="p-4">
-          <div className="flex items-baseline justify-between gap-4">
-            <h1 className="text-xl font-medium tracking-[0.03em] uppercase">{title}</h1>
-            <span className="shrink-0 text-xs font-medium tracking-[0.16em] text-white/55 uppercase">
-              {code}
-            </span>
-          </div>
-
-          <p className="mt-2 max-w-[52ch] text-base leading-relaxed text-white/78">{blurb}</p>
+    <main className="relative h-screen" aria-label={`${code} procedure overlay`}>
+      <OverlayCard
+        className="absolute bottom-2 left-2"
+        title={
+          step === undefined
+            ? "Abort Procedure"
+            : `Current Step ${step}/${countedProcedureCodes.length}`
+        }
+      >
+        <div className="grid grid-cols-[1fr_auto] uppercase">
+          <h1>{title}</h1>
+          <span className="text-base">{code}</span>
+          <div className="col-span-full mb-2 h-px bg-white/25" />
+          <p className="col-span-full max-w-[40ch] text-pretty normal-case">{blurb}</p>
+          {step !== undefined && (
+            <div
+              className="col-span-full grid grid-cols-4 gap-1 pt-2"
+              aria-label={`Procedure ${step} of ${countedProcedureCodes.length}`}
+            >
+              {countedProcedureCodes.map((progressCode, index) => (
+                <span
+                  key={progressCode}
+                  className={index < step ? "h-1 bg-white" : "h-1 bg-white/25"}
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+          )}
         </div>
-
-        <footer className="border-t border-border p-2">
-          <div className="grid grid-cols-4 gap-2" aria-label={`Procedure ${step} of 4`}>
-            {[1, 2, 3, 4].map((index) => (
-              <span
-                key={index}
-                className={index <= step ? "h-1 bg-white" : "h-1 bg-white/20"}
-                aria-hidden="true"
-              />
-            ))}
-          </div>
-        </footer>
       </OverlayCard>
     </main>
   );

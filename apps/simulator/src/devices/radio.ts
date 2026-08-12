@@ -1,4 +1,4 @@
-import { Duration, Effect, Schedule } from "effect";
+import { Duration, Effect, Random, Schedule } from "effect";
 
 import {
   makeAstraActor,
@@ -8,7 +8,11 @@ import {
   type AstraDetail,
   type AstraStatus,
 } from "../Simulator.ts";
-import { SIMULATOR_STATE_INTERVAL_MS, SIMULATOR_TELEMETRY_INTERVAL_MS } from "../utils/Config.ts";
+import {
+  DATA_MODE,
+  SIMULATOR_STATE_INTERVAL_MS,
+  SIMULATOR_TELEMETRY_INTERVAL_MS,
+} from "../utils/Config.ts";
 import { getContainer } from "../utils/Container.ts";
 import { makePacketBuilder } from "../utils/PacketBuilder.ts";
 import {
@@ -70,7 +74,8 @@ const initialStateForRole = (role: RadioRole): RadioState => ({
 
 export const makeRadioActor = (options: RadioActorOptions) =>
   Effect.gen(function* () {
-    const telemetryInterval = Duration.millis(yield* SIMULATOR_TELEMETRY_INTERVAL_MS);
+    const dataMode = yield* DATA_MODE;
+    const telemetryIntervalMillis = yield* SIMULATOR_TELEMETRY_INTERVAL_MS;
     const stateInterval = Duration.millis(yield* SIMULATOR_STATE_INTERVAL_MS);
     const endpoint = makeAstraEndpoint(options.baseTopic);
     const container = yield* getContainer(options.baseTopic, "TelemetryPacket");
@@ -83,6 +88,17 @@ export const makeRadioActor = (options: RadioActorOptions) =>
         const makeBehavior = Effect.gen(function* () {
           const services = yield* Effect.context();
           const runFork = Effect.runForkWith(services);
+          const repeatTelemetry = <A, E, R>(publish: Effect.Effect<A, E, R>) =>
+            Effect.forever(
+              Effect.gen(function* () {
+                yield* publish;
+                const delayMillis =
+                  dataMode === "random"
+                    ? yield* Random.nextBetween(500, 5000)
+                    : telemetryIntervalMillis;
+                yield* Effect.sleep(Duration.millis(delayMillis));
+              }),
+            );
 
           const publishOwnState = Effect.gen(function* () {
             const currentState = yield* actor.currentState;
@@ -299,14 +315,8 @@ export const makeRadioActor = (options: RadioActorOptions) =>
             boot: Effect.gen(function* () {
               yield* publishOwnState;
               yield* publishLinkedFlightComputerState;
-              yield* publishOwnTelemetry.pipe(
-                Effect.repeat(Schedule.spaced(telemetryInterval)),
-                Effect.forkScoped,
-              );
-              yield* publishLinkedFlightComputer.pipe(
-                Effect.repeat(Schedule.spaced(telemetryInterval)),
-                Effect.forkScoped,
-              );
+              yield* repeatTelemetry(publishOwnTelemetry).pipe(Effect.forkScoped);
+              yield* repeatTelemetry(publishLinkedFlightComputer).pipe(Effect.forkScoped);
               yield* publishOwnState.pipe(
                 Effect.repeat(Schedule.spaced(stateInterval)),
                 Effect.forkScoped,

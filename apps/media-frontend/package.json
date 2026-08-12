@@ -15,12 +15,21 @@
     "lint:fix": "oxlint --fix --fix-suggestions --fix-dangerously"
   },
   "dependencies": {
+    "@effect/atom-react": "catalog:",
+    "@effect/platform-browser": "catalog:",
     "@fontsource-variable/public-sans": "^5.3.0",
+    "@mrt/media-state": "workspace:*",
+    "@mrt/yamcs-effect": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "clsx": "^2.1.1",
+    "effect": "catalog:",
+    "liveline": "^0.0.7",
     "lucide-react": "^1.29.0",
+    "maplibre-gl": "^5.17.0",
+    "motion": "^13.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-map-gl": "^8.1.0",
     "react-router": "^7.18.1",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3"

@@ -1,14 +1,27 @@
 import { NodeHttpServer, NodeRuntime } from "@effect/platform-node";
-import { Layer, Logger } from "effect";
-import { HttpRouter } from "effect/unstable/http";
-import { createServer } from "http";
+import { Effect, Layer, Logger } from "effect";
+import { HttpRouter, HttpServerResponse } from "effect/unstable/http";
+import { RpcSerialization, RpcServer } from "effect/unstable/rpc";
+import { createServer } from "node:http";
 
-import { MediaClientRoutes } from "./Media/api.ts";
+import { MediaStateRpcLive } from "./Control/rpc.ts";
 
-const ApiLive = HttpRouter.serve(MediaClientRoutes).pipe(
-  Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
+const HealthRoute = HttpRouter.use(
+  Effect.fn("MediaBackend.healthRoute")(function* (router) {
+    yield* router.add("GET", "/", Effect.succeed(HttpServerResponse.text("ok")));
+  }),
 );
 
-const server = ApiLive.pipe(Layer.provide(Logger.layer([Logger.consolePretty()])));
+const Routes = Layer.merge(RpcServer.layerProtocolHttp({ path: "/rpc" }), HealthRoute).pipe(
+  Layer.provide(HttpRouter.layer),
+);
 
-Layer.launch(server).pipe(NodeRuntime.runMain);
+const ServerLive = MediaStateRpcLive.pipe(
+  Layer.provideMerge(Routes),
+  Layer.provide(HttpRouter.serve(Routes)),
+  Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
+  Layer.provide(RpcSerialization.layerNdjson),
+  Layer.provide(Logger.layer([Logger.consolePretty()])),
+);
+
+Layer.launch(ServerLive).pipe(NodeRuntime.runMain);

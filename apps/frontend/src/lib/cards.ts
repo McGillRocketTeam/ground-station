@@ -16,6 +16,7 @@ import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
 import { LiveChartCard } from "@/cards/live-chart";
 import { MapCard } from "@/cards/map-card";
+import { MediaControlCard } from "@/cards/media-control-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
 import { NetworkTopologyCard } from "@/cards/network-topology";
 import { ParameterDeviceTable } from "@/cards/parameter-device-table";
@@ -50,6 +51,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   RealtimeChartCard,
   SerialMonitorCard,
   VideoCard,
+  MediaControlCard,
   PIDCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,

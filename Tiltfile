@@ -57,7 +57,6 @@ local_resource(
     'frontend',
     serve_cmd="pnpm --filter @mrt/frontend dev",
 		serve_env={
-			'YAMCS_URL': 'http://localhost:8090',
 			'MRT_ENVIRONMENT': mrt_environment,
 			'MQTT_BROKER_URL': frontend_mqtt_broker_url,
 		},
@@ -192,7 +191,7 @@ if media_enabled:
 		resource_deps=['mediamtx'],
 		readiness_probe=probe(
 			period_secs=3,
-			http_get=http_get_action(port=3000, path="/overlay/state")
+			http_get=http_get_action(port=3000, path="/")
 		)
 	)
 	local_resource(

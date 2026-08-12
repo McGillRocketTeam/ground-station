@@ -4,6 +4,14 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
 
+const proxy = {
+  "/api": {
+    target: "http://localhost:8090",
+    ws: true,
+  },
+  "/rpc": "http://localhost:3000",
+};
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -22,6 +30,12 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  server: {
+    proxy,
+  },
+  preview: {
+    proxy,
   },
   envPrefix: ["VITE_", "YAMCS_", "MRT_", "MQTT_"],
 });

@@ -1,27 +1,61 @@
-import type { ComponentProps } from "react";
+import type { ReactNode } from "react";
+
+import { motion, type HTMLMotionProps } from "motion/react";
 
 import { cn } from "../lib/utils.ts";
 
-export function OverlayCard({ className, ...props }: ComponentProps<"article">) {
-  return (
-    <article
-      className={cn(
-        "overflow-hidden border border-border bg-[#111513]/88 font-sans text-white shadow-[0_1.25rem_4rem_rgb(0_0_0/35%)] backdrop-blur-md",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+export const overlayCardSpring = {
+  type: "spring" as const,
+  stiffness: 170,
+  damping: 22,
+  mass: 0.8,
+};
 
-export function OverlayCardHeader({ className, ...props }: ComponentProps<"header">) {
+type OverlayCardProps = Omit<HTMLMotionProps<"article">, "children" | "title"> & {
+  title: ReactNode;
+  children: ReactNode;
+  animateAppearance?: boolean;
+  layoutMode?: boolean | "position" | "size";
+};
+
+export function OverlayCard({
+  title,
+  children,
+  className,
+  style,
+  animateAppearance = true,
+  layoutMode = true,
+  ...props
+}: OverlayCardProps) {
   return (
-    <header
+    <motion.article
+      layout={layoutMode}
+      initial={animateAppearance ? { opacity: 0, filter: "blur(8px)" } : false}
+      animate={{ opacity: 1, filter: "blur(0px)" }}
+      exit={animateAppearance ? { opacity: 0, filter: "blur(8px)" } : undefined}
+      transition={overlayCardSpring}
       className={cn(
-        "overlay-card-header flex items-center justify-between p-2 text-sm font-medium tracking-[0.12em] uppercase",
+        "relative grid max-w-fit grid-rows-[auto_1fr] overflow-hidden border border-white/35 text-white",
         className,
       )}
+      style={{
+        ...style,
+        clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%)",
+      }}
       {...props}
-    />
+    >
+      <div className="absolute inset-0 bg-black/80" aria-hidden="true" />
+      <motion.header
+        layout
+        className="relative py-1 px-2 font-bold uppercase"
+        style={{ background: "linear-gradient(90deg, #B20606 0%, #d13232 100%)" }}
+        transition={overlayCardSpring}
+      >
+        {title}
+      </motion.header>
+      <motion.div layout className="relative min-w-0 p-2" transition={overlayCardSpring}>
+        {children}
+      </motion.div>
+    </motion.article>
   );
 }

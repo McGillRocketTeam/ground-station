@@ -3,7 +3,6 @@
 
 interface ImportMetaEnv {
   readonly MRT_ENVIRONMENT?: "development" | "production";
-  readonly YAMCS_URL: string;
 }
 
 interface ImportMeta {

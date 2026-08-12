@@ -132,7 +132,7 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
       detailedStatus = "Authenticated and polling ToughSwitch at " + ipAddress;
     } catch (Exception e) {
       sessionCookie = null;
-      status = Status.FAILED;
+      // status = Status.FAILED;
       detailedStatus = "ToughSwitch poll failed for " + ipAddress + ": " + e.getMessage();
       log.warn(detailedStatus, e);
     }

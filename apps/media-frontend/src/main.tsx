@@ -1,3 +1,4 @@
+import { RegistryProvider } from "@effect/atom-react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
@@ -13,8 +14,10 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <RegistryProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </RegistryProvider>
   </StrictMode>,
 );

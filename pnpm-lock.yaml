@@ -105,6 +105,9 @@ importers:
       '@fontsource-variable/public-sans':
         specifier: ^5.2.7
         version: 5.2.7
+      '@mrt/media-state':
+        specifier: workspace:*
+        version: link:../../packages/media-state
       '@mrt/yamcs-effect':
         specifier: workspace:*
         version: link:../../packages/yamcs-effect
@@ -253,6 +256,9 @@ importers:
       '@effect/platform-node':
         specifier: 'catalog:'
         version: 4.0.0-beta.57(effect@4.0.0-beta.57)(ioredis@5.9.3)
+      '@mrt/media-state':
+        specifier: workspace:*
+        version: link:../../packages/media-state
       effect:
         specifier: 'catalog:'
         version: 4.0.0-beta.57
@@ -275,24 +281,51 @@ importers:
 
   apps/media-frontend:
     dependencies:
+      '@effect/atom-react':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.57(effect@4.0.0-beta.57)(react@19.2.8)(scheduler@0.27.0)
+      '@effect/platform-browser':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.57(effect@4.0.0-beta.57)
       '@fontsource-variable/public-sans':
         specifier: ^5.3.0
         version: 5.3.0
+      '@mrt/media-state':
+        specifier: workspace:*
+        version: link:../../packages/media-state
+      '@mrt/yamcs-effect':
+        specifier: workspace:*
+        version: link:../../packages/yamcs-effect
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.1(@types/node@26.1.2)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-beta.57
+      liveline:
+        specifier: ^0.0.7
+        version: 0.0.7(react@19.2.8)
       lucide-react:
         specifier: ^1.29.0
         version: 1.29.0(react@19.2.8)
+      maplibre-gl:
+        specifier: ^5.17.0
+        version: 5.21.1
+      motion:
+        specifier: ^13.1.0
+        version: 13.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: ^19.2.8
         version: 19.2.8
       react-dom:
         specifier: ^19.2.8
         version: 19.2.8(react@19.2.8)
+      react-map-gl:
+        specifier: ^8.1.0
+        version: 8.1.0(maplibre-gl@5.21.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-router:
         specifier: ^7.18.1
         version: 7.18.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -447,6 +480,25 @@ importers:
       oxlint:
         specifier: 'catalog:'
         version: 1.50.0
+
+  packages/media-state:
+    dependencies:
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-beta.57
+    devDependencies:
+      '@effect/language-service':
+        specifier: 'catalog:'
+        version: 0.87.1
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.35.0
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.50.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
   packages/yamcs-effect:
     dependencies:
@@ -3594,6 +3646,17 @@ packages:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
     engines: {node: '>= 0.6'}
 
+  framer-motion@13.1.0:
+    resolution: {integrity: sha512-QSZrF0Id3QGuHJ+OL+9PSY9pk86C8ERFalwAGSchzTm65+ZoGH/RM26lmEARLljcHj2lqhv0jZOOks+EI3COOw==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   fresh@2.0.0:
     resolution: {integrity: sha512-Rx/WycZ60HOaqLKAi6cHRKKI7zxWbJ31MhntmtwMoaTeF7XFH9hhBp8vITaMidfljRQ6eYWCKkaTK+ykVJHP2A==}
     engines: {node: '>= 0.8'}
@@ -4200,6 +4263,23 @@ packages:
 
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
+
+  motion-dom@13.0.0:
+    resolution: {integrity: sha512-Xk+SJas70uMAUIApg+m3lZDShxI3LBFHq7mFGbBKoRXc2PVPDyAKmzN64Bbzt4CZdP/CItTiJxWtn4TA0v53Ng==}
+
+  motion-utils@13.0.0:
+    resolution: {integrity: sha512-7DnN7TmbLcYXcG4RVadXIihWlyuM9afoUww8Y5Agg431kGKiuL2/OMyP4mJ5wLz+pvN3t5ySClLOaVXJ+wekRQ==}
+
+  motion@13.1.0:
+    resolution: {integrity: sha512-qtvscq59uCPdWnNW4SdSkrxR+BS/QYsa923bx7ocA+4p+ZGNbbVQwkSnG4aukB81QWjtl3AxX36plxNyZLmHCA==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   mqtt-packet@9.0.2:
     resolution: {integrity: sha512-MvIY0B8/qjq7bKxdN1eD+nrljoeaai+qjLJgfRn3TiMuz0pamsIWY2bFODPZMSNmabsLANXsLl4EMoWvlaTZWA==}
@@ -5295,11 +5375,6 @@ packages:
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
-  yaml@2.8.3:
-    resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
-    engines: {node: '>= 14.6'}
-    hasBin: true
-
   yaml@2.9.0:
     resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
     engines: {node: '>= 14.6'}
@@ -5682,6 +5757,12 @@ snapshots:
     dependencies:
       effect: 4.0.0-beta.57
       react: 19.2.7
+      scheduler: 0.27.0
+
+  '@effect/atom-react@4.0.0-beta.57(effect@4.0.0-beta.57)(react@19.2.8)(scheduler@0.27.0)':
+    dependencies:
+      effect: 4.0.0-beta.57
+      react: 19.2.8
       scheduler: 0.27.0
 
   '@effect/language-service@0.87.1': {}
@@ -7195,11 +7276,24 @@ snapshots:
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
 
+  '@vis.gl/react-mapbox@8.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
+
   '@vis.gl/react-maplibre@8.1.0(maplibre-gl@5.21.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
       '@maplibre/maplibre-gl-style-spec': 19.3.3
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
+    optionalDependencies:
+      maplibre-gl: 5.21.1
+
+  '@vis.gl/react-maplibre@8.1.0(maplibre-gl@5.21.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+    dependencies:
+      '@maplibre/maplibre-gl-style-spec': 19.3.3
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
     optionalDependencies:
       maplibre-gl: 5.21.1
 
@@ -7719,7 +7813,7 @@ snapshots:
       multipasta: 0.2.7
       toml: 4.1.1
       uuid: 13.0.1
-      yaml: 2.8.3
+      yaml: 2.9.0
 
   electron-to-chromium@1.5.278: {}
 
@@ -8064,6 +8158,15 @@ snapshots:
   flatted@3.4.4: {}
 
   forwarded@0.2.0: {}
+
+  framer-motion@13.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      motion-dom: 13.0.0
+      motion-utils: 13.0.0
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
   fresh@2.0.0: {}
 
@@ -8447,6 +8550,10 @@ snapshots:
     dependencies:
       react: 19.2.7
 
+  liveline@0.0.7(react@19.2.8):
+    dependencies:
+      react: 19.2.8
+
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
@@ -8551,6 +8658,20 @@ snapshots:
   module-details-from-path@1.0.4: {}
 
   moment@2.30.1: {}
+
+  motion-dom@13.0.0:
+    dependencies:
+      motion-utils: 13.0.0
+
+  motion-utils@13.0.0: {}
+
+  motion@13.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      framer-motion: 13.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
 
   mqtt-packet@9.0.2:
     dependencies:
@@ -9021,6 +9142,15 @@ snapshots:
       '@vis.gl/react-maplibre': 8.1.0(maplibre-gl@5.21.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
+    optionalDependencies:
+      maplibre-gl: 5.21.1
+
+  react-map-gl@8.1.0(maplibre-gl@5.21.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+    dependencies:
+      '@vis.gl/react-mapbox': 8.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@vis.gl/react-maplibre': 8.1.0(maplibre-gl@5.21.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
     optionalDependencies:
       maplibre-gl: 5.21.1
 
@@ -9750,8 +9880,6 @@ snapshots:
       cssfilter: 0.0.10
 
   yallist@3.1.1: {}
-
-  yaml@2.8.3: {}
 
   yaml@2.9.0: {}
 

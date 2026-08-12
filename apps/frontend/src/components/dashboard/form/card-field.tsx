@@ -8,6 +8,7 @@ import { FormMaxAnnotationId, FormMinAnnotationId, formTitle, formType } from "@
 import { Checkbox } from "../../ui/checkbox";
 import { Field, FieldError, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
+import { DashboardCameraArrayField, type DashboardCameraArrayFieldApi } from "./camera-array-field";
 import { DashboardCameraField, type DashboardCameraFieldApi } from "./camera-field";
 import { DashboardChartSeriesField, type DashboardChartSeriesFieldApi } from "./chart-series-field";
 import {
@@ -41,6 +42,9 @@ const DashboardParameterDeviceFieldComponent =
   }>;
 const DashboardCameraFieldComponent = DashboardCameraField as unknown as ComponentType<{
   field: DashboardCameraFieldApi;
+}>;
+const DashboardCameraArrayFieldComponent = DashboardCameraArrayField as unknown as ComponentType<{
+  field: DashboardCameraArrayFieldApi;
 }>;
 const DashboardParameterArrayFieldComponent =
   DashboardParameterArrayField as unknown as ComponentType<{
@@ -239,6 +243,10 @@ export function DashboardCardField({
         switch (type) {
           case "camera":
             return <DashboardCameraFieldComponent field={field as DashboardCameraFieldApi} />;
+          case "cameraArray":
+            return (
+              <DashboardCameraArrayFieldComponent field={field as DashboardCameraArrayFieldApi} />
+            );
           case "parameter":
             return <DashboardParameterFieldComponent field={field as DashboardParameterFieldApi} />;
           case "parameterDevice":

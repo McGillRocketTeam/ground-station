@@ -13,10 +13,10 @@ function resolveMediaMtxBaseUrl() {
   }
 
   if (typeof window !== "undefined") {
-    return `${window.location.protocol}//${window.location.hostname}:9997`;
+    return new URL("/mediamtx-api/", window.location.origin).toString();
   }
 
-  return "http://localhost:9997";
+  return "http://localhost:9997/";
 }
 
 export const mediaMtxBaseUrl = resolveMediaMtxBaseUrl();
@@ -28,8 +28,15 @@ function resolveMediaMtxWebRtcBaseUrl() {
     return configuredUrl;
   }
 
-  const url = new URL(mediaMtxBaseUrl);
+  const configuredApiUrl = import.meta.env.MRT_MEDIAMTX_URL;
+  const url = new URL(
+    configuredApiUrl ??
+      (typeof window !== "undefined"
+        ? `${window.location.protocol}//${window.location.hostname}`
+        : "http://localhost"),
+  );
   url.port = "8889";
+  url.pathname = "/";
 
   return url.toString();
 }

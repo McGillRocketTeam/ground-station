@@ -13,6 +13,7 @@ export type FormType =
   | "boolean"
   | "string"
   | "camera"
+  | "cameraArray"
   | "parameter"
   | "parameterDevice"
   | "parameterArray"

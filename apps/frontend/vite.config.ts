@@ -9,6 +9,11 @@ const proxy = {
     target: "http://localhost:8090",
     ws: true,
   },
+  "/mediamtx-api": {
+    target: "http://localhost:9997",
+    changeOrigin: true,
+    rewrite: (path: string) => path.replace(/^\/mediamtx-api/, ""),
+  },
   "/rpc": "http://localhost:3000",
 };
 

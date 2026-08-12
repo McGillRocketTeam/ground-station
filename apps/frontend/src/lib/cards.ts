@@ -6,6 +6,7 @@ import { Component, createElement } from "react";
 
 import type { DashboardActionGroup } from "@/lib/dashboard-actions";
 
+import { CameraGridCard } from "@/cards/camera-grid";
 import { ChartCard } from "@/cards/chart-card";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
@@ -51,6 +52,7 @@ export const CardArray: CardDefinition<string, any>[] = [
   RealtimeChartCard,
   SerialMonitorCard,
   VideoCard,
+  CameraGridCard,
   MediaControlCard,
   PIDCard,
   // FlightComputerOverviewCard,

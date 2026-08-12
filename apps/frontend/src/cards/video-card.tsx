@@ -145,7 +145,13 @@ function getRenderedVideoSize(video: HTMLVideoElement, container: HTMLDivElement
   };
 }
 
-function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string | undefined }) {
+export function WebRtcVideo({
+  camera,
+  url,
+}: {
+  camera: string | undefined;
+  url: string | undefined;
+}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const panStateRef = useRef<PanState | null>(null);

@@ -13,6 +13,7 @@ yarn-error.log*
 .npmrc
 
 dist
+*.tsbuildinfo
 
 # Local GIS source bundles
 assets/LC2025_QGIS.zip

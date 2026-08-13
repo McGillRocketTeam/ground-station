@@ -62,3 +62,9 @@ paths:
     rtspTransport: tcp
   drone:
     source: publisher
+  TP-LINK-CAM-1:
+    source: rtsp://admin:TP-H0tFire!@192.168.0.60:554/stream1
+    rtspTransport: tcp
+  TP-LINK-CAM-2:
+    source: rtsp://admin:TP-H0tFire!@192.168.0.114:554/stream1
+    rtspTransport: tcp

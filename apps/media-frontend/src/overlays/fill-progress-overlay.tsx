@@ -1,3 +1,4 @@
+import type { PrimarySystem } from "@mrt/media-state";
 import type { LivelinePoint } from "liveline";
 
 import { useAtomSubscribe, useAtomValue } from "@effect/atom-react";
@@ -10,13 +11,9 @@ import { useEffectEvent, useState } from "react";
 
 import { OverlayCard, overlayCardSpring } from "../components/overlay-card.tsx";
 import { parameterSubscriptionAtom } from "../state/parameter-atoms.ts";
+import { flightComputerParameter } from "../state/parameter-path.ts";
 import { Unit } from "./telemetry-overlay.tsx";
 
-const TANK_PRESSURE_PARAMETER = "/SystemA/Rocket/FlightComputer/tank_pressure";
-const TANK_TEMPERATURE_PARAMETER = "/SystemA/Rocket/FlightComputer/tank_temp";
-const FDOV_OPEN_PARAMETER = "/SystemA/Rocket/FlightComputer/fdov_open";
-const MOV_OPEN_PARAMETER = "/SystemA/Rocket/FlightComputer/mov_open";
-const VENT_OPEN_PARAMETER = "/SystemA/Rocket/FlightComputer/vent_open";
 const FULL_TANK_PRESSURE_PSI = 875;
 const CHART_WINDOW_SECONDS = 30;
 const TANK_ACCENT_COLOR = "#FFFFFF";
@@ -30,13 +27,14 @@ type ParameterUpdate = {
 export function FillProgressOverlay() {
   return (
     <main className="p-2">
-      <FillProgressCard />
+      <FillProgressCard primarySystem="SystemA" />
     </main>
   );
 }
 
-export function FillProgressCard() {
-  const pressure = useAtomValue(parameterSubscriptionAtom(TANK_PRESSURE_PARAMETER));
+export function FillProgressCard({ primarySystem }: { primarySystem: PrimarySystem }) {
+  const pressureParameter = flightComputerParameter(primarySystem, "tank_pressure");
+  const pressure = useAtomValue(parameterSubscriptionAtom(pressureParameter));
   const fillPercent = AsyncResult.match(pressure, {
     onInitial: () => undefined,
     onFailure: () => undefined,
@@ -58,18 +56,18 @@ export function FillProgressCard() {
         <div className="min-w-80 flex flex-1 self-stretch flex-col justify-between">
           <div className="grid grid-cols-[auto_auto] gap-x-6 uppercase">
             <div>Fill/Dump Oxidizer Valve</div>
-            <ValveValue qualifiedName={FDOV_OPEN_PARAMETER} />
+            <ValveValue qualifiedName={flightComputerParameter(primarySystem, "fdov_open")} />
             <div>MAIN OXIDIZER VALVE</div>
-            <ValveValue qualifiedName={MOV_OPEN_PARAMETER} />
+            <ValveValue qualifiedName={flightComputerParameter(primarySystem, "mov_open")} />
             <div>Vent Valve</div>
-            <ValveValue qualifiedName={VENT_OPEN_PARAMETER} />
+            <ValveValue qualifiedName={flightComputerParameter(primarySystem, "vent_open")} />
           </div>
-          <PressureChart />
+          <PressureChart key={pressureParameter} pressureParameter={pressureParameter} />
           <div className="grid grid-cols-[auto_auto] gap-x-6 uppercase">
             <div>Pressure</div>
-            <ParameterValue qualifiedName={TANK_PRESSURE_PARAMETER} />
+            <ParameterValue qualifiedName={pressureParameter} />
             <div>Temperature</div>
-            <ParameterValue qualifiedName={TANK_TEMPERATURE_PARAMETER} />
+            <ParameterValue qualifiedName={flightComputerParameter(primarySystem, "tank_temp")} />
           </div>
         </div>
       </div>
@@ -77,7 +75,7 @@ export function FillProgressCard() {
   );
 }
 
-function PressureChart() {
+function PressureChart({ pressureParameter }: { pressureParameter: string }) {
   const [data, setData] = useState<Array<LivelinePoint>>([]);
   const [value, setValue] = useState(0);
   const onPressure = useEffectEvent((result: AsyncResult.AsyncResult<ParameterUpdate, unknown>) => {
@@ -104,7 +102,7 @@ function PressureChart() {
     ]);
   });
 
-  useAtomSubscribe(parameterSubscriptionAtom(TANK_PRESSURE_PARAMETER), onPressure);
+  useAtomSubscribe(parameterSubscriptionAtom(pressureParameter), onPressure);
 
   return (
     <div className="aspect-video relative w-full border border-white/25 bg-black/75">

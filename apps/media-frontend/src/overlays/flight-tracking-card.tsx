@@ -1,3 +1,4 @@
+import type { PrimarySystem } from "@mrt/media-state";
 import type { StyleSpecification } from "maplibre-gl";
 
 import { useAtomValue } from "@effect/atom-react";
@@ -6,10 +7,7 @@ import { Map, Marker } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { OverlayCard } from "../components/overlay-card.tsx";
 import { parameterSubscriptionAtom } from "../state/parameter-atoms.ts";
-
-const FLIGHT_STAGE_PARAMETER = "/SystemA/Rocket/FlightComputer/flight_stage";
-const GPS_LATITUDE_PARAMETER = "/SystemA/Rocket/FlightComputer/gps_latitude";
-const GPS_LONGITUDE_PARAMETER = "/SystemA/Rocket/FlightComputer/gps_longitude";
+import { flightComputerParameter } from "../state/parameter-path.ts";
 
 const mapStyle = {
   version: 8,
@@ -52,12 +50,16 @@ export function getFlightStage(result: ReturnType<typeof useParameter>) {
   });
 }
 
-export { FLIGHT_STAGE_PARAMETER };
-
-export function FlightTrackingCard() {
-  const stage = getFlightStage(useParameter(FLIGHT_STAGE_PARAMETER));
-  const latitude = numericValue(useParameter(GPS_LATITUDE_PARAMETER));
-  const longitude = numericValue(useParameter(GPS_LONGITUDE_PARAMETER));
+export function FlightTrackingCard({ primarySystem }: { primarySystem: PrimarySystem }) {
+  const stage = getFlightStage(
+    useParameter(flightComputerParameter(primarySystem, "flight_stage")),
+  );
+  const latitude = numericValue(
+    useParameter(flightComputerParameter(primarySystem, "gps_latitude")),
+  );
+  const longitude = numericValue(
+    useParameter(flightComputerParameter(primarySystem, "gps_longitude")),
+  );
   const hasPosition =
     latitude !== undefined &&
     longitude !== undefined &&

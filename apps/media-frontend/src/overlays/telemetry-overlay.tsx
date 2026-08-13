@@ -1,3 +1,4 @@
+import type { PrimarySystem } from "@mrt/media-state";
 import type { ReactNode } from "react";
 
 import { useAtomValue } from "@effect/atom-react";
@@ -7,40 +8,51 @@ import * as AsyncResult from "effect/unstable/reactivity/AsyncResult";
 import { MrtLogo } from "../components/mrt-logo.tsx";
 import { OverlayCard } from "../components/overlay-card.tsx";
 import { cn } from "../lib/utils.ts";
+import { mediaStateAtom, selectMediaState } from "../state/control-state-atoms.ts";
 import { currentTimeAtom, parameterSubscriptionAtom } from "../state/parameter-atoms.ts";
-
-const ALTITUDE_PARAMETER = "/SystemA/Rocket/FlightComputer/barometer_altitude_from_pad";
-const VERTICAL_SPEED_PARAMETER = "/SystemA/Rocket/FlightComputer/vertical_speed";
-const FLIGHT_STAGE_PARAMETER = "/SystemA/Rocket/FlightComputer/flight_stage";
-const APOGEE_PARAMETER = "/SystemA/Rocket/FlightComputer/apogee_from_ground";
+import { flightComputerParameter } from "../state/parameter-path.ts";
 
 export function TelemetryOverlay() {
+  const state = useAtomValue(mediaStateAtom, selectMediaState);
+
   return (
     <main className="flex flex-col items-start gap-4 p-2">
       <div className="flex flex-row items-center">
         <MrtLogo />
       </div>
-      <TelemetryCard />
+      <TelemetryCard primarySystem={state.primarySystem} />
     </main>
   );
 }
 
-export function TelemetryCard() {
+export function TelemetryCard({ primarySystem }: { primarySystem: PrimarySystem }) {
+  const altitudeParameter = flightComputerParameter(primarySystem, "barometer_altitude_from_pad");
+  const verticalSpeedParameter = flightComputerParameter(primarySystem, "vertical_speed");
+  const flightStageParameter = flightComputerParameter(primarySystem, "flight_stage");
+  const apogeeParameter = flightComputerParameter(primarySystem, "apogee_from_ground");
+
   return (
     <OverlayCard title="Flight & Telemetry" animateAppearance={false} layoutMode={false}>
       <div className="grid grid-cols-[auto_auto] gap-x-6 uppercase min-w-70">
         <div>Stage</div>
-        <ParameterValue qualifiedName={FLIGHT_STAGE_PARAMETER} />
+        <ParameterValue qualifiedName={flightStageParameter} />
         <div className="col-span-full mb-2 h-px bg-white/25" />
         <div>Altitude</div>
-        <ParameterValue qualifiedName={ALTITUDE_PARAMETER} />
+        <ParameterValue qualifiedName={altitudeParameter} />
         <div>Vertical Speed</div>
-        <ParameterValue qualifiedName={VERTICAL_SPEED_PARAMETER} />
+        <ParameterValue qualifiedName={verticalSpeedParameter} />
         <div>Apogee</div>
-        <ParameterValue qualifiedName={APOGEE_PARAMETER} />
+        <ParameterValue qualifiedName={apogeeParameter} />
         <div className="col-span-full mb-2 h-px bg-white/25" />
         <div>Last Packet</div>
-        <LastPacketValue />
+        <LastPacketValue
+          parameters={[
+            altitudeParameter,
+            verticalSpeedParameter,
+            flightStageParameter,
+            apogeeParameter,
+          ]}
+        />
       </div>
     </OverlayCard>
   );
@@ -74,11 +86,15 @@ function ParameterValue({ qualifiedName }: { qualifiedName: string }) {
   });
 }
 
-function LastPacketValue() {
-  const altitude = useAtomValue(parameterSubscriptionAtom(ALTITUDE_PARAMETER));
-  const verticalSpeed = useAtomValue(parameterSubscriptionAtom(VERTICAL_SPEED_PARAMETER));
-  const flightStage = useAtomValue(parameterSubscriptionAtom(FLIGHT_STAGE_PARAMETER));
-  const apogee = useAtomValue(parameterSubscriptionAtom(APOGEE_PARAMETER));
+function LastPacketValue({
+  parameters,
+}: {
+  parameters: readonly [string, string, string, string];
+}) {
+  const altitude = useAtomValue(parameterSubscriptionAtom(parameters[0]));
+  const verticalSpeed = useAtomValue(parameterSubscriptionAtom(parameters[1]));
+  const flightStage = useAtomValue(parameterSubscriptionAtom(parameters[2]));
+  const apogee = useAtomValue(parameterSubscriptionAtom(parameters[3]));
   const currentTime = useAtomValue(currentTimeAtom);
 
   const packetTimes = [altitude, verticalSpeed, flightStage, apogee].flatMap((result) =>

@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react";
 
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
-import { MediaState, Scene } from "@mrt/media-state";
+import { MediaState, PrimarySystem, Scene } from "@mrt/media-state";
 import { DateTime, Option, Schema } from "effect";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,6 +34,15 @@ function MediaControlCardContent() {
       Option.match({
         onNone: () => undefined,
         onSome: (scene) => setState(MediaState.make({ ...state, scene })),
+      }),
+    );
+  };
+
+  const handlePrimarySystemChange = (value: unknown) => {
+    Schema.decodeUnknownOption(PrimarySystem)(value).pipe(
+      Option.match({
+        onNone: () => undefined,
+        onSome: (primarySystem) => setState(MediaState.make({ ...state, primarySystem })),
       }),
     );
   };
@@ -75,6 +84,22 @@ function MediaControlCardContent() {
             {Scene.literals.map((scene) => (
               <SelectItem key={scene} value={scene}>
                 {scene}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <label htmlFor="media-control-primary-system">Primary source</label>
+      <Select value={state.primarySystem} onValueChange={handlePrimarySystemChange}>
+        <SelectTrigger id="media-control-primary-system" className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Primary source</SelectLabel>
+            {PrimarySystem.literals.map((system) => (
+              <SelectItem key={system} value={system}>
+                {system}
               </SelectItem>
             ))}
           </SelectGroup>

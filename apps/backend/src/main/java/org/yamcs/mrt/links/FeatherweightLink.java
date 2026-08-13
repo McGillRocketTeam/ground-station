@@ -86,7 +86,7 @@ public class FeatherweightLink extends AbstractParameterDataLink implements Runn
       try {
         openPort();
         readPackets();
-      } catch (Exception e) {
+      } catch (Exception | LinkageError e) {
         if (running) {
           status = Status.UNAVAIL;
           detailedStatus =

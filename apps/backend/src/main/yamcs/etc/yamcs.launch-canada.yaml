@@ -168,6 +168,14 @@ dataLinks:
     username: ubnt
     password: ubnt
 
+  - name: EGSE/ControlStation/Featherweight
+    class: org.yamcs.mrt.links.FeatherweightLink
+    enabledAtStartup: false
+    ppStream: pp_realtime
+    device: ${env.FEATHERWEIGHT_SERIAL_DEVICE:/dev/tty.usbmodem-featherweight}
+    baudRate: 115200
+    requireValidCrc: true
+
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
     stream: system_b_fc_realtime
@@ -267,6 +275,10 @@ mdb:
             spec: "EcoFlowMax"
             args:
               file: mdb/ecoflow.xml
+          - type: xtce
+            spec: "Featherweight"
+            args:
+              file: mdb/featherweight.xml
   - type: emptyNode
     spec: "SystemA"
     subLoaders:

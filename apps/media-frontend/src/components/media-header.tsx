@@ -36,7 +36,7 @@ function RedFlagCard({ redFlagAt }: { redFlagAt: DateTime.Utc }) {
       layoutMode={false}
       showCutCornerBorder
     >
-      <div className="w-[11ch] translate-y-[4px] text-center text-xl leading-none tabular-nums">
+      <div className="w-[11ch] translate-y-[2px] text-center text-xl leading-none tabular-nums">
         {countdown}
       </div>
     </OverlayCard>

@@ -23,6 +23,7 @@
     "@effect/atom-react": "catalog:",
     "@effect/platform-browser": "catalog:",
     "@fontsource-variable/public-sans": "^5.2.7",
+    "@mrt/map-style": "workspace:*",
     "@mrt/media-state": "workspace:*",
     "@mrt/yamcs-effect": "workspace:*",
     "@mrt/yamcs-procedures": "workspace:*",

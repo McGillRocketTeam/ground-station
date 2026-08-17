@@ -3,6 +3,7 @@ import {
   Parameters,
   type QualifiedName,
   YamcsConfig,
+  YamcsSubscriptions,
   YamcsWebSocketClient,
 } from "@mrt/yamcs-effect";
 import { Clock, Effect, Layer, Schedule, Stream } from "effect";
@@ -22,16 +23,24 @@ const parameterLayer = Parameters.layer.pipe(
   Layer.provide([yamcsConfigLayer, websocketClientLayer, BrowserHttpClient.layerFetch]),
 );
 
-const parameterRuntime = Atom.runtime(parameterLayer);
+const subscriptionsLayer = YamcsSubscriptions.layer.pipe(
+  Layer.provide([yamcsConfigLayer, websocketClientLayer]),
+);
 
-export const currentTimeAtom = parameterRuntime.atom(
+const yamcsRuntime = Atom.runtime(Layer.merge(parameterLayer, subscriptionsLayer));
+
+export const currentTimeAtom = yamcsRuntime.atom(
   Stream.fromSchedule(Schedule.spaced("1 second")).pipe(
     Stream.mapEffect(() => Clock.currentTimeMillis),
   ),
 );
 
+export const missionTimeAtom = yamcsRuntime.atom(
+  Stream.unwrap(YamcsSubscriptions.use((subscriptions) => Effect.succeed(subscriptions.time))),
+);
+
 export const parameterSubscriptionAtom = Atom.family((qualifiedName: QualifiedName) =>
-  parameterRuntime.atom(
+  yamcsRuntime.atom(
     Stream.unwrap(
       Parameters.use((parameters) =>
         parameters

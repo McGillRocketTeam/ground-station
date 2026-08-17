@@ -1,27 +1,13 @@
 import type { PrimarySystem } from "@mrt/media-state";
-import type { StyleSpecification } from "maplibre-gl";
 
 import { useAtomValue } from "@effect/atom-react";
+import { localSatelliteMapStyle } from "@mrt/map-style";
 import * as AsyncResult from "effect/unstable/reactivity/AsyncResult";
 import { Map, Marker } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { OverlayCard } from "../components/overlay-card.tsx";
 import { parameterSubscriptionAtom } from "../state/parameter-atoms.ts";
 import { flightComputerParameter } from "../state/parameter-path.ts";
-
-const mapStyle = {
-  version: 8,
-  sources: {
-    satellite: {
-      type: "raster",
-      tiles: [
-        "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg",
-      ],
-      tileSize: 256,
-    },
-  },
-  layers: [{ id: "satellite", type: "raster", source: "satellite" }],
-} satisfies StyleSpecification;
 
 const numericValue = (result: ReturnType<typeof useParameter>) =>
   AsyncResult.match(result, {
@@ -77,7 +63,7 @@ export function FlightTrackingCard({ primarySystem }: { primarySystem: PrimarySy
               attributionControl={false}
               latitude={latitude}
               longitude={longitude}
-              mapStyle={mapStyle}
+              mapStyle={localSatelliteMapStyle}
               pitchWithRotate={false}
               dragRotate={false}
               zoom={12}
@@ -101,7 +87,7 @@ export function FlightTrackingCard({ primarySystem }: { primarySystem: PrimarySy
           />
           <div>Position</div>
           <div className="text-right tabular-nums">
-            {hasPosition ? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` : "N/A"}
+            {hasPosition ? `${latitude.toFixed(3)}, ${longitude.toFixed(3)}` : "N/A"}
           </div>
         </div>
       </div>

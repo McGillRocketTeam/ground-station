@@ -1,9 +1,11 @@
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { MediaState, PrimarySystem, Scene } from "@mrt/media-state";
 import { DateTime, Option, Schema } from "effect";
+import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { mediaStateAtom, selectMediaState, setMediaStateAtom } from "@/lib/atom/media-state";
 import { makeCard } from "@/lib/cards";
 
@@ -28,6 +31,11 @@ export const MediaControlCard = makeCard({
 function MediaControlCardContent() {
   const state = useAtomValue(mediaStateAtom, selectMediaState);
   const setState = useAtomSet(setMediaStateAtom);
+  const [missionUpdate, setMissionUpdate] = useState(state.missionUpdate ?? "");
+
+  useEffect(() => {
+    setMissionUpdate(state.missionUpdate ?? "");
+  }, [state.missionUpdate]);
 
   const handleSceneChange = (value: unknown) => {
     Schema.decodeUnknownOption(Scene)(value).pipe(
@@ -69,6 +77,24 @@ function MediaControlCardContent() {
 
   const handleShowGpsCardChange = (checked: boolean) => {
     setState(MediaState.make({ ...state, showGpsCard: checked }));
+  };
+
+  const handleShowAltitudeCardChange = (checked: boolean) => {
+    setState(MediaState.make({ ...state, showAltitudeCard: checked }));
+  };
+
+  const handleMissionUpdateSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const update = missionUpdate.trim();
+
+    if (update !== "") {
+      setState(MediaState.make({ ...state, missionUpdate: update }));
+    }
+  };
+
+  const handleMissionUpdateClear = () => {
+    setMissionUpdate("");
+    setState(MediaState.make({ ...state, missionUpdate: null }));
   };
 
   return (
@@ -124,6 +150,36 @@ function MediaControlCardContent() {
         checked={state.showGpsCard}
         onCheckedChange={handleShowGpsCardChange}
       />
+      <label htmlFor="media-control-show-altitude-card">Show altitude card</label>
+      <Checkbox
+        id="media-control-show-altitude-card"
+        checked={state.showAltitudeCard}
+        onCheckedChange={handleShowAltitudeCardChange}
+      />
+      <label htmlFor="media-control-mission-update" className="self-start pt-2">
+        Mission update
+      </label>
+      <form className="grid gap-2" onSubmit={handleMissionUpdateSubmit}>
+        <Textarea
+          id="media-control-mission-update"
+          placeholder="Enter an update for the media display"
+          value={missionUpdate}
+          onChange={(event) => setMissionUpdate(event.currentTarget.value)}
+        />
+        <div className="flex gap-2">
+          <Button type="submit" disabled={missionUpdate.trim() === ""}>
+            Publish update
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={state.missionUpdate === null}
+            onClick={handleMissionUpdateClear}
+          >
+            Clear update
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

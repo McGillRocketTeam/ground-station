@@ -1,4 +1,5 @@
 import { useAtomSuspense } from "@effect/atom-react";
+import { localSatelliteMapStyle } from "@mrt/map-style";
 import { useEffect, useRef } from "react";
 import Map, { Layer, Marker, Source, type MapRef } from "react-map-gl/maplibre";
 import "vis-timeline/styles/vis-timeline-graph2d.css";
@@ -156,29 +157,11 @@ export const MapPanel = () => {
         ref={mapRef}
         scrollZoom={{ around: "center" }}
         initialViewState={{
-          longitude: -100,
-          latitude: 40,
+          longitude: -81.86,
+          latitude: 48,
           zoom: 14,
         }}
-        mapStyle={{
-          version: 8,
-          sources: {
-            satellite: {
-              type: "raster",
-              tiles: [
-                "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2025_3857/default/g/{z}/{y}/{x}.jpg",
-              ],
-              tileSize: 256,
-            },
-          },
-          layers: [
-            {
-              id: "satellite",
-              type: "raster",
-              source: "satellite",
-            },
-          ],
-        }}
+        mapStyle={localSatelliteMapStyle}
       >
         <RocketPath />
         <RocketMarker />

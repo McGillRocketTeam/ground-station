@@ -4,23 +4,30 @@ import type { ReactNode } from "react";
 import { useAtomValue } from "@effect/atom-react";
 import { DateTime } from "effect";
 import * as AsyncResult from "effect/unstable/reactivity/AsyncResult";
+import { AnimatePresence } from "motion/react";
 
-import { MrtLogo } from "../components/mrt-logo.tsx";
+import { MediaHeader } from "../components/media-header.tsx";
 import { OverlayCard } from "../components/overlay-card.tsx";
 import { cn } from "../lib/utils.ts";
 import { mediaStateAtom, selectMediaState } from "../state/control-state-atoms.ts";
 import { currentTimeAtom, parameterSubscriptionAtom } from "../state/parameter-atoms.ts";
 import { flightComputerParameter } from "../state/parameter-path.ts";
+import { MissionUpdateCard } from "./mission-update-card.tsx";
 
 export function TelemetryOverlay() {
   const state = useAtomValue(mediaStateAtom, selectMediaState);
 
   return (
     <main className="flex flex-col items-start gap-4 p-2">
-      <div className="flex flex-row items-center">
-        <MrtLogo />
+      <MediaHeader redFlagAt={state.redFlagAt} />
+      <div className="flex flex-wrap items-start gap-4">
+        <TelemetryCard primarySystem={state.primarySystem} />
+        <AnimatePresence initial={false}>
+          {state.missionUpdate !== null && (
+            <MissionUpdateCard key="mission-update-card" message={state.missionUpdate} />
+          )}
+        </AnimatePresence>
       </div>
-      <TelemetryCard primarySystem={state.primarySystem} />
     </main>
   );
 }

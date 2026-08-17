@@ -191,11 +191,11 @@ export class DataGenerator extends Context.Service<
           const name = parameter.name.toLowerCase();
 
           if (name.includes("latitude") || name.includes("lat")) {
-            return makeIncrementingFloatField(-90_000_000, 90_000_000, 10_000_000, dataMode);
+            return makeIncrementingFloatField(477_467_110, 482_502_830, 100_000, dataMode);
           }
 
           if (name.includes("longitude") || name.includes("long")) {
-            return makeIncrementingFloatField(-180_000_000, 180_000_000, 10_000_000, dataMode);
+            return makeIncrementingFloatField(-820_184_330, -814_965_820, 100_000, dataMode);
           }
 
           return makeIncrementingFloatField(0, 10_000_000, 10_000, dataMode);

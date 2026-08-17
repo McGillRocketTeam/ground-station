@@ -7,6 +7,7 @@ RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
 COPY apps/frontend/package.json apps/frontend/package.json
+COPY packages/map-style/package.json packages/map-style/package.json
 COPY packages/media-state/package.json packages/media-state/package.json
 COPY packages/yamcs-effect/package.json packages/yamcs-effect/package.json
 COPY packages/yamcs-procedures/package.json packages/yamcs-procedures/package.json
@@ -14,6 +15,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts --filter @mrt/frontend... \
     && pnpm rebuild esbuild
 
 COPY apps/frontend apps/frontend
+COPY packages/map-style packages/map-style
 COPY packages/media-state packages/media-state
 COPY packages/yamcs-effect packages/yamcs-effect
 COPY packages/yamcs-procedures packages/yamcs-procedures

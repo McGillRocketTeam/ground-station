@@ -22,6 +22,7 @@ import {
   deleteDashboardAtom,
   importDashboardAtom,
 } from "@/lib/atom/dashboard";
+import { toggleCardMaximized, toggleCardMaximizedHotkey } from "@/lib/dashboard-actions";
 import { Dashboard } from "@/lib/dashboard-persistence";
 
 import { editPanelDialogHandle } from "../form/edit-dialog";
@@ -309,6 +310,16 @@ export function useDashboardCardActionGroups(): ReadonlyArray<DashboardActionGro
       id: "card-actions",
       heading: "Card",
       actions: [
+        {
+          id: "toggle-card-maximized",
+          label: "Toggle Card Maximize",
+          keywords: ["card", "maximize", "restore"],
+          shortcut: toggleCardMaximizedHotkey,
+          disabled: !activePanel,
+          run: () => {
+            if (activePanel) toggleCardMaximized(activePanel);
+          },
+        },
         {
           id: "edit-card",
           label: "Edit Card",

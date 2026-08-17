@@ -15,7 +15,9 @@ type OverlayCardProps = Omit<HTMLMotionProps<"article">, "children" | "title"> &
   title: ReactNode;
   children: ReactNode;
   animateAppearance?: boolean;
+  inlineLayout?: boolean;
   layoutMode?: boolean | "position" | "size";
+  showCutCornerBorder?: boolean;
 };
 
 export function OverlayCard({
@@ -24,7 +26,9 @@ export function OverlayCard({
   className,
   style,
   animateAppearance = true,
+  inlineLayout = false,
   layoutMode = true,
+  showCutCornerBorder = false,
   ...props
 }: OverlayCardProps) {
   return (
@@ -35,7 +39,8 @@ export function OverlayCard({
       exit={animateAppearance ? { opacity: 0, filter: "blur(8px)" } : undefined}
       transition={overlayCardSpring}
       className={cn(
-        "relative grid max-w-fit grid-rows-[auto_1fr] overflow-hidden border border-white/35 text-white",
+        "relative grid max-w-fit overflow-hidden border border-white/35 text-white",
+        inlineLayout ? "grid-cols-[auto_1fr] grid-rows-1" : "grid-rows-[auto_1fr]",
         className,
       )}
       style={{
@@ -45,15 +50,34 @@ export function OverlayCard({
       {...props}
     >
       <div className="absolute inset-0 bg-black/80" aria-hidden="true" />
+      {showCutCornerBorder && (
+        <svg
+          className="pointer-events-none absolute top-0 right-0 z-10 size-4"
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+        >
+          <line x1="0" y1="0" x2="16" y2="16" stroke="rgba(255, 255, 255, 0.35)" />
+        </svg>
+      )}
       <motion.header
         layout
-        className="relative py-1 px-2 font-bold uppercase"
+        className={cn(
+          "relative py-1 px-2 font-bold uppercase",
+          inlineLayout && "flex items-center px-2 py-1 leading-none",
+        )}
         style={{ background: "linear-gradient(90deg, #B20606 0%, #d13232 100%)" }}
         transition={overlayCardSpring}
       >
         {title}
       </motion.header>
-      <motion.div layout className="relative min-w-0 p-2" transition={overlayCardSpring}>
+      <motion.div
+        layout
+        className={cn(
+          "relative min-w-0 p-2",
+          inlineLayout && "flex items-center px-2 py-1 leading-none",
+        )}
+        transition={overlayCardSpring}
+      >
         {children}
       </motion.div>
     </motion.article>

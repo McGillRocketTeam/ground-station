@@ -224,6 +224,7 @@ dataLinks:
       - name: SystemB
         baseTopic: SystemB/Rocket/FlightComputer
         radioAckTopics:
+          - SystemB/Pad/Radio/acks
           - SystemB/ControlStation/Radio/acks
 
 mdb:

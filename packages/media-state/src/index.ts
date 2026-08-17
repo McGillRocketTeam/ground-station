@@ -12,7 +12,11 @@ export const MediaState = Schema.Struct({
   primarySystem: PrimarySystem.pipe(Schema.withDecodingDefaultKey(Effect.succeed("SystemA"))),
   showTankCard: Schema.Boolean.pipe(Schema.withDecodingDefaultKey(Effect.succeed(true))),
   showGpsCard: Schema.Boolean.pipe(Schema.withDecodingDefaultKey(Effect.succeed(true))),
+  showAltitudeCard: Schema.Boolean.pipe(Schema.withDecodingDefaultKey(Effect.succeed(true))),
   redFlagAt: Schema.NullOr(Schema.DateTimeUtcFromString).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(null)),
+  ),
+  missionUpdate: Schema.NullOr(Schema.String).pipe(
     Schema.withDecodingDefaultKey(Effect.succeed(null)),
   ),
 }).annotate({ identifier: "MediaState" });
@@ -24,7 +28,9 @@ export const initialMediaState = MediaState.make({
   primarySystem: "SystemA",
   showTankCard: true,
   showGpsCard: true,
+  showAltitudeCard: true,
   redFlagAt: null,
+  missionUpdate: null,
 });
 
 export const MediaStateRpcs = RpcGroup.make(

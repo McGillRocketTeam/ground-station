@@ -5,5 +5,9 @@ export function isSerializedDockviewLayout(layout: unknown): layout is Serialize
 }
 
 export function snapshotDockviewLayout(layout: SerializedDockview): SerializedDockview {
-  return structuredClone(layout);
+  const snapshot = structuredClone(layout);
+  const grid = snapshot.grid as typeof snapshot.grid & { maximizedNode?: unknown };
+
+  delete grid.maximizedNode;
+  return snapshot;
 }

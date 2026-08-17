@@ -1,7 +1,7 @@
 import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Marker } from "react-map-gl/maplibre";
 
 import type { LiveParameterUpdate } from "@/lib/atom";
@@ -22,22 +22,15 @@ import { DashboardMap, isValidCoordinate, type MapViewState } from "./map";
 
 const MapCardConfiguration = Schema.Struct({
   longitude: Schema.optional(CoordinateLongitudeField).pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Ground Station Longitude" }),
+    Schema.annotate({ [FormTitleAnnotationId]: "Control Station Longitude" }),
   ),
   latitude: Schema.optional(CoordinateLatitudeField).pipe(
-    Schema.annotate({ [FormTitleAnnotationId]: "Ground Station Latitude" }),
-  ),
-  useLocalTiles: Schema.optional(Schema.Boolean).pipe(
-    Schema.annotate({
-      [FormDefaultValueAnnotationId]: true,
-      [FormTitleAnnotationId]: "Use Local Map Tiles",
-      [FormTypeAnnotationId]: "boolean",
-    }),
+    Schema.annotate({ [FormTitleAnnotationId]: "Control Station Latitude" }),
   ),
   showLc2025Layers: Schema.optional(Schema.Boolean).pipe(
     Schema.annotate({
-      [FormDefaultValueAnnotationId]: true,
-      [FormTitleAnnotationId]: "Show LC2025 Layers",
+      [FormDefaultValueAnnotationId]: false,
+      [FormTitleAnnotationId]: "Show LC2025 Overlay",
       [FormTypeAnnotationId]: "boolean",
     }),
   ),
@@ -130,21 +123,31 @@ export const MapCard = makeCard({
       : undefined;
 
     const [viewState, setViewState] = useAtom(viewStateAtom);
+    const [mapContextMenu, setMapContextMenu] = useState<{
+      latitude: number;
+      longitude: number;
+      x: number;
+      y: number;
+    }>();
+
     return (
       <div className="relative h-full min-h-60 w-full">
         <DashboardMap
           debugName="map-card"
           viewState={viewState}
           onViewStateChange={setViewState}
-          useLocalTiles={props.params.useLocalTiles ?? true}
-          showLc2025Layers={props.params.showLc2025Layers ?? true}
+          showLc2025Layers={props.params.showLc2025Layers ?? false}
+          onClick={() => setMapContextMenu(undefined)}
+          onContextMenu={setMapContextMenu}
         >
           {padCoordinate ? (
-            <Marker
-              longitude={padCoordinate.longitude}
-              latitude={padCoordinate.latitude}
-              color="red"
-            />
+            <Marker longitude={padCoordinate.longitude} latitude={padCoordinate.latitude}>
+              <div className="bg-gray-600 px-2 py-1 text-center font-mono text-[10px] leading-tight text-white">
+                CONTROL
+                <br />
+                STATION
+              </div>
+            </Marker>
           ) : null}
           <Suspense>
             <RocketMarker
@@ -187,6 +190,47 @@ export const MapCard = makeCard({
         </DashboardMap>
         {(props.params.showSatelliteSkyView ?? true) ? (
           <SatelliteSkyView className="pointer-events-none absolute bottom-3 left-3 size-[min(42vw,18rem)] min-h-48 min-w-48" />
+        ) : null}
+        <div className="pointer-events-none absolute left-3 top-3 bg-black/75 px-2 py-1 font-mono text-xs text-white">
+          Zoom: {viewState.zoom.toFixed(2)}
+        </div>
+        {mapContextMenu ? (
+          <div
+            className="absolute z-50 min-w-44 rounded-lg bg-popover p-1 text-xs text-popover-foreground shadow-md ring-1 ring-foreground/10"
+            style={{ left: mapContextMenu.x, top: mapContextMenu.y }}
+            onContextMenu={(event) => event.preventDefault()}
+          >
+            <div className="px-2 py-1.5 font-mono text-muted-foreground">
+              {mapContextMenu.latitude.toFixed(6)}, {mapContextMenu.longitude.toFixed(6)}
+            </div>
+            <button
+              className="flex min-h-7 w-full items-center rounded-md px-2 py-1 text-left hover:bg-accent hover:text-accent-foreground"
+              type="button"
+              onClick={() => {
+                void navigator.clipboard.writeText(
+                  `${mapContextMenu.latitude.toFixed(6)}, ${mapContextMenu.longitude.toFixed(6)}`,
+                );
+                setMapContextMenu(undefined);
+              }}
+            >
+              Copy coordinates
+            </button>
+            <div className="-mx-1 my-1 h-px bg-border" />
+            <button
+              className="flex min-h-7 w-full items-center rounded-md px-2 py-1 text-left hover:bg-accent hover:text-accent-foreground"
+              type="button"
+              onClick={() => {
+                props.api.updateParameters({
+                  ...props.params,
+                  latitude: mapContextMenu.latitude,
+                  longitude: mapContextMenu.longitude,
+                });
+                setMapContextMenu(undefined);
+              }}
+            >
+              Set control station here
+            </button>
+          </div>
         ) : null}
       </div>
     );

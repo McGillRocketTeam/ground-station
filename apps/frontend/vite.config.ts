@@ -14,6 +14,11 @@ const proxy = {
     changeOrigin: true,
     rewrite: (path: string) => path.replace(/^\/mediamtx-api/, ""),
   },
+  "/mediamtx-webrtc": {
+    target: "http://localhost:8889",
+    changeOrigin: true,
+    rewrite: (path: string) => path.replace(/^\/mediamtx-webrtc/, ""),
+  },
   "/rpc": "http://localhost:3000",
 };
 

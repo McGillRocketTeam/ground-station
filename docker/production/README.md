@@ -14,8 +14,10 @@ docker compose up -d --build
 ```
 
 The main frontend is available at `http://localhost:5173`, and the media frontend is available at
-`http://localhost:5174`. Edit `.env` before building when clients use a hostname other than
-`localhost`; Vite embeds browser-facing settings into the frontend image at build time.
+`http://localhost:5174`. The main frontend proxies the MediaMTX API and WHEP signaling through its
+own origin, so clients do not need direct access to ports `9997` or `8889`. For camera playback from
+another machine, set `MEDIAMTX_WEBRTC_ADDITIONAL_HOSTS` to a browser-reachable server IP or DNS name
+and allow MediaMTX's ICE transport port `8189` over both TCP and UDP.
 
 Map files are read from `docker/assets/maps`. Media recordings and Yamcs/MQTT data use named Docker
 volumes so `docker compose down` does not remove them.

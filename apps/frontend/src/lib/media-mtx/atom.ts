@@ -28,17 +28,11 @@ function resolveMediaMtxWebRtcBaseUrl() {
     return configuredUrl;
   }
 
-  const configuredApiUrl = import.meta.env.MRT_MEDIAMTX_URL;
-  const url = new URL(
-    configuredApiUrl ??
-      (typeof window !== "undefined"
-        ? `${window.location.protocol}//${window.location.hostname}`
-        : "http://localhost"),
-  );
-  url.port = "8889";
-  url.pathname = "/";
+  if (typeof window !== "undefined") {
+    return new URL("/mediamtx-webrtc/", window.location.origin).toString();
+  }
 
-  return url.toString();
+  return "http://localhost:8889/";
 }
 
 export const mediaMtxWebRtcBaseUrl = resolveMediaMtxWebRtcBaseUrl();

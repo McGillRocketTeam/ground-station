@@ -55,6 +55,7 @@ export const mdbGroup = HttpApiGroup.make("mdb")
         q: Schema.optional(Schema.String),
         next: Schema.optional(Schema.String),
         limit: Schema.optional(Schema.String),
+        details: Schema.optional(Schema.Boolean),
       },
       success: ListCommandsResponse,
       error: [HttpApiError.NotFound],

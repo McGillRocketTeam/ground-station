@@ -10,6 +10,7 @@ import { CameraGridCard } from "@/cards/camera-grid";
 import { ChartCard } from "@/cards/chart-card";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
+import { ControlBoxCard } from "@/cards/control-box";
 import { EventsCard } from "@/cards/events";
 import { FaultPanelCard } from "@/cards/fault-panel-card";
 import { GaugeCard } from "@/cards/gauge";
@@ -28,6 +29,7 @@ import { ProceduresCard } from "@/cards/procedures";
 import { RealtimeChartCard } from "@/cards/realtime-chart";
 import { SatelliteSkyViewCard } from "@/cards/satellite-sky-view-card";
 import { SerialMonitorCard } from "@/cards/serial-monitor";
+import { SwitchPortsCard } from "@/cards/switch-ports";
 import { TextCard } from "@/cards/text-card";
 import { VideoCard } from "@/cards/video-card";
 
@@ -45,12 +47,14 @@ export const CardArray: CardDefinition<string, any>[] = [
   EventsCard,
   FaultPanelCard,
   CommandButtonCard,
+  ControlBoxCard,
   GaugeCard,
   LiveChartCard,
   MqttExplorerCard,
   NetworkTopologyCard,
   RealtimeChartCard,
   SerialMonitorCard,
+  SwitchPortsCard,
   VideoCard,
   CameraGridCard,
   MediaControlCard,

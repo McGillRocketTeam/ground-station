@@ -335,8 +335,101 @@ export interface EnumeratedValue {
 }
 export const EnumeratedValue: Schema.Codec<EnumeratedValue, unknown> = EnumeratedValueSchema;
 
-export const AggregateValue = Schema.Struct({
+export interface AggregateValue {
+  readonly type: "AGGREGATE";
+  readonly value: Readonly<Record<string, Value>>;
+}
+
+export interface ArrayValue {
+  readonly type: "ARRAY";
+  readonly value: ReadonlyArray<Value>;
+}
+
+export interface NoneValue {
+  readonly type: "NONE";
+}
+
+export type Value =
+  | { readonly type: "FLOAT"; readonly value: number }
+  | { readonly type: "DOUBLE"; readonly value: number }
+  | { readonly type: "SINT32"; readonly value: number }
+  | { readonly type: "UINT32"; readonly value: number }
+  | { readonly type: "SINT64"; readonly value: number }
+  | { readonly type: "UINT64"; readonly value: number }
+  | { readonly type: "BINARY"; readonly value: Uint8Array }
+  | { readonly type: "STRING"; readonly value: string }
+  | { readonly type: "TIMESTAMP"; readonly value: typeof YamcsDate.Type }
+  | { readonly type: "BOOLEAN"; readonly value: boolean }
+  | EnumeratedValue
+  | AggregateValue
+  | ArrayValue
+  | NoneValue;
+
+const AggregateValueType: Schema.Codec<AggregateValue> = Schema.toType(
+  Schema.Struct({
+    type: Schema.Literal("AGGREGATE"),
+    value: Schema.Record(
+      Schema.String,
+      Schema.suspend((): Schema.Codec<Value, unknown> => Value),
+    ),
+  }),
+);
+
+const AggregateValueWire = Schema.Struct({
   type: Schema.Literal("AGGREGATE"),
+  aggregateValue: Schema.Struct({
+    name: Schema.Array(Schema.String),
+    value: Schema.Array(Schema.suspend((): Schema.Codec<Value, unknown> => Value)),
+  }),
+});
+
+export const AggregateValue: Schema.Codec<AggregateValue, unknown> = AggregateValueWire.pipe(
+  Schema.decodeTo(AggregateValueType, {
+    decode: SchemaGetter.transformOrFail(({ type, aggregateValue }) => {
+      if (aggregateValue.name.length !== aggregateValue.value.length) {
+        return Effect.fail(
+          new SchemaIssue.InvalidValue(Option.some(aggregateValue), {
+            cause: "Aggregate member name and value counts differ",
+          }),
+        );
+      }
+
+      const value: Record<string, Value> = {};
+      for (let index = 0; index < aggregateValue.name.length; index++) {
+        const name = aggregateValue.name[index];
+        const member = aggregateValue.value[index];
+        if (name === undefined || member === undefined || Object.hasOwn(value, name)) {
+          return Effect.fail(
+            new SchemaIssue.InvalidValue(Option.some(aggregateValue), {
+              cause: `Invalid or duplicate aggregate member at index ${index}`,
+            }),
+          );
+        }
+        value[name] = member;
+      }
+
+      return Effect.succeed({ type, value });
+    }),
+    encode: SchemaGetter.transform(({ type, value }) => {
+      const entries = Object.entries(value);
+      return {
+        type,
+        aggregateValue: {
+          name: entries.map(([name]) => name),
+          value: entries.map(([, member]) => member),
+        },
+      };
+    }),
+  }),
+);
+
+export const ArrayValue: Schema.Codec<ArrayValue, unknown> = Schema.Struct({
+  type: Schema.Literal("ARRAY"),
+  value: Schema.Array(Schema.suspend((): Schema.Codec<Value, unknown> => Value)),
+}).pipe(Schema.encodeKeys({ value: "arrayValue" }));
+
+export const NoneValue = Schema.Struct({
+  type: Schema.Literal("NONE"),
 });
 
 const ValueSchema = Schema.Union([
@@ -352,21 +445,10 @@ const ValueSchema = Schema.Union([
   BooleanValue,
   EnumeratedValue,
   AggregateValue,
+  ArrayValue,
+  NoneValue,
 ]);
 
-export type Value =
-  | { readonly type: "FLOAT"; readonly value: number }
-  | { readonly type: "DOUBLE"; readonly value: number }
-  | { readonly type: "SINT32"; readonly value: number }
-  | { readonly type: "UINT32"; readonly value: number }
-  | { readonly type: "SINT64"; readonly value: number }
-  | { readonly type: "UINT64"; readonly value: number }
-  | { readonly type: "BINARY"; readonly value: Uint8Array }
-  | { readonly type: "STRING"; readonly value: string }
-  | { readonly type: "TIMESTAMP"; readonly value: typeof YamcsDate.Type }
-  | { readonly type: "BOOLEAN"; readonly value: boolean }
-  | EnumeratedValue
-  | { readonly type: "AGGREGATE" };
 export const Value: Schema.Codec<Value, unknown> = ValueSchema;
 
 export const SetParameterValueRequest = Schema.Struct({
@@ -711,12 +793,41 @@ export const ConsequenceLevel = Schema.Literals([
   "WATCH",
 ]);
 
-export const CommandInfo = Schema.Struct({
+export const ArgumentTypeInfo = Schema.Struct({
+  engType: Schema.String,
+  rangeMin: Schema.optional(Schema.Number),
+  rangeMax: Schema.optional(Schema.Number),
+});
+
+export const ArgumentInfo = Schema.Struct({
+  name: Schema.String,
+  description: Schema.optional(Schema.String),
+  initialValue: Schema.optional(Schema.String),
+  type: ArgumentTypeInfo,
+});
+
+export const ArgumentAssignmentInfo = Schema.Struct({
+  name: Schema.String,
+  value: Schema.String,
+});
+
+const commandInfoFields = {
   name: Schema.String,
   qualifiedName: Schema.String,
   shortDescription: Schema.optional(Schema.String),
   longDescription: Schema.optional(Schema.String),
   significance: Schema.optional(Schema.Struct({ consequenceLevel: ConsequenceLevel })),
+  argument: Schema.optional(Schema.Array(ArgumentInfo)),
+  argumentAssignment: Schema.optional(Schema.Array(ArgumentAssignmentInfo)),
+};
+
+export interface CommandInfo extends Schema.Struct.Type<typeof commandInfoFields> {
+  readonly baseCommand?: CommandInfo | undefined;
+}
+
+export const CommandInfo: Schema.Codec<CommandInfo> = Schema.Struct({
+  ...commandInfoFields,
+  baseCommand: Schema.optional(Schema.suspend((): Schema.Codec<CommandInfo> => CommandInfo)),
 });
 
 export const OperatorType = Schema.Literals([
@@ -729,18 +840,6 @@ export const OperatorType = Schema.Literals([
 ]);
 
 export const ReferenceLocationType = Schema.Literals(["CONTAINER_START", "PREVIOUS_ENTRY"]);
-
-export const ArgumentTypeInfo = Schema.Struct({
-  name: Schema.String,
-  engType: Schema.String,
-});
-
-export const ArgumentInfo = Schema.Struct({
-  name: Schema.String,
-  description: Schema.String,
-  initialValue: Schema.String,
-  type: ArgumentTypeInfo,
-});
 
 export const FixedValueInfo = Schema.Struct({
   name: Schema.String,

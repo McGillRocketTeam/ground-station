@@ -136,19 +136,19 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
 
-  - name: EGSE/Pad/WifiAntenna
-    class: org.yamcs.mrt.links.WifiAntennaLink
-    ppStream: pp_realtime
-    ipAddress: 192.168.0.254
-    username: mrt
-    password: H0tFire!
-
-  - name: EGSE/ControlStation/WifiAntenna
-    class: org.yamcs.mrt.links.WifiAntennaLink
-    ppStream: pp_realtime
-    ipAddress: 192.168.0.253
-    username: mrt
-    password: H0tFire!
+  # - name: EGSE/Pad/WifiAntenna
+  #   class: org.yamcs.mrt.links.WifiAntennaLink
+  #   ppStream: pp_realtime
+  #   ipAddress: 192.168.0.254
+  #   username: mrt
+  #   password: H0tFire!
+  #
+  # - name: EGSE/ControlStation/WifiAntenna
+  #   class: org.yamcs.mrt.links.WifiAntennaLink
+  #   ppStream: pp_realtime
+  #   ipAddress: 192.168.0.253
+  #   username: mrt
+  #   password: H0tFire!
 
   - name: EGSE/ControlStation/WifiRouter
     class: org.yamcs.mrt.links.WifiRouterLink
@@ -161,12 +161,40 @@ dataLinks:
     warningThresholdMbps: 80
     saturationThresholdMbps: 90
 
-  - name: EGSE/Pad/ToughSwitch
-    class: org.yamcs.mrt.links.ToughSwitchLink
+  - name: EGSE/ControlStation/OmadaSwitch
+    class: org.yamcs.mrt.links.OmadaSwitchLink
     ppStream: pp_realtime
-    ipAddress: 192.168.0.251
-    username: ubnt
-    password: ubnt
+    tcStream: tc_omada
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    switchMac: A8-29-48-FC-FB-AA
+    portCount: 20
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
+
+  - name: EGSE/Pad/OmadaSwitch
+    class: org.yamcs.mrt.links.OmadaSwitchLink
+    ppStream: pp_realtime
+    tcStream: tc_omada
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    switchMac: E0-D3-62-6E-A2-17
+    portCount: 10
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
+
+  # - name: EGSE/Pad/ToughSwitch
+  #   class: org.yamcs.mrt.links.ToughSwitchLink
+  #   ppStream: pp_realtime
+  #   ipAddress: 192.168.0.251
+  #   username: ubnt
+  #   password: ubnt
 
   - name: EGSE/ControlStation/Featherweight
     class: org.yamcs.mrt.links.FeatherweightLink
@@ -256,6 +284,10 @@ mdb:
             spec: "ToughSwitch"
             args:
               file: mdb/toughswitch.xml
+          - type: xtce
+            spec: "OmadaSwitch"
+            args:
+              file: mdb/omada-switch.xml
 
       - type: emptyNode
         spec: "ControlStation"
@@ -264,6 +296,10 @@ mdb:
             spec: "WifiRouter"
             args:
               file: mdb/wifi-router.xml
+          - type: xtce
+            spec: "OmadaSwitch"
+            args:
+              file: mdb/omada-switch.xml
           - type: xtce
             spec: "WifiAntenna"
             args:
@@ -378,6 +414,9 @@ streamConfig:
     - name: "tc_labJack"
       processor: "realtime"
       tcPatterns: [".*/LabJack/.*"]
+    - name: "tc_omada"
+      processor: "realtime"
+      tcPatterns: [".*/OmadaSwitch/.*"]
     - name: "tc_ecoflow_realtime"
       processor: "realtime"
       tcPatterns: ["/EGSE/ControlStation/EcoFlowMax/.*"]

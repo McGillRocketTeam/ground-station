@@ -25,8 +25,10 @@ export function parameterDevicePath(qualifiedName: string) {
 
 export function DashboardParameterDeviceField({
   field,
+  requiredParameterNames = [],
 }: {
   field: DashboardParameterDeviceFieldApi;
+  requiredParameterNames?: ReadonlyArray<string>;
 }) {
   const parametersResult = useAtomValue(parameterListAtom);
 
@@ -34,13 +36,18 @@ export function DashboardParameterDeviceField({
     .onInitial(() => <div className="text-muted-foreground">Loading devices...</div>)
     .onFailure((cause) => <div className="text-error">Unable to load devices: {String(cause)}</div>)
     .onSuccess((parameters) => {
+      const qualifiedNames = new Set(parameters.map((parameter) => parameter.qualifiedName));
       const devices = [
         ...new Set(
           parameters
             .map((parameter) => parameterDevicePath(parameter.qualifiedName))
             .filter((device): device is string => device !== null),
         ),
-      ].sort((left, right) => left.localeCompare(right));
+      ]
+        .filter((device) =>
+          requiredParameterNames.every((name) => qualifiedNames.has(`${device}/${name}`)),
+        )
+        .sort((left, right) => left.localeCompare(right));
 
       return (
         <Combobox<string>
@@ -55,7 +62,9 @@ export function DashboardParameterDeviceField({
           }}
           value={field.state.value ?? null}
         >
-          <ComboboxInput placeholder="Select a device" />
+          <ComboboxInput
+            placeholder={requiredParameterNames.length > 0 ? "Select a switch" : "Select a device"}
+          />
           <ComboboxContent>
             <ComboboxEmpty>No devices found.</ComboboxEmpty>
             <ComboboxList>

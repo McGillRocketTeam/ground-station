@@ -8,7 +8,11 @@ import { useState } from "react";
 import { DataGridBody, DataGridHead, DataGridHeader, DataGridRow } from "@/components/ui/data-grid";
 import { YamcsAtomHttpClient, selectedInstanceAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
-import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
+import {
+  CommandArrayField,
+  type CommandArrayEntry,
+  normalizeCommandEntry,
+} from "@/lib/command-config";
 
 import { formatCommandDisplayName } from "../command-history/command-display";
 
@@ -32,12 +36,7 @@ export const CommandButtonCard = makeCard({
   id: "command-button",
   name: "Command Button Card",
   schema: Schema.Struct({
-    commands: Schema.optional(Schema.Array(Schema.String)).pipe(
-      Schema.annotate({
-        [FormTitleAnnotationId]: "Commands",
-        [FormTypeAnnotationId]: "commandArray",
-      }),
-    ),
+    commands: CommandArrayField,
   }),
   component: (props) => <CommandButtonCardBody commands={props.params.commands} />,
 });
@@ -45,7 +44,7 @@ export const CommandButtonCard = makeCard({
 function CommandButtonCardBody({
   commands: allowedCommands,
 }: {
-  commands?: ReadonlyArray<string>;
+  commands?: ReadonlyArray<CommandArrayEntry>;
 }) {
   const instance = useAtomValue(selectedInstanceAtom);
   const commandList = useAtomValue(
@@ -72,7 +71,12 @@ function CommandButtonCardBody({
     .render();
 }
 
-function CommandButtonTable({ commands }: { commands: ReadonlyArray<CommandDefinition> }) {
+type ConfiguredCommand = {
+  command: CommandDefinition;
+  args: Readonly<Record<string, string>>;
+};
+
+function CommandButtonTable({ commands }: { commands: ReadonlyArray<ConfiguredCommand> }) {
   const instance = useAtomValue(selectedInstanceAtom);
   const [target, setTarget] = useState<TargetOption>("BOTH");
   const sendCommand = useAtomSet(YamcsAtomHttpClient.mutation("command", "issueCommand"));
@@ -102,9 +106,18 @@ function CommandButtonTable({ commands }: { commands: ReadonlyArray<CommandDefin
         </DataGridHeader>
 
         <DataGridBody>
-          {commands.map((command) => (
-            <DataGridRow key={command.qualifiedName}>
-              <div>{formatCommandDisplayName(command.qualifiedName, command)}</div>
+          {commands.map(({ command, args }, commandIndex) => (
+            <DataGridRow key={`${command.qualifiedName}-${commandIndex}`}>
+              <div>
+                <div>{formatCommandDisplayName(command.qualifiedName, command)}</div>
+                {Object.entries(args).length > 0 ? (
+                  <div className="text-xs text-muted-foreground">
+                    {Object.entries(args)
+                      .map(([name, value]) => `${name}=${value}`)
+                      .join(", ")}
+                  </div>
+                ) : null}
+              </div>
               <button
                 type="button"
                 onClick={() => {
@@ -116,7 +129,10 @@ function CommandButtonTable({ commands }: { commands: ReadonlyArray<CommandDefin
                       processor: "realtime",
                       name: command.qualifiedName,
                     },
-                    payload: extra ? { extra } : {},
+                    payload: {
+                      ...(Object.keys(args).length > 0 ? { args } : {}),
+                      ...(extra ? { extra } : {}),
+                    },
                   });
                 }}
                 className="h-full w-full bg-background-secondary! text-white-text hover:bg-background!"
@@ -133,10 +149,10 @@ function CommandButtonTable({ commands }: { commands: ReadonlyArray<CommandDefin
 
 function filterCommands(
   commands: ReadonlyArray<CommandDefinition>,
-  allowedCommands?: ReadonlyArray<string>,
-) {
+  allowedCommands?: ReadonlyArray<CommandArrayEntry>,
+): ReadonlyArray<ConfiguredCommand> {
   if (!allowedCommands || allowedCommands.length === 0) {
-    return commands;
+    return commands.map((command) => ({ command, args: {} }));
   }
 
   const commandLookup = new Map(
@@ -146,8 +162,9 @@ function filterCommands(
     ]),
   );
 
-  return allowedCommands.flatMap((commandName) => {
+  return allowedCommands.flatMap((entry) => {
+    const { command: commandName, args } = normalizeCommandEntry(entry);
     const command = commandLookup.get(commandName);
-    return command ? [command] : [];
+    return command ? [{ command, args }] : [];
   });
 }

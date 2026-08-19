@@ -39,6 +39,7 @@ const DashboardParameterFieldComponent = DashboardParameterField as unknown as C
 const DashboardParameterDeviceFieldComponent =
   DashboardParameterDeviceField as unknown as ComponentType<{
     field: DashboardParameterDeviceFieldApi;
+    requiredParameterNames?: ReadonlyArray<string>;
   }>;
 const DashboardCameraFieldComponent = DashboardCameraField as unknown as ComponentType<{
   field: DashboardCameraFieldApi;
@@ -55,6 +56,7 @@ const DashboardGaugeVisualRangesFieldComponent =
     field: DashboardGaugeVisualRangesFieldApi;
   }>;
 const DashboardCommandArrayFieldComponent = DashboardCommandArrayField as unknown as ComponentType<{
+  allowLocalName?: boolean;
   field: DashboardCommandArrayFieldApi;
 }>;
 const DashboardChartSeriesFieldComponent = DashboardChartSeriesField as unknown as ComponentType<{
@@ -73,6 +75,8 @@ function getFieldPlaceholder(type: ReturnType<typeof formType>) {
       return "Select a parameter";
     case "parameterDevice":
       return "Select a device";
+    case "omadaSwitch":
+      return "Select a switch";
     case "command":
       return "Enter a command";
     case "coordinate":
@@ -255,6 +259,13 @@ export function DashboardCardField({
                 field={field as DashboardParameterDeviceFieldApi}
               />
             );
+          case "omadaSwitch":
+            return (
+              <DashboardParameterDeviceFieldComponent
+                field={field as DashboardParameterDeviceFieldApi}
+                requiredParameterNames={["ports", "port_count"]}
+              />
+            );
           case "parameterArray":
             return (
               <DashboardParameterArrayFieldComponent
@@ -270,6 +281,13 @@ export function DashboardCardField({
           case "commandArray":
             return (
               <DashboardCommandArrayFieldComponent field={field as DashboardCommandArrayFieldApi} />
+            );
+          case "controlBoxCommandArray":
+            return (
+              <DashboardCommandArrayFieldComponent
+                allowLocalName
+                field={field as DashboardCommandArrayFieldApi}
+              />
             );
           case "chartSeries":
             return (

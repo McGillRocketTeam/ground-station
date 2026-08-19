@@ -13,6 +13,7 @@
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "test": "pnpm build && node --test test/*.test.mjs",
     "prepare": "effect-language-service patch"
   },
   "dependencies": {

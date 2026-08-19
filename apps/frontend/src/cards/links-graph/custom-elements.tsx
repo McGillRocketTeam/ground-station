@@ -3,22 +3,17 @@ import type { Edge, EdgeProps, NodeProps } from "@xyflow/react";
 import { Popover as PopoverPrimitive } from "@base-ui/react";
 import { useAtomValue } from "@effect/atom-react";
 import { BaseEdge, EdgeLabelRenderer, Handle, Position, getSmoothStepPath } from "@xyflow/react";
-import { RadioTower, Server } from "lucide-react";
+import { Network, RadioTower, Server, Wifi } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { PopoverTrigger } from "@/components/ui/popover";
-import {
-  parameterSubscriptionAtom,
-  selectedInstanceAtom,
-  singleLinkSubscriptionAtom,
-  YamcsAtomHttpClient,
-} from "@/lib/atom";
+import { parameterSubscriptionAtom, singleLinkSubscriptionAtom } from "@/lib/atom";
 import { cn } from "@/lib/utils";
 
 import type { Link } from "../links/utils";
 
 import "./index.css";
-import type { GroundStationNode, LinkEdgeData, RadioLinkNode, WifiAntennaEdgeData } from "./data";
+import type { BeamBridgeEdgeData, GroundStationNode, LinkEdgeData, RadioLinkNode } from "./data";
 
 import { colorByStatus, isLinkTransmitting } from "../links/utils";
 
@@ -139,7 +134,7 @@ function LinkEdge({
   );
 }
 
-function extractNumericParameterValue(parameterResult: unknown) {
+function extractBooleanParameterValue(parameterResult: unknown) {
   if (
     typeof parameterResult !== "object" ||
     parameterResult === null ||
@@ -169,53 +164,21 @@ function extractNumericParameterValue(parameterResult: unknown) {
     return undefined;
   }
 
-  const numericValue = Number(engValue.value);
-  return Number.isFinite(numericValue) ? numericValue : undefined;
+  return typeof engValue.value === "boolean" ? engValue.value : undefined;
 }
 
-function getLinkParameterName(links: ReadonlyArray<Link>, linkName: string, suffix: string) {
-  return links
-    .find((link) => link.name === linkName)
-    ?.parameters?.find((parameter) => parameter.endsWith(suffix));
-}
-
-function useConnectedStationsParameter(linkName: string) {
-  const instance = useAtomValue(selectedInstanceAtom);
-  const linksResult = useAtomValue(
-    YamcsAtomHttpClient.query("link", "listLinks", {
-      params: { instance },
-    }),
-  );
-
-  return linksResult._tag === "Success"
-    ? getLinkParameterName(linksResult.value.links, linkName, "/Connected Stations")
-    : undefined;
-}
-
-function ResolvedWifiAntennaEdge({
+function BeamBridgeEdge({
   id,
-  flip,
-  parameterName,
+  data,
   sourceX,
   sourceY,
   targetX,
   targetY,
   sourcePosition,
   targetPosition,
-}: {
-  id: string;
-  flip?: boolean;
-  parameterName: string;
-  sourceX: number;
-  sourceY: number;
-  targetX: number;
-  targetY: number;
-  sourcePosition: Position;
-  targetPosition: Position;
-}) {
-  const connectedStationsResult = useAtomValue(parameterSubscriptionAtom(parameterName));
-  const connectedStations = extractNumericParameterValue(connectedStationsResult);
-  const isActive = (connectedStations ?? 0) > 0;
+}: EdgeProps<Edge<BeamBridgeEdgeData, "beamBridge">>) {
+  const connectedResult = useAtomValue(parameterSubscriptionAtom(data?.connectedParameter ?? ""));
+  const isActive = extractBooleanParameterValue(connectedResult) ?? false;
 
   if (!isActive) {
     return null;
@@ -235,7 +198,7 @@ function ResolvedWifiAntennaEdge({
     <BaseEdge
       id={id}
       path={edgePath}
-      className={cn("links-graph__edge-path", flip && "links-graph__edge-path--reverse")}
+      className={cn("links-graph__edge-path", data?.flip && "links-graph__edge-path--reverse")}
       style={{
         stroke: "var(--color-success)",
         strokeWidth: 1.5,
@@ -243,59 +206,6 @@ function ResolvedWifiAntennaEdge({
       }}
     />
   );
-}
-
-function WifiAntennaEdge({
-  id,
-  data,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-}: EdgeProps<Edge<WifiAntennaEdgeData, "wifiAntenna">>) {
-  const connectedStationsLinkName = data?.connectedStationsLinkName ?? "";
-  const parameterName = useConnectedStationsParameter(connectedStationsLinkName);
-
-  if (!parameterName) {
-    return null;
-  }
-
-  return (
-    <ResolvedWifiAntennaEdge
-      id={id}
-      flip={data?.flip}
-      parameterName={parameterName}
-      sourceX={sourceX}
-      sourceY={sourceY}
-      targetX={targetX}
-      targetY={targetY}
-      sourcePosition={sourcePosition}
-      targetPosition={targetPosition}
-    />
-  );
-}
-
-function WifiAntennaNodeContent({
-  data,
-  link,
-  parameterName,
-}: {
-  data: RadioLinkNode["data"];
-  link: Link | undefined;
-  parameterName: string;
-}) {
-  const connectedStationsResult = useAtomValue(parameterSubscriptionAtom(parameterName));
-  const connectedStations = extractNumericParameterValue(connectedStationsResult);
-  const nodeClass =
-    (connectedStations ?? 0) > 0
-      ? "text-success"
-      : link
-        ? colorByStatus(link.status, link)
-        : "text-muted-foreground";
-
-  return renderRadioLinkNode(data, link, nodeClass);
 }
 
 function renderRadioLinkNode(
@@ -366,7 +276,13 @@ function renderRadioLinkNode(
           position={Position.Right}
           className="!size-0 !border-0 !bg-transparent !opacity-0"
         />
-        <RadioTower strokeWidth={1.5} className="size-7.5" />
+        {data.kind === "switch" ? (
+          <Network strokeWidth={1.5} className="size-7.5" />
+        ) : data.kind === "bridge" ? (
+          <Wifi strokeWidth={1.5} className="size-7.5" />
+        ) : (
+          <RadioTower strokeWidth={1.5} className="size-7.5" />
+        )}
         {data.textPosition === "right" && text}
       </div>
       {data.textPosition === "bottom" && text}
@@ -376,10 +292,6 @@ function renderRadioLinkNode(
 
 function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
   const linkResult = useAtomValue(singleLinkSubscriptionAtom(data.qualifiedName));
-  const isWifiAntennaNode =
-    data.qualifiedName === "EGSE/Pad/WifiAntenna" ||
-    data.qualifiedName === "EGSE/ControlStation/WifiAntenna";
-  const parameterName = useConnectedStationsParameter("EGSE/ControlStation/WifiAntenna");
   const fallbackNodeClass =
     linkResult._tag === "Success"
       ? linkResult.value
@@ -388,16 +300,6 @@ function RadioLinkNode({ data }: NodeProps<RadioLinkNode>) {
       : linkResult._tag === "Failure"
         ? "text-error"
         : "text-muted-foreground";
-
-  if (isWifiAntennaNode && parameterName) {
-    return (
-      <WifiAntennaNodeContent
-        data={data}
-        link={linkResult._tag === "Success" ? linkResult.value : undefined}
-        parameterName={parameterName}
-      />
-    );
-  }
 
   return renderRadioLinkNode(
     data,
@@ -410,6 +312,12 @@ function GroundStationNode(_: NodeProps<GroundStationNode>) {
   return (
     <div className="flex w-[20ch] flex-col items-center gap-2 text-muted-foreground">
       <div className="relative grid aspect-square place-items-center border-[1.5px] border-current bg-current/15 p-2">
+        <Handle
+          type="target"
+          id="top"
+          position={Position.Top}
+          className="!size-0 !border-0 !bg-transparent !opacity-0"
+        />
         <Handle
           type="target"
           id="left"
@@ -444,7 +352,7 @@ export const nodeTypes = {
 
 export const edgeTypes = {
   link: LinkEdge,
-  wifiAntenna: WifiAntennaEdge,
+  beamBridge: BeamBridgeEdge,
 };
 
 export const linksPopover = PopoverPrimitive.createHandle<Link>();

@@ -136,20 +136,6 @@ dataLinks:
     packetPreprocessorArgs:
       timestampOffset: 2
 
-  # - name: EGSE/Pad/WifiAntenna
-  #   class: org.yamcs.mrt.links.WifiAntennaLink
-  #   ppStream: pp_realtime
-  #   ipAddress: 192.168.0.254
-  #   username: mrt
-  #   password: H0tFire!
-  #
-  # - name: EGSE/ControlStation/WifiAntenna
-  #   class: org.yamcs.mrt.links.WifiAntennaLink
-  #   ppStream: pp_realtime
-  #   ipAddress: 192.168.0.253
-  #   username: mrt
-  #   password: H0tFire!
-
   - name: EGSE/ControlStation/WifiRouter
     class: org.yamcs.mrt.links.WifiRouterLink
     ppStream: pp_realtime
@@ -184,6 +170,34 @@ dataLinks:
     siteId: 6a7e1c7ce6bdee5886c6cc67
     switchMac: E0-D3-62-6E-A2-17
     portCount: 10
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
+
+  - name: EGSE/ControlStation/BeamBridge
+    class: org.yamcs.mrt.links.OmadaBeamBridgeLink
+    ppStream: pp_realtime
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    apMac: C0-3A-55-39-90-23
+    peerMac: C0-3A-55-39-92-C4
+    role: MAIN_AP
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
+
+  - name: EGSE/Pad/BeamBridge
+    class: org.yamcs.mrt.links.OmadaBeamBridgeLink
+    ppStream: pp_realtime
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    apMac: C0-3A-55-39-92-C4
+    peerMac: C0-3A-55-39-90-23
+    role: CLIENT_AP
     clientId: ${env.OMADA_CLIENT_ID:}
     clientSecret: ${env.OMADA_CLIENT_SECRET:}
     pollIntervalSeconds: 2
@@ -271,10 +285,6 @@ mdb:
             args:
               file: mdb/camera-local.xml
           - type: xtce
-            spec: "WifiAntenna"
-            args:
-              file: mdb/wifi-antenna.xml
-          - type: xtce
             args:
               file: mdb/thermocouple.xml
           - type: xtce
@@ -288,6 +298,10 @@ mdb:
             spec: "OmadaSwitch"
             args:
               file: mdb/omada-switch.xml
+          - type: xtce
+            spec: "BeamBridge"
+            args:
+              file: mdb/omada-beam-bridge.xml
 
       - type: emptyNode
         spec: "ControlStation"
@@ -301,9 +315,9 @@ mdb:
             args:
               file: mdb/omada-switch.xml
           - type: xtce
-            spec: "WifiAntenna"
+            spec: "BeamBridge"
             args:
-              file: mdb/wifi-antenna.xml
+              file: mdb/omada-beam-bridge.xml
           - type: xtce
             spec: "ControlBox"
             args:

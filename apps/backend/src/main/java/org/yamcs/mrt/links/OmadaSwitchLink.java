@@ -27,6 +27,17 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import org.apache.hc.client5.http.classic.methods.HttpPatch;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.util.Timeout;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -47,11 +58,13 @@ import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
-/** Publishes an Omada switch and controls whether its ports are enabled. */
+/** Publishes an Omada switch and controls per-port PoE. */
 public class OmadaSwitchLink extends AbstractTcTmParamLink {
   static final int MAX_PORTS = 20;
   private static final Gson GSON = new Gson();
   private static final int HTTP_TIMEOUT_MILLIS = 8_000;
+  private static final long POE_READBACK_TIMEOUT_MILLIS = 10_000;
+  private static final long POE_READBACK_DELAY_MILLIS = 250;
   private static final AggregateMemberNames PORT_MEMBERS =
       AggregateMemberNames.get(
           new String[] {
@@ -89,6 +102,56 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
           "used_port_count",
           "poe_power_used_w",
           "ports");
+  private static final List<String> PORT_SETTING_FIELDS =
+      List.of(
+          "name",
+          "tagIds",
+          "nativeNetworkId",
+          "nativeBridgeVlan",
+          "networkTagsSetting",
+          "tagNetworkIds",
+          "tagBridgeVlanMap",
+          "untagNetworkIds",
+          "untagBridgeVlanMap",
+          "voiceNetworkEnable",
+          "voiceNetworkId",
+          "voiceBridgeVlan",
+          "voiceDscpEnable",
+          "voiceDscp",
+          "portAlertEnable",
+          "fecMode",
+          "fecLinkPeerApplyEnable",
+          "disable",
+          "profileId",
+          "profileOverrideEnable",
+          "profileVlanOverrideEnable",
+          "linkSpeed",
+          "duplex",
+          "igmpSnoopingEnable",
+          "bandWidthCtrlType",
+          "bandCtrl",
+          "stormCtrl",
+          "spanningTreeEnable",
+          "spanningTreeSetting",
+          "loopbackDetectEnable",
+          "loopbackDetectVlanBasedEnable",
+          "igmpFastLeaveEnable",
+          "mldFastLeaveEnable",
+          "portIsolationEnable",
+          "eeeEnable",
+          "flowControlEnable",
+          "dhcpL2RelaySettings",
+          "dot1pPriority",
+          "trustMode",
+          "qosQueueEnable",
+          "queueId",
+          "operation",
+          "mirroredPorts",
+          "mirroredLags",
+          "lagSetting",
+          "dot1x",
+          "lldpMedEnable",
+          "topoNotifyEnable");
 
   private final Map<String, Parameter> parameters = new HashMap<>();
   private String endpoint;
@@ -99,6 +162,7 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
   private String clientSecret;
   private int portCount;
   private int pollIntervalSeconds;
+  private CloseableHttpClient commandHttpClient;
   private SSLSocketFactory insecureSslSocketFactory;
   private ScheduledExecutorService executor;
   private volatile String accessToken;
@@ -123,9 +187,11 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
       throw new ConfigurationException("portCount must be between 1 and " + MAX_PORTS);
     }
 
-    if (!config.getBoolean("verifyTls", true)) {
-      insecureSslSocketFactory = createInsecureSslSocketFactory();
-    }
+    SSLContext insecureSslContext =
+        config.getBoolean("verifyTls", true) ? null : createInsecureSslContext();
+    insecureSslSocketFactory =
+        insecureSslContext == null ? null : insecureSslContext.getSocketFactory();
+    commandHttpClient = createCommandHttpClient(insecureSslContext);
     var mdb = MdbFactory.getInstance(yamcsInstance);
     String parameterBase = "/" + linkName + "/";
     for (String parameterName : PARAMETER_NAMES) {
@@ -175,6 +241,11 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
     if (executor != null) {
       executor.shutdownNow();
     }
+    try {
+      commandHttpClient.close();
+    } catch (IOException e) {
+      log.warn("Failed to close Omada command HTTP client", e);
+    }
     notifyStopped();
   }
 
@@ -191,27 +262,27 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
   @Override
   public boolean sendCommand(PreparedCommand preparedCommand) {
     String qualifiedName = preparedCommand.getMetaCommand().getQualifiedName();
-    if (qualifiedName == null || !qualifiedName.equals("/" + linkName + "/set_port_status")) {
+    if (qualifiedName == null || !qualifiedName.equals("/" + linkName + "/set_poe")) {
       return false;
     }
 
     try {
       int port = argumentAsInt(preparedCommand, "port");
-      int portStatus = argumentAsInt(preparedCommand, "status");
+      int poeMode = argumentAsInt(preparedCommand, "poe_mode");
       if (port < 1 || port > portCount) {
         throw new IOException(
             "Port " + port + " is outside this switch's 1-" + portCount + " range");
       }
-      if (portStatus != 0 && portStatus != 1) {
-        throw new IOException("status must be OFF or ON");
+      if (poeMode != 0 && poeMode != 1) {
+        throw new IOException("poe_mode must be OFF or ON");
       }
 
-      JsonObject body = new JsonObject();
-      body.addProperty("status", portStatus);
+      JsonObject body = buildPortSettings(readPortSettings(port), poeMode);
       requestAuthenticated(
-          "PUT",
-          apiBase() + "/switches/" + encodePathSegment(switchMac) + "/ports/" + port + "/status",
+          "PATCH",
+          apiBase() + "/switches/" + encodePathSegment(switchMac) + "/ports/" + port,
           body);
+      verifyPoeReadback(port, poeMode);
       ackCommand(preparedCommand.getCommandId());
       commandHistoryPublisher.publishAck(
           preparedCommand.getCommandId(),
@@ -222,10 +293,42 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
         executor.execute(this::poll);
       }
     } catch (Exception e) {
-      log.warn("Omada port status command failed for {}: {}", switchMac, e.getMessage());
+      log.warn("Omada PoE command failed for {}: {}", switchMac, e.getMessage());
       failedCommand(preparedCommand.getCommandId(), e.getMessage());
     }
     return true;
+  }
+
+  private void verifyPoeReadback(int port, int expected) throws IOException, InterruptedException {
+    long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(POE_READBACK_TIMEOUT_MILLIS);
+    int actual = -1;
+    while (true) {
+      actual = readPoeMode(port);
+      if (actual == expected) return;
+      long remainingMillis = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+      if (remainingMillis <= 0) break;
+      Thread.sleep(Math.min(POE_READBACK_DELAY_MILLIS, remainingMillis));
+    }
+    throw new IOException(
+        "PoE readback mismatch on port " + port + ": expected " + expected + ", got " + actual);
+  }
+
+  private int readPoeMode(int port) throws IOException, InterruptedException {
+    JsonObject envelope =
+        requestAuthenticated(
+            "GET", apiBase() + "/switches/ports/poe-info?page=1&pageSize=1000", null);
+    JsonObject page = object(envelope, "result");
+    JsonArray rows = page == null ? null : array(page, "data");
+    if (rows != null) {
+      for (JsonElement element : rows) {
+        JsonObject row = element.getAsJsonObject();
+        if (Integer.valueOf(port).equals(integer(row, "port"))
+            && normalizeMac(orEmpty(string(row, "switchMac"))).equals(switchMac)) {
+          return intOr(row, "poe", -1);
+        }
+      }
+    }
+    return -1;
   }
 
   private void poll() {
@@ -400,6 +503,70 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
     return ports;
   }
 
+  private JsonObject readPortSettings(int port) throws IOException, InterruptedException {
+    JsonObject standardPort = new JsonObject();
+    standardPort.addProperty("unit", 1);
+    standardPort.addProperty("slot", 0);
+    standardPort.addProperty("port", port);
+    JsonArray portList = new JsonArray();
+    portList.add(standardPort);
+
+    JsonObject selectedSwitch = new JsonObject();
+    selectedSwitch.addProperty("mac", switchMac);
+    selectedSwitch.add("portList", portList);
+    selectedSwitch.add("lagList", new JsonArray());
+    JsonArray switchList = new JsonArray();
+    switchList.add(selectedSwitch);
+
+    JsonObject selection = new JsonObject();
+    selection.addProperty("selectAll", false);
+    selection.add("switchList", switchList);
+    JsonArray switches =
+        resultArray(requestAuthenticated("POST", apiBase() + "/switches/ports/select", selection));
+    for (JsonElement switchElement : switches) {
+      JsonObject selected = switchElement.getAsJsonObject();
+      if (!normalizeMac(orEmpty(string(selected, "mac"))).equals(switchMac)) continue;
+      JsonArray ports = array(selected, "ports");
+      if (ports == null) break;
+      for (JsonElement portElement : ports) {
+        JsonObject settings = portElement.getAsJsonObject();
+        if (Integer.valueOf(port).equals(integer(settings, "port"))) return settings;
+      }
+    }
+    throw new IOException("Omada did not return settings for port " + port);
+  }
+
+  static JsonObject buildPortSettings(JsonObject current, int poeMode) {
+    JsonObject settings = new JsonObject();
+    for (String field : PORT_SETTING_FIELDS) {
+      JsonElement value = current.get(field);
+      if (value != null && !value.isJsonNull()) settings.add(field, value.deepCopy());
+    }
+
+    settings.addProperty("name", stringOr(current, "name", "Port" + intOr(current, "port", 0)));
+    settings.addProperty("profileOverrideEnable", true);
+    settings.addProperty(
+        "profileVlanOverrideEnable", boolOr(current, "profileVlanOverrideEnable", false));
+    settings.addProperty("networkTagsSetting", intOr(current, "networkTagsSetting", 0));
+    putArrayDefault(settings, "tagIds");
+    putArrayDefault(settings, "tagNetworkIds");
+    putArrayDefault(settings, "untagNetworkIds");
+    settings.addProperty("linkSpeed", intOr(current, "linkSpeed", 0));
+    settings.addProperty("duplex", intOr(current, "duplex", 0));
+    settings.addProperty("operation", stringOr(current, "operation", "switching"));
+    settings.addProperty("poe", poeMode);
+    settings.addProperty("flowControlEnable", boolOr(current, "flowControlEnable", false));
+    settings.addProperty("bandWidthCtrlType", intOr(current, "bandWidthCtrlType", 0));
+    settings.addProperty("portIsolationEnable", boolOr(current, "portIsolationEnable", false));
+    settings.addProperty("loopbackDetectEnable", boolOr(current, "loopbackDetectEnable", false));
+    settings.addProperty("spanningTreeEnable", boolOr(current, "spanningTreeEnable", false));
+    return settings;
+  }
+
+  private static void putArrayDefault(JsonObject object, String name) {
+    if (!object.has(name) || !object.get(name).isJsonArray()) object.add(name, new JsonArray());
+  }
+
   private JsonObject requestAuthenticated(String method, String path, JsonObject body)
       throws IOException, InterruptedException {
     ensureAuthenticated();
@@ -438,6 +605,8 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
 
   private JsonObject request(String method, String path, JsonObject body, String token)
       throws IOException, InterruptedException {
+    if (method.equals("PATCH")) return requestPatch(path, body, token);
+
     byte[] requestBody =
         body == null ? new byte[0] : GSON.toJson(body).getBytes(StandardCharsets.UTF_8);
     HttpURLConnection connection =
@@ -476,6 +645,23 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
     return parseResponse(method, path, requestBody, statusCode, responseBytes);
   }
 
+  private JsonObject requestPatch(String path, JsonObject body, String token) throws IOException {
+    byte[] requestBody = GSON.toJson(body).getBytes(StandardCharsets.UTF_8);
+    HttpPatch request = new HttpPatch(URI.create(endpoint + path));
+    request.setHeader("Accept", "application/json");
+    request.setHeader("User-Agent", "yamcs-omada-switch-link/1.0");
+    if (token != null) request.setHeader("Authorization", "AccessToken=" + token);
+    request.setEntity(new ByteArrayEntity(requestBody, ContentType.APPLICATION_JSON));
+
+    try (var response = commandHttpClient.executeOpen(null, request, null)) {
+      byte[] responseBytes =
+          response.getEntity() == null
+              ? new byte[0]
+              : EntityUtils.toByteArray(response.getEntity());
+      return parseResponse("PATCH", path, requestBody, response.getCode(), responseBytes);
+    }
+  }
+
   private JsonObject parseResponse(
       String method, String path, byte[] requestBody, int statusCode, byte[] responseBytes)
       throws IOException {
@@ -494,7 +680,7 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
     return "/openapi/v1/" + encodePathSegment(omadacId) + "/sites/" + encodePathSegment(siteId);
   }
 
-  private static SSLSocketFactory createInsecureSslSocketFactory() throws ConfigurationException {
+  private static SSLContext createInsecureSslContext() throws ConfigurationException {
     try {
       TrustManager[] trustAll =
           new TrustManager[] {
@@ -513,10 +699,28 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
           };
       SSLContext context = SSLContext.getInstance("TLS");
       context.init(null, trustAll, new SecureRandom());
-      return context.getSocketFactory();
+      return context;
     } catch (GeneralSecurityException e) {
       throw new ConfigurationException("Cannot configure Omada TLS", e);
     }
+  }
+
+  private static CloseableHttpClient createCommandHttpClient(SSLContext insecureSslContext) {
+    var connectionManager =
+        PoolingHttpClientConnectionManagerBuilder.create()
+            .setDefaultConnectionConfig(
+                ConnectionConfig.custom()
+                    .setConnectTimeout(Timeout.ofMilliseconds(HTTP_TIMEOUT_MILLIS))
+                    .setSocketTimeout(Timeout.ofMilliseconds(HTTP_TIMEOUT_MILLIS))
+                    .build());
+    if (insecureSslContext != null) {
+      connectionManager.setSSLSocketFactory(
+          SSLConnectionSocketFactoryBuilder.create()
+              .setSslContext(insecureSslContext)
+              .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+              .build());
+    }
+    return HttpClients.custom().setConnectionManager(connectionManager.build()).build();
   }
 
   private static void requireSuccess(JsonObject envelope, String path) throws IOException {
@@ -591,6 +795,11 @@ public class OmadaSwitchLink extends AbstractTcTmParamLink {
     if (object == null) return null;
     JsonElement value = object.get(name);
     return value == null || value.isJsonNull() ? null : value.getAsString();
+  }
+
+  private static String stringOr(JsonObject object, String name, String fallback) {
+    String value = string(object, name);
+    return value == null ? fallback : value;
   }
 
   private static Integer integer(JsonObject object, String name) {

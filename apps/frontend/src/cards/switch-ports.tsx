@@ -208,31 +208,27 @@ function Port({ members, switchRoot }: { members: AggregateMembers; switchRoot: 
 
           {port !== undefined ? (
             <div className="space-y-2 border-t border-border pt-2">
-              {!disabled ? (
-                <p className="text-muted-foreground">
-                  Turning off the port disconnects Ethernet and cuts PoE power.
-                </p>
-              ) : null}
               <Button
                 className="w-full"
-                variant={disabled ? "default" : "destructive"}
+                variant={poeEnabled ? "destructive" : "default"}
+                disabled={!supportsPoe}
                 onClick={() =>
                   sendCommand({
                     params: {
                       instance,
                       processor: "realtime",
-                      name: `${switchRoot}/set_port_status`,
+                      name: `${switchRoot}/set_poe`,
                     },
                     payload: {
                       args: {
                         port: `PORT_${port}`,
-                        status: disabled ? "ON" : "OFF",
+                        poe_mode: poeEnabled ? "OFF" : "ON",
                       },
                     },
                   })
                 }
               >
-                Turn Port {disabled ? "On" : "Off"}
+                {supportsPoe ? `Turn PoE ${poeEnabled ? "Off" : "On"}` : "PoE Not Supported"}
               </Button>
             </div>
           ) : null}

@@ -47,10 +47,10 @@ export function stringifyValue(value?: typeof Value.Type, fallback?: string) {
     case "UINT64":
     case "STRING":
     case "BOOLEAN":
+    case "ENUMERATED":
       return value.value.toLocaleString();
     case "TIMESTAMP":
       return formatUtcDateTime(value.value);
-    case "ENUMERATED":
     case "AGGREGATE":
     default:
       return fallback ?? "Unknown";

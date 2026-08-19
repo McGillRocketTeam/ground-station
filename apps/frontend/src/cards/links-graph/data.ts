@@ -4,15 +4,15 @@ export type RadioLinkNodeData = {
   qualifiedName: string;
   friendlyName: string;
   textPosition: "top" | "bottom" | "right";
+  kind?: "bridge" | "radio" | "switch";
 };
 
 export type LinkEdgeData = {
   qualifiedName?: string;
 };
 
-export type WifiAntennaEdgeData = {
-  sourceQualifiedName: string;
-  connectedStationsLinkName: string;
+export type BeamBridgeEdgeData = {
+  connectedParameter: string;
   flip?: boolean;
 };
 
@@ -22,7 +22,7 @@ export type GroundStationNode = Node<{}, "groundStation">;
 export type CustomNodeType = RadioLinkNode | GroundStationNode;
 export type CustomEdgeType =
   | Edge<LinkEdgeData, "link">
-  | Edge<WifiAntennaEdgeData, "wifiAntenna">
+  | Edge<BeamBridgeEdgeData, "beamBridge">
   | BuiltInEdge;
 
 export const initialNodes: CustomNodeType[] = [
@@ -58,28 +58,52 @@ export const initialNodes: CustomNodeType[] = [
   },
   {
     type: "radioLink",
-    id: "EGSE/Pad/WifiAntenna",
-    position: { x: 125, y: 180 },
+    id: "EGSE/Pad/BeamBridge",
+    position: { x: 125, y: 300 },
     data: {
-      qualifiedName: "EGSE/Pad/WifiAntenna",
-      friendlyName: "Pad WiFi\nAntenna",
+      qualifiedName: "EGSE/Pad/BeamBridge",
+      friendlyName: "Beam Bridge\nClient AP",
       textPosition: "right",
+      kind: "bridge",
     },
   },
   {
     type: "radioLink",
-    id: "EGSE/ControlStation/WifiAntenna",
-    position: { x: 125, y: 360 },
+    id: "EGSE/Pad/OmadaSwitch",
+    position: { x: 125, y: 160 },
     data: {
-      qualifiedName: "EGSE/ControlStation/WifiAntenna",
-      friendlyName: "CS WiFi\nAntenna",
+      qualifiedName: "EGSE/Pad/OmadaSwitch",
+      friendlyName: "Pad Omada\nSwitch",
       textPosition: "right",
+      kind: "switch",
+    },
+  },
+  {
+    type: "radioLink",
+    id: "EGSE/ControlStation/BeamBridge",
+    position: { x: 125, y: 460 },
+    data: {
+      qualifiedName: "EGSE/ControlStation/BeamBridge",
+      friendlyName: "Beam Bridge\nMain AP",
+      textPosition: "right",
+      kind: "bridge",
+    },
+  },
+  {
+    type: "radioLink",
+    id: "EGSE/ControlStation/OmadaSwitch",
+    position: { x: 125, y: 600 },
+    data: {
+      qualifiedName: "EGSE/ControlStation/OmadaSwitch",
+      friendlyName: "CS Omada\nSwitch",
+      textPosition: "right",
+      kind: "switch",
     },
   },
   {
     type: "radioLink",
     id: "SystemA/ControlStation/Radio",
-    position: { x: 0, y: 720 },
+    position: { x: 0, y: 760 },
     data: {
       qualifiedName: "SystemA/ControlStation/Radio",
       friendlyName: "System A\nControl Station\nRadio",
@@ -89,13 +113,13 @@ export const initialNodes: CustomNodeType[] = [
   {
     type: "groundStation",
     id: "groundStation",
-    position: { x: 125, y: 540 },
+    position: { x: 125, y: 760 },
     data: {},
   },
   {
     type: "radioLink",
     id: "SystemB/ControlStation/Radio",
-    position: { x: 250, y: 720 },
+    position: { x: 250, y: 760 },
     data: {
       qualifiedName: "SystemB/ControlStation/Radio",
       friendlyName: "System B\nControl Station\nRadio",
@@ -106,68 +130,80 @@ export const initialNodes: CustomNodeType[] = [
 
 export const initialEdges: CustomEdgeType[] = [
   {
-    id: "SystemA/Pad/Radio->EGSE/Pad/WifiAntenna",
+    id: "SystemA/Pad/Radio->EGSE/Pad/OmadaSwitch",
     source: "SystemA/Pad/Radio",
     sourceHandle: "bottom",
-    target: "EGSE/Pad/WifiAntenna",
+    target: "EGSE/Pad/OmadaSwitch",
     targetHandle: "left",
     type: "link",
   },
   {
-    id: "SystemB/Pad/Radio->EGSE/Pad/WifiAntenna",
+    id: "SystemB/Pad/Radio->EGSE/Pad/OmadaSwitch",
     source: "SystemB/Pad/Radio",
     sourceHandle: "bottom",
-    target: "EGSE/Pad/WifiAntenna",
+    target: "EGSE/Pad/OmadaSwitch",
     targetHandle: "right",
     type: "link",
   },
   {
-    id: "LabJack->EGSE/Pad/WifiAntenna",
+    id: "LabJack->EGSE/Pad/OmadaSwitch",
     source: "LabJack",
     sourceHandle: "bottom",
-    target: "EGSE/Pad/WifiAntenna",
+    target: "EGSE/Pad/OmadaSwitch",
     targetHandle: "top",
     type: "link",
   },
   {
-    id: "EGSE/Pad/WifiAntenna->EGSE/ControlStation/WifiAntenna",
-    source: "EGSE/Pad/WifiAntenna",
+    id: "EGSE/Pad/OmadaSwitch->EGSE/Pad/BeamBridge",
+    source: "EGSE/Pad/OmadaSwitch",
     sourceHandle: "bottom",
-    target: "EGSE/ControlStation/WifiAntenna",
+    target: "EGSE/Pad/BeamBridge",
     targetHandle: "top",
-    type: "wifiAntenna",
-    data: {
-      sourceQualifiedName: "EGSE/Pad/WifiAntenna",
-      connectedStationsLinkName: "EGSE/ControlStation/WifiAntenna",
-    },
-  },
-  {
-    id: "SystemA/ControlStation/Radio->groundStation",
-    source: "SystemA/ControlStation/Radio",
-    sourceHandle: "top",
-    target: "groundStation",
-    targetHandle: "left",
     type: "link",
   },
   {
-    id: "SystemB/ControlStation/Radio->groundStation",
-    source: "SystemB/ControlStation/Radio",
-    sourceHandle: "top",
-    target: "groundStation",
-    targetHandle: "right",
+    id: "EGSE/Pad/BeamBridge->EGSE/ControlStation/BeamBridge",
+    source: "EGSE/Pad/BeamBridge",
+    sourceHandle: "bottom",
+    target: "EGSE/ControlStation/BeamBridge",
+    targetHandle: "top",
+    type: "beamBridge",
+    data: {
+      connectedParameter: "/EGSE/Pad/BeamBridge/bridge_connected",
+    },
+  },
+  {
+    id: "EGSE/ControlStation/BeamBridge->EGSE/ControlStation/OmadaSwitch",
+    source: "EGSE/ControlStation/BeamBridge",
+    sourceHandle: "bottom",
+    target: "EGSE/ControlStation/OmadaSwitch",
+    targetHandle: "top",
     type: "link",
   },
   {
-    id: "groundStation->EGSE/ControlStation/WifiAntenna",
-    source: "groundStation",
-    sourceHandle: "top",
-    target: "EGSE/ControlStation/WifiAntenna",
-    targetHandle: "bottom",
-    type: "wifiAntenna",
-    data: {
-      flip: true,
-      sourceQualifiedName: "EGSE/ControlStation/WifiAntenna",
-      connectedStationsLinkName: "EGSE/ControlStation/WifiAntenna",
-    },
+    id: "EGSE/ControlStation/OmadaSwitch->SystemA/ControlStation/Radio",
+    source: "EGSE/ControlStation/OmadaSwitch",
+    sourceHandle: "bottom",
+    target: "SystemA/ControlStation/Radio",
+    targetHandle: "top",
+    type: "link",
+    data: { qualifiedName: "SystemA/ControlStation/Radio" },
+  },
+  {
+    id: "EGSE/ControlStation/OmadaSwitch->groundStation",
+    source: "EGSE/ControlStation/OmadaSwitch",
+    sourceHandle: "bottom",
+    target: "groundStation",
+    targetHandle: "top",
+    type: "link",
+  },
+  {
+    id: "EGSE/ControlStation/OmadaSwitch->SystemB/ControlStation/Radio",
+    source: "EGSE/ControlStation/OmadaSwitch",
+    sourceHandle: "bottom",
+    target: "SystemB/ControlStation/Radio",
+    targetHandle: "top",
+    type: "link",
+    data: { qualifiedName: "SystemB/ControlStation/Radio" },
   },
 ];

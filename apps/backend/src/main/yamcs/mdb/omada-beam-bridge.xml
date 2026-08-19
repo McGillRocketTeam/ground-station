@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="BeamBridge">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>4096</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      <BooleanParameterType name="boolean"><IntegerDataEncoding sizeInBits="1" encoding="unsigned"/></BooleanParameterType>
+      <IntegerParameterType name="uint32" signed="false"><IntegerDataEncoding sizeInBits="32" encoding="unsigned"/></IntegerParameterType>
+      <IntegerParameterType name="uint64" signed="false"><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+      <IntegerParameterType name="sint32" signed="true"><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></IntegerParameterType>
+      <FloatParameterType name="percent" sizeInBits="64"><UnitSet><Unit form="calibrated">%</Unit></UnitSet><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+      <EnumeratedParameterType name="role"><EnumerationList><Enumeration value="0" label="UNKNOWN"/><Enumeration value="1" label="MAIN_AP"/><Enumeration value="2" label="CLIENT_AP"/></EnumerationList><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></EnumeratedParameterType>
+      <EnumeratedParameterType name="status"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="0" label="DISCONNECTED"/><Enumeration value="10" label="PROVISIONING"/><Enumeration value="11" label="CONFIGURING"/><Enumeration value="12" label="UPGRADING"/><Enumeration value="13" label="REBOOTING"/><Enumeration value="14" label="CONNECTED"/><Enumeration value="15" label="CONNECTED_WIRELESS"/><Enumeration value="20" label="PENDING"/><Enumeration value="22" label="ADOPTING"/><Enumeration value="24" label="ADOPT_FAILED"/><Enumeration value="26" label="MANAGED_BY_OTHERS"/><Enumeration value="30" label="HEARTBEAT_MISSED"/><Enumeration value="40" label="ISOLATED"/><Enumeration value="50" label="SLICE_CONFIGURING"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="mac_address" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="device_name" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="role" parameterTypeRef="role"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ip_address" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="model" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="firmware_version" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="status" parameterTypeRef="status"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="connected" parameterTypeRef="boolean"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="bridge_connected" parameterTypeRef="boolean"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="peer_mac_address" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="peer_device_name" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="peer_ip_address" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="channel" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="channel_width" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="radio_mode" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="channel_util_percent" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="rx_util_percent" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_util_percent" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="interference_util_percent" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="max_tx_rate_mbps" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_power_dbm" parameterTypeRef="sint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="signal_dbm" parameterTypeRef="sint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="snr_db" parameterTypeRef="sint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_rate_mbps" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="rx_rate_mbps" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_packets" parameterTypeRef="uint64"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="rx_packets" parameterTypeRef="uint64"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_bytes" parameterTypeRef="uint64"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="rx_bytes" parameterTypeRef="uint64"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_error_percent" parameterTypeRef="percent"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_dropped_percent" parameterTypeRef="percent"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="rx_error_percent" parameterTypeRef="percent"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="rx_dropped_percent" parameterTypeRef="percent"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="cpu_percent" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="memory_percent" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="uptime_seconds" parameterTypeRef="uint64"><ParameterProperties dataSource="local"/></Parameter>
+    </ParameterSet>
+  </TelemetryMetaData>
+</SpaceSystem>

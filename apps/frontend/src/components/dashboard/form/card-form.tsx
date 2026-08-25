@@ -1,6 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { Effect, Schema } from "effect";
+import { Effect, Option, Schema } from "effect";
 import { useMemo, useRef, useState } from "react";
 
 import { type CardId, CardSchemaMap } from "@/lib/cards";
@@ -35,20 +35,22 @@ function getDefaultFieldValue(value: unknown) {
   return "";
 }
 
-function encodeDefaultFieldValue(_fieldSchema: Schema.Schema<unknown>, value: unknown) {
-  if (formType(_fieldSchema) === "boolean") {
-    return value ?? formDefaultValue(_fieldSchema) ?? false;
+function encodeDefaultFieldValue(fieldSchema: Schema.Codec<unknown, unknown>, value: unknown) {
+  if (formType(fieldSchema) === "boolean") {
+    return value ?? formDefaultValue(fieldSchema) ?? false;
   }
 
   if (value === undefined) {
     return undefined;
   }
 
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return getDefaultFieldValue(value);
-  }
-
-  return structuredClone(value);
+  return Schema.encodeUnknownOption(fieldSchema)(value).pipe(
+    Option.getOrElse(() =>
+      typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+        ? getDefaultFieldValue(value)
+        : structuredClone(value),
+    ),
+  );
 }
 
 export function DashboardCardForm({
@@ -74,7 +76,7 @@ export function DashboardCardForm({
 
   const defaultValues = useMemo<EncodedFormValues>(() => {
     return Object.fromEntries(
-      Object.entries(schema.fields as Record<string, Schema.Schema<unknown>>).map(
+      Object.entries(schema.fields as Record<string, Schema.Codec<unknown, unknown>>).map(
         ([fieldName, fieldSchema]) => [
           fieldName,
           encodeDefaultFieldValue(fieldSchema, initialParams?.[fieldName]),

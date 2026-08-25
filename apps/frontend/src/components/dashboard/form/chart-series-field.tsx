@@ -13,7 +13,7 @@ type ChartSeriesFieldValue = Omit<ChartSeriesConfig, "offset"> & {
 
 export type DashboardChartSeriesFieldApi = AnyFieldApi & {
   state: AnyFieldApi["state"] & {
-    value: ReadonlyArray<ChartSeriesConfig> | undefined;
+    value: ReadonlyArray<ChartSeriesFieldValue> | undefined;
   };
   handleChange: (value: ReadonlyArray<ChartSeriesFieldValue>) => void;
 };

@@ -1,139 +1,137 @@
 <p align="center">
-    <img width="595.5" height="101.25" src="assets/logo.svg">
+  <img width="595.5" height="101.25" src="assets/logo.svg" alt="McGill Rocket Team">
 </p>
 
----
+# Ground station
 
-## 🚀 Overview
+This repository contains the software used to observe and control the McGill
+Rocket Team's rocket and electrical ground support equipment. It is one part of
+a distributed system spread across the control station, launch pad, and rocket.
 
-This monorepo contains the frontend applications and shared packages for the McGill Rocket Team's ground station system. It provides real-time telemetry monitoring, command control, and data visualization capabilities integrated with YAMCS (Yet Another Mission Control System).
+The goal is not merely to put flight data on a screen. Operators need a coherent
+view of the whole operation: avionics, pad equipment, communications, power,
+networking, and video. If a device can tell us something useful about its state,
+we want that information recorded and visible.
 
-## 📦 Repository Structure
+## The operating environment
 
-### Applications (`apps/`)
+A launch site is a poor place to depend on ideal conditions. The control station
+and pad may be about a kilometre apart, Internet access may be absent, and no
+single communications path should be assumed healthy. The system therefore runs
+locally, carries its own maps and services, and treats degraded links as normal
+operating conditions rather than exceptional ones.
 
-#### **`@mrt/backend`** - YAMCS Data Server
+The ground network joins the control station and pad over a point-to-point
+wireless bridge. Separate radio links connect the ground to the rocket. Two
+avionics systems preserve independent telemetry and command paths so a failure in
+one does not silently contaminate the other.
 
-This is the main server which handles receiving, processing and sending telemetry. It's the middle man between data sources and the frontend ui. It runs through the [YAMCS](https://yamcs.org/) framework.
+## One operational picture
 
-#### **`@mrt/frontend`** - Main Ground Station UI
+The system brings purpose-built MRT hardware and commercial off-the-shelf
+equipment into one operational model. Team-built devices generally communicate
+over MQTT using ASTRA conventions. Commercial equipment keeps its native
+interface, such as Bluetooth, a vendor API, a device driver, a serial connection,
+or a video stream. Small adapters translate those interfaces into telemetry the
+rest of the ground station can understand.
 
-The application that users use to view live telemetry and issue commands. Comes with a configurable card ui and more.
+MQTT is the common message bus, not the definition of the system. Telemetry is
+decoded, calibrated, checked, archived, and presented through a mission-control
+backend. Operator interfaces subscribe to live state and issue commands through
+that same model. Video follows its own media path, but remains part of the same
+operator experience.
 
-#### **`@mrt/simulator`** - Telemetry Data Simulator
+Logical identity matters more than transport. Rocket telemetry belongs to the
+flight computer even when a ground radio receives and republishes it. A command
+targets the device that should act on it even when another device forwards it.
+This keeps the operator's view stable while the route underneath it changes.
 
-Generate random data for development of the frontend. Without the simulator, we would have no way of testing the frontend with data.
+## What is connected
 
-### Packages (`packages/`)
+The Launch Canada ground station brings together several kinds of equipment:
 
-#### **`@mrt/yamcs-effect`** - YAMCS API Client Library
+- The rocket flight computers and their independent avionics systems.
+- Ground radios at both the control station and pad, which carry rocket traffic
+  and report the health of the radio links themselves.
+- A physical control box for launch, emergency, arming, and pad controls.
+- Pad data acquisition and control hardware for sensors, actuators, and analog
+  measurements.
+- A team-built thermocouple unit for pad temperature measurements.
+- Cameras around the pad, plus optional external feeds such as a drone, for
+  watching mechanisms, panels, gauges, and the launch area.
+- The control-station battery, including charge, load, and remaining capacity.
+- The router, managed PoE switches, and point-to-point wireless bridge that make
+  up the field network.
+- Independent recovery or tracking equipment when it is present in the mission
+  setup.
 
-- **Purpose**: Type-safe [Effect-TS](https://effect.website/docs/quickstart) client for YAMCS
-- **Features**:
-  - HTTP API client for YAMCS REST endpoints
-  - WebSocket client for real-time telemetry subscriptions
-  - Comprehensive schema definitions for YAMCS data structures
-  - Support for parameters, commands, links, and time events
+This inventory will change as the vehicle and ground equipment change. The rule
+does not: infrastructure is operational equipment. A weak bridge, overloaded
+switch, failing battery, stale sensor, or missing camera can matter as much as a
+bad avionics reading.
 
-#### **`apps/frontend/src/lib/atom`** - React State Management Layer
+## Design principles
 
-- **Purpose**: Reactive state management using [Effect Atom](https://github.com/tim-smart/effect-atom)
-- **Features**:
-  - Pre-configured atoms for YAMCS subscriptions (parameters, commands, links, time)
-  - Automatic WebSocket connection management
-  - Real-time data synchronization with React components
-  - Error handling and retry logic
+### Telemetry by default
 
-## 📋 Installation
+Anything that can expose useful state should do so. Values alone are not enough.
+Operators also need timestamps, health, connection state, and a short explanation
+when a device is unavailable or failed. Silence must not look healthy.
 
-Install the required tools:
-- [Node.js](https://nodejs.org/en/download)
-- [pnpm](https://pnpm.io/installation)
-- [Java (JDK)](https://www.oracle.com/ca-en/java/technologies/downloads/)
-- [Maven](https://maven.apache.org/)
-- [Tilt](https://docs.tilt.dev/install.html)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+### Preserve independent evidence
 
-or if you're on MacOS, install with Homebrew
-```bash
-brew install node pnpm java maven tilt
-brew install --cask docker-desktop
+Redundant systems remain separate through ingestion, display, recording, and
+command handling. The ground station may show them together, but it does not blur
+them into a synthetic source that hides disagreement.
+
+### Record what operators saw
+
+Telemetry, alarms, events, and command history are archived for replay. This
+supports post-flight analysis, but it is equally useful before launch: recorded
+runs make procedures, displays, alarms, and recovery tools testable without live
+hardware.
+
+### Make the real system testable
+
+Simulators should speak the same protocols and exercise the same command paths as
+real devices. Development against a convenient mock is not enough if it bypasses
+the failure modes found in the field. Replays and simulations let the team test
+loss, delay, stale data, conflicting redundant sources, and incomplete flights.
+
+### Work without the cloud
+
+Core operations must continue on the local network. Telemetry transport, command
+handling, maps, video, archives, and operator interfaces should not require an
+Internet connection once the system is deployed.
+
+### Treat commands differently from telemetry
+
+Telemetry can be frequent and lossy. Commands represent operator intent and need
+clear routing, acknowledgement, history, and visible failure. Software controls
+complement physical controls and safety procedures; they do not replace them.
+
+## The shape of the system
+
+At a high level, information moves inward from devices and commands move outward
+from operators:
+
+```text
+rocket and ground equipment
+        | telemetry, status, video
+        v
+device protocols and adapters
+        |
+        v
+local message, mission-control, and media services
+        |
+        v
+operator displays, alarms, archives, and replay
+
+operator command -> mission-control model -> target device or forwarding path
 ```
-Then clone the repository and install the dependencies locally.
-```bash
-# Clone the repository
-git clone https://github.com/McGillRocketTeam/ground-station
-cd ground-station
-# Install dependencies for all packages
-pnpm install
-# Build initial packages
-pnpm build
-```
 
-## 🏃‍♂️ Running Everything with Tilt
-
-**Tilt** orchestrates the entire development environment, including all Docker services and applications. **Ensure that Docker Desktop is running before you start Tilt.**
-
-```bash
-# Start all services and applications
-tilt up
-```
-
-This will start:
-
-- **Frontend dev server** (`http://localhost:5173`)
-- **Simulator** with YAMCS instance="ground_station"
-- **All Docker services**:
-  - Backend (`ghcr.io/mcgillrocketteam/groundstation-backend-2026:main`)
-  - MQTT broker (Eclipse Mosquitto, port 1883)
-  - Map tile server (port 3001)
-
-### Remote access with NetBird
-
-Install and enroll the native [NetBird client](https://docs.netbird.io/get-started/install) on the host once. The native client is used instead of a Docker container so the NetBird peer can reach both host processes and Docker-published ports on Windows, macOS, and Linux.
-
-Enable the integration in `tilt_config.json`:
-
-```json
-{
-  "remote": true
-}
-```
-
-Start Tilt on all interfaces so both the application and Tilt dashboard are reachable from another NetBird peer:
-
-```bash
-tilt up --host=0.0.0.0
-```
-
-The `netbird` Tilt resource runs `netbird up`, prints the host's NetBird IPv4 address, and reports the frontend and Tilt URLs. It does not install NetBird, store a setup key, or disconnect NetBird when Tilt stops. Use NetBird policies and the host firewall to restrict access to the required ports.
-
-## 🔧 Individual Package Development
-
-### Frontend Development
-
-```bash
-pnpm --filter @mrt/frontend dev
-```
-
-### Simulator (requires environment variable)
-
-```bash
-YAMCS_INSTANCE=ground_station pnpm --filter @mrt/simulator dev
-```
-
-### Type Checking
-
-```bash
-pnpm turbo run check-types
-```
-
-## 🏗️ Infrastructure Services
-
-### Docker Compose Services
-
-| Service          | Image                                                      | Ports                  | Purpose                                           |
-| ---------------- | ---------------------------------------------------------- | ---------------------- | ------------------------------------------------- |
-| **backend**      | `ghcr.io/mcgillrocketteam/groundstation-backend-2026:main` | 8090 (HTTP), 10015/UDP | Main backend API and telemetry ingestion          |
-| **mqtt_broker**  | Eclipse Mosquitto                                          | 1883                   | Message queuing for communication                 |
-| **mbtileserver** | Custom map server                                          | 3001 (internal 8000)   | Serves map tiles for ground station visualization |
+The implementation has several applications and packages because the deployed
+system has several jobs. Those boundaries are less important than the contract
+between them: every device has an identity, every useful state has a timestamp,
+every command has a destination, and operators can tell when any part of that
+chain stops working.

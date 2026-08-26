@@ -18,10 +18,14 @@ dist
 # Local GIS source bundles
 assets/LC2025_QGIS.zip
 
-# Local telemetry processing data and one-off scripts
+# Local telemetry processing data
+/local-data/
+/ground_station_data.csv
 /rocket-search-area-*.kml
 /yamcs-flight-*
 /yamcs-payload-flight-*
+
+# One-off analysis inputs and scripts
 /script/*.xlsx
 /script/convert-iepe-*.py
 /script/export-yamcs-*

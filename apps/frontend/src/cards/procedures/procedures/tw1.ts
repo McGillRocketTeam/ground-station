@@ -8,6 +8,8 @@ import { basicFdovVerificationSteps } from "./tw1/05-basic-fdov-verification";
 import { abortFunctionalVerificationSteps } from "./tw1/06-abort-functional-verification";
 import { avPropSubAssemblyCompleteSteps } from "./tw1/07-av-prop-sub-assembly-complete";
 import { finalRocketAssemblyProcedureSteps } from "./tw1/08-final-rocket-assembly-procedures";
+import { recovPayloadGfrpAssemblyProcedureSteps } from "./tw1/08-recov-payload-gfrp-assembly-procedures";
+import { energeticsWiringAndGfrpAssemblyProcedureSteps } from "./tw1/09-energetics-wiring-and-gfrp-assembly-procedures";
 import { recoverySubSystemCommandAndTelemetryVerificationSteps } from "./tw1/09-recovery-sub-system-command-and-telemetry-verification";
 import { sradAvionicsSystemValidatedForFlightSteps } from "./tw1/10-srad-avionics-system-validated-for-flight";
 
@@ -20,6 +22,8 @@ export const TW1 = ProcedureStack.make({
     ...basicFdovVerificationSteps,
     ...abortFunctionalVerificationSteps,
     ...avPropSubAssemblyCompleteSteps,
+    ...recovPayloadGfrpAssemblyProcedureSteps,
+    ...energeticsWiringAndGfrpAssemblyProcedureSteps,
     ...finalRocketAssemblyProcedureSteps,
     ...recoverySubSystemCommandAndTelemetryVerificationSteps,
     ...sradAvionicsSystemValidatedForFlightSteps,

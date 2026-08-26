@@ -1,8 +1,12 @@
 import type { CommandHistoryEvent } from "@mrt/yamcs-effect";
 
+import { DateTime } from "effect";
+
 import { stringifyValue } from "@/lib/utils";
 
 export type CommandHistoryEntry = (typeof CommandHistoryEvent.Type)["data"];
+
+export const pendingAckTimeoutMs = 45_000;
 
 export function extractAttribute(command: CommandHistoryEntry, attr: string) {
   return command.attr.find((a) => a.name === attr)?.value;
@@ -100,6 +104,21 @@ export function hasNokAck(command: CommandHistoryEntry) {
   ].some((ack) => ack.status === "NOK");
 }
 
+export function allDisplayedAcksOk(command: CommandHistoryEntry) {
+  return [
+    extractAcknowledgement(command, "Queued"),
+    extractAcknowledgement(command, "Released"),
+    extractAcknowledgement(command, "Sent"),
+    extractAcknowledgement(command, "uplink_a_rx"),
+    extractAcknowledgement(command, "uplink_a_tx"),
+    extractAcknowledgement(command, "fc_a"),
+    extractAcknowledgement(command, "uplink_b_rx"),
+    extractAcknowledgement(command, "uplink_b_tx"),
+    extractAcknowledgement(command, "fc_b"),
+    extractAcknowledgement(command, "CommandComplete", true),
+  ].every((ack) => ack.status === "OK");
+}
+
 function listAckNames(command: CommandHistoryEntry) {
   const ackNames = new Set<string>();
 
@@ -170,4 +189,15 @@ export function extractAcknowledgement(
     time: timeValue?.type === "TIMESTAMP" ? timeValue.value : undefined,
     message: messageValue?.type === "STRING" ? messageValue.value : undefined,
   };
+}
+
+export function isPendingAckExpired(command: CommandHistoryEntry, ack: Ack, now = Date.now()) {
+  return (
+    ack.status === "PENDING" &&
+    now - DateTime.toDate(command.generationTime).getTime() >= pendingAckTimeoutMs
+  );
+}
+
+export function getAckDisplayStatus(command: CommandHistoryEntry, ack: Ack, now = Date.now()) {
+  return isPendingAckExpired(command, ack, now) ? "NOK" : ack.status;
 }

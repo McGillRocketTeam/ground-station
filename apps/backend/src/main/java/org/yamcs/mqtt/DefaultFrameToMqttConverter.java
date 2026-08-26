@@ -5,13 +5,11 @@ import org.yamcs.YConfiguration;
 
 public class DefaultFrameToMqttConverter implements FrameToMqttConverter {
 
-    @Override
-    public void init(String yamcsInstance, String linkName, YConfiguration config) {
-    }
+  @Override
+  public void init(String yamcsInstance, String linkName, YConfiguration config) {}
 
-    @Override
-    public MqttMessage convert(byte[] frameData) {
-        return new MqttMessage(frameData);
-    }
-
+  @Override
+  public MqttMessage convert(byte[] frameData) {
+    return new MqttMessage(frameData);
+  }
 }

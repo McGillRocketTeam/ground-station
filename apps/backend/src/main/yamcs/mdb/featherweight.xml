@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="Featherweight">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>16384</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      <IntegerParameterType name="integer"><IntegerDataEncoding sizeInBits="64" encoding="twosComplement"/></IntegerParameterType>
+      <FloatParameterType name="decimal"><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+      <BooleanParameterType name="boolean"><IntegerDataEncoding sizeInBits="1" encoding="unsigned"/></BooleanParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="packet_type" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="raw_packet" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="time" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="unit_type" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="lora_id" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="found_lora_id" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="relay_lora_id" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="status" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="change_type" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="channel_side" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="coordination_text" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ble_status" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_1" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_2" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_3" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_4" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_5" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="crc_valid" parameterTypeRef="boolean"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="radio_crc_ok" parameterTypeRef="boolean"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ble_connected" parameterTypeRef="boolean"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="latitude_deg" parameterTypeRef="decimal"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="longitude_deg" parameterTypeRef="decimal"><ParameterProperties dataSource="local"/></Parameter>
+      <!-- Remaining protocol values are integral in the Featherweight serial ICD. -->
+      <Parameter name="packet_length" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="year" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="month" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="day" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="received_crc" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="computed_crc" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="altitude_asl_ft" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="horizontal_velocity_ft_s" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="heading_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="upward_velocity_ft_s" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="fix_type" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellites_total" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellites_over_24_db" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellites_over_32_db" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellites_over_40_db" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_1_azimuth_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_1_elevation_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_1_strength_db_hz" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_2_azimuth_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_2_elevation_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_2_strength_db_hz" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_3_azimuth_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_3_elevation_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_3_strength_db_hz" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_4_azimuth_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_4_elevation_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_4_strength_db_hz" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_5_azimuth_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_5_elevation_deg" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="satellite_5_strength_db_hz" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="packets_received" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="packets_sent" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="packet_rssi_dbm" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="packet_snr_db" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ack_received" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ack_sent" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ack_rssi_dbm" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ack_snr_db" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="found_packets_received" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="found_packets_sent" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="found_rssi_dbm" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="spreading_factor" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="frequency_hz" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tracker_battery_mv" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ground_station_battery_mv" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="found_battery_mv" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="relay_battery_mv" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="relay_temperature_c" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="module_temperature_c" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="apid" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="tx_duration_ms" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="time_to_first_fix_ms" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="relay_rssi_dbm" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="relay_delta_altitude_ft" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="relay_distance_ft" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="channel" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="channel_is_odd" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="flight_state" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="uart_crc" parameterTypeRef="integer"><ParameterProperties dataSource="local"/></Parameter>
+    </ParameterSet>
+  </TelemetryMetaData>
+</SpaceSystem>

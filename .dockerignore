@@ -1,0 +1,15 @@
+.git
+.repos
+.turbo
+.pnpm-store
+**/.DS_Store
+**/.env
+**/.turbo
+**/__pycache__
+**/dist
+**/*.tsbuildinfo
+**/node_modules
+**/target
+**/venv
+docker/assets
+docker/media/recordings

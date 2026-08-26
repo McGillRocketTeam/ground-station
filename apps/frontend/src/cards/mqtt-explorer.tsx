@@ -5,6 +5,7 @@ import { AsyncResult, Atom } from "effect/unstable/reactivity";
 import mqtt from "mqtt";
 import { memo, useState } from "react";
 
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId } from "@/lib/form";
 
@@ -27,7 +28,21 @@ type TopicNode = {
   value?: TopicEntry;
 };
 
-const DEFAULT_MQTT_URL = import.meta.env.MQTT_BROKER_URL ?? "ws://localhost:9001";
+function resolveMqttUrl(rawUrl: string) {
+  const url = new URL(rawUrl);
+
+  if (
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "0.0.0.0"].includes(url.hostname) &&
+    !["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ) {
+    url.hostname = window.location.hostname;
+  }
+
+  return url.toString();
+}
+
+const DEFAULT_MQTT_URL = resolveMqttUrl(import.meta.env.MQTT_BROKER_URL ?? "ws://localhost:9001");
 
 const MqttExplorerCardConfigSchema = Schema.Struct({
   brokerUrl: Schema.optional(Schema.String).pipe(
@@ -201,7 +216,7 @@ function MqttExplorer({ brokerUrl }: { brokerUrl: string }) {
       );
 
       return (
-        <div className="h-full overflow-auto font-mono text-sm">
+        <ScrollArea className="h-full font-mono text-sm">
           <div className="sticky top-0 z-20 h-6 bg-background px-2 leading-6 text-muted-foreground">
             {brokerUrl} · {value.status}
           </div>
@@ -212,7 +227,7 @@ function MqttExplorer({ brokerUrl }: { brokerUrl: string }) {
               children.map((child) => <TopicTreeNode key={child.topic} depth={0} node={child} />)
             )}
           </div>
-        </div>
+        </ScrollArea>
       );
     },
   });

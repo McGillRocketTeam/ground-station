@@ -1,5 +1,5 @@
 package org.yamcs.labjack;
 
 public interface LabJackLink {
-    void writeDigitalPin(int pinNum, int state);
+  void writeDigitalPin(int pinNum, int state);
 }

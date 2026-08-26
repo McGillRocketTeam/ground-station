@@ -31,7 +31,7 @@ rtsp: true
 rtspAddress: :8554
 
 rtmp: true
-rtmpAddress: :19035
+rtmpAddress: :1940
 
 hls: true
 hlsAddress: :8888
@@ -62,3 +62,9 @@ paths:
     rtspTransport: tcp
   drone:
     source: publisher
+  TP-LINK-CAM-1:
+    source: rtsp://admin:TP-H0tFire!@192.168.0.60:554/stream1
+    rtspTransport: tcp
+  TP-LINK-CAM-2:
+    source: rtsp://admin:TP-H0tFire!@192.168.0.114:554/stream1
+    rtspTransport: tcp

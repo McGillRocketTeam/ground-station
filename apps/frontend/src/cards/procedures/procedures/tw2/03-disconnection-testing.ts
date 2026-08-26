@@ -1,14 +1,10 @@
 import { ProcedureStep } from "@mrt/yamcs-effect";
 
 export const disconnectionTestingSteps = [
-  ProcedureStep.make({
-    type: "note",
-    text: "End of simultaneous operations",
-    color: "#FFDFBF",
-  }),
+  ProcedureStep.make({ type: "note", text: "End of simultaneous operations", color: "#FFDFBF" }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 42,
+    stepNumber: 36,
     role: "PD",
     text: "Go to Tower Raising Procedures [Pad3]",
   }),
@@ -19,24 +15,24 @@ export const disconnectionTestingSteps = [
   }),
   ProcedureStep.make({
     type: "note",
-    text: "Proceed once the launch rail is raised.\nLAUNCH DIRECTOR : if disconnection testing is being skipped, proceed to step 59",
+    text: "Proceed once the launch rail is raised.\nLAUNCH DIRECTOR : if disconnection testing is being skipped, proceed to step 45",
     color: "#FFDFBF",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 43,
+    stepNumber: 37,
     role: "PD to LD",
     text: "Inform LD that the pad is ready for disconnection testing",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 44,
+    stepNumber: 38,
     role: "PD",
     text: "Check that the breakers required for disconnection and retraction are on.",
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 45,
+    stepNumber: 39,
     role: "CS",
     commands: [
       {
@@ -59,13 +55,13 @@ export const disconnectionTestingSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 46,
+    stepNumber: 40,
     role: "PD to LD",
     text: "Confirm successful disengagement.",
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 47,
+    stepNumber: 41,
     role: "CS",
     commands: [
       {
@@ -75,15 +71,6 @@ export const disconnectionTestingSteps = [
           { name: "pin_state", value: "HIGH" },
         ],
       },
-    ],
-    comment:
-      "Actuate the RET linear actuator to retract by energizing RET Actuator Polarity and RET Actuator Power on the control box, broadcasting a countdown from 3 for both.",
-  }),
-  ProcedureStep.make({
-    type: "command",
-    stepNumber: 47.5,
-    role: "CS",
-    commands: [
       {
         name: "/EGSE/Pad/LabJackT7/write_digital_pin",
         arguments: [
@@ -92,17 +79,18 @@ export const disconnectionTestingSteps = [
         ],
       },
     ],
-    comment: "Actuate Polairty Power",
+    comment:
+      "Actuate the RET linear actuator to retract by energizing RET Actuator Polarity and RET Actuator Power on the control box, broadcasting a countdown from 3 for both.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 48,
+    stepNumber: 42,
     role: "PD to LD",
     text: "Confirm successful retraction.",
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 49,
+    stepNumber: 43,
     role: "CS",
     commands: [
       {
@@ -139,7 +127,7 @@ export const disconnectionTestingSteps = [
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 50,
+    stepNumber: 44,
     role: "CS",
     commands: [
       {
@@ -162,13 +150,13 @@ export const disconnectionTestingSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 51,
+    stepNumber: 45,
     role: "PD",
     text: "Confirm RET actuator has extended to full stroke.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 52,
+    stepNumber: 46,
     role: "PD",
     text: "Go to Tower Lowering Procedures [Pad3]",
   }),
@@ -179,37 +167,37 @@ export const disconnectionTestingSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 53,
+    stepNumber: 47,
     role: "OP2 & OP4",
     text: "Reconnect the fill disconnection system to the rocket, following disconnect assembly procedures [Pad4].",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 54,
+    stepNumber: 48,
     role: "LD",
     text: "On the go of OP2, extend the DIS linear actuator by energizing DIS actuator power.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 55,
+    stepNumber: 49,
     role: "OP2 & OP4",
     text: "Perform a pull test on the fill line to ensure the quick connect is properly connected.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 56,
+    stepNumber: 50,
     role: "PD & OP4",
     text: "Once proper alignment of the fill arm is confirmed, perform a second pull test on the fill line to ensure the quick connect is properly connected.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 57,
+    stepNumber: 51,
     role: "OP3",
     text: "Confirm that all connections from padbox to launch pad components are continuous.",
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 58,
+    stepNumber: 52,
     role: "PD",
     text: "Go to Tower Raising Procedures [Pad3]",
   }),

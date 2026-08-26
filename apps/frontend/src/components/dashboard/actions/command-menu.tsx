@@ -91,7 +91,7 @@ function SendCommandDialog() {
   ).value;
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog className="w-full sm:max-w-170" open={open} onOpenChange={setOpen}>
       <Command>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
@@ -120,10 +120,12 @@ function SendCommandDialog() {
                 }}
               >
                 <CommandConsequenceLevelIcon level={command.significance?.consequenceLevel} />
-                {command.longDescription}
-                <CommandShortcut className="font-mono text-xs uppercase">
-                  {command.shortDescription}
-                </CommandShortcut>
+                {command.longDescription ?? command.name ?? command.qualifiedName}
+                {command.shortDescription ? (
+                  <CommandShortcut className="font-mono text-xs uppercase">
+                    {command.shortDescription}
+                  </CommandShortcut>
+                ) : null}
               </CommandItem>
             ))}
           </CommandGroup>

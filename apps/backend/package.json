@@ -1,0 +1,10 @@
+{
+  "name": "@mrt/backend",
+  "private": true,
+  "scripts": {
+    "fmt": "mvn spotless:apply",
+    "fmt:check": "mvn spotless:check",
+    "lint": "mvn spotless:check",
+    "lint:fix": "mvn spotless:apply"
+  }
+}

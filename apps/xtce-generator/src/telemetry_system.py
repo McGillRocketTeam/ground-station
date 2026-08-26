@@ -4,6 +4,7 @@ from itertools import islice
 import yamcs.pymdb as Y
 
 from flight_system import FlightSystem
+from landing_prediction_algorithm import landing_prediction_algorithm_text
 
 
 class TelemetrySystem(FlightSystem):
@@ -151,6 +152,78 @@ class TelemetrySystem(FlightSystem):
             ],
         )
 
+    def make_landing_prediction_algorithm(self) -> Y.Algorithm:
+        predicted_latitude = Y.FloatParameter(
+            system=self.sys,
+            name="predicted_location_latitude",
+            bits=64,
+            calibrated_units="deg",
+            data_source=Y.DataSource.DERIVED,
+            short_description="Predicted Landing Latitude",
+            long_description=(
+                "Estimated latitude at landing. This is the center of a possible "
+                "search region, not a precise recovery coordinate."
+            ),
+        )
+        predicted_longitude = Y.FloatParameter(
+            system=self.sys,
+            name="predicted_location_longitude",
+            bits=64,
+            calibrated_units="deg",
+            data_source=Y.DataSource.DERIVED,
+            short_description="Predicted Landing Longitude",
+            long_description=(
+                "Estimated longitude at landing. This is the center of a possible "
+                "search region, not a precise recovery coordinate."
+            ),
+        )
+        predicted_accuracy = Y.FloatParameter(
+            system=self.sys,
+            name="predicted_location_accuracy",
+            bits=64,
+            minimum=0.0,
+            calibrated_units="m",
+            data_source=Y.DataSource.DERIVED,
+            short_description="Predicted Landing Search Radius",
+            long_description=(
+                "Conservative, uncalibrated search radius around the predicted "
+                "landing coordinates. It is not a formal confidence interval."
+            ),
+        )
+
+        inputs = [
+            "gps_latitude",
+            "gps_longitude",
+            "barometer_altitude_from_pad",
+            "vertical_speed",
+            "flight_stage",
+            "main_energized_SW",
+        ]
+        return Y.Algorithm(
+            system=self.sys,
+            name="landing_prediction",
+            short_description="Possible Landing Region",
+            long_description=(
+                "Projects recent GPS drift over estimated remaining descent time. "
+                "Outputs are a search aid and do not indicate a precise location."
+            ),
+            language="python",
+            text=landing_prediction_algorithm_text(),
+            inputs=[Y.InputParameter(name, name=name) for name in inputs],
+            outputs=[
+                Y.OutputParameter(
+                    predicted_latitude, name="predicted_location_latitude"
+                ),
+                Y.OutputParameter(
+                    predicted_longitude, name="predicted_location_longitude"
+                ),
+                Y.OutputParameter(
+                    predicted_accuracy, name="predicted_location_accuracy"
+                ),
+            ],
+            triggers=[Y.ParameterTrigger(name) for name in inputs],
+        )
+
     def create_hard_coded_algorithms(self) -> list[Y.Algorithm]:
         if self.frame_container is None:
             raise ValueError("Atomics must be created before hard-coded algorithms.")
@@ -160,6 +233,7 @@ class TelemetrySystem(FlightSystem):
             self.make_fdov_open_algorithm(),
             self.make_vent_open_algorithm(),
             self.make_mov_open_algorithm(),
+            self.make_landing_prediction_algorithm(),
         ]
 
     @staticmethod
@@ -236,6 +310,17 @@ class TelemetrySystem(FlightSystem):
                         f"Input Error: Tried to create float parameter '{packet_variable_name}', but could not find a size in the type '{encoded_type}'"
                     )
                 calibrator = TelemetrySystem.set_param_calibrator(row)
+                alarm = None
+                context_alarms = None
+                if gui_variable_name == "tank_pressure":
+                    alarm = Y.ThresholdAlarm(critical_high=850)
+                elif gui_variable_name == "tank_temp":
+                    context_alarms = [
+                        Y.ThresholdContextAlarm(
+                            context=Y.GtExpression("tank_pressure", 100),
+                            alarm=Y.ThresholdAlarm(critical_high=30),
+                        )
+                    ]
                 if "float" in encoded_type:
                     param = Y.FloatParameter(
                         system=self.sys,
@@ -246,6 +331,8 @@ class TelemetrySystem(FlightSystem):
                         # raw_units=units_raw,
                         encoding=Y.FloatEncoding(bits=size, little_endian=True),
                         calibrator=calibrator,
+                        alarm=alarm,
+                        context_alarms=context_alarms,
                     )
                     return param
                 elif "int" in encoded_type:
@@ -265,6 +352,8 @@ class TelemetrySystem(FlightSystem):
                             bits=size, scheme=scheme, little_endian=True
                         ),
                         calibrator=calibrator,
+                        alarm=alarm,
+                        context_alarms=context_alarms,
                     )
                     return param
             case "Integer":
@@ -287,7 +376,9 @@ class TelemetrySystem(FlightSystem):
                     long_description=description,
                     calibrated_units=units_cal,
                     # raw_units=units_raw,
-                    encoding=Y.IntegerEncoding(bits=size, scheme=scheme),
+                    encoding=Y.IntegerEncoding(
+                        bits=size, scheme=scheme, little_endian=True
+                    ),
                     calibrator=calibrator,
                 )
                 return param

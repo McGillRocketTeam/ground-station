@@ -21,9 +21,6 @@
         <ValidRange validRangeAppliesToCalibrated="false" minInclusive="0" maxInclusive="255"/>
       </FloatParameterType>
       <FloatParameterType name="snr" sizeInBits="32">
-        <UnitSet>
-          <Unit form="calibrated">dB</Unit>
-        </UnitSet>
         <IntegerDataEncoding sizeInBits="8" encoding="twosComplement" bitOrder="leastSignificantBitFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
@@ -38,9 +35,8 @@
       <FloatParameterType name="temperature_c">
         <UnitSet>
           <Unit form="calibrated">C</Unit>
-          <Unit form="raw">centi-C</Unit>
         </UnitSet>
-        <IntegerDataEncoding sizeInBits="8" encoding="twosComplement" bitOrder="leastSignificantBitFirst">
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" bitOrder="leastSignificantBitFirst" byteOrder="leastSignificantByteFirst">
           <DefaultCalibrator>
             <MathOperationCalibrator>
               <ThisParameterOperand/>
@@ -93,30 +89,123 @@
     </ContainerSet>
   </TelemetryMetaData>
   <CommandMetaData>
+    <ArgumentTypeSet>
+      <FloatArgumentType name="frequency_435_mhz">
+        <UnitSet><Unit>MHz</Unit></UnitSet>
+        <FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        <ValidRangeSet><ValidRange minExclusive="430" maxExclusive="440"/></ValidRangeSet>
+      </FloatArgumentType>
+      <FloatArgumentType name="frequency_900_mhz">
+        <UnitSet><Unit>MHz</Unit></UnitSet>
+        <FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        <ValidRangeSet><ValidRange minExclusive="902" maxExclusive="928"/></ValidRangeSet>
+      </FloatArgumentType>
+      <IntegerArgumentType name="unsigned_integer" signed="false" sizeInBits="32"><IntegerDataEncoding sizeInBits="32" encoding="unsigned"/></IntegerArgumentType>
+      <IntegerArgumentType name="signed_integer" signed="true" sizeInBits="32"><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></IntegerArgumentType>
+      <BooleanArgumentType name="boolean" zeroStringValue="f" oneStringValue="t"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></BooleanArgumentType>
+      <IntegerArgumentType name="rocket_id" signed="false" sizeInBits="8">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <ValidRangeSet><ValidRange minInclusive="0" maxInclusive="255"/></ValidRangeSet>
+      </IntegerArgumentType>
+      <StringArgumentType name="rocket_command_name" restrictionPattern=".{1,5}">
+        <SizeRangeInCharacters minInclusive="1" maxInclusive="5"/>
+        <StringDataEncoding encoding="US-ASCII"><SizeInBits><Fixed><FixedValue>40</FixedValue></Fixed></SizeInBits></StringDataEncoding>
+      </StringArgumentType>
+      <StringArgumentType name="rocket_argument" restrictionPattern="(?:t|f|[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?)">
+        <StringDataEncoding encoding="US-ASCII"><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding>
+      </StringArgumentType>
+    </ArgumentTypeSet>
     <MetaCommandSet>
-      <MetaCommand name="clear_queue" abstract="false" shortDescription="radio clear">
-        <LongDescription>Clear Radio Command Queue</LongDescription>
-        <CommandContainer name="clear_queue">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
+      <MetaCommand name="set_frequency_435" shortDescription="radio freq {frequency_mhz}">
+        <LongDescription>Set frequency on 435-band hardware in MHz.</LongDescription>
+        <ArgumentList><Argument name="frequency_mhz" argumentTypeRef="frequency_435_mhz"/></ArgumentList>
+        <CommandContainer name="set_frequency_435"><EntryList/></CommandContainer>
       </MetaCommand>
-      <MetaCommand name="enable_tx" abstract="false" shortDescription="radio settx t">
-        <LongDescription>Enable TX</LongDescription>
-        <CommandContainer name="enable_tx">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
+      <MetaCommand name="set_frequency_900" shortDescription="radio freq {frequency_mhz}">
+        <LongDescription>Set frequency on 900-band hardware in MHz.</LongDescription>
+        <ArgumentList><Argument name="frequency_mhz" argumentTypeRef="frequency_900_mhz"/></ArgumentList>
+        <CommandContainer name="set_frequency_900"><EntryList/></CommandContainer>
       </MetaCommand>
-      <MetaCommand name="disable_tx" abstract="false" shortDescription="radio settx f">
-        <LongDescription>Disable TX</LongDescription>
-        <CommandContainer name="disable_tx">
-          <EntryList/>
-        </CommandContainer>
-        <DefaultSignificance consequenceLevel="normal"/>
-        <VerifierSet/>
+      <MetaCommand name="set_bandwidth" shortDescription="radio bw {bandwidth_khz}">
+        <LongDescription>Set bandwidth in kHz.</LongDescription>
+        <ArgumentList><Argument name="bandwidth_khz" argumentTypeRef="unsigned_integer"/></ArgumentList>
+        <CommandContainer name="set_bandwidth"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="set_coding_rate" shortDescription="radio cr {denominator}">
+        <LongDescription>Set the coding-rate denominator.</LongDescription>
+        <ArgumentList><Argument name="denominator" argumentTypeRef="unsigned_integer"/></ArgumentList>
+        <CommandContainer name="set_coding_rate"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="set_spreading_factor" shortDescription="radio sf {spreading_factor}">
+        <ArgumentList><Argument name="spreading_factor" argumentTypeRef="unsigned_integer"/></ArgumentList>
+        <CommandContainer name="set_spreading_factor"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="set_power" shortDescription="radio pow {power_dbm}">
+        <LongDescription>Set transmit power in dBm.</LongDescription>
+        <ArgumentList><Argument name="power_dbm" argumentTypeRef="signed_integer"/></ArgumentList>
+        <CommandContainer name="set_power"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="print_parameters" shortDescription="radio param"><CommandContainer name="print_parameters"><EntryList/></CommandContainer></MetaCommand>
+      <MetaCommand name="print_ground_state" shortDescription="radio ground"><CommandContainer name="print_ground_state"><EntryList/></CommandContainer></MetaCommand>
+      <MetaCommand name="radio_ping" shortDescription="radio ping"><CommandContainer name="radio_ping"><EntryList/></CommandContainer></MetaCommand>
+      <MetaCommand name="report_status" shortDescription="radio status {status}">
+        <ArgumentList><Argument name="status" argumentTypeRef="boolean"/></ArgumentList>
+        <CommandContainer name="report_status"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="set_tx" shortDescription="radio settx {enabled}">
+        <LongDescription>Enable or disable transmission when CTS is received.</LongDescription>
+        <ArgumentList><Argument name="enabled" argumentTypeRef="boolean"/></ArgumentList>
+        <CommandContainer name="set_tx"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="enable_tx" shortDescription="radio settx t">
+        <LongDescription>Enable transmission when CTS is received.</LongDescription>
+        <CommandContainer name="enable_tx"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="disable_tx" shortDescription="radio settx f">
+        <LongDescription>Disable transmission when CTS is received.</LongDescription>
+        <CommandContainer name="disable_tx"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="set_verbose" shortDescription="radio verbose {enabled}">
+        <ArgumentList><Argument name="enabled" argumentTypeRef="boolean"/></ArgumentList>
+        <CommandContainer name="set_verbose"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="clear_queue" shortDescription="radio clear"><CommandContainer name="clear_queue"><EntryList/></CommandContainer></MetaCommand>
+      <MetaCommand name="set_ground_station_logs" shortDescription="radio catgs {enabled}">
+        <ArgumentList><Argument name="enabled" argumentTypeRef="boolean"/></ArgumentList>
+        <CommandContainer name="set_ground_station_logs"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="set_radio_logs" shortDescription="radio catradio {enabled}">
+        <ArgumentList><Argument name="enabled" argumentTypeRef="boolean"/></ArgumentList>
+        <CommandContainer name="set_radio_logs"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="set_parser_logs" shortDescription="radio catparser {enabled}">
+        <ArgumentList><Argument name="enabled" argumentTypeRef="boolean"/></ArgumentList>
+        <CommandContainer name="set_parser_logs"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="bypass" shortDescription="radio bypass">
+        <LongDescription>Recognized by the radio parser, but not implemented.</LongDescription>
+        <CommandContainer name="bypass"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="ping" shortDescription="ping"><LongDescription>Ping without the radio prefix.</LongDescription><CommandContainer name="ping"><EntryList/></CommandContainer></MetaCommand>
+      <MetaCommand name="rocket_command" shortDescription="{id}:{command}">
+        <LongDescription>Send a rocket-bound command with no arguments.</LongDescription>
+        <ArgumentList><Argument name="id" argumentTypeRef="rocket_id"/><Argument name="command" argumentTypeRef="rocket_command_name"/></ArgumentList>
+        <CommandContainer name="rocket_command"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="rocket_command_1_arg" shortDescription="{id}:{command} {arg1}">
+        <LongDescription>Send a rocket-bound command with one float or t/f argument.</LongDescription>
+        <ArgumentList><Argument name="id" argumentTypeRef="rocket_id"/><Argument name="command" argumentTypeRef="rocket_command_name"/><Argument name="arg1" argumentTypeRef="rocket_argument"/></ArgumentList>
+        <CommandContainer name="rocket_command_1_arg"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="rocket_command_2_args" shortDescription="{id}:{command} {arg1} {arg2}">
+        <LongDescription>Send a rocket-bound command with two float or t/f arguments.</LongDescription>
+        <ArgumentList><Argument name="id" argumentTypeRef="rocket_id"/><Argument name="command" argumentTypeRef="rocket_command_name"/><Argument name="arg1" argumentTypeRef="rocket_argument"/><Argument name="arg2" argumentTypeRef="rocket_argument"/></ArgumentList>
+        <CommandContainer name="rocket_command_2_args"><EntryList/></CommandContainer>
+      </MetaCommand>
+      <MetaCommand name="rocket_command_3_args" shortDescription="{id}:{command} {arg1} {arg2} {arg3}">
+        <LongDescription>Send a rocket-bound command with three float or t/f arguments.</LongDescription>
+        <ArgumentList><Argument name="id" argumentTypeRef="rocket_id"/><Argument name="command" argumentTypeRef="rocket_command_name"/><Argument name="arg1" argumentTypeRef="rocket_argument"/><Argument name="arg2" argumentTypeRef="rocket_argument"/><Argument name="arg3" argumentTypeRef="rocket_argument"/></ArgumentList>
+        <CommandContainer name="rocket_command_3_args"><EntryList/></CommandContainer>
       </MetaCommand>
     </MetaCommandSet>
   </CommandMetaData>

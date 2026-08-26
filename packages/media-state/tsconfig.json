@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "plugins": [{ "name": "@effect/language-service" }]
+  },
+  "include": ["src"]
+}

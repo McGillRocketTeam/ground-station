@@ -5,7 +5,7 @@ services:
       # Advertise the host LAN IP(s) to remote WebRTC clients.
       MTX_WEBRTCADDITIONALHOSTS: ${MEDIAMTX_WEBRTC_ADDITIONAL_HOSTS:-}
     ports:
-      - "1935:1935"
+      - "1940:1940"
       - "8554:8554"
       - "8888:8888"
       - "8889:8889"

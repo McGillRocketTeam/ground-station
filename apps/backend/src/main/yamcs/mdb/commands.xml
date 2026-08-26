@@ -23,6 +23,38 @@ See https://github.com/yamcs/pymdb
         <DefaultSignificance consequenceLevel="normal"/>
         <VerifierSet/>
       </MetaCommand>
+      <MetaCommand name="camera_off" abstract="false" shortDescription="v4">
+        <LongDescription>Power Off Camera</LongDescription>
+        <CommandContainer name="camera_off">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="camera_on" abstract="false" shortDescription="v1">
+        <LongDescription>Power On Camera</LongDescription>
+        <CommandContainer name="camera_on">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="camera_start" abstract="false" shortDescription="v2">
+        <LongDescription>Start Camera Recording</LongDescription>
+        <CommandContainer name="camera_start">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="camera_stop" abstract="false" shortDescription="v3">
+        <LongDescription>Stop Camera Recording</LongDescription>
+        <CommandContainer name="camera_stop">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
       <MetaCommand name="disarm_recovery" abstract="false" shortDescription="ed">
         <LongDescription>DISARM Recovery</LongDescription>
         <CommandContainer name="disarm_recovery">
@@ -66,6 +98,22 @@ See https://github.com/yamcs/pymdb
       <MetaCommand name="fdov_energize" abstract="false" shortDescription="p4">
         <LongDescription>FDOV Energize</LongDescription>
         <CommandContainer name="fdov_energize">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="gps_debug_off" abstract="false" shortDescription="g0">
+        <LongDescription>Disable GPS Debug Mode</LongDescription>
+        <CommandContainer name="gps_debug_off">
+          <EntryList/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="gps_debug_on" abstract="false" shortDescription="g1">
+        <LongDescription>Enable GPS Debug Mode</LongDescription>
+        <CommandContainer name="gps_debug_on">
           <EntryList/>
         </CommandContainer>
         <DefaultSignificance consequenceLevel="normal"/>
@@ -176,7 +224,7 @@ See https://github.com/yamcs/pymdb
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="sd_close" abstract="false" shortDescription="sc">
-        <LongDescription>Close SD Card</LongDescription>
+        <LongDescription>Stop SD Card Recording</LongDescription>
         <CommandContainer name="sd_close">
           <EntryList/>
         </CommandContainer>
@@ -208,7 +256,7 @@ See https://github.com/yamcs/pymdb
         <VerifierSet/>
       </MetaCommand>
       <MetaCommand name="sd_open" abstract="false" shortDescription="so">
-        <LongDescription>Open SD Card</LongDescription>
+        <LongDescription>Start SD Card Recording</LongDescription>
         <CommandContainer name="sd_open">
           <EntryList/>
         </CommandContainer>

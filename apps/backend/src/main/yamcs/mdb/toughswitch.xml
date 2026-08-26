@@ -1,115 +1,195 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="ToughSwitch">
-  <TelemetryMetaData>
-    <ParameterTypeSet>
-      <IntegerParameterType name="uint8">
-        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="uint16_mbps">
-        <UnitSet>
-          <Unit form="calibrated">Mb/s</Unit>
-        </UnitSet>
-        <IntegerDataEncoding sizeInBits="16" encoding="unsigned"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="uint64_bytes">
-        <UnitSet>
-          <Unit form="calibrated">byte</Unit>
-        </UnitSet>
-        <IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
-      </IntegerParameterType>
-      <IntegerParameterType name="uint64_seconds">
-        <UnitSet>
-          <Unit form="calibrated">s</Unit>
-        </UnitSet>
-        <IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
-      </IntegerParameterType>
-      <StringParameterType name="string">
-        <StringDataEncoding>
-          <SizeInBits>
-            <Fixed>
-              <FixedValue>256</FixedValue>
-            </Fixed>
-          </SizeInBits>
-        </StringDataEncoding>
-      </StringParameterType>
-    </ParameterTypeSet>
-    <ParameterSet>
-      <Parameter name="uptime" parameterTypeRef="uint64_seconds" shortDescription="ToughSwitch uptime in seconds"/>
-      <Parameter name="now" parameterTypeRef="string" shortDescription="ToughSwitch local time"/>
-      <Parameter name="management_up" parameterTypeRef="uint8" shortDescription="Management interface up state"/>
-      <Parameter name="management_speed" parameterTypeRef="uint16_mbps" shortDescription="Management interface speed"/>
-      <Parameter name="port1_poe" parameterTypeRef="uint8" shortDescription="Port 1 PoE setting"/>
-      <Parameter name="port1_port_status" parameterTypeRef="uint8" shortDescription="Port 1 enabled status"/>
-      <Parameter name="port1_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 1 configured or negotiated speed"/>
-      <Parameter name="port1_link_status" parameterTypeRef="uint8" shortDescription="Port 1 link status"/>
-      <Parameter name="port1_duplex" parameterTypeRef="uint8" shortDescription="Port 1 duplex status"/>
-      <Parameter name="port1_has_vlans" parameterTypeRef="uint8" shortDescription="Port 1 VLAN membership present"/>
-      <Parameter name="port1_stp_state" parameterTypeRef="string" shortDescription="Port 1 STP state"/>
-      <Parameter name="port1_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 1 transmitted bytes"/>
-      <Parameter name="port1_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 1 received good bytes"/>
-      <Parameter name="port2_poe" parameterTypeRef="uint8" shortDescription="Port 2 PoE setting"/>
-      <Parameter name="port2_port_status" parameterTypeRef="uint8" shortDescription="Port 2 enabled status"/>
-      <Parameter name="port2_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 2 configured or negotiated speed"/>
-      <Parameter name="port2_link_status" parameterTypeRef="uint8" shortDescription="Port 2 link status"/>
-      <Parameter name="port2_duplex" parameterTypeRef="uint8" shortDescription="Port 2 duplex status"/>
-      <Parameter name="port2_has_vlans" parameterTypeRef="uint8" shortDescription="Port 2 VLAN membership present"/>
-      <Parameter name="port2_stp_state" parameterTypeRef="string" shortDescription="Port 2 STP state"/>
-      <Parameter name="port2_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 2 transmitted bytes"/>
-      <Parameter name="port2_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 2 received good bytes"/>
-      <Parameter name="port3_poe" parameterTypeRef="uint8" shortDescription="Port 3 PoE setting"/>
-      <Parameter name="port3_port_status" parameterTypeRef="uint8" shortDescription="Port 3 enabled status"/>
-      <Parameter name="port3_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 3 configured or negotiated speed"/>
-      <Parameter name="port3_link_status" parameterTypeRef="uint8" shortDescription="Port 3 link status"/>
-      <Parameter name="port3_duplex" parameterTypeRef="uint8" shortDescription="Port 3 duplex status"/>
-      <Parameter name="port3_has_vlans" parameterTypeRef="uint8" shortDescription="Port 3 VLAN membership present"/>
-      <Parameter name="port3_stp_state" parameterTypeRef="string" shortDescription="Port 3 STP state"/>
-      <Parameter name="port3_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 3 transmitted bytes"/>
-      <Parameter name="port3_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 3 received good bytes"/>
-      <Parameter name="port4_poe" parameterTypeRef="uint8" shortDescription="Port 4 PoE setting"/>
-      <Parameter name="port4_port_status" parameterTypeRef="uint8" shortDescription="Port 4 enabled status"/>
-      <Parameter name="port4_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 4 configured or negotiated speed"/>
-      <Parameter name="port4_link_status" parameterTypeRef="uint8" shortDescription="Port 4 link status"/>
-      <Parameter name="port4_duplex" parameterTypeRef="uint8" shortDescription="Port 4 duplex status"/>
-      <Parameter name="port4_has_vlans" parameterTypeRef="uint8" shortDescription="Port 4 VLAN membership present"/>
-      <Parameter name="port4_stp_state" parameterTypeRef="string" shortDescription="Port 4 STP state"/>
-      <Parameter name="port4_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 4 transmitted bytes"/>
-      <Parameter name="port4_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 4 received good bytes"/>
-      <Parameter name="port5_poe" parameterTypeRef="uint8" shortDescription="Port 5 PoE setting"/>
-      <Parameter name="port5_port_status" parameterTypeRef="uint8" shortDescription="Port 5 enabled status"/>
-      <Parameter name="port5_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 5 configured or negotiated speed"/>
-      <Parameter name="port5_link_status" parameterTypeRef="uint8" shortDescription="Port 5 link status"/>
-      <Parameter name="port5_duplex" parameterTypeRef="uint8" shortDescription="Port 5 duplex status"/>
-      <Parameter name="port5_has_vlans" parameterTypeRef="uint8" shortDescription="Port 5 VLAN membership present"/>
-      <Parameter name="port5_stp_state" parameterTypeRef="string" shortDescription="Port 5 STP state"/>
-      <Parameter name="port5_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 5 transmitted bytes"/>
-      <Parameter name="port5_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 5 received good bytes"/>
-      <Parameter name="port6_poe" parameterTypeRef="uint8" shortDescription="Port 6 PoE setting"/>
-      <Parameter name="port6_port_status" parameterTypeRef="uint8" shortDescription="Port 6 enabled status"/>
-      <Parameter name="port6_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 6 configured or negotiated speed"/>
-      <Parameter name="port6_link_status" parameterTypeRef="uint8" shortDescription="Port 6 link status"/>
-      <Parameter name="port6_duplex" parameterTypeRef="uint8" shortDescription="Port 6 duplex status"/>
-      <Parameter name="port6_has_vlans" parameterTypeRef="uint8" shortDescription="Port 6 VLAN membership present"/>
-      <Parameter name="port6_stp_state" parameterTypeRef="string" shortDescription="Port 6 STP state"/>
-      <Parameter name="port6_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 6 transmitted bytes"/>
-      <Parameter name="port6_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 6 received good bytes"/>
-      <Parameter name="port7_poe" parameterTypeRef="uint8" shortDescription="Port 7 PoE setting"/>
-      <Parameter name="port7_port_status" parameterTypeRef="uint8" shortDescription="Port 7 enabled status"/>
-      <Parameter name="port7_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 7 configured or negotiated speed"/>
-      <Parameter name="port7_link_status" parameterTypeRef="uint8" shortDescription="Port 7 link status"/>
-      <Parameter name="port7_duplex" parameterTypeRef="uint8" shortDescription="Port 7 duplex status"/>
-      <Parameter name="port7_has_vlans" parameterTypeRef="uint8" shortDescription="Port 7 VLAN membership present"/>
-      <Parameter name="port7_stp_state" parameterTypeRef="string" shortDescription="Port 7 STP state"/>
-      <Parameter name="port7_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 7 transmitted bytes"/>
-      <Parameter name="port7_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 7 received good bytes"/>
-      <Parameter name="port8_poe" parameterTypeRef="uint8" shortDescription="Port 8 PoE setting"/>
-      <Parameter name="port8_port_status" parameterTypeRef="uint8" shortDescription="Port 8 enabled status"/>
-      <Parameter name="port8_port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 8 configured or negotiated speed"/>
-      <Parameter name="port8_link_status" parameterTypeRef="uint8" shortDescription="Port 8 link status"/>
-      <Parameter name="port8_duplex" parameterTypeRef="uint8" shortDescription="Port 8 duplex status"/>
-      <Parameter name="port8_has_vlans" parameterTypeRef="uint8" shortDescription="Port 8 VLAN membership present"/>
-      <Parameter name="port8_stp_state" parameterTypeRef="string" shortDescription="Port 8 STP state"/>
-      <Parameter name="port8_tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 8 transmitted bytes"/>
-      <Parameter name="port8_rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 8 received good bytes"/>
-    </ParameterSet>
-  </TelemetryMetaData>
+  <SpaceSystem name="DeviceInformation">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint64_seconds"><UnitSet><Unit form="calibrated">s</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="uptime" parameterTypeRef="uint64_seconds" shortDescription="ToughSwitch uptime in seconds"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="now" parameterTypeRef="string" shortDescription="ToughSwitch local time"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Management">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="up" parameterTypeRef="uint8" shortDescription="Management interface up state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="speed" parameterTypeRef="uint16_mbps" shortDescription="Management interface speed"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port1">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 1 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 1 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 1 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 1 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 1 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 1 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 1 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 1 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 1 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port2">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 2 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 2 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 2 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 2 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 2 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 2 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 2 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 2 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 2 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port3">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 3 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 3 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 3 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 3 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 3 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 3 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 3 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 3 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 3 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port4">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 4 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 4 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 4 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 4 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 4 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 4 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 4 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 4 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 4 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port5">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 5 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 5 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 5 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 5 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 5 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 5 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 5 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 5 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 5 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port6">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 6 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 6 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 6 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 6 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 6 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 6 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 6 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 6 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 6 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port7">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 7 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 7 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 7 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 7 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 7 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 7 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 7 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 7 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 7 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Port8">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <IntegerParameterType name="uint8"><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint16_mbps"><UnitSet><Unit form="calibrated">Mb/s</Unit></UnitSet><IntegerDataEncoding sizeInBits="16" encoding="unsigned"/></IntegerParameterType>
+        <IntegerParameterType name="uint64_bytes"><UnitSet><Unit form="calibrated">byte</Unit></UnitSet><IntegerDataEncoding sizeInBits="64" encoding="unsigned"/></IntegerParameterType>
+        <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>256</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="poe" parameterTypeRef="uint8" shortDescription="Port 8 PoE setting"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_status" parameterTypeRef="uint8" shortDescription="Port 8 enabled status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="port_speed" parameterTypeRef="uint16_mbps" shortDescription="Port 8 configured or negotiated speed"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="link_status" parameterTypeRef="uint8" shortDescription="Port 8 link status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="duplex" parameterTypeRef="uint8" shortDescription="Port 8 duplex status"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="has_vlans" parameterTypeRef="uint8" shortDescription="Port 8 VLAN membership present"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="stp_state" parameterTypeRef="string" shortDescription="Port 8 STP state"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="tx_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 8 transmitted bytes"><ParameterProperties dataSource="local"/></Parameter>
+        <Parameter name="rx_good_bytes" parameterTypeRef="uint64_bytes" shortDescription="Port 8 received good bytes"><ParameterProperties dataSource="local"/></Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
 </SpaceSystem>

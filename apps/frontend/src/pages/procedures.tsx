@@ -153,7 +153,7 @@ export function ProceduresPage() {
 
       <div className="grid grid-cols-[auto_auto_1fr_auto]">
         {procedures.map((step, index) => (
-          <ProcedureRow key={step.text} step={step} index={index} />
+          <ProcedureRow key={`${step.text}-${index}`} step={step} index={index} />
         ))}
       </div>
     </div>
@@ -166,7 +166,7 @@ function ProcedureRow({ step, index }: { step: ProcedureStep; index: number }) {
       type="button"
       className={cn(
         "col-span-full grid cursor-pointer grid-cols-subgrid gap-x-4 border-b p-4 text-left hover:bg-muted",
-        step.danger === "WARNING" && "bg-warning/10 hover:bg-warning/30",
+        step.danger === "WARNING" && "bg-warning/10 text-warning-foreground hover:bg-warning/30",
       )}
     >
       <div

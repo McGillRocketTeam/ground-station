@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.yamcs.YConfiguration;
@@ -70,59 +69,45 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
   /**
    * Switch names by byte offset in the ControlBox telemetry packet.
    *
-   * <p>Packet layout (from controlbox.xml):
-   * byte 0: panel_1_switch_estop
-   * byte 1: panel_1_switch_1
-   * byte 2: panel_2_switch_1 (launch)
-   * byte 3: panel_2_switch_2
-   * byte 4: panel_3_switch_1
-   * byte 5: panel_3_switch_2
-   * byte 6: panel_4_switch_1
-   * byte 7: panel_4_switch_2
-   * byte 8: panel_5_switch_1
-   * byte 9: panel_5_switch_2
-   * byte 10: panel_6_switch_1
-   * byte 11: panel_6_switch_2
-   * byte 12: panel_7_switch_1
-   * byte 13: panel_7_switch_2
-   * byte 14: panel_8_switch_1
-   * byte 15: panel_8_switch_2 (BLKT)
-   * byte 16: panel_9_switch_key
+   * <p>Packet layout (from controlbox.xml): byte 0: panel_1_switch_estop byte 1: panel_1_switch_1
+   * byte 2: panel_2_switch_1 (launch) byte 3: panel_2_switch_2 byte 4: panel_3_switch_1 byte 5:
+   * panel_3_switch_2 byte 6: panel_4_switch_1 byte 7: panel_4_switch_2 byte 8: panel_5_switch_1
+   * byte 9: panel_5_switch_2 byte 10: panel_6_switch_1 byte 11: panel_6_switch_2 byte 12:
+   * panel_7_switch_1 byte 13: panel_7_switch_2 byte 14: panel_8_switch_1 byte 15: panel_8_switch_2
+   * (BLKT) byte 16: panel_9_switch_key
    */
   // @formatter:off
   private static final Map<Integer, String> SWITCH_NAME_MAP =
       Map.ofEntries(
-          Map.entry(0,  "panel_1_switch_estop"),
-          Map.entry(1,  "panel_1_switch_1"),
-          Map.entry(2,  "panel_2_switch_1"),
-          Map.entry(3,  "panel_2_switch_2"),
-          Map.entry(4,  "panel_3_switch_1"),
-          Map.entry(5,  "panel_3_switch_2"),
-          Map.entry(6,  "panel_4_switch_1"),
-          Map.entry(7,  "panel_4_switch_2"),
-          Map.entry(8,  "panel_5_switch_1"),
-          Map.entry(9,  "panel_5_switch_2"),
+          Map.entry(0, "panel_1_switch_estop"),
+          Map.entry(1, "panel_1_switch_1"),
+          Map.entry(2, "panel_2_switch_1"),
+          Map.entry(3, "panel_2_switch_2"),
+          Map.entry(4, "panel_3_switch_1"),
+          Map.entry(5, "panel_3_switch_2"),
+          Map.entry(6, "panel_4_switch_1"),
+          Map.entry(7, "panel_4_switch_2"),
+          Map.entry(8, "panel_5_switch_1"),
+          Map.entry(9, "panel_5_switch_2"),
           Map.entry(10, "panel_6_switch_1"),
           Map.entry(11, "panel_6_switch_2"),
           Map.entry(12, "panel_7_switch_1"),
           Map.entry(13, "panel_7_switch_2"),
           Map.entry(14, "panel_8_switch_1"),
           Map.entry(15, "panel_8_switch_2"),
-          Map.entry(16, "panel_9_switch_key")
-          );
+          Map.entry(16, "panel_9_switch_key"));
 
   private static final Map<Integer, LabJackCommandMapping> DEFAULT_LABJACK_COMMAND_MAP =
       Map.ofEntries(
-          Map.entry(2,  new LabJackCommandMapping(MOV__FIO, false)),
-          Map.entry(4,  new LabJackCommandMapping(RUN__FIO, false)),
-          Map.entry(5,  new LabJackCommandMapping(DUMP_FIO, false)),
-          Map.entry(6,  new LabJackCommandMapping(VENT_FIO, false)),
-          Map.entry(7,  new LabJackCommandMapping(FILL_FIO, false)),
-          Map.entry(8,  new LabJackCommandMapping(PURG_FIO, false)),
+          Map.entry(2, new LabJackCommandMapping(MOV__FIO, false)),
+          Map.entry(4, new LabJackCommandMapping(RUN__FIO, false)),
+          Map.entry(5, new LabJackCommandMapping(DUMP_FIO, false)),
+          Map.entry(6, new LabJackCommandMapping(VENT_FIO, false)),
+          Map.entry(7, new LabJackCommandMapping(FILL_FIO, false)),
+          Map.entry(8, new LabJackCommandMapping(PURG_FIO, false)),
           Map.entry(13, new LabJackCommandMapping(20 + IGNM__MIO, true)),
           Map.entry(14, new LabJackCommandMapping(20 + IGNP__MIO, true)),
-          Map.entry(15, new LabJackCommandMapping(BLKT_FIO, false))
-          );
+          Map.entry(15, new LabJackCommandMapping(BLKT_FIO, false)));
 
   // @formatter:on
 
@@ -138,10 +123,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
    * by their byte offset in the telemetry packet. If a switch in this set changes while the key is
    * OFF, the command is blocked and a warning is logged.
    */
-  private static final Set<Integer> ARMING_KEY_GUARDED_SWITCHES =
-      Set.of(
-          2
-          );
+  private static final Set<Integer> ARMING_KEY_GUARDED_SWITCHES = Set.of(2);
 
   /** Byte offset of the emergency stop switch in the telemetry packet. */
   private static final int ESTOP_OFFSET = 0;
@@ -273,7 +255,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
           String name = switchNameForOffset(i);
           log.warn("Blocked switch change for " + name + " because E-STOP is active");
         }
-      } 
+      }
       // Keep baseline in sync so changes made while E-stop was active are ignored
       previousSwitchStates = currentPayload.clone();
       return;
@@ -358,8 +340,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
 
       Integer offset = resolveSwitchOffset(rawEntry);
       if (offset == null) {
-        log.warn(
-            "Ignoring flightComputerCommands entry without a valid offset or switchName");
+        log.warn("Ignoring flightComputerCommands entry without a valid offset or switchName");
         continue;
       }
 
@@ -473,7 +454,8 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
       return;
     }
 
-    log.info("Issuing FlightComputer command: " + commandPath + " (triggered by " + switchName + ")");
+    log.info(
+        "Issuing FlightComputer command: " + commandPath + " (triggered by " + switchName + ")");
     issueYamcsCommand(commandPath, EMPTY_COMMAND_BODY, "FlightComputer command for " + switchName);
   }
 
@@ -531,8 +513,7 @@ public class ControlBoxLink extends AbstractTmDataLink implements MqttTopicHandl
             YAMCS_HTTP_PORT, YAMCS_INSTANCE, YAMCS_PROCESSOR);
 
     String jsonBody =
-        String.format(
-            "{\"args\": {\"pin_number\": %d, \"pin_voltage\": %s}}", pinNumber, voltage);
+        String.format("{\"args\": {\"pin_number\": %d, \"pin_voltage\": %s}}", pinNumber, voltage);
 
     issueYamcsCommand(
         url,

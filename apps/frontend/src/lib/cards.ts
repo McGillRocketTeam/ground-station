@@ -6,9 +6,11 @@ import { Component, createElement } from "react";
 
 import type { DashboardActionGroup } from "@/lib/dashboard-actions";
 
+import { CameraGridCard } from "@/cards/camera-grid";
 import { ChartCard } from "@/cards/chart-card";
 import { CommandButtonCard } from "@/cards/command-button";
 import { CommandHistoryCard } from "@/cards/command-history";
+import { ControlBoxCard } from "@/cards/control-box";
 import { EventsCard } from "@/cards/events";
 import { FaultPanelCard } from "@/cards/fault-panel-card";
 import { GaugeCard } from "@/cards/gauge";
@@ -16,12 +18,18 @@ import { LinksCard } from "@/cards/links";
 import { LinksGraphCard } from "@/cards/links-graph";
 import { LiveChartCard } from "@/cards/live-chart";
 import { MapCard } from "@/cards/map-card";
+import { MediaControlCard } from "@/cards/media-control-card";
 import { MqttExplorerCard } from "@/cards/mqtt-explorer";
+import { NetworkTopologyCard } from "@/cards/network-topology";
+import { ParameterDeviceTable } from "@/cards/parameter-device-table";
 import { ParameterTable } from "@/cards/parameter-table";
 import { PIDCard } from "@/cards/pid";
+import { PredictionMapCard } from "@/cards/prediction-map-card";
 import { ProceduresCard } from "@/cards/procedures";
 import { RealtimeChartCard } from "@/cards/realtime-chart";
+import { SatelliteSkyViewCard } from "@/cards/satellite-sky-view-card";
 import { SerialMonitorCard } from "@/cards/serial-monitor";
+import { SwitchPortsCard } from "@/cards/switch-ports";
 import { TextCard } from "@/cards/text-card";
 import { VideoCard } from "@/cards/video-card";
 
@@ -29,19 +37,27 @@ import { VideoCard } from "@/cards/video-card";
 export const CardArray: CardDefinition<string, any>[] = [
   TextCard,
   ParameterTable,
+  ParameterDeviceTable,
   CommandHistoryCard,
   ChartCard,
   MapCard,
+  PredictionMapCard,
+  SatelliteSkyViewCard,
   LinksCard,
   EventsCard,
   FaultPanelCard,
   CommandButtonCard,
+  ControlBoxCard,
   GaugeCard,
   LiveChartCard,
   MqttExplorerCard,
+  NetworkTopologyCard,
   RealtimeChartCard,
   SerialMonitorCard,
+  SwitchPortsCard,
   VideoCard,
+  CameraGridCard,
+  MediaControlCard,
   PIDCard,
   // FlightComputerOverviewCard,
   LinksGraphCard,

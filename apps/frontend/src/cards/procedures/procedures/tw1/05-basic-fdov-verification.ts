@@ -8,20 +8,20 @@ export const basicFdovVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 46,
+    stepNumber: 57,
     role: "PRC",
     text: "Place 2 fingers on the F/DOV solenoid to feel for gate actuation.",
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 47,
+    stepNumber: 58,
     role: "CSH",
     name: "/FlightComputer/fdov_energize",
     comment: "Set the F/DOV switch to ENERGIZED.",
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 48,
+    stepNumber: 59,
     role: "CSC",
     presentation: {
       type: "truthTable",
@@ -57,24 +57,24 @@ export const basicFdovVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 49,
+    stepNumber: 60,
     role: "AVC",
     text: [
       "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",
       "  Channel  CON  GATE  EN  ARM",
-      "  CH2      on   on    on  on",
+      "  CH2      off  on    off on",
     ].join("\n"),
   }),
   ProcedureStep.make({
     type: "command",
-    stepNumber: 50,
+    stepNumber: 61,
     role: "CSH",
     name: "/FlightComputer/fdov_de-energize",
     comment: "Set the F/DOV switch to DE-ENERGIZED.",
   }),
   ProcedureStep.make({
     type: "verify",
-    stepNumber: 51,
+    stepNumber: 62,
     role: "CSC",
     presentation: {
       type: "truthTable",
@@ -110,7 +110,7 @@ export const basicFdovVerificationSteps = [
   }),
   ProcedureStep.make({
     type: "text",
-    stepNumber: 52,
+    stepNumber: 63,
     role: "AVC",
     text: [
       "Confirm the LEDs on the Prop Bottom Energize Daughter Board are as follows:",

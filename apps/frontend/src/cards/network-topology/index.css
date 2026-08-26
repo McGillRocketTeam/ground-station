@@ -1,0 +1,87 @@
+.network-topology {
+  container-type: size;
+}
+
+.network-topology,
+.network-topology * {
+  transition-property: none;
+}
+
+.network-topology__grid {
+  display: grid;
+  grid-template-areas:
+    "router"
+    "traffic"
+    "antennas";
+  gap: 0;
+  background: var(--color-background);
+  min-height: 100%;
+}
+
+.network-topology__module {
+  position: relative;
+  background: var(--color-background);
+  padding: 0.5rem;
+}
+
+.network-topology__eyebrow {
+  margin: -0.5rem -0.5rem 0.5rem;
+  border-top: 1px solid var(--color-background-secondary-highlight);
+  padding: 0 0.25rem;
+  background: var(--color-background-secondary);
+  color: var(--color-white-text);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.network-topology__router {
+  grid-area: router;
+}
+
+.network-topology__uplink-summary {
+  margin: 0.5rem -0.5rem -0.5rem;
+  border-top: 1px solid var(--color-border);
+  padding: 0.5rem;
+}
+.network-topology__traffic {
+  grid-area: traffic;
+}
+
+.network-topology__traffic .network-topology__eyebrow {
+  margin-bottom: 0;
+}
+.network-topology__antennas {
+  grid-area: antennas;
+}
+
+.network-topology__antennas .network-topology__eyebrow {
+  margin-bottom: 0;
+}
+
+.network-topology__direction,
+.network-topology__antenna {
+  background: var(--color-background);
+}
+
+.network-topology__full-bleed {
+  margin-right: -0.5rem;
+  margin-left: -0.5rem;
+}
+
+.network-topology__traffic .network-topology__full-bleed:last-child {
+  margin-bottom: -0.5rem;
+}
+
+.network-topology__antenna + .network-topology__antenna {
+  border-top: 1px solid var(--color-border);
+}
+
+@container (min-width: 960px) and (min-height: 520px) {
+  .network-topology__grid {
+    grid-template-columns: minmax(11rem, 0.55fr) minmax(18rem, 0.9fr) minmax(24rem, 1.2fr);
+    grid-template-areas:
+      "router traffic traffic"
+      "antennas antennas antennas";
+    align-content: stretch;
+  }
+}

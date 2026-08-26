@@ -8,13 +8,12 @@ container at `/tilesets`, and serves each file at:
 - `http://localhost:3001/services/<tileset_id>`
 - `http://localhost:3001/services/<tileset_id>/tiles/{z}/{x}/{y}.jpg`
 
-For the map card's raster overlay, these filenames are expected:
+All frontend maps use the same offline style. These filenames are required:
 
-- `worldLowQuality.mbtiles`
-- `satellite-2017-11-02_canada_ontario.mbtiles`
-- `timminsCity.mbtiles`
-- `launchcanada.mbtiles`
-- `launchcanada2.mbtiles`
+- `region-satellite-z0-z16.mbtiles`
+- `detail-5km-z17-z18.mbtiles`
+- `detail-1km-z19-z21.mbtiles`
+- `lc2025.mbtiles`
 
 These files are intentionally gitignored because they are too large for the repo.
 

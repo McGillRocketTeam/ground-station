@@ -1,0 +1,928 @@
+<?xml version="1.0" ?>
+<!--
+This file was generated with Yamcs PyMDB.
+See https://github.com/yamcs/pymdb
+-->
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="Derived">
+  <TelemetryMetaData/>
+  <CommandMetaData/>
+  <SpaceSystem name="Communications">
+    <TelemetryMetaData>
+      <ParameterTypeSet>
+        <EnumeratedParameterType name="capability" initialValue="UNKNOWN">
+          <EnumerationList>
+            <Enumeration value="0" label="UNKNOWN"/>
+            <Enumeration value="1" label="NOT_APPLICABLE"/>
+            <Enumeration value="2" label="NOMINAL"/>
+            <Enumeration value="3" label="DEGRADED"/>
+            <Enumeration value="4" label="CRITICAL"/>
+          </EnumerationList>
+          <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+            <EnumerationAlarmList>
+              <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+            </EnumerationAlarmList>
+          </DefaultAlarm>
+        </EnumeratedParameterType>
+      </ParameterTypeSet>
+      <ParameterSet>
+        <Parameter name="capability" parameterTypeRef="capability" shortDescription="End-to-end SystemA communications capability">
+          <ParameterProperties dataSource="derived" persistence="true"/>
+        </Parameter>
+      </ParameterSet>
+      <AlgorithmSet>
+        <CustomAlgorithm name="capability" shortDescription="End-to-end SystemA communications capability">
+          <AlgorithmText language="JavaScript">var status = "UNKNOWN";
+if (fc.value !== null &amp;&amp; control.value !== null &amp;&amp; pad.value !== null) {
+  if (fc.value === "CRITICAL" || (control.value === "CRITICAL" &amp;&amp; pad.value === "CRITICAL")) status = "CRITICAL";
+  else if (fc.value !== "NOMINAL" || control.value !== "NOMINAL" || pad.value !== "NOMINAL") status = "DEGRADED";
+  else status = "NOMINAL";
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+          <InputSet>
+            <InputParameterInstanceRef parameterRef="/SystemA/Derived/Rocket/FlightComputer/telemetry_health" instance="0" inputName="fc"/>
+            <InputParameterInstanceRef parameterRef="/SystemA/Derived/ControlStation/Radio/link_health" instance="0" inputName="control"/>
+            <InputParameterInstanceRef parameterRef="/SystemA/Derived/Pad/Radio/link_health" instance="0" inputName="pad"/>
+            <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+          </InputSet>
+          <OutputSet>
+            <OutputParameterRef parameterRef="capability" outputName="result"/>
+          </OutputSet>
+          <TriggerSet>
+            <OnParameterUpdateTrigger parameterRef="/SystemA/Derived/Rocket/FlightComputer/telemetry_health"/>
+            <OnParameterUpdateTrigger parameterRef="/SystemA/Derived/ControlStation/Radio/link_health"/>
+            <OnParameterUpdateTrigger parameterRef="/SystemA/Derived/Pad/Radio/link_health"/>
+            <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+          </TriggerSet>
+        </CustomAlgorithm>
+      </AlgorithmSet>
+    </TelemetryMetaData>
+    <CommandMetaData/>
+  </SpaceSystem>
+  <SpaceSystem name="ControlStation">
+    <TelemetryMetaData/>
+    <CommandMetaData/>
+    <SpaceSystem name="Radio">
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <EnumeratedParameterType name="link_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter name="link_health" parameterTypeRef="link_health" shortDescription="ControlStation radio link health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+        </ParameterSet>
+        <AlgorithmSet>
+          <CustomAlgorithm name="link_health" shortDescription="ControlStation radio link health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof lastSequence === "undefined") lastSequence = null;
+if (typeof lastProgress === "undefined") lastProgress = null;
+var flight = stage.rawValue &gt;= 1 &amp;&amp; stage.rawValue &lt;= 4;
+var progressed = lastSequence == null || sequence.value !== lastSequence;
+if (progressed) {
+  lastProgress = Number(sequence.acquisitionTimeMillis || now);
+  if (!isFinite(lastProgress)) lastProgress = now;
+}
+var age = lastProgress == null ? Infinity : now - lastProgress;
+var status = "UNKNOWN";
+if (sequence.value !== null) {
+  if (flight &amp;&amp; age &gt;= 10000) status = "CRITICAL";
+  else if (age &gt;= 5000) status = "DEGRADED";
+  else status = "NOMINAL";
+}
+lastSequence = sequence.value;
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/ControlStation/Radio/sequenceNumber" instance="0" inputName="sequence"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/ControlStation/Radio/RSSI" instance="0" inputName="rssi"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/ControlStation/Radio/SNR" instance="0" inputName="snr"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/ControlStation/Radio/cpu_temperature" instance="0" inputName="temperature"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="link_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/ControlStation/Radio/sequenceNumber"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/ControlStation/Radio/RSSI"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/ControlStation/Radio/SNR"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/ControlStation/Radio/cpu_temperature"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+        </AlgorithmSet>
+      </TelemetryMetaData>
+      <CommandMetaData/>
+    </SpaceSystem>
+  </SpaceSystem>
+  <SpaceSystem name="Pad">
+    <TelemetryMetaData/>
+    <CommandMetaData/>
+    <SpaceSystem name="Radio">
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <EnumeratedParameterType name="link_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter name="link_health" parameterTypeRef="link_health" shortDescription="Pad radio link health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+        </ParameterSet>
+        <AlgorithmSet>
+          <CustomAlgorithm name="link_health" shortDescription="Pad radio link health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof lastSequence === "undefined") lastSequence = null;
+if (typeof lastProgress === "undefined") lastProgress = null;
+var flight = stage.rawValue &gt;= 1 &amp;&amp; stage.rawValue &lt;= 4;
+var progressed = lastSequence == null || sequence.value !== lastSequence;
+if (progressed) {
+  lastProgress = Number(sequence.acquisitionTimeMillis || now);
+  if (!isFinite(lastProgress)) lastProgress = now;
+}
+var age = lastProgress == null ? Infinity : now - lastProgress;
+var status = "UNKNOWN";
+if (sequence.value !== null) {
+  if (flight &amp;&amp; age &gt;= 10000) status = "CRITICAL";
+  else if (age &gt;= 5000) status = "DEGRADED";
+  else status = "NOMINAL";
+}
+lastSequence = sequence.value;
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Pad/Radio/sequenceNumber" instance="0" inputName="sequence"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Pad/Radio/RSSI" instance="0" inputName="rssi"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Pad/Radio/SNR" instance="0" inputName="snr"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Pad/Radio/cpu_temperature" instance="0" inputName="temperature"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="link_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Pad/Radio/sequenceNumber"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Pad/Radio/RSSI"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Pad/Radio/SNR"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Pad/Radio/cpu_temperature"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+        </AlgorithmSet>
+      </TelemetryMetaData>
+      <CommandMetaData/>
+    </SpaceSystem>
+  </SpaceSystem>
+  <SpaceSystem name="Rocket">
+    <TelemetryMetaData/>
+    <CommandMetaData/>
+    <SpaceSystem name="FlightComputer">
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <EnumeratedParameterType name="operational_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+          <EnumeratedParameterType name="telemetry_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter name="operational_health" parameterTypeRef="operational_health" shortDescription="Flight computer operational health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+          <Parameter name="telemetry_health" parameterTypeRef="telemetry_health" shortDescription="Flight computer telemetry reception health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+        </ParameterSet>
+        <AlgorithmSet>
+          <CustomAlgorithm name="operational_health" shortDescription="Flight computer operational health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof nominalSince === "undefined") nominalSince = null;
+var candidate = "UNKNOWN";
+if (flight_stage.value !== null &amp;&amp; telemetry_health.value !== null) {
+  if (flight_stage.rawValue === 99 || telemetry_health.value === "CRITICAL") candidate = "CRITICAL";
+  else if (telemetry_health.value === "DEGRADED") candidate = "DEGRADED";
+  else if (telemetry_health.value === "NOMINAL") candidate = "NOMINAL";
+}
+if (candidate !== "NOMINAL") nominalSince = null;
+else if (nominalSince == null) nominalSince = now;
+if (candidate === "NOMINAL" &amp;&amp; now - nominalSince &lt; 3000) candidate = "DEGRADED";
+result.value = candidate;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="flight_stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Derived/Rocket/FlightComputer/telemetry_health" instance="0" inputName="telemetry_health"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="operational_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Derived/Rocket/FlightComputer/telemetry_health"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+          <CustomAlgorithm name="telemetry_health" shortDescription="Flight computer telemetry reception health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof lastSeq === "undefined") lastSeq = null;
+if (typeof lastUptime === "undefined") lastUptime = null;
+if (typeof lastProgress === "undefined") lastProgress = null;
+var flight = flight_stage.rawValue &gt;= 1 &amp;&amp; flight_stage.rawValue &lt;= 4;
+var progressed = lastSeq == null || seq.value !== lastSeq || uptime.value !== lastUptime;
+if (progressed) {
+  lastProgress = Number(seq.acquisitionTimeMillis || uptime.acquisitionTimeMillis || now);
+  if (!isFinite(lastProgress)) lastProgress = now;
+}
+var age = lastProgress == null ? Infinity : now - lastProgress;
+var status = "UNKNOWN";
+if (seq.value !== null &amp;&amp; uptime.value !== null) {
+  if (flight &amp;&amp; age &gt;= 10000) status = "CRITICAL";
+  else if (age &gt;= 5000) status = "DEGRADED";
+  else status = "NOMINAL";
+}
+lastSeq = seq.value;
+lastUptime = uptime.value;
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/seq" instance="0" inputName="seq"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fc_time_since_start" instance="0" inputName="uptime"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="flight_stage"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="telemetry_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/seq"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fc_time_since_start"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+        </AlgorithmSet>
+      </TelemetryMetaData>
+      <CommandMetaData/>
+    </SpaceSystem>
+    <SpaceSystem name="Navigation">
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <EnumeratedParameterType name="solution_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter name="solution_health" parameterTypeRef="solution_health" shortDescription="GPS navigation solution health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+        </ParameterSet>
+        <AlgorithmSet>
+          <CustomAlgorithm name="solution_health" shortDescription="GPS navigation solution health">
+            <AlgorithmText language="JavaScript">var phase = stage.rawValue;
+var inFlight = phase &gt;= 1 &amp;&amp; phase &lt;= 4;
+var fix = fix_type.rawValue;
+var status = "UNKNOWN";
+if (typeof goodFixes === "undefined") goodFixes = 0;
+if (typeof lastFixTime === "undefined") lastFixTime = null;
+if (fix !== null &amp;&amp; age.value !== null) {
+  if (age.value &gt; 15) status = "CRITICAL";
+  else if (!locked.value || !fix_ok.value || fix === 0 || fix === 5) status = inFlight ? "CRITICAL" : "DEGRADED";
+  else if (fix === 1 || fix === 2 || age.value &gt; 5) status = "DEGRADED";
+  else if (fix === 3 || fix === 4) status = "NOMINAL";
+}
+if (status === "NOMINAL" &amp;&amp; fix_ok.acquisitionTimeMillis !== lastFixTime) goodFixes += 1;
+else if (status !== "NOMINAL") goodFixes = 0;
+lastFixTime = fix_ok.acquisitionTimeMillis;
+if (status === "NOMINAL" &amp;&amp; goodFixes &lt; 3) status = "DEGRADED";
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/gps_locked" instance="0" inputName="locked"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/gps_fix_ok" instance="0" inputName="fix_ok"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/gps_fix_type" instance="0" inputName="fix_type"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/gps_time_last_update" instance="0" inputName="age"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="solution_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/gps_locked"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/gps_fix_ok"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/gps_fix_type"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/gps_time_last_update"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+        </AlgorithmSet>
+      </TelemetryMetaData>
+      <CommandMetaData/>
+    </SpaceSystem>
+    <SpaceSystem name="Propulsion">
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <EnumeratedParameterType name="fdov_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+          <EnumeratedParameterType name="mov_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+          <EnumeratedParameterType name="readiness" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_REQUIRED"/>
+              <Enumeration value="2" label="NOT_READY"/>
+              <Enumeration value="3" label="READY"/>
+              <Enumeration value="4" label="ACTIVE"/>
+              <Enumeration value="5" label="COMPLETE"/>
+              <Enumeration value="6" label="FAULT"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="FAULT"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+          <EnumeratedParameterType name="vent_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter name="fdov_health" parameterTypeRef="fdov_health" shortDescription="FDOV valve actuation health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+          <Parameter name="mov_health" parameterTypeRef="mov_health" shortDescription="MOV valve actuation health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+          <Parameter name="readiness" parameterTypeRef="readiness" shortDescription="Phase-aware propulsion system readiness">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+          <Parameter name="vent_health" parameterTypeRef="vent_health" shortDescription="VENT valve actuation health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+        </ParameterSet>
+        <AlgorithmSet>
+          <CustomAlgorithm name="fdov_health" shortDescription="FDOV valve actuation health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof commandSince === "undefined") commandSince = null;
+var required = stage.rawValue === 0 || stage.rawValue === 1;
+var status = "NOMINAL";
+if ((gate.value || current.value) &amp;&amp; !commanded.value) status = "CRITICAL";
+else {
+  if (commanded.value &amp;&amp; commandSince == null) commandSince = now;
+  if (!commanded.value) commandSince = null;
+  if (commanded.value &amp;&amp; now - commandSince &gt;= 2000 &amp;&amp; (!gate.value || !current.value)) status = "CRITICAL";
+  else if (commanded.value &amp;&amp; now - commandSince &gt;= 5000 &amp;&amp; !open.value) status = "CRITICAL";
+  else if (armed_hw.value !== armed_sw.value) status = required ? "CRITICAL" : "DEGRADED";
+  else if (required &amp;&amp; !continuity.value) status = "CRITICAL";
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_HW" instance="0" inputName="armed_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_SW" instance="0" inputName="armed_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_continuity_HW" instance="0" inputName="continuity"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_energized_SW" instance="0" inputName="commanded"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW" instance="0" inputName="current"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedGate_HW" instance="0" inputName="gate"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_open" instance="0" inputName="open"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="fdov_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedGate_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_open"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+          <CustomAlgorithm name="mov_health" shortDescription="MOV valve actuation health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof commandSince === "undefined") commandSince = null;
+var required = stage.rawValue === 0 || stage.rawValue === 1;
+var status = "NOMINAL";
+if ((gate.value || current.value) &amp;&amp; !commanded.value) status = "CRITICAL";
+else {
+  if (commanded.value &amp;&amp; commandSince == null) commandSince = now;
+  if (!commanded.value) commandSince = null;
+  if (commanded.value &amp;&amp; now - commandSince &gt;= 2000 &amp;&amp; (!gate.value || !current.value)) status = "CRITICAL";
+  else if (commanded.value &amp;&amp; now - commandSince &gt;= 5000 &amp;&amp; !open.value) status = "CRITICAL";
+  else if (armed_hw.value !== armed_sw.value) status = required ? "CRITICAL" : "DEGRADED";
+  else if (required &amp;&amp; !continuity.value) status = "CRITICAL";
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_electrical_HW" instance="0" inputName="armed_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_logical_SW" instance="0" inputName="armed_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_continuity_HW" instance="0" inputName="continuity"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_energized_SW" instance="0" inputName="commanded"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedCurrent_HW" instance="0" inputName="current"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedGate_HW" instance="0" inputName="gate"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_open" instance="0" inputName="open"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="mov_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_electrical_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_logical_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedGate_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_open"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+          <CustomAlgorithm name="readiness" shortDescription="Phase-aware propulsion system readiness">
+            <AlgorithmText language="JavaScript">var phase = stage.rawValue;
+var unexpected = (mov_energizedCurrent_HW.value &amp;&amp; !mov_energized_SW.value) ||
+  (fdov_energizedCurrent_HW.value &amp;&amp; !fdov_energized_SW.value) ||
+  (vent_energizedCurrent_HW.value &amp;&amp; !vent_energized_SW.value);
+var drive = mov_energizedGate_HW.value || fdov_energizedGate_HW.value || vent_energizedGate_HW.value;
+var status = "UNKNOWN";
+if (phase !== null) {
+  if (unexpected) status = "FAULT";
+  else if (phase === 0) {
+    var ready = power.value &amp;&amp; mov_hw.value &amp;&amp; mov_sw.value &amp;&amp; mov_continuity_HW.value &amp;&amp;
+      fdov_hw.value &amp;&amp; fdov_sw.value &amp;&amp; fdov_continuity_HW.value &amp;&amp;
+      vent_hw.value &amp;&amp; vent_sw.value &amp;&amp; vent_continuity_HW.value;
+    status = ready ? "READY" : "NOT_READY";
+  } else if (phase === 1) status = power.value ? "ACTIVE" : "FAULT";
+  else status = !power.value &amp;&amp; !drive ? "NOT_REQUIRED" : "FAULT";
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/prop_energized_electric" instance="0" inputName="power"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_electrical_HW" instance="0" inputName="mov_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_logical_SW" instance="0" inputName="mov_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_continuity_HW" instance="0" inputName="mov_continuity_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_energized_SW" instance="0" inputName="mov_energized_SW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedCurrent_HW" instance="0" inputName="mov_energizedCurrent_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedGate_HW" instance="0" inputName="mov_energizedGate_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/mov_open" instance="0" inputName="mov_open"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_HW" instance="0" inputName="fdov_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_SW" instance="0" inputName="fdov_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_continuity_HW" instance="0" inputName="fdov_continuity_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_energized_SW" instance="0" inputName="fdov_energized_SW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW" instance="0" inputName="fdov_energizedCurrent_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedGate_HW" instance="0" inputName="fdov_energizedGate_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/fdov_open" instance="0" inputName="fdov_open"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_HW" instance="0" inputName="vent_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_SW" instance="0" inputName="vent_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_continuity_HW" instance="0" inputName="vent_continuity_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_energized_SW" instance="0" inputName="vent_energized_SW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW" instance="0" inputName="vent_energizedCurrent_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedGate_HW" instance="0" inputName="vent_energizedGate_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_open" instance="0" inputName="vent_open"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="readiness" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/prop_energized_electric"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_electrical_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_armed_logical_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_energizedGate_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/mov_open"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_energizedGate_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/fdov_open"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedGate_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_open"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+          <CustomAlgorithm name="vent_health" shortDescription="VENT valve actuation health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof commandSince === "undefined") commandSince = null;
+var required = stage.rawValue === 0 || stage.rawValue === 1;
+var status = "NOMINAL";
+if ((gate.value || current.value) &amp;&amp; !commanded.value) status = "CRITICAL";
+else {
+  if (commanded.value &amp;&amp; commandSince == null) commandSince = now;
+  if (!commanded.value) commandSince = null;
+  if (commanded.value &amp;&amp; now - commandSince &gt;= 2000 &amp;&amp; (!gate.value || !current.value)) status = "CRITICAL";
+  else if (commanded.value &amp;&amp; now - commandSince &gt;= 5000 &amp;&amp; !open.value) status = "CRITICAL";
+  else if (armed_hw.value !== armed_sw.value) status = required ? "CRITICAL" : "DEGRADED";
+  else if (required &amp;&amp; !continuity.value) status = "CRITICAL";
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_HW" instance="0" inputName="armed_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_SW" instance="0" inputName="armed_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_continuity_HW" instance="0" inputName="continuity"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_energized_SW" instance="0" inputName="commanded"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW" instance="0" inputName="current"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedGate_HW" instance="0" inputName="gate"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/vent_open" instance="0" inputName="open"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="vent_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_energizedGate_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/vent_open"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+        </AlgorithmSet>
+      </TelemetryMetaData>
+      <CommandMetaData/>
+    </SpaceSystem>
+    <SpaceSystem name="Recovery">
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <EnumeratedParameterType name="drogue_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+          <EnumeratedParameterType name="main_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_APPLICABLE"/>
+              <Enumeration value="2" label="NOMINAL"/>
+              <Enumeration value="3" label="DEGRADED"/>
+              <Enumeration value="4" label="CRITICAL"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="CRITICAL"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+          <EnumeratedParameterType name="readiness" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_REQUIRED"/>
+              <Enumeration value="2" label="NOT_READY"/>
+              <Enumeration value="3" label="READY"/>
+              <Enumeration value="4" label="ACTIVE"/>
+              <Enumeration value="5" label="COMPLETE"/>
+              <Enumeration value="6" label="FAULT"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="FAULT"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter name="drogue_health" parameterTypeRef="drogue_health" shortDescription="Drogue recovery channel health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+          <Parameter name="main_health" parameterTypeRef="main_health" shortDescription="Main recovery channel health">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+          <Parameter name="readiness" parameterTypeRef="readiness" shortDescription="Phase-aware recovery system readiness">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+        </ParameterSet>
+        <AlgorithmSet>
+          <CustomAlgorithm name="drogue_health" shortDescription="Drogue recovery channel health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof commandSince === "undefined") commandSince = null;
+if (typeof continuityMisses === "undefined") continuityMisses = 0;
+if (typeof lastContinuityTime === "undefined") lastContinuityTime = null;
+var phase = stage.rawValue;
+var required = phase &gt;= 0 &amp;&amp; phase &lt; 3;
+var deployed = phase &gt;= 3;
+var status = "NOMINAL";
+if ((gate.value || current.value) &amp;&amp; !commanded.value) status = "CRITICAL";
+else {
+  if (commanded.value &amp;&amp; commandSince == null) commandSince = now;
+  if (!commanded.value) commandSince = null;
+  if (commanded.value &amp;&amp; now - commandSince &gt;= 2000 &amp;&amp; (!gate.value || !current.value)) status = "CRITICAL";
+  else if (deployed &amp;&amp; commanded.value &amp;&amp; gate.value &amp;&amp; current.value) status = "NOT_APPLICABLE";
+  else if (armed_hw.value !== armed_sw.value) status = required &amp;&amp; phase &gt; 0 ? "CRITICAL" : "DEGRADED";
+  else {
+    if (continuity.acquisitionTimeMillis !== lastContinuityTime) {
+      continuityMisses = continuity.value ? 0 : continuityMisses + 1;
+      lastContinuityTime = continuity.acquisitionTimeMillis;
+    }
+    if (!continuity.value &amp;&amp; continuityMisses &gt;= 2) status = required &amp;&amp; (armed_hw.value || armed_sw.value) ? "CRITICAL" : "DEGRADED";
+  }
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_HW" instance="0" inputName="armed_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_SW" instance="0" inputName="armed_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_continuity_HW" instance="0" inputName="continuity"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_energized_SW" instance="0" inputName="commanded"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedCurrent_HW" instance="0" inputName="current"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedGate_HW" instance="0" inputName="gate"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="drogue_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedGate_HW"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+          <CustomAlgorithm name="main_health" shortDescription="Main recovery channel health">
+            <AlgorithmText language="JavaScript">var now = Date.now();
+if (typeof commandSince === "undefined") commandSince = null;
+if (typeof continuityMisses === "undefined") continuityMisses = 0;
+if (typeof lastContinuityTime === "undefined") lastContinuityTime = null;
+var phase = stage.rawValue;
+var required = phase &gt;= 0 &amp;&amp; phase &lt; 4;
+var deployed = phase &gt;= 4;
+var status = "NOMINAL";
+if ((gate.value || current.value) &amp;&amp; !commanded.value) status = "CRITICAL";
+else {
+  if (commanded.value &amp;&amp; commandSince == null) commandSince = now;
+  if (!commanded.value) commandSince = null;
+  if (commanded.value &amp;&amp; now - commandSince &gt;= 2000 &amp;&amp; (!gate.value || !current.value)) status = "CRITICAL";
+  else if (deployed &amp;&amp; commanded.value &amp;&amp; gate.value &amp;&amp; current.value) status = "NOT_APPLICABLE";
+  else if (armed_hw.value !== armed_sw.value) status = required &amp;&amp; phase &gt; 0 ? "CRITICAL" : "DEGRADED";
+  else {
+    if (continuity.acquisitionTimeMillis !== lastContinuityTime) {
+      continuityMisses = continuity.value ? 0 : continuityMisses + 1;
+      lastContinuityTime = continuity.acquisitionTimeMillis;
+    }
+    if (!continuity.value &amp;&amp; continuityMisses &gt;= 2) status = required &amp;&amp; (armed_hw.value || armed_sw.value) ? "CRITICAL" : "DEGRADED";
+  }
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_armed_HW" instance="0" inputName="armed_hw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_armed_SW" instance="0" inputName="armed_sw"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_continuity_HW" instance="0" inputName="continuity"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_energized_SW" instance="0" inputName="commanded"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_energizedCurrent_HW" instance="0" inputName="current"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_energizedGate_HW" instance="0" inputName="gate"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="main_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_energizedGate_HW"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+          <CustomAlgorithm name="readiness" shortDescription="Phase-aware recovery system readiness">
+            <AlgorithmText language="JavaScript">var phase = stage.rawValue;
+function agreement(prefix) {
+  return prefix.sw.value === prefix.gate.value &amp;&amp; prefix.sw.value === prefix.current.value;
+}
+var drogue = {sw:drogue_energized_SW, gate:drogue_energizedGate_HW, current:drogue_energizedCurrent_HW};
+var main = {sw:main_energized_SW, gate:main_energizedGate_HW, current:main_energizedCurrent_HW};
+var premature = (phase &lt; 3 &amp;&amp; (drogue.sw.value || drogue.gate.value || drogue.current.value)) ||
+  (phase &lt; 4 &amp;&amp; (main.sw.value || main.gate.value || main.current.value));
+var status = "UNKNOWN";
+if (phase !== null) {
+  if (premature || !agreement(drogue) || !agreement(main)) status = "FAULT";
+  else if (phase &lt;= 2) {
+    var ready = drogue_armed_HW.value &amp;&amp; drogue_armed_SW.value &amp;&amp; drogue_continuity_HW.value &amp;&amp;
+      main_armed_HW.value &amp;&amp; main_armed_SW.value &amp;&amp; main_continuity_HW.value;
+    status = ready ? "READY" : "NOT_READY";
+  } else if (phase === 3) {
+    status = drogue.sw.value &amp;&amp; main_armed_HW.value &amp;&amp; main_armed_SW.value &amp;&amp; main_continuity_HW.value ? "ACTIVE" : "FAULT";
+  } else if (phase === 4) status = main.sw.value ? "ACTIVE" : "FAULT";
+  else if (phase === 5) status = "COMPLETE";
+  else status = "FAULT";
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_HW" instance="0" inputName="drogue_armed_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_SW" instance="0" inputName="drogue_armed_SW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_continuity_HW" instance="0" inputName="drogue_continuity_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_energized_SW" instance="0" inputName="drogue_energized_SW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedCurrent_HW" instance="0" inputName="drogue_energizedCurrent_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedGate_HW" instance="0" inputName="drogue_energizedGate_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_armed_HW" instance="0" inputName="main_armed_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_armed_SW" instance="0" inputName="main_armed_SW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_continuity_HW" instance="0" inputName="main_continuity_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_energized_SW" instance="0" inputName="main_energized_SW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_energizedCurrent_HW" instance="0" inputName="main_energizedCurrent_HW"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/main_energizedGate_HW" instance="0" inputName="main_energizedGate_HW"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="readiness" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/drogue_energizedGate_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_armed_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_armed_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_continuity_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_energized_SW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_energizedCurrent_HW"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/main_energizedGate_HW"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+        </AlgorithmSet>
+      </TelemetryMetaData>
+      <CommandMetaData/>
+    </SpaceSystem>
+    <SpaceSystem name="Storage">
+      <TelemetryMetaData>
+        <ParameterTypeSet>
+          <EnumeratedParameterType name="recording_health" initialValue="UNKNOWN">
+            <EnumerationList>
+              <Enumeration value="0" label="UNKNOWN"/>
+              <Enumeration value="1" label="NOT_REQUIRED"/>
+              <Enumeration value="2" label="NOT_READY"/>
+              <Enumeration value="3" label="READY"/>
+              <Enumeration value="4" label="ACTIVE"/>
+              <Enumeration value="5" label="COMPLETE"/>
+              <Enumeration value="6" label="FAULT"/>
+            </EnumerationList>
+            <DefaultAlarm minViolations="1" defaultAlarmLevel="normal">
+              <EnumerationAlarmList>
+                <EnumerationAlarm alarmLevel="critical" enumerationLabel="FAULT"/>
+              </EnumerationAlarmList>
+            </DefaultAlarm>
+          </EnumeratedParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+          <Parameter name="recording_health" parameterTypeRef="recording_health" shortDescription="Onboard SD recording state">
+            <ParameterProperties dataSource="derived" persistence="true"/>
+          </Parameter>
+        </ParameterSet>
+        <AlgorithmSet>
+          <CustomAlgorithm name="recording_health" shortDescription="Onboard SD recording state">
+            <AlgorithmText language="JavaScript">var phase = stage.rawValue;
+var status = "UNKNOWN";
+if (phase !== null) {
+  if (phase &gt;= 1 &amp;&amp; phase &lt;= 4 &amp;&amp; deletion.value) status = "FAULT";
+  else if (phase &gt;= 1 &amp;&amp; phase &lt;= 4 &amp;&amp; !file_open.value) status = "FAULT";
+  else if (phase === 0 &amp;&amp; deletion.value) status = "NOT_READY";
+  else if (phase === 0 &amp;&amp; file_open.value) status = "READY";
+  else if (phase &gt;= 1 &amp;&amp; phase &lt;= 4) status = "ACTIVE";
+  else if (phase === 5) status = file_open.value ? "ACTIVE" : "COMPLETE";
+  else status = "NOT_REQUIRED";
+}
+result.value = status;
+result.updated = true;</AlgorithmText>
+            <InputSet>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/flight_stage" instance="0" inputName="stage"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/sd_card_file_open" instance="0" inputName="file_open"/>
+              <InputParameterInstanceRef parameterRef="/SystemA/Rocket/FlightComputer/sd_card_deletion_armed" instance="0" inputName="deletion"/>
+            </InputSet>
+            <OutputSet>
+              <OutputParameterRef parameterRef="recording_health" outputName="result"/>
+            </OutputSet>
+            <TriggerSet>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/flight_stage"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/sd_card_file_open"/>
+              <OnParameterUpdateTrigger parameterRef="/SystemA/Rocket/FlightComputer/sd_card_deletion_armed"/>
+            </TriggerSet>
+          </CustomAlgorithm>
+        </AlgorithmSet>
+      </TelemetryMetaData>
+      <CommandMetaData/>
+    </SpaceSystem>
+  </SpaceSystem>
+</SpaceSystem>

@@ -1,0 +1,131 @@
+name: mrt-production
+
+x-service: &service
+  restart: unless-stopped
+  init: true
+
+services:
+  mqtt-broker:
+    <<: *service
+    image: eclipse-mosquitto:2
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+      - "${MQTT_WEBSOCKET_PORT:-9001}:9001"
+    volumes:
+      - ../mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mqtt-data:/mosquitto/data
+    healthcheck:
+      test: [CMD, mosquitto_pub, -h, localhost, -t, healthcheck, -m, ok]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  mbtileserver:
+    <<: *service
+    image: ghcr.io/consbio/mbtileserver:latest
+    ports:
+      - "${MBTILESERVER_PORT:-3001}:8000"
+    volumes:
+      - ../assets/maps:/tilesets:ro
+
+  backend:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: docker/production/backend.Dockerfile
+    environment:
+      MQTT_BROKER_URL: tcp://mqtt-broker:1883
+      WIFI_ROUTER_PASSWORD: ${WIFI_ROUTER_PASSWORD:-}
+    depends_on:
+      mqtt-broker:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8090}:8090"
+      - "${TELEMETRY_UDP_PORT:-10015}:10015/udp"
+    volumes:
+      - yamcs-data:/yamcs/yamcs-data
+
+  mediamtx:
+    <<: *service
+    image: bluenviron/mediamtx:latest
+    environment:
+      MTX_WEBRTCADDITIONALHOSTS: ${MEDIAMTX_WEBRTC_ADDITIONAL_HOSTS:-}
+    ports:
+      - "${MEDIAMTX_RTMP_PORT:-1940}:1940"
+      - "${MEDIAMTX_RTSP_PORT:-8554}:8554"
+      - "${MEDIAMTX_HLS_PORT:-8888}:8888"
+      - "${MEDIAMTX_WEBRTC_HTTP_PORT:-8889}:8889"
+      - "${MEDIAMTX_API_PORT:-9997}:9997"
+      - "${MEDIAMTX_WEBRTC_PORT:-8189}:8189"
+      - "${MEDIAMTX_WEBRTC_PORT:-8189}:8189/udp"
+      - "${MEDIAMTX_SRT_PORT:-8890}:8890/udp"
+    volumes:
+      - ../media/mediamtx.yml:/mediamtx.yml:ro
+      - media-recordings:/recordings
+
+  media-backend:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: docker/production/media-backend.Dockerfile
+    depends_on:
+      - mediamtx
+    ports:
+      - "${MEDIA_BACKEND_PORT:-3000}:3000"
+
+  frontend:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: docker/production/frontend.Dockerfile
+      args:
+        MRT_ENVIRONMENT: production
+        MRT_GOJS_API_KEY: ${MRT_GOJS_API_KEY:-}
+        MQTT_BROKER_URL: ${MQTT_BROWSER_URL:-ws://localhost:9001}
+        YAMCS_INSTANCE: ${YAMCS_INSTANCE:-launch-canada}
+        YAMCS_PROCESSOR: ${YAMCS_PROCESSOR:-realtime}
+    depends_on:
+      - backend
+      - media-backend
+      - mediamtx
+    ports:
+      - "${FRONTEND_PORT:-5173}:8080"
+
+  media-frontend:
+    <<: *service
+    build:
+      context: ../..
+      dockerfile: docker/production/media-frontend.Dockerfile
+      args:
+        VITE_YAMCS_INSTANCE: ${YAMCS_INSTANCE:-launch-canada}
+        VITE_YAMCS_PROCESSOR: ${YAMCS_PROCESSOR:-realtime}
+    depends_on:
+      - backend
+      - media-backend
+    ports:
+      - "${MEDIA_FRONTEND_PORT:-5174}:8080"
+
+  ecoflow-mqtt:
+    <<: *service
+    profiles: [ecoflow]
+    build:
+      context: ../..
+      dockerfile: docker/production/ecoflow-mqtt.Dockerfile
+    command:
+      - --user-id
+      - ${ECOFLOW_USER_ID:-}
+      - --mqtt-host
+      - localhost
+      - --mqtt-port
+      - ${MQTT_PORT:-1883}
+    depends_on:
+      mqtt-broker:
+        condition: service_healthy
+    network_mode: host
+    volumes:
+      - /run/dbus:/run/dbus:ro
+
+volumes:
+  media-recordings:
+  mqtt-data:
+  yamcs-data:

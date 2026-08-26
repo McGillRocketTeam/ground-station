@@ -1,4 +1,24 @@
+import { Effect, Option, Stream } from "effect";
+
 import type { StreamingCommandHisotryEntry } from "./schema.js";
+
+export const collectPaginated = <A, E, R>(
+  request: (next: string | undefined) => Effect.Effect<
+    {
+      readonly items: ReadonlyArray<A>;
+      readonly continuationToken: string | undefined;
+    },
+    E,
+    R
+  >,
+): Effect.Effect<ReadonlyArray<A>, E, R> =>
+  Stream.paginate<string | undefined, A, E, R>(undefined, (next) =>
+    request(next).pipe(
+      Effect.map(
+        ({ items, continuationToken }) => [items, Option.fromNullishOr(continuationToken)] as const,
+      ),
+    ),
+  ).pipe(Stream.runCollect);
 
 export function mergeCommandEntries(
   current: typeof StreamingCommandHisotryEntry.Type,

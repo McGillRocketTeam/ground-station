@@ -1,345 +1,327 @@
 package org.yamcs.mrt;
 
+import com.google.gson.Gson;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.yamcs.CommandOption;
+import org.eclipse.paho.client.mqttv3.*;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.CommandOption.CommandOptionType;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.Acknowledgment;
-import org.yamcs.commanding.ActiveCommand;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mrt.utils.DeviceFrequencyManager;
 import org.yamcs.mrt.utils.MetadataDto;
-import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.tctm.AbstractTcDataLink;
 
-import com.google.gson.Gson;
-
-import org.eclipse.paho.client.mqttv3.*;
-
 /**
- * This class is responsible for listing to command
- * events on MQTT or triggers via YAMCS and displatching
- * them to the proper MQTT channels. It's also responsible
- * for listening to acks for those commands.
+ * This class is responsible for listing to command events on MQTT or triggers via YAMCS and
+ * displatching them to the proper MQTT channels. It's also responsible for listening to acks for
+ * those commands.
  *
- * Listens to commands on topic <code>commands/send</code>.
- * Inserts those commands into the command history in YAMCS
- * and forwards them to the appropriate radios.
+ * <p>Listens to commands on topic <code>commands/send</code>. Inserts those commands into the
+ * command history in YAMCS and forwards them to the appropriate radios.
  *
- * Listens for acks on <code>#/acks</code>. Acks use the following shape:
+ * <p>Listens for acks on <code>#/acks</code>. Acks use the following shape:
  *
  * <pre>
  * {
- *	"cmd_id": int,
- *	"status": string
+ * "cmd_id": int,
+ * "status": string
  * }
  * </pre>
  *
  * @author Léo Mindlin
  */
 public class AstraCommandLink extends AbstractTcDataLink {
-	private String instance;
-	private String name;
-	private YConfiguration config;
-	private String detailedStatus;
+  private String instance;
+  private String name;
+  private YConfiguration config;
+  private String detailedStatus;
 
-	private MqttAsyncClient client;
-	private MqttConnectOptions connOpts;
+  private MqttAsyncClient client;
+  private MqttConnectOptions connOpts;
 
-	private DeviceFrequencyManager deviceManager = new DeviceFrequencyManager();
+  private DeviceFrequencyManager deviceManager = new DeviceFrequencyManager();
 
-	// Each command is sent with a numeric id (0-255) used when it's acknowledged.
-	// We assume that there will never be more than 255 commands in the air at one
-	// time. We store each command and the devices it was sent to.
-	private final AtomicInteger currentCommandId = new AtomicInteger(1);
+  // Each command is sent with a numeric id (0-255) used when it's acknowledged.
+  // We assume that there will never be more than 255 commands in the air at one
+  // time. We store each command and the devices it was sent to.
+  private final AtomicInteger currentCommandId = new AtomicInteger(1);
 
-	private Map<Integer, Collection<String>> commandToDeviceMap = new HashMap<>();
-	private Map<Integer, PreparedCommand> commandToPreparedMap = new HashMap<>();
+  private Map<Integer, Collection<String>> commandToDeviceMap = new HashMap<>();
+  private Map<Integer, PreparedCommand> commandToPreparedMap = new HashMap<>();
 
-	@Override
-	public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
-		super.init(instance, name, config);
-		this.instance = instance;
-		this.name = name;
-		this.config = config;
-		this.detailedStatus = "Not started.";
+  @Override
+  public void init(String instance, String name, YConfiguration config)
+      throws ConfigurationException {
+    super.init(instance, name, config);
+    this.instance = instance;
+    this.name = name;
+    this.config = config;
+    this.detailedStatus = "Not started.";
 
-		this.connOpts = MqttUtils.getConnectionOptions(config);
-		this.client = MqttUtils.newClient(config);
-	}
+    this.connOpts = MqttUtils.getConnectionOptions(config);
+    this.client = MqttUtils.newClient(config);
+  }
 
-	@Override
-	public Spec getSpec() {
-		var spec = getDefaultSpec();
-		MqttUtils.addConnectionOptionsToSpec(spec);
-		return spec;
-	}
+  @Override
+  public Spec getSpec() {
+    var spec = getDefaultSpec();
+    MqttUtils.addConnectionOptionsToSpec(spec);
+    return spec;
+  }
 
-	@Override
-	protected void doStart() {
-		var ack = new Acknowledgment("TEST_ACK");
-		// Use the instance this link actually runs in — the previous hardcoded "ground_station"
-		// NPE'd on any instance with another name (testsite/launch-canada/urrg) and killed doStart.
-		var processor = YamcsServer.getServer().getInstance(yamcsInstance).getProcessor("realtime");
-		processor.addAcknowledgment(ack);
+  @Override
+  protected void doStart() {
+    var ack = new Acknowledgment("TEST_ACK");
+    // Use the instance this link actually runs in — the previous hardcoded "ground_station"
+    // NPE'd on any instance with another name (testsite/launch-canada/urrg) and killed doStart.
+    var processor = YamcsServer.getServer().getInstance(yamcsInstance).getProcessor("realtime");
+    processor.addAcknowledgment(ack);
 
-		try {
-			client.setCallback(new MqttCallback() {
-				@Override
-				public void connectionLost(Throwable cause) {
+    try {
+      client.setCallback(
+          new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
 
-					eventProducer.sendWarning(
-							"MQTT connection lost: " + cause.getMessage());
-				}
+              eventProducer.sendWarning("MQTT connection lost: " + cause.getMessage());
+            }
 
-				@Override
-				public void messageArrived(String topic, MqttMessage message) {
-					handleMqttMessage(topic, message);
-				}
+            @Override
+            public void messageArrived(String topic, MqttMessage message) {
+              handleMqttMessage(topic, message);
+            }
 
-				@Override
-				public void deliveryComplete(IMqttDeliveryToken token) {
-				}
-			});
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {}
+          });
 
-			client.connect(connOpts).waitForCompletion();
+      client.connect(connOpts).waitForCompletion();
 
-			// Each topic must have a corresponding qos
-			String[] topics = { "+/acks", "+/metadata", "commands/send" };
-			int[] qos = { 1, 1, 1 };
+      // Each topic must have a corresponding qos
+      String[] topics = {"+/acks", "+/metadata", "commands/send"};
+      int[] qos = {1, 1, 1};
 
-			client.subscribe(topics, qos).waitForCompletion();
+      client.subscribe(topics, qos).waitForCompletion();
 
-			detailedStatus = "Connected to MQTT broker, listening for commands";
+      detailedStatus = "Connected to MQTT broker, listening for commands";
 
-			eventProducer.sendInfo(detailedStatus);
-			notifyStarted();
+      eventProducer.sendInfo(detailedStatus);
+      notifyStarted();
 
-		} catch (Exception e) {
-			detailedStatus = "Failed to start AstraCommandLink: " + e.getMessage();
-			eventProducer.sendWarning(detailedStatus);
-			notifyFailed(e);
-		}
-	}
+    } catch (Exception e) {
+      detailedStatus = "Failed to start AstraCommandLink: " + e.getMessage();
+      eventProducer.sendWarning(detailedStatus);
+      notifyFailed(e);
+    }
+  }
 
-	@Override
-	protected void doStop() {
-		try {
-			client.disconnect().waitForCompletion();
-		} catch (Exception e) {
-			eventProducer.sendWarning("Error disconnecting MQTT: " + e.getMessage());
-		}
-		notifyStopped();
-	}
+  @Override
+  protected void doStop() {
+    try {
+      client.disconnect().waitForCompletion();
+    } catch (Exception e) {
+      eventProducer.sendWarning("Error disconnecting MQTT: " + e.getMessage());
+    }
+    notifyStopped();
+  }
 
-	@Override
-	public String getDetailedStatus() {
-		return detailedStatus;
-	}
+  @Override
+  public String getDetailedStatus() {
+    return detailedStatus;
+  }
 
-	@Override
-	protected org.yamcs.tctm.Link.Status connectionStatus() {
-		return client.isConnected() ? Status.OK : Status.UNAVAIL;
-	};
+  @Override
+  protected org.yamcs.tctm.Link.Status connectionStatus() {
+    return client.isConnected() ? Status.OK : Status.UNAVAIL;
+  }
+  ;
 
-	private void handleMqttMessage(String topic, MqttMessage message) {
-		try {
-			dataIn(1, message.getPayload().length);
+  private void handleMqttMessage(String topic, MqttMessage message) {
+    try {
+      dataIn(1, message.getPayload().length);
 
-			if ("commands/send".equalsIgnoreCase(topic))
-				handleIncomingCommand(message);
+      if ("commands/send".equalsIgnoreCase(topic)) handleIncomingCommand(message);
 
-			String[] parts = topic.split("/");
-			if (parts.length < 2)
-				return;
+      String[] parts = topic.split("/");
+      if (parts.length < 2) return;
 
-			String deviceName = parts[0]; // e.g., radio-pad-a
-			String subTopic = parts[1]; // metadata or telemetry or ack
+      String deviceName = parts[0]; // e.g., radio-pad-a
+      String subTopic = parts[1]; // metadata or telemetry or ack
 
-			if ("acks".equalsIgnoreCase(subTopic))
-				handleAck(deviceName, message);
-			else if ("metadata".equalsIgnoreCase(subTopic))
-				handleMetadata(deviceName, message);
+      if ("acks".equalsIgnoreCase(subTopic)) handleAck(deviceName, message);
+      else if ("metadata".equalsIgnoreCase(subTopic)) handleMetadata(deviceName, message);
 
-		} catch (Exception e) {
-			eventProducer.sendWarning(
-					"Error handling message on topic " + topic + ": " + e.getMessage());
-		}
-	}
+    } catch (Exception e) {
+      eventProducer.sendWarning("Error handling message on topic " + topic + ": " + e.getMessage());
+    }
+  }
 
-	@Override
-	public boolean sendCommand(PreparedCommand preparedCommand) {
-		// Commands are sent as a simple CSV string
-		// <cmd-id>,<cmd-name>
-		String cmdId = preparedCommand.getMetaCommand().getShortDescription();
-		postprocess(preparedCommand);
+  @Override
+  public boolean sendCommand(PreparedCommand preparedCommand) {
+    // Commands are sent as a simple CSV string
+    // <cmd-id>,<cmd-name>
+    String cmdId = preparedCommand.getMetaCommand().getShortDescription();
+    postprocess(preparedCommand);
 
-		int seqNum = currentCommandId.getAndIncrement();
-		if (seqNum > 255) {
-			currentCommandId.set(1);
-			seqNum = 1;
-		}
+    int seqNum = currentCommandId.getAndIncrement();
+    if (seqNum > 255) {
+      currentCommandId.set(1);
+      seqNum = 1;
+    }
 
-		this.commandHistoryPublisher.publish(preparedCommand.getCommandId(),
-				"Command_Id", cmdId);
-		this.commandHistoryPublisher.publish(preparedCommand.getCommandId(),
-				"Sequence_Count", seqNum);
+    this.commandHistoryPublisher.publish(preparedCommand.getCommandId(), "Command_Id", cmdId);
+    this.commandHistoryPublisher.publish(preparedCommand.getCommandId(), "Sequence_Count", seqNum);
 
-		commandToPreparedMap.put(seqNum, preparedCommand);
+    commandToPreparedMap.put(seqNum, preparedCommand);
 
-		String cmdPayload = seqNum + "," + cmdId;
-		MqttMessage msg = new MqttMessage(cmdPayload.getBytes());
+    String cmdPayload = seqNum + "," + cmdId;
+    MqttMessage msg = new MqttMessage(cmdPayload.getBytes());
 
-		Collection<String> devices = deviceManager.getAllSelectedDevices();
-		int successCount = 0;
+    Collection<String> devices = deviceManager.getAllSelectedDevices();
+    int successCount = 0;
 
-		this.commandHistoryPublisher.publish(preparedCommand.getCommandId(),
-				"TX_Devices", String.join(",", devices));
-		this.commandToDeviceMap.put(seqNum, devices);
+    this.commandHistoryPublisher.publish(
+        preparedCommand.getCommandId(), "TX_Devices", String.join(",", devices));
+    this.commandToDeviceMap.put(seqNum, devices);
 
-		for (var device : devices) {
-			try {
-				client.publish(device + "/commands", msg, null, new IMqttActionListener() {
-					@Override
-					public void onSuccess(IMqttToken asyncActionToken) {
-						ackCommand(preparedCommand.getCommandId());
-					}
+    for (var device : devices) {
+      try {
+        client.publish(
+            device + "/commands",
+            msg,
+            null,
+            new IMqttActionListener() {
+              @Override
+              public void onSuccess(IMqttToken asyncActionToken) {
+                ackCommand(preparedCommand.getCommandId());
+              }
 
-					@Override
-					public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-						log.warn("Failed to send command", exception);
-						failedCommand(preparedCommand.getCommandId(), exception.toString());
-					}
-				});
+              @Override
+              public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                log.warn("Failed to send command", exception);
+                failedCommand(preparedCommand.getCommandId(), exception.toString());
+              }
+            });
 
-				dataOut(1, cmdPayload.length());
+        dataOut(1, cmdPayload.length());
 
-				successCount++;
-			} catch (MqttException e) {
-				log.warn("Failed to send command {}", e);
-			}
-		}
+        successCount++;
+      } catch (MqttException e) {
+        log.warn("Failed to send command {}", e);
+      }
+    }
 
-		return successCount > 0;
-	};
+    return successCount > 0;
+  }
+  ;
 
-	private void handleIncomingCommand(MqttMessage message) {
+  private void handleIncomingCommand(MqttMessage message) {}
 
-	}
+  private void handleMetadata(String deviceName, MqttMessage message) {
+    byte[] payload = message.getPayload();
+    // Retained empty payload means device gone (Last Will)
+    if (payload == null || payload.length == 0) {
+      deviceManager.removeDevice(deviceName);
+      return;
+    }
 
-	private void handleMetadata(String deviceName, MqttMessage message) {
-		byte[] payload = message.getPayload();
-		// Retained empty payload means device gone (Last Will)
-		if (payload == null || payload.length == 0) {
-			deviceManager.removeDevice(deviceName);
-			return;
-		}
+    try {
+      String jsonString = new String(payload, StandardCharsets.UTF_8);
+      MetadataDto metadata = new Gson().fromJson(jsonString, MetadataDto.class);
+      if (metadata == null) {
+        throw new IllegalArgumentException("Metadata payload is null");
+      }
 
-		try {
-			String jsonString = new String(payload, StandardCharsets.UTF_8);
-			MetadataDto metadata = new Gson().fromJson(jsonString, MetadataDto.class);
-			if (metadata == null) {
-				throw new IllegalArgumentException("Metadata payload is null");
-			}
+      metadata.validate();
 
-			metadata.validate();
+      deviceManager.addOrUpdateDevice(deviceName, metadata.frequency);
 
-			deviceManager.addOrUpdateDevice(deviceName, metadata.frequency);
+    } catch (Exception e) {
+      eventProducer.sendDistress(
+          "Error metadata ack JSON for " + deviceName + ": " + e.getMessage());
+    }
+  }
 
-		} catch (Exception e) {
-			eventProducer.sendDistress(
-					"Error metadata ack JSON for " + deviceName + ": " + e.getMessage());
-		}
+  // FIX: Currently the only way we reigster the FC ack is if the same
+  // radio that sent it recieved it. Reciving FC acks should be
+  // radio agnostic, but we don't do that right now
+  public void handleFCAck(int cmd_id, String frequency, String deviceName) {
+    PreparedCommand command = commandToPreparedMap.get(cmd_id);
+    Collection<String> devices = commandToDeviceMap.get(cmd_id);
 
-	}
+    if (devices.contains(deviceName)) {
+      commandHistoryPublisher.publishAck(
+          command.getCommandId(), "fc_" + frequency, timeService.getMissionTime(), AckStatus.OK);
 
-	// FIX: Currently the only way we reigster the FC ack is if the same
-	// radio that sent it recieved it. Reciving FC acks should be
-	// radio agnostic, but we don't do that right now
-	public void handleFCAck(int cmd_id, String frequency, String deviceName) {
-		PreparedCommand command = commandToPreparedMap.get(cmd_id);
-		Collection<String> devices = commandToDeviceMap.get(cmd_id);
+      devices.remove(deviceName);
+    }
 
-		if (devices.contains(deviceName)) {
-			commandHistoryPublisher.publishAck(
-					command.getCommandId(),
-					"fc_" + frequency,
-					timeService.getMissionTime(),
-					AckStatus.OK);
+    // If both FCs have ack'd then the command
+    // is complete
+    if (devices.size() == 0) {
+      commandHistoryPublisher.publishAck(
+          command.getCommandId(),
+          CommandHistoryPublisher.CommandComplete_KEY,
+          timeService.getMissionTime(),
+          AckStatus.OK);
+    }
+  }
 
-			devices.remove(deviceName);
-		}
+  private void handleAck(String deviceName, MqttMessage message) {
+    byte[] payload = message.getPayload();
 
-		// If both FCs have ack'd then the command
-		// is complete
-		if (devices.size() == 0) {
-			commandHistoryPublisher.publishAck(
-					command.getCommandId(),
-					CommandHistoryPublisher.CommandComplete_KEY,
-					timeService.getMissionTime(),
-					AckStatus.OK);
-		}
+    try {
+      String jsonString = new String(payload, StandardCharsets.UTF_8);
 
-	}
+      AckDto ack = new Gson().fromJson(jsonString, AckDto.class);
+      if (ack == null) {
+        throw new IllegalArgumentException("ACK payload is null");
+      }
 
-	private void handleAck(String deviceName, MqttMessage message) {
-		byte[] payload = message.getPayload();
+      ack.validate();
 
-		try {
-			String jsonString = new String(payload, StandardCharsets.UTF_8);
+      PreparedCommand command = commandToPreparedMap.get(ack.cmd_id);
 
-			AckDto ack = new Gson().fromJson(jsonString, AckDto.class);
-			if (ack == null) {
-				throw new IllegalArgumentException("ACK payload is null");
-			}
+      AckStatus ackStatus;
+      if (ack.status.endsWith("NOK")) {
+        ackStatus = AckStatus.NOK;
+      } else if (ack.status.endsWith("OK")) {
+        ackStatus = AckStatus.OK;
+      } else {
+        ackStatus = AckStatus.CANCELLED;
+      }
 
-			ack.validate();
+      commandHistoryPublisher.publishAck(
+          command.getCommandId(),
+          // Get the substring from RX_OK -> RX since we have the
+          // status we don't want to inclue it in the ack name
+          deviceName + "_" + ack.status.substring(0, 2),
+          timeService.getMissionTime(),
+          ackStatus);
 
-			PreparedCommand command = commandToPreparedMap.get(ack.cmd_id);
+    } catch (Exception e) {
+      eventProducer.sendDistress(
+          "Error parsing ack JSON for " + deviceName + ": " + e.getMessage());
+    }
+  }
 
-			AckStatus ackStatus;
-			if (ack.status.endsWith("NOK")) {
-				ackStatus = AckStatus.NOK;
-			} else if (ack.status.endsWith("OK")) {
-				ackStatus = AckStatus.OK;
-			} else {
-				ackStatus = AckStatus.CANCELLED;
-			}
+  private static final class AckDto {
+    Integer cmd_id;
+    String status;
 
-			commandHistoryPublisher.publishAck(
-					command.getCommandId(),
-					// Get the substring from RX_OK -> RX since we have the
-					// status we don't want to inclue it in the ack name
-					deviceName + "_" + ack.status.substring(0, 2),
-					timeService.getMissionTime(),
-					ackStatus);
-
-		} catch (Exception e) {
-			eventProducer.sendDistress(
-					"Error parsing ack JSON for " + deviceName + ": " + e.getMessage());
-		}
-	}
-
-	private static final class AckDto {
-		Integer cmd_id;
-		String status;
-
-		void validate() {
-			if (cmd_id == null) {
-				throw new IllegalArgumentException("Missing required field: cmd_id");
-			}
-			if (status == null) {
-				throw new IllegalArgumentException("Missing required field: status");
-			}
-		}
-	}
+    void validate() {
+      if (cmd_id == null) {
+        throw new IllegalArgumentException("Missing required field: cmd_id");
+      }
+      if (status == null) {
+        throw new IllegalArgumentException("Missing required field: status");
+      }
+    }
+  }
 }

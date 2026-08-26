@@ -5,7 +5,9 @@ import { Fragment, Suspense, useEffect } from "react";
 
 import { BrailleSpinner } from "@/cards/command-history/braile-spinner";
 import { AckRow, FCAckRow } from "@/cards/command-history/command-detail";
+import { useAckNow } from "@/cards/command-history/use-ack-now";
 import { collectAcks } from "@/cards/command-history/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { makeCard } from "@/lib/cards";
 import { FormTitleAnnotationId } from "@/lib/form";
 import { cn } from "@/lib/utils";
@@ -33,7 +35,11 @@ export const ProceduresCard = makeCard({
       }),
     ),
   }),
-  component: (props) => <ProcedureView procedureType={props.params.procedureType ?? "tw1"} />,
+  component: (props) => (
+    <ScrollArea className="h-full">
+      <ProcedureView procedureType={props.params.procedureType ?? "tw1"} />
+    </ScrollArea>
+  ),
 });
 
 function ProcedureView({ procedureType }: { procedureType: ProcedureType }) {
@@ -55,7 +61,7 @@ function ProcedureView({ procedureType }: { procedureType: ProcedureType }) {
   }
 
   return (
-    <div className="h-full min-h-0 overflow-auto">
+    <div className="h-full min-h-0">
       <div className="sticky top-0 z-10 flex h-8 bg-background border-b text-sm">
         <button type="button" onClick={() => selectPreviousStep()} className="h-full border-r px-2">
           Prev
@@ -160,9 +166,11 @@ function formatValue(value: unknown) {
 
 function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
   return (
-    <div className="grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-1 text-xs text-muted-foreground">
+    <div className="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-3 gap-y-1 text-xs text-muted-foreground">
       <div>SYS A</div>
       <div>SYS B</div>
+      <div>ENG Value A</div>
+      <div>ENG Value B</div>
       <div>Condition</div>
       {liveData.conditions.map((condition) => (
         <Fragment key={`${condition.parameter}-${condition.label}`}>
@@ -190,6 +198,12 @@ function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
               <BrailleSpinner />
             )}
           </div>
+          <div className="min-w-[8ch] text-foreground">
+            {condition.actual?.toLocaleUpperCase() ?? ""}
+          </div>
+          <div className="min-w-[8ch] text-foreground">
+            {condition.mirroredActual?.toLocaleUpperCase() ?? ""}
+          </div>
           <div className="flex items-baseline gap-2">
             <span className="text-foreground">{condition.label}</span>
             <span>
@@ -204,16 +218,16 @@ function VerifyConditionList({ liveData }: { liveData: VerifyStepLiveData }) {
 
 function procedureStepKey(step: typeof ProcedureStep.Type, index: number) {
   if (step.stepNumber !== undefined) {
-    return `${step.type}-${step.stepNumber}`;
+    return `${step.type}-${step.stepNumber}-${index}`;
   }
 
   switch (step.type) {
     case "note":
     case "text":
-      return `${step.type}-${step.text}`;
+      return `${step.type}-${index}-${step.text}`;
     case "check":
     case "verify":
-      return `${step.type}-${step.comment}`;
+      return `${step.type}-${index}-${step.comment}`;
     case "command": {
       const commandKey =
         "commands" in step ? step.commands.map((command) => command.name).join(",") : step.name;
@@ -226,6 +240,7 @@ function procedureStepKey(step: typeof ProcedureStep.Type, index: number) {
 }
 
 function ProcedureStepView({ index }: { index: number }) {
+  const now = useAckNow();
   const executionStep = useAtomSuspense(procedureExecutionStepAtom(index)).value;
   const step = executionStep.meta;
   const selectStep = useAtomSet(selectProcedureStepAtom);
@@ -292,7 +307,7 @@ function ProcedureStepView({ index }: { index: number }) {
                     <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
                       <div className="col-span-full text-foreground pb-1">Ground Station</div>
                       {acks.yamcs.map((ack) => (
-                        <AckRow key={ack.name} ack={ack} command={command} />
+                        <AckRow key={ack.name} ack={ack} command={command} now={now} />
                       ))}
                     </div>
                     <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
@@ -303,6 +318,7 @@ function ProcedureStepView({ index }: { index: number }) {
                           key={ack.name}
                           ack={ack}
                           command={command}
+                          now={now}
                         />
                       ))}
                     </div>
@@ -314,6 +330,7 @@ function ProcedureStepView({ index }: { index: number }) {
                           key={ack.name}
                           ack={ack}
                           command={command}
+                          now={now}
                         />
                       ))}
                     </div>
@@ -324,12 +341,15 @@ function ProcedureStepView({ index }: { index: number }) {
                           key={ack.name}
                           ack={ack}
                           command={command}
+                          now={now}
                         />
                       ))}
                     </div>
                   </div>
                   <div className="grid grid-cols-[auto_1fr] gap-x-2 text-xs text-muted-foreground">
-                    {acks.completion ? <FCAckRow ack={acks.completion} command={command} /> : null}
+                    {acks.completion ? (
+                      <FCAckRow ack={acks.completion} command={command} now={now} />
+                    ) : null}
                   </div>
                 </>
               );

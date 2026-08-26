@@ -1,17 +1,17 @@
 import { NodeHttpClient, NodeRuntime, NodeSocket } from "@effect/platform-node";
-import { Commands, type QualifiedName, type StreamingCommandHisotryEntry } from "@mrt/yamcs-effect";
+import {
+  Commands,
+  type QualifiedName,
+  type StreamingCommandHisotryEntry,
+  YamcsWebSocketClient,
+} from "@mrt/yamcs-effect";
 import { Effect, Layer, Logger, Schedule, Stream } from "effect";
 
 import type { ValveId } from "./domain.ts";
 
 import { readParameters, makeInitialState, stepSimulation, setValve } from "./simulator.ts";
 import { buildN20FillSystem } from "./topology.ts";
-import {
-  loadYamcsProcessorTarget,
-  YamcsClient,
-  YamcsClientLive,
-  yamcsConfigLayer,
-} from "./yamcs.ts";
+import { loadYamcsProcessorTarget, makeYamcsClient, yamcsConfigLayer } from "./yamcs.ts";
 
 const SIMULATION_TIMESTEP = 0.1;
 
@@ -82,18 +82,18 @@ const valveActionFromCommand = (entry: StreamingCommandHisotryEntry) => {
   return valveCommands.get(entry.commandName);
 };
 
+const websocketLayer = YamcsWebSocketClient.layer.pipe(
+  Layer.provide(Layer.merge(yamcsConfigLayer, NodeSocket.layerWebSocketConstructor)),
+);
+
 const simulatorLayer = Layer.mergeAll(
-  Commands.layer.pipe(
-    Layer.provideMerge(NodeSocket.layerWebSocketConstructor),
-    Layer.provide(yamcsConfigLayer),
-  ),
+  Commands.layer.pipe(Layer.provide(Layer.merge(yamcsConfigLayer, websocketLayer))),
   Logger.layer([Logger.consolePretty({ colors: true })]),
-  YamcsClientLive,
 ).pipe(Layer.provideMerge(NodeHttpClient.layerUndici));
 
 const runDemo = Effect.gen(function* () {
   const commands = yield* Commands;
-  const yamcs = yield* YamcsClient;
+  const yamcs = yield* makeYamcsClient;
   const target = yield* loadYamcsProcessorTarget;
   yield* Effect.log("Initialized YamcsApi HTTP client");
 

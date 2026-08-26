@@ -1,0 +1,88 @@
+import type { ComponentProps } from "react";
+
+import { X } from "lucide-react";
+
+import { cn } from "../../lib/utils.ts";
+
+export function DataGridHeader({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "col-span-full grid h-min grid-cols-subgrid font-mono text-sm text-white-text uppercase",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function DataGridHead({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "border-t border-t-background-secondary-highlight bg-background-secondary px-1",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function DataGridBody({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "col-span-full grid grid-cols-subgrid gap-px bg-border text-sm text-orange-text",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function DataGridRow({ className, ...props }: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "col-span-full grid grid-cols-subgrid font-mono *:bg-background *:px-1 hover:*:bg-selection-background",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function DataGridSearch({
+  value,
+  onChange,
+  className,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+  placeholder?: string;
+}) {
+  return (
+    <DataGridHead className={cn("relative", className)}>
+      <input
+        aria-label={placeholder ?? "Search"}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="h-full w-full px-2 placeholder:text-muted-foreground/30 focus:ring-0 focus:outline-none"
+      />
+
+      {value.length > 0 && (
+        <button
+          aria-label="Clear search"
+          type="button"
+          onClick={() => onChange("")}
+          className="absolute inset-y-0 right-0.5 z-10 size-5 cursor-pointer p-1 text-muted-foreground"
+        >
+          <X className="size-3" />
+        </button>
+      )}
+    </DataGridHead>
+  );
+}

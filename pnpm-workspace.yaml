@@ -2,6 +2,32 @@ packages:
   - packages/*
   - apps/*
 
+onlyBuiltDependencies:
+  - esbuild
+
+overrides:
+  '@babel/core': 7.29.6
+  '@effect/platform-node>undici': 8.5.0
+  '@effect/platform-node-shared>ws': 8.21.0
+  '@hono/node-server': 1.19.13
+  '@isaacs/brace-expansion': 5.0.1
+  '@opentelemetry/core': 2.8.0
+  '@opentui/react>ws': 8.21.0
+  ajv: 8.18.0
+  fast-uri: 3.1.2
+  hono: 4.12.25
+  js-yaml: 4.2.0
+  minimatch: 10.2.3
+  'mqtt>ws': 8.21.0
+  path-to-regexp: 8.4.0
+  'picomatch@^2.3.1': 2.3.2
+  'picomatch@^4.0.3': 4.0.4
+  postcss: 8.5.10
+  protocol-buffers-schema: 3.6.1
+  qs: 6.15.2
+  rollup: 4.59.0
+  uuid: 13.0.1
+
 catalog:
   '@effect/language-service': ^0.87.0
   '@effect/opentelemetry': 4.0.0-beta.57

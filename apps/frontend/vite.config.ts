@@ -1,7 +1,26 @@
+// import reactScan from "@react-scan/vite-plugin-react-scan";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
+
+const proxy = {
+  "/api": {
+    target: "http://localhost:8090",
+    ws: true,
+  },
+  "/mediamtx-api": {
+    target: "http://localhost:9997",
+    changeOrigin: true,
+    rewrite: (path: string) => path.replace(/^\/mediamtx-api/, ""),
+  },
+  "/mediamtx-webrtc": {
+    target: "http://localhost:8889",
+    changeOrigin: true,
+    rewrite: (path: string) => path.replace(/^\/mediamtx-webrtc/, ""),
+  },
+  "/rpc": "http://localhost:3000",
+};
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,6 +30,7 @@ export default defineConfig({
         plugins: [["babel-plugin-react-compiler"]],
       },
     }),
+    // reactScan(),
     tailwindcss(),
   ],
   build: {
@@ -20,6 +40,12 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  server: {
+    proxy,
+  },
+  preview: {
+    proxy,
   },
   envPrefix: ["VITE_", "YAMCS_", "MRT_", "MQTT_"],
 });

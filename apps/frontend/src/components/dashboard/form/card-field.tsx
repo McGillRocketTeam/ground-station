@@ -5,8 +5,10 @@ import { Schema, SchemaAST } from "effect";
 
 import { FormMaxAnnotationId, FormMinAnnotationId, formTitle, formType } from "@/lib/form";
 
+import { Checkbox } from "../../ui/checkbox";
 import { Field, FieldError, fieldLabelClassName } from "../../ui/field";
 import { Input } from "../../ui/input";
+import { DashboardCameraArrayField, type DashboardCameraArrayFieldApi } from "./camera-array-field";
 import { DashboardCameraField, type DashboardCameraFieldApi } from "./camera-field";
 import { DashboardChartSeriesField, type DashboardChartSeriesFieldApi } from "./chart-series-field";
 import {
@@ -21,6 +23,10 @@ import {
   DashboardParameterArrayField,
   type DashboardParameterArrayFieldApi,
 } from "./parameter-array-field";
+import {
+  DashboardParameterDeviceField,
+  type DashboardParameterDeviceFieldApi,
+} from "./parameter-device-field";
 import { DashboardParameterField, type DashboardParameterFieldApi } from "./parameter-field";
 import {
   DashboardParameterTableSectionsField,
@@ -30,8 +36,16 @@ import {
 const DashboardParameterFieldComponent = DashboardParameterField as unknown as ComponentType<{
   field: DashboardParameterFieldApi;
 }>;
+const DashboardParameterDeviceFieldComponent =
+  DashboardParameterDeviceField as unknown as ComponentType<{
+    field: DashboardParameterDeviceFieldApi;
+    requiredParameterNames?: ReadonlyArray<string>;
+  }>;
 const DashboardCameraFieldComponent = DashboardCameraField as unknown as ComponentType<{
   field: DashboardCameraFieldApi;
+}>;
+const DashboardCameraArrayFieldComponent = DashboardCameraArrayField as unknown as ComponentType<{
+  field: DashboardCameraArrayFieldApi;
 }>;
 const DashboardParameterArrayFieldComponent =
   DashboardParameterArrayField as unknown as ComponentType<{
@@ -42,6 +56,7 @@ const DashboardGaugeVisualRangesFieldComponent =
     field: DashboardGaugeVisualRangesFieldApi;
   }>;
 const DashboardCommandArrayFieldComponent = DashboardCommandArrayField as unknown as ComponentType<{
+  allowLocalName?: boolean;
   field: DashboardCommandArrayFieldApi;
 }>;
 const DashboardChartSeriesFieldComponent = DashboardChartSeriesField as unknown as ComponentType<{
@@ -58,6 +73,10 @@ function getFieldPlaceholder(type: ReturnType<typeof formType>) {
       return "Select a camera";
     case "parameter":
       return "Select a parameter";
+    case "parameterDevice":
+      return "Select a device";
+    case "omadaSwitch":
+      return "Select a switch";
     case "command":
       return "Enter a command";
     case "coordinate":
@@ -171,6 +190,20 @@ function DashboardCoordinateField({
   );
 }
 
+function DashboardBooleanField({ field, title }: { field: AnyFieldApi; title: string }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 text-sm" htmlFor={field.name}>
+      <Checkbox
+        id={field.name}
+        checked={Boolean(field.state.value)}
+        onBlur={field.handleBlur}
+        onCheckedChange={(checked) => field.handleChange(checked)}
+      />
+      <span>{title}</span>
+    </label>
+  );
+}
+
 export function DashboardCardField({
   field,
   fieldSchema,
@@ -191,6 +224,15 @@ export function DashboardCardField({
     errors.push({ message: coordinateError });
   }
 
+  if (type === "boolean") {
+    return (
+      <Field data-invalid={field.state.meta.isTouched && !field.state.meta.isValid}>
+        <DashboardBooleanField field={field} title={formTitle(fieldSchema)} />
+        {field.state.meta.isTouched ? <FieldError errors={errors} /> : null}
+      </Field>
+    );
+  }
+
   return (
     <Field
       data-invalid={
@@ -205,8 +247,25 @@ export function DashboardCardField({
         switch (type) {
           case "camera":
             return <DashboardCameraFieldComponent field={field as DashboardCameraFieldApi} />;
+          case "cameraArray":
+            return (
+              <DashboardCameraArrayFieldComponent field={field as DashboardCameraArrayFieldApi} />
+            );
           case "parameter":
             return <DashboardParameterFieldComponent field={field as DashboardParameterFieldApi} />;
+          case "parameterDevice":
+            return (
+              <DashboardParameterDeviceFieldComponent
+                field={field as DashboardParameterDeviceFieldApi}
+              />
+            );
+          case "omadaSwitch":
+            return (
+              <DashboardParameterDeviceFieldComponent
+                field={field as DashboardParameterDeviceFieldApi}
+                requiredParameterNames={["ports", "port_count"]}
+              />
+            );
           case "parameterArray":
             return (
               <DashboardParameterArrayFieldComponent
@@ -222,6 +281,13 @@ export function DashboardCardField({
           case "commandArray":
             return (
               <DashboardCommandArrayFieldComponent field={field as DashboardCommandArrayFieldApi} />
+            );
+          case "controlBoxCommandArray":
+            return (
+              <DashboardCommandArrayFieldComponent
+                allowLocalName
+                field={field as DashboardCommandArrayFieldApi}
+              />
             );
           case "chartSeries":
             return (

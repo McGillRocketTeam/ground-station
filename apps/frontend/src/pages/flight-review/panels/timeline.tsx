@@ -27,6 +27,7 @@ export const TimelinePanel = (props: IGridviewPanelProps) => {
     const groups = [
       { id: "stages", content: "Flight Stage" },
       { id: "telemetry", content: "Telemetry" },
+      { id: "recovery", content: "Recovery" },
     ];
 
     const items = [
@@ -49,6 +50,17 @@ export const TimelinePanel = (props: IGridviewPanelProps) => {
         type: "range" as const,
         className: "flight-review-stage-window",
         style: `background-color: ${STAGE_COLORS[window.stage] ?? "#52525b"}; border-color: transparent; color: contrast-color(${STAGE_COLORS[window.stage] ?? "#52525b"}); font-weight: normal; font-size: 12px; font-family: var(--font-mono); text-transform: uppercase;`,
+      })),
+      ...flightReplay.recoveryEvents.map((event) => ({
+        id: event.id,
+        group: "recovery",
+        content: "",
+        start: event.time,
+        type: "box" as const,
+        title: `${event.label}\n${new Date(event.time).toLocaleString()}`,
+        className: event.label.includes("Main")
+          ? "flight-review-recovery-event flight-review-recovery-event-main"
+          : "flight-review-recovery-event flight-review-recovery-event-drogue",
       })),
     ];
 
@@ -98,6 +110,7 @@ export const TimelinePanel = (props: IGridviewPanelProps) => {
     flightReplay.flightStart,
     flightReplay.flightStartMs,
     flightReplay.packets,
+    flightReplay.recoveryEvents,
     flightReplay.stages,
     flightReplay.telemetryConnections,
     setCursor,

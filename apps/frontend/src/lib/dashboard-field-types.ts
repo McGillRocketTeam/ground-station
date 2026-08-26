@@ -24,6 +24,13 @@ export const CameraField = Schema.String.pipe(
   }),
 );
 
+export const CameraArrayField = Schema.Array(CameraField).pipe(
+  Schema.annotate({
+    [FormTitleAnnotationId]: "Cameras",
+    [FormTypeAnnotationId]: "cameraArray",
+  }),
+);
+
 export const ParameterArrayField = Schema.Array(Schema.Struct({ NamedObjectId })).pipe(
   Schema.annotate({
     [FormTitleAnnotationId]: "Parameters",

@@ -8,33 +8,31 @@ import org.yamcs.mrt.DefaultMqttToTmPacketConverter;
 import org.yamcs.mrt.MqttToTmPacketConverter;
 
 public class ThermocoupleLink extends AstraSubLink {
-	MqttToTmPacketConverter tmConverter;
+  MqttToTmPacketConverter tmConverter;
 
-	public ThermocoupleLink(MqttAsyncClient client, String frequency) {
-		super(client);
-	}
+  public ThermocoupleLink(MqttAsyncClient client, String frequency) {
+    super(client);
+  }
 
-	@Override
-	public void init(String yamcsInstance, String linkName, YConfiguration config)
-			throws ConfigurationException {
-		super.init(yamcsInstance, linkName, config);
+  @Override
+  public void init(String yamcsInstance, String linkName, YConfiguration config)
+      throws ConfigurationException {
+    super.init(yamcsInstance, linkName, config);
 
-		tmConverter = new DefaultMqttToTmPacketConverter();
-		tmConverter.init(yamcsInstance, linkName, config);
-	}
+    tmConverter = new DefaultMqttToTmPacketConverter();
+    tmConverter.init(yamcsInstance, linkName, config);
+  }
 
-	@Override
-	public void handleMqttMessage(MqttMessage message) {
-		dataIn(1, message.getPayload().length);
+  @Override
+  public void handleMqttMessage(MqttMessage message) {
+    dataIn(1, message.getPayload().length);
 
-		for (var tmPacket : tmConverter.convert(message)) {
+    for (var tmPacket : tmConverter.convert(message)) {
 
-			tmPacket = packetPreprocessor.process(tmPacket);
-			if (tmPacket != null) {
-				super.processPacket(tmPacket);
-			}
-		}
-
-	}
-
+      tmPacket = packetPreprocessor.process(tmPacket);
+      if (tmPacket != null) {
+        super.processPacket(tmPacket);
+      }
+    }
+  }
 }

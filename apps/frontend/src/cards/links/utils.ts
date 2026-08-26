@@ -11,7 +11,7 @@ export function colorByStatus(linkStatus: string, link?: Pick<Link, "detailedSta
 
   return linkStatus === "OK"
     ? "text-success"
-    : linkStatus === "DISABLED"
+    : linkStatus === "DISABLED" || linkStatus === "UNAVAIL"
       ? "text-muted-foreground"
       : "text-error";
 }

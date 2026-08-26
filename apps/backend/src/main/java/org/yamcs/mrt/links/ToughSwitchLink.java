@@ -1,5 +1,9 @@
 package org.yamcs.mrt.links;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,7 +18,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -25,17 +28,12 @@ import org.yamcs.tctm.AbstractParameterDataLink;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 public class ToughSwitchLink extends AbstractParameterDataLink {
   private static final int POLL_INTERVAL_SECONDS = 1;
   private static final int CONNECT_TIMEOUT_MILLIS = 5_000;
   private static final int READ_TIMEOUT_MILLIS = 5_000;
   private static final String USER_AGENT =
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:152.0) Gecko/20100101 Firefox/152.0";
-  private static final String PARAMETER_BASE = "/EGSE/Pad/ToughSwitch/";
   private static final Gson GSON = new Gson();
 
   private String ipAddress;
@@ -57,10 +55,12 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
     password = config.getString("password");
 
     var mdb = MdbFactory.getInstance(yamcsInstance);
+    String parameterBase = "/" + linkName + "/";
     for (String parameterName : parameterNames()) {
-      Parameter parameter = mdb.getParameter(PARAMETER_BASE + parameterName);
+      Parameter parameter = mdb.getParameter(parameterBase + parameterName);
       if (parameter == null) {
-        throw new ConfigurationException("MDB does not have ToughSwitch parameter " + PARAMETER_BASE + parameterName);
+        throw new ConfigurationException(
+            "MDB does not have ToughSwitch parameter " + parameterBase + parameterName);
       }
       parameters.put(parameterName, parameter);
     }
@@ -83,7 +83,8 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
   @Override
   protected void doStart() {
     executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleWithFixedDelay(this::refreshStatus, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    executor.scheduleWithFixedDelay(
+        this::refreshStatus, 0, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
     notifyStarted();
   }
 
@@ -111,15 +112,16 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
         login();
       }
 
-      String encodedStats = request(
-          "/stats?_=" + System.currentTimeMillis(),
-          "GET",
-          null,
-          true,
-          Map.of(
-              "Accept", "application/json, text/javascript, */*; q=0.01",
-              "X-Requested-With", "XMLHttpRequest",
-              "Referer", baseUrl() + "/index.cgi"));
+      String encodedStats =
+          request(
+              "/stats?_=" + System.currentTimeMillis(),
+              "GET",
+              null,
+              true,
+              Map.of(
+                  "Accept", "application/json, text/javascript, */*; q=0.01",
+                  "X-Requested-With", "XMLHttpRequest",
+                  "Referer", baseUrl() + "/index.cgi"));
       dataIn(1, encodedStats.length());
 
       String statsJson = decodeStatsBody(encodedStats);
@@ -130,7 +132,7 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
       detailedStatus = "Authenticated and polling ToughSwitch at " + ipAddress;
     } catch (Exception e) {
       sessionCookie = null;
-      status = Status.FAILED;
+      // status = Status.FAILED;
       detailedStatus = "ToughSwitch poll failed for " + ipAddress + ": " + e.getMessage();
       log.warn(detailedStatus, e);
     }
@@ -144,42 +146,52 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
     }
 
     String boundary = "----yamcs-toughswitch-boundary" + System.currentTimeMillis();
-    String body = "--" + boundary + "\r\n"
-        + "Content-Disposition: form-data; name=\"uri\"\r\n\r\n"
-        + " \r\n"
-        + "--" + boundary + "\r\n"
-        + "Content-Disposition: form-data; name=\"username\"\r\n\r\n"
-        + username + "\r\n"
-        + "--" + boundary + "\r\n"
-        + "Content-Disposition: form-data; name=\"password\"\r\n\r\n"
-        + password + "\r\n"
-        + "--" + boundary + "--\r\n";
+    String body =
+        "--"
+            + boundary
+            + "\r\n"
+            + "Content-Disposition: form-data; name=\"uri\"\r\n\r\n"
+            + " /\r\n"
+            + "--"
+            + boundary
+            + "\r\n"
+            + "Content-Disposition: form-data; name=\"username\"\r\n\r\n"
+            + username
+            + "\r\n"
+            + "--"
+            + boundary
+            + "\r\n"
+            + "Content-Disposition: form-data; name=\"password\"\r\n\r\n"
+            + password
+            + "\r\n"
+            + "--"
+            + boundary
+            + "--\r\n";
 
-    try {
-      loginPost("/login.cgi", body, boundary);
-    } catch (IOException e) {
-      log.warn("ToughSwitch login POST /login.cgi failed; trying POST /: {}", e.getMessage());
-      loginPost("/", body, boundary);
-    }
+    loginPost(body, boundary);
 
     if (sessionCookie == null || sessionCookie.isBlank()) {
       throw new IOException("ToughSwitch did not provide a session cookie");
     }
   }
 
-  private void loginPost(String path, String body, String boundary) throws Exception {
+  private void loginPost(String body, String boundary) throws Exception {
     request(
-        path,
+        "/login.cgi",
         "POST",
         body,
         true,
         Map.of(
-            "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Cache-Control", "max-age=0",
-            "Content-Type", "multipart/form-data; boundary=" + boundary,
-            "Origin", baseUrl(),
-            "Referer", baseUrl() + "/login.cgi",
-            "Upgrade-Insecure-Requests", "1"));
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Cache-Control",
+            "max-age=0",
+            "Content-Type",
+            "multipart/form-data; boundary=" + boundary,
+            "Referer",
+            baseUrl() + "/login.cgi?uri=/",
+            "Upgrade-Insecure-Requests",
+            "1"));
   }
 
   private void bootstrapSessionCookie() {
@@ -208,11 +220,7 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
   }
 
   private String request(
-      String path,
-      String method,
-      String body,
-      boolean includeCookie,
-      Map<String, String> headers)
+      String path, String method, String body, boolean includeCookie, Map<String, String> headers)
       throws Exception {
     URL url = new URL(baseUrl() + path);
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -260,21 +268,48 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
       sessionCookie = cookie;
     }
 
-    InputStream stream = responseCode >= HttpURLConnection.HTTP_BAD_REQUEST
-        ? connection.getErrorStream()
-        : connection.getInputStream();
+    InputStream stream =
+        responseCode >= HttpURLConnection.HTTP_BAD_REQUEST
+            ? connection.getErrorStream()
+            : connection.getInputStream();
     String responseBody = "";
     if (stream != null) {
       try (InputStream input = stream) {
-        responseBody = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        responseBody = readResponseBody(input);
       }
     }
 
-    if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_MOVED_TEMP) {
-      throw new IOException("ToughSwitch returned HTTP " + responseCode + " for " + method + " " + url + ": " + responseBody);
+    if (responseCode != HttpURLConnection.HTTP_OK
+        && responseCode != HttpURLConnection.HTTP_MOVED_TEMP) {
+      throw new IOException(
+          "ToughSwitch returned HTTP "
+              + responseCode
+              + " for "
+              + method
+              + " "
+              + url
+              + ": "
+              + responseBody);
     }
 
     return responseBody;
+  }
+
+  private String readResponseBody(InputStream input) throws IOException {
+    var output = new ByteArrayOutputStream();
+    byte[] buffer = new byte[8_192];
+    try {
+      int read;
+      while ((read = input.read(buffer)) != -1) {
+        output.write(buffer, 0, read);
+      }
+    } catch (IOException e) {
+      if (!"Premature EOF".equals(e.getMessage())) {
+        throw e;
+      }
+      log.debug("ToughSwitch closed the HTTP response after {} bytes", output.size());
+    }
+    return output.toString(StandardCharsets.UTF_8);
   }
 
   private String baseUrl() {
@@ -283,16 +318,20 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
 
   private void publishStats(String statsJson) {
     JsonObject root = GSON.fromJson(statsJson, JsonObject.class);
+    if (root == null) {
+      log.debug("ToughSwitch returned no stats for this poll");
+      return;
+    }
     long now = getCurrentTime();
     List<ParameterValue> values = new ArrayList<>();
 
-    addString(values, now, "now", stringValue(root, "now"));
-    addUint64(values, now, "uptime", longValue(root, "uptime"));
+    addString(values, now, "DeviceInformation/now", stringValue(root, "now"));
+    addUint64(values, now, "DeviceInformation/uptime", longValue(root, "uptime"));
 
     JsonObject management = objectValue(root, "management");
     if (management != null) {
-      addUint32(values, now, "management_up", longValue(management, "up"));
-      addUint32(values, now, "management_speed", longValue(management, "speed"));
+      addUint32(values, now, "Management/up", longValue(management, "up"));
+      addUint32(values, now, "Management/speed", longValue(management, "speed"));
     }
 
     JsonObject stats = objectValue(root, "stats");
@@ -303,7 +342,7 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
           continue;
         }
 
-        String prefix = "port" + port + "_";
+        String prefix = "Port" + port + "/";
         addUint32(values, now, prefix + "poe", longValue(portStats, "poe"));
         addUint32(values, now, prefix + "port_status", longValue(portStats, "portStatus"));
         addUint32(values, now, prefix + "port_speed", longValue(portStats, "portSpeed"));
@@ -382,12 +421,12 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
 
   private static List<String> parameterNames() {
     List<String> names = new ArrayList<>();
-    names.add("uptime");
-    names.add("now");
-    names.add("management_up");
-    names.add("management_speed");
+    names.add("DeviceInformation/uptime");
+    names.add("DeviceInformation/now");
+    names.add("Management/up");
+    names.add("Management/speed");
     for (int port = 1; port <= 8; port++) {
-      String prefix = "port" + port + "_";
+      String prefix = "Port" + port + "/";
       names.add(prefix + "poe");
       names.add(prefix + "port_status");
       names.add(prefix + "port_speed");
@@ -407,7 +446,8 @@ public class ToughSwitchLink extends AbstractParameterDataLink {
       return trimmed;
     }
 
-    return new String(Base64.getDecoder().decode(stripDataUrlPrefix(trimmed)), StandardCharsets.UTF_8);
+    return new String(
+        Base64.getDecoder().decode(stripDataUrlPrefix(trimmed)), StandardCharsets.UTF_8);
   }
 
   private static String stripDataUrlPrefix(String value) {

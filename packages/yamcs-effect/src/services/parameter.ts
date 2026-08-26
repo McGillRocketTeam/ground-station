@@ -5,6 +5,7 @@ import { Socket } from "effect/unstable/socket";
 
 import { YamcsApi } from "../http/index.ts";
 import { ParameterInfo, type QualifiedName } from "../schema.ts";
+import { collectPaginated } from "../utils.ts";
 import { SubscribeParameterRequest } from "../websocket/client-messages.ts";
 import { YamcsWebSocketClient } from "../websocket/client.ts";
 import {
@@ -32,7 +33,7 @@ export interface ParameterSubscription {
 interface ActiveParameterCall {
   readonly call: SubscriptionId;
   readonly eventStream: Stream.Stream<typeof ParameterEvent.Type, Schema.SchemaError>;
-  readonly numericIdsByQualifiedName: Map<QualifiedName, string>;
+  readonly qualifiedNames: Set<QualifiedName>;
 }
 
 export class Parameters extends Context.Service<
@@ -67,10 +68,19 @@ export class Parameters extends Context.Service<
           ),
       });
 
-      const { parameters: all } = yield* httpClient.mdb.listParameters({
-        params: { instance: yamcsConfig.instance },
-        query: { limit: "900", details: true },
-      });
+      const all = yield* collectPaginated((next) =>
+        httpClient.mdb
+          .listParameters({
+            params: { instance: yamcsConfig.instance },
+            query: { limit: "500", details: true, next },
+          })
+          .pipe(
+            Effect.map((response) => ({
+              items: response.parameters,
+              continuationToken: response.continuationToken,
+            })),
+          ),
+      );
 
       const parameterInfoByQualifiedName = new Map(
         all.map((parameter) => [parameter.qualifiedName, parameter] as const),
@@ -180,12 +190,12 @@ export class Parameters extends Context.Service<
             Stream.mapEffect((message) => Schema.decodeUnknownEffect(ParameterEvent)(message.data)),
           );
 
-          const numericId = yield* awaitNumericId(eventStream, qualifiedName);
+          yield* awaitNumericId(eventStream, qualifiedName);
 
           return {
             call,
             eventStream,
-            numericIdsByQualifiedName: new Map([[qualifiedName, numericId]]),
+            qualifiedNames: new Set([qualifiedName]),
           } satisfies ActiveParameterCall;
         });
 
@@ -200,16 +210,12 @@ export class Parameters extends Context.Service<
 
               return {
                 eventStream: created.eventStream,
-                numericId: created.numericIdsByQualifiedName.get(qualifiedName)!,
               };
             }
 
-            const existingNumericId = current.numericIdsByQualifiedName.get(qualifiedName);
-
-            if (existingNumericId !== undefined) {
+            if (current.qualifiedNames.has(qualifiedName)) {
               return {
                 eventStream: current.eventStream,
-                numericId: existingNumericId,
               };
             }
 
@@ -224,12 +230,11 @@ export class Parameters extends Context.Service<
               },
             });
 
-            const numericId = yield* awaitNumericId(current.eventStream, qualifiedName);
-            current.numericIdsByQualifiedName.set(qualifiedName, numericId);
+            yield* awaitNumericId(current.eventStream, qualifiedName);
+            current.qualifiedNames.add(qualifiedName);
 
             return {
               eventStream: current.eventStream,
-              numericId,
             };
           }),
         );
@@ -243,11 +248,11 @@ export class Parameters extends Context.Service<
               return;
             }
 
-            if (!current.numericIdsByQualifiedName.has(qualifiedName)) {
+            if (!current.qualifiedNames.has(qualifiedName)) {
               return;
             }
 
-            if (current.numericIdsByQualifiedName.size === 1) {
+            if (current.qualifiedNames.size === 1) {
               activeParameterCall = undefined;
               yield* websocketClient.unsubscribe(current.call);
               return;
@@ -264,7 +269,7 @@ export class Parameters extends Context.Service<
               },
             });
 
-            current.numericIdsByQualifiedName.delete(qualifiedName);
+            current.qualifiedNames.delete(qualifiedName);
           }),
         );
 
@@ -278,13 +283,26 @@ export class Parameters extends Context.Service<
           Effect.acquireRelease(
             Effect.gen(function* () {
               const info = yield* get(qualifiedName);
-              const { eventStream, numericId } = yield* ensureSubscribed(qualifiedName);
+              const { eventStream } = yield* ensureSubscribed(qualifiedName);
+              let numericId: string | undefined;
 
               const updates = eventStream.pipe(
-                Stream.flatMap((event) =>
-                  "values" in event ? Stream.fromIterable(event.values) : Stream.empty,
+                Stream.flatMap((event) => {
+                  if ("mapping" in event) {
+                    const mappedNumericId = getNumericIdFromMapping(qualifiedName, event.mapping);
+
+                    if (mappedNumericId !== undefined) {
+                      numericId = mappedNumericId;
+                    }
+
+                    return Stream.empty;
+                  }
+
+                  return Stream.fromIterable(event.values);
+                }),
+                Stream.filter(
+                  (value) => numericId !== undefined && String(value.numericId) === numericId,
                 ),
-                Stream.filter((value) => String(value.numericId) === numericId),
                 // Stream.changesWith((left, right) => parameterValueContentEquivalence(left, right)),
                 Stream.map((value) => ({ info, value })),
               );
@@ -298,5 +316,5 @@ export class Parameters extends Context.Service<
       const subscribe = (qualifiedName: QualifiedName) => RcMap.get(subscriptionMap, qualifiedName);
       return { all, get, subscribe };
     }),
-  ).pipe(Layer.provide(YamcsWebSocketClient.layer));
+  );
 }

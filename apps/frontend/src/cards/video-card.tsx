@@ -6,7 +6,7 @@ import { CameraField } from "@/lib/dashboard-field-types";
 import { FormTitleAnnotationId } from "@/lib/form";
 import { mediaMtxWebRtcBaseUrl } from "@/lib/media-mtx/atom";
 
-type ConnectionState = "connecting" | "live" | "error";
+type ConnectionState = "connecting" | "live" | "reconnecting" | "error";
 type PanState = {
   readonly pointerId: number;
   readonly originX: number;
@@ -18,6 +18,9 @@ type PanState = {
 const MIN_SCALE = 1;
 const MAX_SCALE = 8;
 const ZOOM_STEP = 0.0015;
+const INITIAL_RECONNECT_DELAY_MS = 1_000;
+const DISCONNECTED_RECONNECT_DELAY_MS = 3_000;
+const MAX_RECONNECT_DELAY_MS = 10_000;
 
 export const VideoCard = makeCard({
   id: "video-card",
@@ -142,12 +145,20 @@ function getRenderedVideoSize(video: HTMLVideoElement, container: HTMLDivElement
   };
 }
 
-function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string | undefined }) {
+export function WebRtcVideo({
+  camera,
+  url,
+}: {
+  camera: string | undefined;
+  url: string | undefined;
+}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const panStateRef = useRef<PanState | null>(null);
+  const reconnectAttemptRef = useRef(0);
   const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [connectionGeneration, setConnectionGeneration] = useState(0);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -157,6 +168,7 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
     setOffset({ x: 0, y: 0 });
     setIsPanning(false);
     panStateRef.current = null;
+    reconnectAttemptRef.current = 0;
   }, [camera, url]);
 
   function clampOffset(nextOffset: { x: number; y: number }, nextScale: number) {
@@ -187,15 +199,56 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
     const abortController = new AbortController();
     const peer = new RTCPeerConnection();
     let sessionUrl: string | null = null;
+    let reconnectTimeout: number | undefined;
+    let reconnectScheduled = false;
 
     setConnectionState("connecting");
     setErrorMessage(null);
 
+    function cancelReconnect() {
+      if (reconnectTimeout !== undefined) {
+        window.clearTimeout(reconnectTimeout);
+        reconnectTimeout = undefined;
+      }
+
+      reconnectScheduled = false;
+    }
+
+    function scheduleReconnect(message: string, minimumDelay = INITIAL_RECONNECT_DELAY_MS) {
+      if (abortController.signal.aborted || reconnectScheduled) {
+        return;
+      }
+
+      reconnectScheduled = true;
+      setConnectionState("reconnecting");
+      setErrorMessage(message);
+
+      const delay = Math.max(
+        minimumDelay,
+        Math.min(
+          INITIAL_RECONNECT_DELAY_MS * 2 ** reconnectAttemptRef.current,
+          MAX_RECONNECT_DELAY_MS,
+        ),
+      );
+
+      reconnectTimeout = window.setTimeout(() => {
+        reconnectAttemptRef.current += 1;
+        setConnectionGeneration((generation) => generation + 1);
+      }, delay);
+    }
+
     peer.addTransceiver("video", { direction: "recvonly" });
     peer.onconnectionstatechange = () => {
-      if (peer.connectionState === "failed" || peer.connectionState === "disconnected") {
-        setConnectionState("error");
-        setErrorMessage("Video stream connection dropped.");
+      if (peer.connectionState === "connected") {
+        cancelReconnect();
+        reconnectAttemptRef.current = 0;
+      } else if (peer.connectionState === "failed") {
+        scheduleReconnect("Video stream connection dropped. Reconnecting...");
+      } else if (peer.connectionState === "disconnected") {
+        scheduleReconnect(
+          "Video stream connection interrupted. Reconnecting...",
+          DISCONNECTED_RECONNECT_DELAY_MS,
+        );
       }
     };
 
@@ -211,12 +264,33 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
       void videoElement.play().catch(() => {
         // Keep the card passive if autoplay is blocked.
       });
+      cancelReconnect();
+      reconnectAttemptRef.current = 0;
       setConnectionState("live");
+
+      event.track.addEventListener(
+        "ended",
+        () => {
+          scheduleReconnect("Video stream ended. Reconnecting...");
+        },
+        { once: true },
+      );
     };
 
     void (async () => {
+      let whepUrl: URL;
+
       try {
-        const whepUrl = resolveVideoSource(camera, url);
+        whepUrl = resolveVideoSource(camera, url);
+      } catch (error) {
+        setConnectionState("error");
+        setErrorMessage(
+          error instanceof Error ? error.message : "Failed to resolve video stream URL.",
+        );
+        return;
+      }
+
+      try {
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
         await waitForIceGatheringComplete(peer);
@@ -248,15 +322,17 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
           return;
         }
 
-        setConnectionState("error");
-        setErrorMessage(
-          error instanceof Error ? error.message : "Failed to connect to video stream.",
+        scheduleReconnect(
+          error instanceof Error
+            ? `${error.message}. Reconnecting...`
+            : "Failed to connect to video stream. Reconnecting...",
         );
       }
     })();
 
     return () => {
       abortController.abort();
+      cancelReconnect();
 
       if (videoRef.current) {
         videoRef.current.srcObject = null;
@@ -270,7 +346,7 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
 
       peer.close();
     };
-  }, [camera, url]);
+  }, [camera, connectionGeneration, url]);
 
   function updateZoom(clientX: number, clientY: number, nextScale: number) {
     const container = containerRef.current;
@@ -391,7 +467,7 @@ function WebRtcVideo({ camera, url }: { camera: string | undefined; url: string 
       />
       {connectionState !== "live" ? (
         <div className="absolute inset-0 grid place-items-center bg-black/60 p-4 text-center text-xs font-medium text-white">
-          {connectionState === "error" ? errorMessage : "Connecting to live stream..."}
+          {connectionState === "connecting" ? "Connecting to live stream..." : errorMessage}
         </div>
       ) : null}
     </div>

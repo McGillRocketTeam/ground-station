@@ -1,64 +1,73 @@
-import { Schema } from "effect";
+import { useAtomValue } from "@effect/atom-react";
+import { Cause, Schema } from "effect";
+import { AsyncResult } from "effect/unstable/reactivity";
 
+import { parameterSubscriptionAtom } from "@/lib/atom";
 import { makeCard } from "@/lib/cards";
 import { cn } from "@/lib/utils";
-
-const faults = [
-  "VENT\nENERGIZED",
-  "F/DOV\nENERGIZED",
-  "MOV\nARMED",
-  "FC A\nLINK LOST",
-  "VENT\nFAILURE",
-  "F/DOV\nFAILURE",
-  "MOV\nFAILURE",
-  "FC B\nLINK LOST",
-  "DROGUE\nARMED",
-  "MAIN\nARMED",
-  "GPS\nLOCKED",
-  "LABJACK\nLINK LOST",
-  "DROGUE\nFAILURE",
-  "MAIN\nFAILURE",
-  "GPS\nFAILURE",
-  "LAUNCH PAD\nLINK LOST",
-];
 
 export const FaultPanelCard = makeCard({
   id: "fault-panel-card",
   name: "Fault Panel Card",
   schema: Schema.Struct({}),
   component: () => (
-    <div className="grid grid-cols-4">
-      {faults.map((f) => (
-        <Fault key={f} name={f} />
-      ))}
-    </div>
+    <div>Hello</div>
+    // <div className="grid grid-cols-4">
+    //   {faults.map((fault) => (
+    //     <Fault key={fault.parameter} {...fault} />
+    //   ))}
+    // </div>
   ),
 });
 
 type Status = "success" | "error" | "warning" | "none";
 
-function isIlluminated(name: string) {
-  let hash = 0;
+export function Fault({ name, parameter }: { name: string; parameter: string }) {
+  const result = useAtomValue(parameterSubscriptionAtom(parameter));
 
-  for (const char of name) {
-    hash = (hash * 31 + char.charCodeAt(0)) % 10;
-  }
+  return AsyncResult.builder(result)
+    .onInitial(() => <FaultState name={name} title="Awaiting value" />)
+    .onFailure((cause) => (
+      <FaultState name={name} status="error" title={Cause.pretty(cause)} illuminated />
+    ))
+    .onSuccess((update) => {
+      const value = update.value.engValue;
+      const state = value.type === "ENUMERATED" ? value.value : undefined;
 
-  return hash === 0;
+      return <FaultState name={name} state={state} />;
+    })
+    .render();
 }
 
-function Fault({ name }: { name: string }) {
-  const illuminated = isIlluminated(name);
-  const status: Status = name.includes("ENERGIZED")
-    ? "success"
-    : name.includes("ARMED")
-      ? "warning"
-      : "error";
+function FaultState({
+  illuminated: illuminatedOverride,
+  name,
+  state,
+  status: statusOverride,
+  title,
+}: {
+  illuminated?: boolean;
+  name: string;
+  state?: string;
+  status?: Status;
+  title?: string;
+}) {
+  const status: Status =
+    statusOverride ??
+    (state === "CRITICAL" || state === "FAULT"
+      ? "error"
+      : state === "DEGRADED" || state === "NOT_READY"
+        ? "warning"
+        : state === "NOMINAL" || state === "READY" || state === "ACTIVE" || state === "COMPLETE"
+          ? "success"
+          : "none");
+  const illuminated = illuminatedOverride ?? status !== "none";
 
   return (
     <button
       type="button"
       data-illuminated={illuminated}
+      title={title ?? state ?? "Unknown"}
       className={cn(
         "whitespace-pre-line text-border border text-center grid place-items-center font-mono py-1",
         status === "success" && "data-[illuminated=true]:text-success",

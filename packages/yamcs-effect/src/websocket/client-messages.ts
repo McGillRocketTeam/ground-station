@@ -42,10 +42,17 @@ export const SubscribeEventsRequest = Schema.TaggedStruct("events", {
   instance: Schema.String,
 });
 
+export const SubscribeAlarmsRequest = Schema.TaggedStruct("alarms", {
+  instance: Schema.String,
+  processor: Schema.String,
+  includePending: Schema.optional(Schema.Boolean),
+});
+
 export const SubscriptionRequest = Schema.Union([
   SubscribeTimeRequest,
   SubscribeLinksRequest,
   SubscribeCommandsRequest,
   SubscribeParameterRequest,
   SubscribeEventsRequest,
+  SubscribeAlarmsRequest,
 ]);

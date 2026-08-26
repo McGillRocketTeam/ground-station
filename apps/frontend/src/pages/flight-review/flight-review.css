@@ -99,6 +99,31 @@
   background: var(--color-selection-background);
 }
 
+.vis-item.flight-review-recovery-event {
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  padding: 0 !important;
+  border: 1px solid var(--color-background) !important;
+  border-radius: 1px !important;
+  transform: translate(-5px, 3px) rotate(45deg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 55%, transparent);
+}
+
+.vis-item.flight-review-recovery-event-drogue {
+  background: #eab308;
+  color: #eab308;
+}
+
+.vis-item.flight-review-recovery-event-main {
+  background: #38bdf8;
+  color: #38bdf8;
+}
+
+.vis-item.flight-review-recovery-event .vis-item-content {
+  display: none;
+}
+
 .vis-custom-time {
   width: 3px !important;
   border: 0 !important;
@@ -126,4 +151,17 @@
 .dv-sash {
   border: 1px var(--color-border);
   background: var(--color-border);
+}
+
+.flight-review-plot .uplot {
+  font-family: var(--font-mono);
+}
+
+.flight-review-plot .u-legend,
+.flight-review-plot .u-title,
+.flight-review-plot .u-label,
+.flight-review-plot .u-value,
+.flight-review-plot .u-cursor-x,
+.flight-review-plot .u-cursor-y {
+  color: var(--color-white-text);
 }

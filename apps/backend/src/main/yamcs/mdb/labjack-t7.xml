@@ -2,6 +2,16 @@
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="LabJack">
   <TelemetryMetaData>
     <ParameterTypeSet>
+      <EnumeratedParameterType name="boolean_true_alarm">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="False"/>
+          <Enumeration value="1" label="True"/>
+        </EnumerationList>
+        <DefaultAlarm>
+          <EnumerationAlarm enumerationLabel="True" alarmLevel="critical"/>
+        </DefaultAlarm>
+      </EnumeratedParameterType>
       <EnumeratedParameterType name="digital_pin_state">
         <UnitSet/>
         <IntegerDataEncoding encoding="unsigned" sizeInBits="1"/>
@@ -18,6 +28,17 @@
           <Unit form="calibrated">psi</Unit>
         </UnitSet>
         <FloatDataEncoding encoding="IEEE754_1985"/>
+      </FloatParameterType>
+      <FloatParameterType name="pre_fill_pressure_psi_type">
+        <UnitSet>
+          <Unit form="calibrated">psi</Unit>
+        </UnitSet>
+        <FloatDataEncoding encoding="IEEE754_1985"/>
+        <DefaultAlarm minViolations="1">
+          <StaticAlarmRanges>
+            <CriticalRange maxInclusive="1150"/>
+          </StaticAlarmRanges>
+        </DefaultAlarm>
       </FloatParameterType>
     </ParameterTypeSet>
     <ParameterSet>
@@ -38,8 +59,8 @@
       <Parameter name="AIN13" parameterTypeRef="float_32"/>
       <!-- Digital pins -->
       <Parameter name="FIO0" parameterTypeRef="digital_pin_state"/>
-      <Parameter name="fill_valve_open" parameterTypeRef="digital_pin_state"/>
-      <Parameter name="dump_valve_open" parameterTypeRef="digital_pin_state"/>
+      <Parameter name="fill_valve_open" parameterTypeRef="digital_pin_state" shortDescription="Fill Valve Open"/>
+      <Parameter name="dump_valve_open" parameterTypeRef="digital_pin_state" shortDescription="Dump Valve Open"/>
       <Parameter name="FIO1" parameterTypeRef="digital_pin_state"/>
       <Parameter name="FIO2" parameterTypeRef="digital_pin_state"/>
       <Parameter name="FIO3" parameterTypeRef="digital_pin_state"/>
@@ -91,7 +112,7 @@
       <Parameter name="post_fill_pressure_psi" parameterTypeRef="float_32_psi" shortDescription="Post-Fill Pressure">
         <ParameterProperties dataSource="derived" readOnly="true"/>
       </Parameter>
-      <Parameter name="pre_fill_pressure_psi" parameterTypeRef="float_32_psi" shortDescription="Pre-Fill Pressure">
+      <Parameter name="pre_fill_pressure_psi" parameterTypeRef="pre_fill_pressure_psi_type" shortDescription="Pre-Fill Pressure">
         <ParameterProperties dataSource="derived" readOnly="true"/>
       </Parameter>
       <Parameter name="calibrated_pressure_ain8_psi" parameterTypeRef="float_32_psi">
@@ -101,6 +122,9 @@
         <ParameterProperties dataSource="derived" readOnly="true"/>
       </Parameter>
       <Parameter name="calibrated_pressure_ain10_psi" parameterTypeRef="float_32_psi">
+        <ParameterProperties dataSource="derived" readOnly="true"/>
+      </Parameter>
+      <Parameter name="ups_battery_active" parameterTypeRef="boolean_true_alarm" shortDescription="True when the UPS battery is actively draining">
         <ParameterProperties dataSource="derived" readOnly="true"/>
       </Parameter>
       <!-- AIN11-13: identity (y = v) -->
@@ -336,7 +360,7 @@
           </TriggerSet>
         </MathOperation>
       </MathAlgorithm>
-       <CustomAlgorithm name="fill_valve_open" shortDescription="Fill Valve Open">
+      <CustomAlgorithm name="fill_valve_open" shortDescription="Fill Valve Open">
         <LongDescription>Reports if the Fill Valve is open based on its reported states.</LongDescription>
         <AlgorithmText language="JavaScript">fill_valve_open.value = FIO0.value;
 fill_valve_open.updated = true;</AlgorithmText>
@@ -362,6 +386,20 @@ dump_valve_open.updated = true;</AlgorithmText>
         </OutputSet>
         <TriggerSet>
           <OnParameterUpdateTrigger parameterRef="FIO1"/>
+        </TriggerSet>
+      </CustomAlgorithm>
+      <CustomAlgorithm name="ups_battery_active" shortDescription="UPS Battery Active">
+        <LongDescription>Reports whether the UPS battery is actively draining based on the AIN9 voltage threshold.</LongDescription>
+        <AlgorithmText language="JavaScript">ups_battery_active.value = AIN9.value &gt;= 3.3 ? "True" : "False";
+ups_battery_active.updated = true;</AlgorithmText>
+        <InputSet>
+          <InputParameterInstanceRef parameterRef="AIN9" instance="0" inputName="AIN9"/>
+        </InputSet>
+        <OutputSet>
+          <OutputParameterRef parameterRef="ups_battery_active" outputName="ups_battery_active"/>
+        </OutputSet>
+        <TriggerSet>
+          <OnParameterUpdateTrigger parameterRef="AIN9"/>
         </TriggerSet>
       </CustomAlgorithm>
     </AlgorithmSet>

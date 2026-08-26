@@ -1,0 +1,16 @@
+{
+  "name": "@mrt/landing-prediction",
+  "private": true,
+  "scripts": {
+    "extract:urrg": "python3 scripts/extract_urrg.py",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "python3 -m unittest discover -s tests"
+  },
+  "peerDependencies": {
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:"
+  }
+}

@@ -16,7 +16,7 @@ export const launchPadSetupSteps = [
     type: "text",
     stepNumber: 2,
     role: "AD",
-    text: "Direct assembly team to transport the rocket to the flight safety tent.",
+    text: "Direct operators to transport the rocket to the flight safety tent.",
   }),
   ProcedureStep.make({
     type: "text",
@@ -24,12 +24,7 @@ export const launchPadSetupSteps = [
     role: "PD",
     text: "Wait for flight approval. If time allows, verify the state of the launch pad in preparation for launch procedures (generator gas level, valve states, etc...).",
   }),
-  ProcedureStep.make({
-    type: "text",
-    stepNumber: 4,
-    role: "AD",
-    text: "Receive flight approval.",
-  }),
+  ProcedureStep.make({ type: "text", stepNumber: 4, role: "AD", text: "Receive flight approval." }),
   ProcedureStep.make({
     type: "note",
     text: "If flight approval is not granted, return to the assembly tents to rectify the issue; Inform the pad and the ground station. Then restart these procedures.",
@@ -62,19 +57,31 @@ export const launchPadSetupSteps = [
   ProcedureStep.make({
     type: "text",
     stepNumber: 9,
-    role: "PD",
-    text: "Go to tower raising final checklist and confirm that the rocket can be installed on the launch rail.",
+    role: "AD",
+    text: "Make sure rail is lubricated and clean",
   }),
   ProcedureStep.make({
     type: "text",
     stepNumber: 10,
     role: "PD",
-    text: "Direct the operators to transport the rocket from the pickup truck to the end of the launch rail.",
+    text: "Go to tower raising final checklist and confirm that the rocket can be installed on the launch rail.",
   }),
   ProcedureStep.make({
     type: "text",
     stepNumber: 11,
     role: "PD",
+    text: "Direct the operators to transport the rocket from the pickup truck to the end of the launch rail.",
+  }),
+  ProcedureStep.make({
+    type: "text",
+    stepNumber: 12,
+    role: "PD",
     text: "Slowly guide the rocket onto the launch rail with the help of the operators. There are 2 rail buttons. Take care to not scratch the rocket sticker.",
+  }),
+  ProcedureStep.make({
+    type: "text",
+    stepNumber: 13,
+    role: "AD to LD",
+    text: "Report wind speed and direction at base cube.",
   }),
 ];

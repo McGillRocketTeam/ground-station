@@ -1,5 +1,6 @@
 config.define_bool('simulator')
 config.define_bool('media')
+config.define_bool('remote')
 config.define_string('environment')
 config.define_string('simulator_data_mode')
 config.define_string('mqtt_broker_url')
@@ -11,6 +12,7 @@ config.define_string('ecoflow_mqtt_port')
 cfg = config.parse()
 simulator_enabled = cfg.get('simulator', False)
 media_enabled = cfg.get('media', False)
+remote_enabled = cfg.get('remote', False)
 mrt_environment = cfg.get('environment', 'production')
 simulator_data_mode = cfg.get('simulator_data_mode', 'incremental')
 mqtt_broker_url = cfg.get('mqtt_broker_url', '')
@@ -42,12 +44,19 @@ if ecoflow_mqtt_enabled and ecoflow_user_id == '':
 	fail("Tilt config 'ecoflow_user_id' is required when 'ecoflow_mqtt' is true")
 
 open_frontend_cmd = os.name == 'nt' and "python -m webbrowser http://localhost:5173" or "python3 -m webbrowser http://localhost:5173"
+backend_serve_cmd = os.name == 'nt' and "powershell -NoProfile -File apps/backend/scripts/tilt-run.ps1" or "set -a && . apps/backend/.env && set +a && cd apps/backend && exec mvn yamcs:run"
+
+if remote_enabled:
+	local_resource(
+		'netbird',
+		cmd=['node', './script/netbird-up.mjs'],
+		labels=['remote'],
+	)
 
 local_resource(
     'frontend',
     serve_cmd="pnpm --filter @mrt/frontend dev",
 		serve_env={
-			'YAMCS_URL': 'http://localhost:8090',
 			'MRT_ENVIRONMENT': mrt_environment,
 			'MQTT_BROKER_URL': frontend_mqtt_broker_url,
 		},
@@ -69,7 +78,7 @@ local_resource(
 
 local_resource(
     'backend',
-    serve_cmd="cd apps/backend && mvn yamcs:run",
+		serve_cmd=backend_serve_cmd,
 		serve_env=backend_env,
 		labels=['mrt'],
 		links='http://localhost:8090',
@@ -173,6 +182,28 @@ docker_compose(
 if media_enabled:
 	docker_compose(
 		"./docker/media/docker-compose.yml"
+	)
+	local_resource(
+		'media-backend',
+		serve_cmd="pnpm --filter @mrt/media-backend dev",
+		labels=['media'],
+		links='http://localhost:3000',
+		resource_deps=['mediamtx'],
+		readiness_probe=probe(
+			period_secs=3,
+			http_get=http_get_action(port=3000, path="/")
+		)
+	)
+	local_resource(
+		'media-frontend',
+		serve_cmd="pnpm --filter @mrt/media-frontend dev --port 5174 --strictPort",
+		labels=['media'],
+		links='http://localhost:5174',
+		resource_deps=['media-backend'],
+		readiness_probe=probe(
+			period_secs=3,
+			http_get=http_get_action(port=5174, path="/")
+		)
 	)
 
 # dc_resource("backend", labels=['mrt'])

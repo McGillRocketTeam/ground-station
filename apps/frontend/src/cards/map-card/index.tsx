@@ -1,45 +1,56 @@
 import { useAtom, useAtomSuspense } from "@effect/atom-react";
 import { Schema } from "effect";
 import { Atom } from "effect/unstable/reactivity";
-import { Suspense, useEffect, useRef, useState } from "react";
-import { Map, Marker } from "react-map-gl/maplibre";
+import { Suspense, useState } from "react";
+import { Marker } from "react-map-gl/maplibre";
 
 import type { LiveParameterUpdate } from "@/lib/atom";
-import "maplibre-gl/dist/maplibre-gl.css";
-import { useTheme } from "@/components/theme-provider";
+
 import { parameterSubscriptionAtom } from "@/lib/atom";
 import { atomRegistry } from "@/lib/atom-registry";
 import { makeCard } from "@/lib/cards";
+import { CoordinateLatitudeField, CoordinateLongitudeField } from "@/lib/dashboard-field-types";
 import {
-  CoordinateLatitudeField,
-  CoordinateLongitudeField,
-  ParameterField,
-} from "@/lib/dashboard-field-types";
-import { FormTitleAnnotationId } from "@/lib/form";
+  FormDefaultValueAnnotationId,
+  FormTitleAnnotationId,
+  FormTypeAnnotationId,
+} from "@/lib/form";
 
-import { basicMapStyle, customMapStyle, hasLocalMapTiles } from "./style";
+import { PredictionAnnotations } from "../prediction-map-card/prediction-annotations";
+import { SatelliteSkyView } from "../satellite-sky-view";
+import { DashboardMap, isValidCoordinate, type MapViewState } from "./map";
 
 const MapCardConfiguration = Schema.Struct({
-  longitude: CoordinateLongitudeField,
-  latitude: CoordinateLatitudeField,
-
-  altitude: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Altitude" })),
-  rocketLong: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Longitude" })),
-  rocketLat: ParameterField.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Rocket Latitude" })),
+  longitude: Schema.optional(CoordinateLongitudeField).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Control Station Longitude" }),
+  ),
+  latitude: Schema.optional(CoordinateLatitudeField).pipe(
+    Schema.annotate({ [FormTitleAnnotationId]: "Control Station Latitude" }),
+  ),
+  showLc2025Layers: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: false,
+      [FormTitleAnnotationId]: "Show LC2025 Overlay",
+      [FormTypeAnnotationId]: "boolean",
+    }),
+  ),
+  showLandingPrediction: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: false,
+      [FormTitleAnnotationId]: "Show Landing Prediction",
+      [FormTypeAnnotationId]: "boolean",
+    }),
+  ),
+  showSatelliteSkyView: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: true,
+      [FormTitleAnnotationId]: "Show Satellite Sky View",
+      [FormTypeAnnotationId]: "boolean",
+    }),
+  ),
 });
 
-function isValidCoordinate(latitude: number, longitude: number) {
-  return (
-    Number.isFinite(latitude) &&
-    Number.isFinite(longitude) &&
-    latitude >= -90 &&
-    latitude <= 90 &&
-    longitude >= -180 &&
-    longitude <= 180
-  );
-}
-
-function RocketMarker(props: { lat: string; long: string }) {
+function RocketMarker(props: { lat: string; long: string; color: string }) {
   const latitude = useAtomSuspense(parameterSubscriptionAtom(props.lat))
     .value as LiveParameterUpdate;
   const longitude = useAtomSuspense(parameterSubscriptionAtom(props.long))
@@ -55,20 +66,18 @@ function RocketMarker(props: { lat: string; long: string }) {
       return null;
     }
 
-    return <Marker longitude={longitude} latitude={latitude} color="blue" />;
+    return <Marker longitude={longitude} latitude={latitude} color={props.color} />;
   }
 }
 
-type ViewState = {
-  longitude: number;
-  latitude: number;
-  zoom: number;
-};
+function flightComputerParameter(system: "SystemA" | "SystemB", parameterName: string) {
+  return `/${system}/Rocket/FlightComputer/${parameterName}`;
+}
 
-const viewStateAtom = Atom.make<ViewState>({
-  longitude: -73.5673,
-  latitude: 45.5017,
-  zoom: 10,
+const viewStateAtom = Atom.make<MapViewState>({
+  longitude: -81.86,
+  latitude: 48,
+  zoom: 11,
 });
 
 export const MapCard = makeCard({
@@ -89,10 +98,17 @@ export const MapCard = makeCard({
               return;
             }
 
+            const longitude = Number(card.params.longitude);
+            const latitude = Number(card.params.latitude);
+
+            if (!isValidCoordinate(latitude, longitude)) {
+              return;
+            }
+
             atomRegistry.set(viewStateAtom, {
               zoom: 10,
-              longitude: Number(card.params.longitude),
-              latitude: Number(card.params.latitude),
+              longitude,
+              latitude,
             });
           },
         },
@@ -100,7 +116,6 @@ export const MapCard = makeCard({
     },
   ],
   component: (props) => {
-    const { theme } = useTheme();
     const longitude = Number(props.params.longitude);
     const latitude = Number(props.params.latitude);
     const padCoordinate = isValidCoordinate(latitude, longitude)
@@ -108,106 +123,115 @@ export const MapCard = makeCard({
       : undefined;
 
     const [viewState, setViewState] = useAtom(viewStateAtom);
-    const [useLocalTiles, setUseLocalTiles] = useState(false);
-    const lastLoggedZoom = useRef<number | null>(null);
-
-    const logMapState = (
-      label: string,
-      nextViewState: { longitude: number; latitude: number; zoom: number },
-      bounds?: {
-        west: number;
-        south: number;
-        east: number;
-        north: number;
-      },
-    ) => {
-      console.log(`[map-card] ${label}`, {
-        zoom: Number(nextViewState.zoom.toFixed(2)),
-        longitude: Number(nextViewState.longitude.toFixed(6)),
-        latitude: Number(nextViewState.latitude.toFixed(6)),
-        usingLocalTiles: useLocalTiles,
-        bounds:
-          bounds === undefined
-            ? undefined
-            : {
-                west: Number(bounds.west.toFixed(6)),
-                south: Number(bounds.south.toFixed(6)),
-                east: Number(bounds.east.toFixed(6)),
-                north: Number(bounds.north.toFixed(6)),
-              },
-      });
-    };
-
-    useEffect(() => {
-      let isMounted = true;
-
-      void hasLocalMapTiles().then((available) => {
-        if (isMounted) {
-          setUseLocalTiles(available);
-        }
-      });
-
-      return () => {
-        isMounted = false;
-      };
-    }, []);
+    const [mapContextMenu, setMapContextMenu] = useState<{
+      latitude: number;
+      longitude: number;
+      x: number;
+      y: number;
+    }>();
 
     return (
       <div className="relative h-full min-h-60 w-full">
-        <Map
-          attributionControl={false}
-          mapStyle={useLocalTiles ? customMapStyle : basicMapStyle(theme)}
-          {...viewState}
-          onMove={(event) => {
-            if (import.meta.env.DEV) {
-              const nextZoom = event.viewState.zoom;
-
-              if (
-                lastLoggedZoom.current === null ||
-                Math.abs(nextZoom - lastLoggedZoom.current) >= 0.05
-              ) {
-                logMapState("zoom", event.viewState);
-                lastLoggedZoom.current = nextZoom;
-              }
-            }
-
-            setViewState(event.viewState);
-          }}
-          onMoveEnd={(event) => {
-            if (!import.meta.env.DEV) {
-              return;
-            }
-
-            const bounds = event.target.getBounds();
-
-            logMapState("moveend", event.viewState, {
-              west: bounds.getWest(),
-              south: bounds.getSouth(),
-              east: bounds.getEast(),
-              north: bounds.getNorth(),
-            });
-          }}
-          scrollZoom
-          dragRotate
-          doubleClickZoom
-          touchZoomRotate
-          keyboard
-          style={{ width: "100%", height: "100%" }}
+        <DashboardMap
+          debugName="map-card"
+          viewState={viewState}
+          onViewStateChange={setViewState}
+          showLc2025Layers={props.params.showLc2025Layers ?? false}
+          onClick={() => setMapContextMenu(undefined)}
+          onContextMenu={setMapContextMenu}
         >
           {padCoordinate ? (
-            <Marker
-              longitude={padCoordinate.longitude}
-              latitude={padCoordinate.latitude}
-              color="red"
-            />
+            <Marker longitude={padCoordinate.longitude} latitude={padCoordinate.latitude}>
+              <div className="bg-gray-600 px-2 py-1 text-center font-mono text-[10px] leading-tight text-white">
+                CONTROL
+                <br />
+                STATION
+              </div>
+            </Marker>
           ) : null}
           <Suspense>
             <RocketMarker
-              lat={props.params.rocketLat.qualifiedName}
-              long={props.params.rocketLong.qualifiedName}
+              lat={flightComputerParameter("SystemA", "gps_latitude")}
+              long={flightComputerParameter("SystemA", "gps_longitude")}
+              color="#2563eb"
             />
           </Suspense>
-        </Map>
+          <Suspense>
+            <RocketMarker
+              lat={flightComputerParameter("SystemB", "gps_latitude")}
+              long={flightComputerParameter("SystemB", "gps_longitude")}
+              color="#db2777"
+            />
+          </Suspense>
+          {props.params.showLandingPrediction ? (
+            <>
+              <Suspense>
+                <PredictionAnnotations
+                  id="prediction-system-a"
+                  color="#f59e0b"
+                  outlineColor="#fbbf24"
+                  accuracy={flightComputerParameter("SystemA", "predicted_location_accuracy")}
+                  latitude={flightComputerParameter("SystemA", "predicted_location_latitude")}
+                  longitude={flightComputerParameter("SystemA", "predicted_location_longitude")}
+                />
+              </Suspense>
+              <Suspense>
+                <PredictionAnnotations
+                  id="prediction-system-b"
+                  color="#06b6d4"
+                  outlineColor="#67e8f9"
+                  accuracy={flightComputerParameter("SystemB", "predicted_location_accuracy")}
+                  latitude={flightComputerParameter("SystemB", "predicted_location_latitude")}
+                  longitude={flightComputerParameter("SystemB", "predicted_location_longitude")}
+                />
+              </Suspense>
+            </>
+          ) : null}
+        </DashboardMap>
+        {(props.params.showSatelliteSkyView ?? true) ? (
+          <SatelliteSkyView className="pointer-events-none absolute bottom-3 left-3 size-[min(42vw,18rem)] min-h-48 min-w-48" />
+        ) : null}
+        <div className="pointer-events-none absolute left-3 top-3 bg-black/75 px-2 py-1 font-mono text-xs text-white">
+          Zoom: {viewState.zoom.toFixed(2)}
+        </div>
+        {mapContextMenu ? (
+          <div
+            className="absolute z-50 min-w-44 rounded-lg bg-popover p-1 text-xs text-popover-foreground shadow-md ring-1 ring-foreground/10"
+            style={{ left: mapContextMenu.x, top: mapContextMenu.y }}
+            onContextMenu={(event) => event.preventDefault()}
+          >
+            <div className="px-2 py-1.5 font-mono text-muted-foreground">
+              {mapContextMenu.latitude.toFixed(6)}, {mapContextMenu.longitude.toFixed(6)}
+            </div>
+            <button
+              className="flex min-h-7 w-full items-center rounded-md px-2 py-1 text-left hover:bg-accent hover:text-accent-foreground"
+              type="button"
+              onClick={() => {
+                void navigator.clipboard.writeText(
+                  `${mapContextMenu.latitude.toFixed(6)}, ${mapContextMenu.longitude.toFixed(6)}`,
+                );
+                setMapContextMenu(undefined);
+              }}
+            >
+              Copy coordinates
+            </button>
+            <div className="-mx-1 my-1 h-px bg-border" />
+            <button
+              className="flex min-h-7 w-full items-center rounded-md px-2 py-1 text-left hover:bg-accent hover:text-accent-foreground"
+              type="button"
+              onClick={() => {
+                props.api.updateParameters({
+                  ...props.params,
+                  latitude: mapContextMenu.latitude,
+                  longitude: mapContextMenu.longitude,
+                });
+                setMapContextMenu(undefined);
+              }}
+            >
+              Set control station here
+            </button>
+          </div>
+        ) : null}
       </div>
     );
   },

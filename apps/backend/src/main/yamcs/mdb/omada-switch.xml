@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="OmadaSwitch">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <IntegerParameterType name="uint32" signed="false"><IntegerDataEncoding sizeInBits="32" encoding="unsigned"/></IntegerParameterType>
+      <FloatParameterType name="double" sizeInBits="64"><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+      <FloatParameterType name="watts" sizeInBits="64"><UnitSet><Unit form="calibrated">W</Unit></UnitSet><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+      <FloatParameterType name="volts" sizeInBits="64"><UnitSet><Unit form="calibrated">V</Unit></UnitSet><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+      <FloatParameterType name="milliamps" sizeInBits="64"><UnitSet><Unit form="calibrated">mA</Unit></UnitSet><FloatDataEncoding sizeInBits="64"/></FloatParameterType>
+      <StringParameterType name="string"><StringDataEncoding><SizeInBits><Fixed><FixedValue>4096</FixedValue></Fixed></SizeInBits></StringDataEncoding></StringParameterType>
+      <BooleanParameterType name="boolean"><IntegerDataEncoding sizeInBits="1" encoding="unsigned"/></BooleanParameterType>
+      <EnumeratedParameterType name="poe_mode"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="0" label="OFF"/><Enumeration value="1" label="ON"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+      <EnumeratedParameterType name="link_status"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="0" label="DOWN"/><Enumeration value="1" label="UP"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+      <EnumeratedParameterType name="connected_status"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="0" label="CONNECTED"/><Enumeration value="1" label="DISCONNECTED"/><Enumeration value="2" label="DISABLED"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+      <EnumeratedParameterType name="port_type"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="1" label="COPPER"/><Enumeration value="2" label="COMBO"/><Enumeration value="3" label="SFP"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+      <EnumeratedParameterType name="link_speed"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="0" label="AUTO"/><Enumeration value="1" label="10_MBPS"/><Enumeration value="2" label="100_MBPS"/><Enumeration value="3" label="1_GBPS"/><Enumeration value="4" label="10_GBPS"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+      <EnumeratedParameterType name="duplex"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="0" label="AUTO"/><Enumeration value="1" label="HALF"/><Enumeration value="2" label="FULL"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+      <EnumeratedParameterType name="device_status"><EnumerationList><Enumeration value="-1" label="UNKNOWN"/><Enumeration value="0" label="DISCONNECTED"/><Enumeration value="1" label="DISCONNECTED_MIGRATING"/><Enumeration value="10" label="PROVISIONING"/><Enumeration value="11" label="CONFIGURING"/><Enumeration value="12" label="UPGRADING"/><Enumeration value="13" label="REBOOTING"/><Enumeration value="14" label="CONNECTED"/><Enumeration value="16" label="CONNECTED_MIGRATING"/><Enumeration value="20" label="PENDING"/><Enumeration value="22" label="ADOPTING"/><Enumeration value="24" label="ADOPT_FAILED"/><Enumeration value="26" label="MANAGED_BY_OTHERS"/><Enumeration value="30" label="HEARTBEAT_MISSED"/><Enumeration value="32" label="HEARTBEAT_MISSED_MIGRATING"/><Enumeration value="40" label="ISOLATED"/><Enumeration value="41" label="ISOLATED_MIGRATING"/><Enumeration value="50" label="SLICE_CONFIGURING"/></EnumerationList><IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/></EnumeratedParameterType>
+      <AggregateParameterType name="port">
+        <MemberList>
+          <Member name="port" typeRef="uint32"/><Member name="name" typeRef="string"/><Member name="type" typeRef="port_type"/><Member name="connected_status" typeRef="connected_status"/><Member name="link_status" typeRef="link_status"/><Member name="link_speed" typeRef="link_speed"/><Member name="duplex" typeRef="duplex"/><Member name="disabled" typeRef="boolean"/><Member name="support_poe" typeRef="boolean"/><Member name="poe_mode" typeRef="poe_mode"/><Member name="poe_active" typeRef="boolean"/><Member name="poe_status" typeRef="double"/><Member name="pd_class" typeRef="string"/><Member name="power_w" typeRef="watts"/><Member name="voltage_v" typeRef="volts"/><Member name="current_ma" typeRef="milliamps"/><Member name="client_count" typeRef="uint32"/><Member name="client_names" typeRef="string"/><Member name="client_macs" typeRef="string"/>
+        </MemberList>
+      </AggregateParameterType>
+      <ArrayParameterType name="ports" arrayTypeRef="port"><DimensionList><Dimension><StartingIndex><FixedValue>0</FixedValue></StartingIndex><EndingIndex><FixedValue>19</FixedValue></EndingIndex></Dimension></DimensionList></ArrayParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="mac_address" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="device_name" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="model" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="model_version" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="serial_number" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="firmware_version" parameterTypeRef="string"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="device_status" parameterTypeRef="device_status"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="connected" parameterTypeRef="boolean"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="port_count" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="used_port_count" parameterTypeRef="uint32"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="poe_power_used_w" parameterTypeRef="watts"><ParameterProperties dataSource="local"/></Parameter>
+      <Parameter name="ports" parameterTypeRef="ports"><ParameterProperties dataSource="local"/></Parameter>
+    </ParameterSet>
+  </TelemetryMetaData>
+  <CommandMetaData>
+    <ArgumentTypeSet>
+      <EnumeratedArgumentType name="port"><EnumerationList><Enumeration value="1" label="PORT_1"/><Enumeration value="2" label="PORT_2"/><Enumeration value="3" label="PORT_3"/><Enumeration value="4" label="PORT_4"/><Enumeration value="5" label="PORT_5"/><Enumeration value="6" label="PORT_6"/><Enumeration value="7" label="PORT_7"/><Enumeration value="8" label="PORT_8"/><Enumeration value="9" label="PORT_9"/><Enumeration value="10" label="PORT_10"/><Enumeration value="11" label="PORT_11"/><Enumeration value="12" label="PORT_12"/><Enumeration value="13" label="PORT_13"/><Enumeration value="14" label="PORT_14"/><Enumeration value="15" label="PORT_15"/><Enumeration value="16" label="PORT_16"/><Enumeration value="17" label="PORT_17"/><Enumeration value="18" label="PORT_18"/><Enumeration value="19" label="PORT_19"/><Enumeration value="20" label="PORT_20"/></EnumerationList><IntegerDataEncoding sizeInBits="8" encoding="unsigned"/></EnumeratedArgumentType>
+      <EnumeratedArgumentType name="poe_mode"><EnumerationList><Enumeration value="0" label="OFF"/><Enumeration value="1" label="ON"/></EnumerationList><IntegerDataEncoding sizeInBits="1" encoding="unsigned"/></EnumeratedArgumentType>
+    </ArgumentTypeSet>
+    <MetaCommandSet>
+      <MetaCommand name="set_poe" shortDescription="Enable or disable PoE on one switch port">
+        <ArgumentList><Argument name="port" argumentTypeRef="port"/><Argument name="poe_mode" argumentTypeRef="poe_mode"/></ArgumentList>
+        <CommandContainer name="set_poe"><EntryList><ArgumentRefEntry argumentRef="port"/><ArgumentRefEntry argumentRef="poe_mode"/></EntryList></CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
+</SpaceSystem>

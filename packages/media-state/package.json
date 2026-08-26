@@ -1,0 +1,34 @@
+{
+  "name": "@mrt/media-state",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "check-types": "tsc --noEmit",
+    "dev": "tsc -b --watch",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "prepare": "effect-language-service patch"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
+  }
+}

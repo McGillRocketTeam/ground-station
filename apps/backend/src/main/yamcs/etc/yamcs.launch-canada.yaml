@@ -24,6 +24,8 @@ services:
 dataLinks:
   - name: EGSE/Pad/LabJack
     class: org.yamcs.labjack2.LabJackDataLinkV2
+    scanRateHz: 100
+    tmPacketRateHz: 20
     tmStream: tm_labJack
     tcStream: tc_labJack
     packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
@@ -119,6 +121,8 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_a_controlstation_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemA/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -126,27 +130,93 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_a_pad_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemA/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
 
-  - name: EGSE/Pad/WifiAntenna
-    class: org.yamcs.mrt.links.WifiAntennaLink
-    ipAddress: 192.168.0.254
-    username: mrt
-    password: H0tFire!
+  - name: EGSE/ControlStation/WifiRouter
+    class: org.yamcs.mrt.links.WifiRouterLink
+    ppStream: pp_realtime
+    endpoint: http://192.168.0.1:8080/ubus
+    username: root
+    password: ${env.WIFI_ROUTER_PASSWORD}
+    pollIntervalSeconds: 2
+    linkSpeedMbps: 100
+    warningThresholdMbps: 80
+    saturationThresholdMbps: 90
 
-  - name: EGSE/ControlStation/WifiAntenna
-    class: org.yamcs.mrt.links.WifiAntennaLink
-    ipAddress: 192.168.0.253
-    username: mrt
-    password: H0tFire!
+  - name: EGSE/ControlStation/OmadaSwitch
+    class: org.yamcs.mrt.links.OmadaSwitchLink
+    ppStream: pp_realtime
+    tcStream: tc_omada
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    switchMac: A8-29-48-FC-FB-AA
+    portCount: 20
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
 
-  - name: EGSE/Pad/ToughSwitch
-    class: org.yamcs.mrt.links.ToughSwitchLink
-    ipAddress: 192.168.0.251
-    username: ubnt
-    password: ubnt
+  - name: EGSE/Pad/OmadaSwitch
+    class: org.yamcs.mrt.links.OmadaSwitchLink
+    ppStream: pp_realtime
+    tcStream: tc_omada
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    switchMac: E0-D3-62-6E-A2-17
+    portCount: 10
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
+
+  - name: EGSE/ControlStation/BeamBridge
+    class: org.yamcs.mrt.links.OmadaBeamBridgeLink
+    ppStream: pp_realtime
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    apMac: C0-3A-55-39-90-23
+    peerMac: C0-3A-55-39-92-C4
+    role: MAIN_AP
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
+
+  - name: EGSE/Pad/BeamBridge
+    class: org.yamcs.mrt.links.OmadaBeamBridgeLink
+    ppStream: pp_realtime
+    endpoint: https://192.168.0.106:8043
+    omadacId: 9384d75ad4be1a7130ac38ac06e1975a
+    siteId: 6a7e1c7ce6bdee5886c6cc67
+    apMac: C0-3A-55-39-92-C4
+    peerMac: C0-3A-55-39-90-23
+    role: CLIENT_AP
+    clientId: ${env.OMADA_CLIENT_ID:}
+    clientSecret: ${env.OMADA_CLIENT_SECRET:}
+    pollIntervalSeconds: 2
+    verifyTls: false
+
+  # - name: EGSE/Pad/ToughSwitch
+  #   class: org.yamcs.mrt.links.ToughSwitchLink
+  #   ppStream: pp_realtime
+  #   ipAddress: 192.168.0.251
+  #   username: ubnt
+  #   password: ubnt
+
+  - name: EGSE/ControlStation/Featherweight
+    class: org.yamcs.mrt.links.FeatherweightLink
+    enabledAtStartup: false
+    ppStream: pp_realtime
+    device: ${env.FEATHERWEIGHT_SERIAL_DEVICE:/dev/tty.usbmodem-featherweight}
+    baudRate: 115200
+    requireValidCrc: true
 
   - name: SystemB/Rocket/FlightComputer
     class: org.yamcs.mrt.links.AstraGenericTmLink
@@ -158,6 +228,8 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_b_controlstation_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemB/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -167,6 +239,8 @@ dataLinks:
     class: org.yamcs.mrt.links.AstraGenericTmTcLink
     tmStream: system_b_pad_radio_realtime
     tcStream: tc_radio_realtime
+    telemetryStatusTargets:
+      - SystemB/Rocket/FlightComputer
     packetPreprocessorClassName: org.yamcs.mrt.utils.AstraPacketPreprocessor
     packetPreprocessorArgs:
       timestampOffset: 2
@@ -192,6 +266,7 @@ dataLinks:
       - name: SystemB
         baseTopic: SystemB/Rocket/FlightComputer
         radioAckTopics:
+          - SystemB/Pad/Radio/acks
           - SystemB/ControlStation/Radio/acks
 
 mdb:
@@ -208,6 +283,9 @@ mdb:
         subLoaders:
           - type: xtce
             args:
+              file: mdb/camera-local.xml
+          - type: xtce
+            args:
               file: mdb/thermocouple.xml
           - type: xtce
             args:
@@ -216,10 +294,30 @@ mdb:
             spec: "ToughSwitch"
             args:
               file: mdb/toughswitch.xml
+          - type: xtce
+            spec: "OmadaSwitch"
+            args:
+              file: mdb/omada-switch.xml
+          - type: xtce
+            spec: "BeamBridge"
+            args:
+              file: mdb/omada-beam-bridge.xml
 
       - type: emptyNode
         spec: "ControlStation"
         subLoaders:
+          - type: xtce
+            spec: "WifiRouter"
+            args:
+              file: mdb/wifi-router.xml
+          - type: xtce
+            spec: "OmadaSwitch"
+            args:
+              file: mdb/omada-switch.xml
+          - type: xtce
+            spec: "BeamBridge"
+            args:
+              file: mdb/omada-beam-bridge.xml
           - type: xtce
             spec: "ControlBox"
             args:
@@ -228,6 +326,10 @@ mdb:
             spec: "EcoFlowMax"
             args:
               file: mdb/ecoflow.xml
+          - type: xtce
+            spec: "Featherweight"
+            args:
+              file: mdb/featherweight.xml
   - type: emptyNode
     spec: "SystemA"
     subLoaders:
@@ -326,6 +428,9 @@ streamConfig:
     - name: "tc_labJack"
       processor: "realtime"
       tcPatterns: [".*/LabJack/.*"]
+    - name: "tc_omada"
+      processor: "realtime"
+      tcPatterns: [".*/OmadaSwitch/.*"]
     - name: "tc_ecoflow_realtime"
       processor: "realtime"
       tcPatterns: ["/EGSE/ControlStation/EcoFlowMax/.*"]

@@ -1,6 +1,10 @@
 import { Schema } from "effect";
 
-import { FormTitleAnnotationId, FormTypeAnnotationId } from "@/lib/form";
+import {
+  FormDefaultValueAnnotationId,
+  FormTitleAnnotationId,
+  FormTypeAnnotationId,
+} from "@/lib/form";
 
 const ChartSeriesConfigSchema = Schema.Struct({
   color: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Color" })),
@@ -11,9 +15,16 @@ const ChartSeriesConfigSchema = Schema.Struct({
   parameter: Schema.String.pipe(Schema.annotate({ [FormTitleAnnotationId]: "Parameter" })),
 });
 
-export const ChartCardConfigSchema = Schema.Struct({
+const chartCardConfigFields = {
   defaultTimeWindowMinutes: Schema.optional(Schema.NumberFromString).pipe(
     Schema.annotate({ [FormTitleAnnotationId]: "Default Time Window (minutes)" }),
+  ),
+  showAlarmLines: Schema.optional(Schema.Boolean).pipe(
+    Schema.annotate({
+      [FormDefaultValueAnnotationId]: true,
+      [FormTitleAnnotationId]: "Show Alarm Lines",
+      [FormTypeAnnotationId]: "boolean",
+    }),
   ),
   series: Schema.optional(Schema.Array(ChartSeriesConfigSchema)).pipe(
     Schema.annotate({
@@ -21,7 +32,14 @@ export const ChartCardConfigSchema = Schema.Struct({
       [FormTypeAnnotationId]: "chartSeries",
     }),
   ),
+};
+
+export const ChartCardConfigSchema = Schema.Struct({
+  defaultTimeWindowMinutes: chartCardConfigFields.defaultTimeWindowMinutes,
+  series: chartCardConfigFields.series,
 });
+
+export const RealtimeChartCardConfigSchema = Schema.Struct(chartCardConfigFields);
 
 export type ChartSeriesConfig = typeof ChartSeriesConfigSchema.Type;
 export type ChartCardConfig = typeof ChartCardConfigSchema.Type;

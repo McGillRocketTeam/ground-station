@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Eurostile";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/eurostile/Eurostile-Regular.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Eurostile";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/eurostile/Eurostile-Oblique.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Eurostile";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/eurostile/EurostileBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Eurostile";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/eurostile/Eurostile-Bold Oblique.otf") format("opentype");
+}
+
+body {
+  font-family: "Eurostile", sans-serif;
+  font-size: 20px;
+  letter-spacing: var(--tracking-wider) /* 0.05em */;
+}

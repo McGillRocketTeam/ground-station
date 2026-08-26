@@ -11,6 +11,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { toggleCardMaximized, toggleCardMaximizedHotkey } from "@/lib/dashboard-actions";
 import { createId } from "@/lib/utils";
 
 import { editPanelDialogHandle } from "./form/edit-dialog";
@@ -93,6 +94,15 @@ export function DashboardTab(props: IDockviewDefaultTabProps) {
         </ContextMenuItem>
         {copied ? <ContextMenuItem onClick={handlePaste}>Paste</ContextMenuItem> : null}
         <ContextMenuSeparator />
+        <ContextMenuItem
+          disabled={!panel}
+          onClick={() => {
+            if (panel) toggleCardMaximized(panel);
+          }}
+        >
+          Maximize
+          <ContextMenuShortcut>{formatForDisplay(toggleCardMaximizedHotkey)}</ContextMenuShortcut>
+        </ContextMenuItem>
         <ContextMenuItem
           disabled={!panel}
           onClick={() => {

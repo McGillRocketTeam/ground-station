@@ -6,10 +6,6 @@ export interface YamcsConfigShape {
   readonly processor: string;
 }
 
-export const YamcsConfig = Context.Reference<YamcsConfigShape>("@mrt/yamcs-effect/YamcsConfig", {
-  defaultValue: () => ({
-    url: new URL("http://localhost:8090"),
-    instance: "",
-    processor: "realtime",
-  }),
-});
+export class YamcsConfig extends Context.Service<YamcsConfig, YamcsConfigShape>()(
+  "@mrt/yamcs-effect/YamcsConfig",
+) {}

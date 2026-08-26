@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="Camera">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <BooleanParameterType name="on_off" zeroStringValue="off" oneStringValue="on">
+        <IntegerDataEncoding sizeInBits="1" encoding="unsigned"/>
+      </BooleanParameterType>
+      <IntegerParameterType name="uint32" signed="false" sizeInBits="32">
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
+      </IntegerParameterType>
+      <StringParameterType name="string_256">
+        <StringDataEncoding encoding="US-ASCII">
+          <SizeInBits>
+            <Fixed>
+              <FixedValue>256</FixedValue>
+            </Fixed>
+          </SizeInBits>
+        </StringDataEncoding>
+      </StringParameterType>
+    </ParameterTypeSet>
+  </TelemetryMetaData>
+  <SpaceSystem name="medium-double-double">
+    <TelemetryMetaData>
+      <ParameterSet>
+        <Parameter name="connection_state" parameterTypeRef="on_off" shortDescription="Whether the source is currently online in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="availability_state" parameterTypeRef="on_off" shortDescription="Whether the path is currently available to readers in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="has_readers" parameterTypeRef="on_off" shortDescription="Whether at least one reader is currently connected">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="reader_count" parameterTypeRef="uint32" shortDescription="Current number of active readers for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_reader_type" parameterTypeRef="string_256" shortDescription="Reader type from the most recent read or unread hook">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_type" parameterTypeRef="string_256" shortDescription="Current MediaMTX source type for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_id" parameterTypeRef="string_256" shortDescription="Current MediaMTX source identifier for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_hook_event" parameterTypeRef="string_256" shortDescription="Last processed MediaMTX hook name for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="rouge-bol-deux-saveurs">
+    <TelemetryMetaData>
+      <ParameterSet>
+        <Parameter name="connection_state" parameterTypeRef="on_off" shortDescription="Whether the source is currently online in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="availability_state" parameterTypeRef="on_off" shortDescription="Whether the path is currently available to readers in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="has_readers" parameterTypeRef="on_off" shortDescription="Whether at least one reader is currently connected">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="reader_count" parameterTypeRef="uint32" shortDescription="Current number of active readers for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_reader_type" parameterTypeRef="string_256" shortDescription="Reader type from the most recent read or unread hook">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_type" parameterTypeRef="string_256" shortDescription="Current MediaMTX source type for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_id" parameterTypeRef="string_256" shortDescription="Current MediaMTX source identifier for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_hook_event" parameterTypeRef="string_256" shortDescription="Last processed MediaMTX hook name for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="Cunegonde-4">
+    <TelemetryMetaData>
+      <ParameterSet>
+        <Parameter name="connection_state" parameterTypeRef="on_off" shortDescription="Whether the source is currently online in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="availability_state" parameterTypeRef="on_off" shortDescription="Whether the path is currently available to readers in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="has_readers" parameterTypeRef="on_off" shortDescription="Whether at least one reader is currently connected">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="reader_count" parameterTypeRef="uint32" shortDescription="Current number of active readers for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_reader_type" parameterTypeRef="string_256" shortDescription="Reader type from the most recent read or unread hook">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_type" parameterTypeRef="string_256" shortDescription="Current MediaMTX source type for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_id" parameterTypeRef="string_256" shortDescription="Current MediaMTX source identifier for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_hook_event" parameterTypeRef="string_256" shortDescription="Last processed MediaMTX hook name for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+  <SpaceSystem name="drone">
+    <TelemetryMetaData>
+      <ParameterSet>
+        <Parameter name="connection_state" parameterTypeRef="on_off" shortDescription="Whether the source is currently online in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="availability_state" parameterTypeRef="on_off" shortDescription="Whether the path is currently available to readers in MediaMTX">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="has_readers" parameterTypeRef="on_off" shortDescription="Whether at least one reader is currently connected">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="reader_count" parameterTypeRef="uint32" shortDescription="Current number of active readers for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_reader_type" parameterTypeRef="string_256" shortDescription="Reader type from the most recent read or unread hook">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_type" parameterTypeRef="string_256" shortDescription="Current MediaMTX source type for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="source_id" parameterTypeRef="string_256" shortDescription="Current MediaMTX source identifier for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+        <Parameter name="last_hook_event" parameterTypeRef="string_256" shortDescription="Last processed MediaMTX hook name for this path">
+          <ParameterProperties dataSource="local"/>
+        </Parameter>
+      </ParameterSet>
+    </TelemetryMetaData>
+  </SpaceSystem>
+</SpaceSystem>

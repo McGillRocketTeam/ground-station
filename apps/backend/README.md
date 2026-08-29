@@ -1,5 +1,19 @@
 # @mrt-backend
 
+## License
+
+MRT-authored backend code is available under the repository's [MIT
+License](../../LICENSE), except for `src/main/java/org/yamcs/mqtt` and its tests.
+That integration is derived from [Yamcs
+MQTT](https://github.com/yamcs/yamcs-mqtt) and is distributed, with MRT's
+modifications and additions, under the [GNU Affero General Public License,
+version 3](LICENSE-AGPL-3.0). The complete corresponding source is included in
+this repository.
+
+The backend as a combined work may be subject to the AGPL when built,
+distributed, or offered as a network service. Dependencies retain their own
+license terms.
+
 ## Local environment
 
 Create `apps/backend/.env` from `.env.example`, then start the development environment with:

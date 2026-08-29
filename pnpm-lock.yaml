@@ -2302,8 +2302,8 @@ packages:
       '@types/react':
         optional: true
 
-  '@react-grab/cli@0.1.50':
-    resolution: {integrity: sha512-Px/Hwhhyk2PubCA4ZaRFsfvwxhbxXsetJyvqC6aFFi8WhJhA+oVC33aTzuAeWmM3fhb4/8ce8YsHXI1d6ChcKg==}
+  '@react-grab/cli@0.2.0':
+    resolution: {integrity: sha512-LVfA+j5cFT0Szd958WRD8W/B8ucCtz4ViiveDKWLqAwBkZFW9VRW1ZvwOUhp/M3SmVPtjDaRkW12GvAuTArP+Q==}
     hasBin: true
 
   '@react-scan/vite-plugin-react-scan@0.2.7':
@@ -4609,8 +4609,8 @@ packages:
     peerDependencies:
       react: ^19.2.8
 
-  react-grab@0.1.50:
-    resolution: {integrity: sha512-zRkHKq/8a1msCpEOp8BDROeQZT50m0OH2XPrP6jk5op+JAHrlsm3pj7eAQMOsct87EZDeGNnu4r+sGsJJzyw1Q==}
+  react-grab@0.2.0:
+    resolution: {integrity: sha512-ohhsfXD4qN0j6cMQd56aaVJBPDF3kUdviF/Od1Eak/rEIXQ3svQ4gjkwTfuTZwTBnxHRL16p9JqdlVQO5nUHqA==}
     hasBin: true
     peerDependencies:
       react: '>=17.0.0'
@@ -6789,7 +6789,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.16
 
-  '@react-grab/cli@0.1.50':
+  '@react-grab/cli@0.2.0':
     dependencies:
       agent-install: 0.0.6
       commander: 14.0.3
@@ -9131,9 +9131,9 @@ snapshots:
       react: 19.2.8
       scheduler: 0.27.0
 
-  react-grab@0.1.50(react@19.2.7):
+  react-grab@0.2.0(react@19.2.7):
     dependencies:
-      '@react-grab/cli': 0.1.50
+      '@react-grab/cli': 0.2.0
       bippy: 0.6.1(react@19.2.7)
     optionalDependencies:
       react: 19.2.7
@@ -9212,7 +9212,7 @@ snapshots:
       react: 19.2.7
       react-doctor: 0.9.12(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(eslint@10.8.0(jiti@2.7.0))
       react-dom: 19.2.7(react@19.2.7)
-      react-grab: 0.1.50(react@19.2.7)
+      react-grab: 0.2.0(react@19.2.7)
     optionalDependencies:
       esbuild: 0.27.7
       unplugin: 3.3.0(esbuild@0.27.7)(rolldown@1.2.3)(rollup@4.59.0)(vite@7.3.6(@types/node@24.10.9)(jiti@2.7.0)(lightningcss@1.33.0)(tsx@4.21.0)(yaml@2.9.0))

@@ -206,3 +206,22 @@ system has several jobs. Those boundaries are less important than the contract
 between them: every device has an identity, every useful state has a timestamp,
 every command has a destination, and operators can tell when any part of that
 chain stops working.
+
+## License and upstream attribution
+
+Copyright (c) 2026 McGill Rocket Team. Unless a component carries a different
+notice, MRT-authored source code in this repository is available under the
+permissive [MIT License](LICENSE). Distributions containing copies or substantial
+portions of that code must retain the MRT copyright and license notice.
+
+The `org.yamcs.mqtt` integration in [`apps/backend`](apps/backend) is an
+exception. It contains modified source code derived from [Yamcs
+MQTT](https://github.com/yamcs/yamcs-mqtt), developed by the Yamcs team and
+contributors. That directory, including MRT's modifications and additions to
+the derived integration, is distributed under the [GNU Affero General Public
+License, version 3](apps/backend/LICENSE-AGPL-3.0) (`AGPL-3.0-only`). Its
+corresponding source and revision history are available in this repository.
+
+Building or distributing the backend together with the AGPL-covered integration
+may subject the combined work to the AGPL. Third-party dependencies and vendored
+components retain their own license terms and notices.

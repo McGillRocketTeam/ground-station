@@ -92,6 +92,15 @@ pnpm check-types
   [test reports](docs/test-reports/): device-specific implementation notes.
 - [Contributor instructions](AGENTS.md): repository development conventions.
 
+## Contributing
+
+- Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+  for pull-request titles.
+- Squash commits when merging pull requests.
+- Pull-request descriptions must be written by a human. If AI assistance is
+  necessary, its text must follow the [ASD-STE100](https://asd-ste100.org/)
+  Simplified Technical English standard and be reviewed by the author.
+
 ## License and upstream attribution
 
 Copyright (c) 2026 McGill Rocket Team. Unless a component carries a different

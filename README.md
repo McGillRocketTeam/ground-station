@@ -23,9 +23,25 @@ On macOS, install mise with Homebrew:
 brew install mise
 ```
 
-Then clone the repository and install the toolchain and dependencies:
+On Windows, install [Git](https://git-scm.com/download/win),
+[Python 3](https://www.python.org/downloads/windows/) (with `python` on your
+PATH), and mise with [winget](https://mise.jdx.dev/installing-mise.html#windows-winget).
+In PowerShell, with Docker Desktop running, install mise:
 
-```bash
+```powershell
+winget install jdx.mise
+```
+
+Open a new PowerShell window and activate mise for that session:
+
+```powershell
+(&mise activate pwsh) | Out-String | Invoke-Expression
+```
+
+On either platform, clone the repository and install the toolchain and
+dependencies in the same terminal:
+
+```text
 git clone https://github.com/McGillRocketTeam/ground-station.git
 cd ground-station
 mise install
@@ -33,6 +49,9 @@ corepack enable
 pnpm install
 pnpm build
 ```
+
+On Windows, run the Tilt commands below in PowerShell so Tilt uses the
+Windows-specific local resources.
 
 ### Run locally with Tilt
 

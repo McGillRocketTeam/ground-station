@@ -50,10 +50,26 @@ pnpm install
 pnpm build
 ```
 
-On Windows, run the Tilt commands below in PowerShell so Tilt uses the
-Windows-specific local resources.
+### Set up .env
+
+Copy the backend's .example.env file to .env.
+
+On MacOS/Linux:
+
+```bash
+cp apps/backend/.env.example apps/backend/.env
+```
+
+On Windows:
+
+```powershell
+Copy-Item -Path "apps/backend/.env.example" -Destination "apps/backend/.env"
+```
 
 ### Run locally with Tilt
+
+On Windows, run the Tilt commands below in PowerShell so Tilt uses the
+Windows-specific local resources.
 
 Tilt orchestrates the local development environment. The default stack starts
 the frontend, Yamcs backend, MQTT broker, offline map server, and shared
@@ -128,29 +144,29 @@ This is a guide to where code lives. For how the services fit together, see the
 [architecture overview](docs/ARCHITECTURE.md); for unfamiliar names, see the
 [glossary](docs/GLOSSARY.md).
 
-| Location | What lives there |
-| --- | --- |
-| `apps/frontend/` | Main operator GUI: dashboards, procedures, export, and flight review. |
-| `apps/backend/` | Yamcs mission configuration and device integrations. |
-| `apps/media-frontend/`, `apps/media-backend/` | Media overlays and production-feed state. |
-| `apps/simulator/`, `apps/ops-simulator/` | Telemetry and ground-operations simulation. |
-| `apps/ecoflow-mqtt/` | EcoFlow battery telemetry bridge. |
-| `apps/xtce-generator/` | Yamcs mission-definition generator. |
-| `apps/tui/` | Terminal UI. |
-| `packages/yamcs-effect/`, `packages/yamcs-procedures/` | Shared Yamcs client code and procedure definitions. |
-| `packages/media-state/`, `packages/map-style/`, `packages/landing-prediction/` | Shared media state, map styling, and landing prediction. |
-| `docs/` | Architecture, protocol, device, and test documentation. |
-| `docker/`, `Tiltfile` | Container configuration and the local development stack. |
-| `pnpm-workspace.yaml` | The `apps/*` and `packages/*` workspaces. |
+| Location                                                                       | What lives there                                                      |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `apps/frontend/`                                                               | Main operator GUI: dashboards, procedures, export, and flight review. |
+| `apps/backend/`                                                                | Yamcs mission configuration and device integrations.                  |
+| `apps/media-frontend/`, `apps/media-backend/`                                  | Media overlays and production-feed state.                             |
+| `apps/simulator/`, `apps/ops-simulator/` pnpm                                  | Telemetry and ground-operations simulation.                           |
+| `apps/ecoflow-mqtt/`                                                           | EcoFlow battery telemetry bridge.                                     |
+| `apps/xtce-generator/`                                                         | Yamcs mission-definition generator.                                   |
+| `apps/tui/`                                                                    | Terminal UI.                                                          |
+| `packages/yamcs-effect/`, `packages/yamcs-procedures/`                         | Shared Yamcs client code and procedure definitions.                   |
+| `packages/media-state/`, `packages/map-style/`, `packages/landing-prediction/` | Shared media state, map styling, and landing prediction.              |
+| `docs/`                                                                        | Architecture, protocol, device, and test documentation.               |
+| `docker/`, `Tiltfile`                                                          | Container configuration and the local development stack.              |
+| `pnpm-workspace.yaml`                                                          | The `apps/*` and `packages/*` workspaces.                             |
 
 > For GUI work, start in `apps/frontend/src/pages/` for pages and
-`apps/frontend/src/components/router/router.tsx` for routes. Dashboard panels
-live in `apps/frontend/src/cards/`; `apps/frontend/src/lib/cards.ts` registers
-them, and `apps/frontend/src/components/dashboard/` contains the controls and
-forms used to add and configure them. Reusable UI components live in
-`apps/frontend/src/components/ui/`. For example, the Text Card is defined in
-`apps/frontend/src/cards/text-card.tsx` and can be added through the dialog in
-`apps/frontend/src/components/dashboard/plus.tsx`.
+> `apps/frontend/src/components/router/router.tsx` for routes. Dashboard panels
+> live in `apps/frontend/src/cards/`; `apps/frontend/src/lib/cards.ts` registers
+> them, and `apps/frontend/src/components/dashboard/` contains the controls and
+> forms used to add and configure them. Reusable UI components live in
+> `apps/frontend/src/components/ui/`. For example, the Text Card is defined in
+> `apps/frontend/src/cards/text-card.tsx` and can be added through the dialog in
+> `apps/frontend/src/components/dashboard/plus.tsx`.
 
 ## License and upstream attribution
 
